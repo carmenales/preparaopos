@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  php-syntax:
+    name: PHP syntax check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check PHP syntax
+        run: |
+          docker run --rm \
+            -v "$PWD/apps/preparadortai:/app" \
+            -w /app \
+            php:8.2-cli \
+            sh -c 'find . -name "*.php" -print0 | xargs -0 -n1 php -l'
+
+  docker-compose:
+    name: Docker Compose validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Docker Compose configuration
+        run: docker compose config
+
+      - name: Build web image
+        run: docker compose build web
+
+      - name: Start Docker stack
+        run: docker compose up -d --build
+
+      - name: Show Docker Compose services
+        run: docker compose ps
+
+      - name: Check static asset served by Apache
+        run: curl --fail --silent --show-error http://localhost:8080/assets/css/style.css > /dev/null
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop Docker stack
+        if: always()
+        run: docker compose down -v
