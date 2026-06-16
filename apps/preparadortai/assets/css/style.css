@@ -1,0 +1,157 @@
+/* =========================================
+   1. FUENTES Y BASES
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+    overflow-x: hidden;
+}
+
+/* =========================================
+   2. ESTRUCTURA PRINCIPAL (LAYOUT)
+   ========================================= */
+#wrapper {
+    overflow-x: hidden;
+    display: flex;
+    width: 100%;
+}
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: -17rem;
+    width: 17rem;
+    transition: margin 0.3s ease-out;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+#page-content-wrapper {
+    min-width: 100vw;
+    width: 100%;
+    transition: all 0.3s ease-out;
+}
+
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+
+@media (min-width: 768px) {
+    #sidebar-wrapper { margin-left: 0; }
+    #page-content-wrapper { min-width: 0; width: 100%; }
+    #wrapper.toggled #sidebar-wrapper { margin-left: -17rem; }
+}
+
+/* =========================================
+   3. SIDEBAR (V2.0 ESTILO ENTERPRISE)
+   ========================================= */
+.sidebar-brand {
+    padding: 1.5rem 1.5rem 1.5rem;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.brand-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+    letter-spacing: -0.5px;
+    color: #fff;
+    display: block;
+}
+
+.brand-version {
+    font-size: 0.75rem;
+    color: #60a5fa;
+    font-weight: 500;
+    background: rgba(96, 165, 250, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.sidebar-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+}
+
+#sidebar-wrapper .list-group {
+    width: 17rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.list-group-item-dark {
+    background-color: transparent;
+    color: #cbd5e1;
+    border: none;
+    padding: 10px 15px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    border-left: 3px solid transparent;
+    margin: 2px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.list-group-item-dark:hover, .list-group-item-dark.active {
+    background-color: rgba(255,255,255,0.08);
+    color: #fff;
+    border-left-color: #60a5fa;
+}
+
+.list-group-item i {
+    width: 25px;
+    text-align: center;
+    margin-right: 10px;
+    opacity: 0.8;
+}
+
+/* =========================================
+   4. COMPONENTES VISUALES (CARDS)
+   ========================================= */
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.hover-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+}
+
+/* =========================================
+   5. LÓGICA DE TEST (CORRECCIÓN VISUAL)
+   ========================================= */
+.opcion-test {
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: normal !important; /* PERMITE SALTO DE LÍNEA */
+    text-align: left;
+    height: auto;
+    display: block;
+}
+
+/* Alineación para que el círculo no se mueva en textos largos */
+.opcion-test .d-flex {
+    align-items: flex-start !important;
+}
+
+.correct-answer {
+    background-color: #d1e7dd !important;
+    border-color: #badbcc !important;
+    color: #0f5132;
+}
+.wrong-answer {
+    background-color: #f8d7da !important;
+    border-color: #f5c6cb !important;
+    color: #842029;
+}

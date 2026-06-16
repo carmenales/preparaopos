@@ -3,21 +3,39 @@
 .env.*
 
 # Database dumps / local data
-db/local/*.sql
 *.sql
 *.dump
 *.bak
+*.backup
+*.sqlite
+*.db
+db/local/
 
-# OS / editor
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+*.rar
+
+# Secrets / keys
+*.pem
+*.key
+*.crt
+*.p12
+
+# Temporary / editor files
+*.log
+*.tmp
+*.old
+*.orig
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 
-# Logs
-*.log
-
-# Dependencies / temporary files
+# Dependencies / generated folders
 vendor/
 node_modules/
 tmp/
