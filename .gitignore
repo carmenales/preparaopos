@@ -1,0 +1,24 @@
+# Environment files
+.env
+.env.*
+
+# Database dumps / local data
+db/local/*.sql
+*.sql
+*.dump
+*.bak
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Dependencies / temporary files
+vendor/
+node_modules/
+tmp/
+temp/
