@@ -9,3 +9,17 @@ Laboratorio/plataforma para preparación de oposiciones y modernización técnic
 ## Documentación
 
 - [Database setup](docs/database.md)
+
+## Comprobación del entorno Docker
+
+Con los contenedores levantados:
+
+```powershell
+.\scripts\check-docker-stack.ps1
+```
+
+Si PowerShell bloquea la ejecución de scripts:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\check-docker-stack.ps1
+```
