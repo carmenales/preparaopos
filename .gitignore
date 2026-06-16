@@ -9,7 +9,8 @@
 *.backup
 *.sqlite
 *.db
-db/local/
+db/local/*
+!db/local/.gitkeep
 
 # Archives
 *.zip
