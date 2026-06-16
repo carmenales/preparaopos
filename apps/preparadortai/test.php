@@ -14,21 +14,22 @@ function cmp($a, $b) { return strcmp($a[0], $b[0]); }
 
 $cat = htmlspecialchars($_GET["categoria"]);
 $examen = str_contains($cat, 'CUESTIONARIO');
+$testSessionId = bin2hex(random_bytes(16));
 
 // Lógica de BD
 if ($examen) {
-    $sql = "select id, pregunta, respuesta, img_path, justif from ptype where categoria = ? ORDER BY id";
+    $sql = "select id, pregunta, respuesta, img_path, justif, categoria, bloque, tema from ptype where categoria = ? ORDER BY id";
 } else {
-    $sql = "select id, pregunta, respuesta, img_path, justif from ptype where categoria = ? ORDER BY RAND()";
+    $sql = "select id, pregunta, respuesta, img_path, justif, categoria, bloque, tema from ptype where categoria = ? ORDER BY RAND()";
 }
 $stmt = mysqli_prepare($link, $sql);
 mysqli_stmt_bind_param($stmt, "s", $cat);
 mysqli_stmt_execute($stmt);
-mysqli_stmt_bind_result($stmt, $id, $pregunta, $respuesta, $img_path, $justif);
+mysqli_stmt_bind_result($stmt, $id, $pregunta, $respuesta, $img_path, $justif, $categoriaPregunta, $bloquePregunta, $temaPregunta);
 
 $preguntas = [];
 while (mysqli_stmt_fetch($stmt)) {
-    array_push($preguntas, array($id, $pregunta, $respuesta, $img_path, $justif));
+    array_push($preguntas, array($id, $pregunta, $respuesta, $img_path, $justif, $categoriaPregunta, $bloquePregunta, $temaPregunta));
 }
 mysqli_stmt_close($stmt);
 ?>
@@ -48,6 +49,9 @@ mysqli_stmt_close($stmt);
             $pCorrecta = $p[2];
             $pImg = $p[3];
             $pJustif = $p[4];
+            $pCategoria = $p[5];
+            $pBloque = $p[6];
+            $pTema = $p[7];
 
             // Obtener opciones
             $opciones = [];
@@ -90,7 +94,15 @@ mysqli_stmt_close($stmt);
                         $justifOpt = $opt[1];
                         $esCorrecta = $opt[2] ? 'true' : 'false';
                     ?>
-                    <button type="button" class="list-group-item list-group-item-action opcion-test p-3 border-bottom" 
+                    <button type="button"
+                            class="list-group-item list-group-item-action opcion-test p-3 border-bottom"
+                            data-test-session-id="<?php echo htmlspecialchars($testSessionId, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-question-id="<?php echo (int) $pId; ?>"
+                            data-selected-answer="<?php echo htmlspecialchars($textoOpt, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-correct-answer="<?php echo htmlspecialchars($pCorrecta, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-categoria="<?php echo htmlspecialchars($pCategoria ?? '', ENT_QUOTES, 'UTF-8'); ?>"
+                            data-bloque="<?php echo htmlspecialchars((string) ($pBloque ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                            data-tema="<?php echo htmlspecialchars((string) ($pTema ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
                             onclick="verificarRespuesta(this, <?php echo $esCorrecta; ?>)">
                         
                         <div class="d-flex w-100 justify-content-between">
@@ -147,6 +159,35 @@ function verificarRespuesta(elemento, esCorrecta) {
 
     let justif = elemento.querySelector('.justificacion');
     if(justif) justif.classList.remove('d-none');
+
+    const payload = {
+        test_session_id: elemento.dataset.testSessionId,
+        question_id: parseInt(elemento.dataset.questionId, 10),
+        selected_answer: elemento.dataset.selectedAnswer,
+        correct_answer: elemento.dataset.correctAnswer,
+        is_correct: esCorrecta ? 1 : 0,
+        categoria: elemento.dataset.categoria || null,
+        bloque: elemento.dataset.bloque !== '' ? parseInt(elemento.dataset.bloque, 10) : null,
+        tema: elemento.dataset.tema !== '' ? parseInt(elemento.dataset.tema, 10) : null
+    };
+
+    fetch('logic/save_attempt.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(function(response) {
+        if (!response.ok) {
+            return response.text().then(function(text) {
+                throw new Error('HTTP ' + response.status + ': ' + text);
+            });
+        }
+    })
+    .catch(function(error) {
+        console.error('Could not save test attempt', error);
+    });
 }
 </script>
 
