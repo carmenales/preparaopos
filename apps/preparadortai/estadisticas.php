@@ -116,6 +116,7 @@ $totalAnswers = (int)($globalStats['total_answers'] ?? 0);
 $correctAnswers = (int)($globalStats['correct_answers'] ?? 0);
 $wrongAnswers = (int)($globalStats['wrong_answers'] ?? 0);
 $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
+$deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attempts'] : null;
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -123,6 +124,12 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         <i class="fa-solid fa-chart-line"></i> Estadísticas
     </h2>
 </div>
+
+<?php if ($deletedAttempts !== null): ?>
+    <div class="alert alert-success shadow-sm border-0">
+        Se han borrado <?php echo $deletedAttempts; ?> respuestas registradas de la sesión seleccionada.
+    </div>
+<?php endif; ?>
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">

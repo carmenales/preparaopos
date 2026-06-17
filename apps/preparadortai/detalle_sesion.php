@@ -105,9 +105,20 @@ mysqli_stmt_close($stmt);
         <i class="fa-solid fa-list-check"></i> Detalle de sesión
     </h2>
 
-    <a href="estadisticas.php" class="btn btn-outline-primary">
-        <i class="fa-solid fa-arrow-left"></i> Volver
-    </a>
+    <div class="d-flex gap-2">
+        <a href="estadisticas.php" class="btn btn-outline-primary">
+            <i class="fa-solid fa-arrow-left"></i> Volver
+        </a>
+
+        <form method="post"
+            action="logic/delete_test_session.php"
+            onsubmit="return confirm('¿Borrar esta sesión de test? Se eliminarán sus respuestas registradas, pero no se borrarán preguntas del banco.');">
+            <input type="hidden" name="test_session_id" value="<?php echo safe_text($summary['test_session_id']); ?>">
+            <button type="submit" class="btn btn-outline-danger">
+                <i class="fa-solid fa-trash"></i> Borrar sesión
+            </button>
+        </form>
+    </div>
 </div>
 
 <div class="row g-4 mb-4">
