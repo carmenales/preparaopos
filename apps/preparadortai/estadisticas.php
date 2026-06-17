@@ -275,6 +275,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
                         <th class="text-end">Aciertos</th>
                         <th class="text-end">Fallos</th>
                         <th class="text-end">% acierto</th>
+                        <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -286,6 +287,11 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
                             <td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td>
                             <td class="text-end text-danger"><?php echo (int)$row['wrong_answers']; ?></td>
                             <td class="text-end fw-bold"><?php echo format_percentage($row['accuracy_percentage']); ?></td>
+                            <td class="text-end">
+                                <a href="detalle_sesion.php?session_id=<?php echo urlencode($row['test_session_id']); ?>" class="btn btn-outline-primary btn-sm">
+                                    <i class="fa-solid fa-eye"></i> Ver detalle
+                                </a>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
