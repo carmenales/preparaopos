@@ -106,6 +106,11 @@ $globalStats = fetch_single_row($link, $globalStatsSql);
 $categoryStats = fetch_all_rows($link, $categoryStatsSql);
 $topicStats = fetch_all_rows($link, $topicStatsSql);
 $recentSessions = fetch_all_rows($link, $recentSessionsSql);
+$weakTopics = array_filter($topicStats, function ($row) {
+    return (int)$row['total_answers'] >= 3;
+});
+
+$weakTopics = array_slice($weakTopics, 0, 10);
 
 $totalAnswers = (int)($globalStats['total_answers'] ?? 0);
 $correctAnswers = (int)($globalStats['correct_answers'] ?? 0);
@@ -129,7 +134,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </div>
     </div>
 
-```
+
 <div class="col-md-3">
     <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
@@ -156,7 +161,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </div>
     </div>
 </div>
-```
+
 
 </div>
 
@@ -167,7 +172,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </h5>
     </div>
 
-```
+
 <div class="card-body">
     <?php if (empty($categoryStats)): ?>
         <p class="text-secondary mb-0">Todavía no hay respuestas registradas.</p>
@@ -198,7 +203,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </div>
     <?php endif; ?>
 </div>
-```
+
 
 </div>
 
@@ -209,7 +214,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </h5>
     </div>
 
-```
+
 <div class="card-body">
     <?php if (empty($topicStats)): ?>
         <p class="text-secondary mb-0">Todavía no hay respuestas registradas.</p>
@@ -242,7 +247,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </div>
     <?php endif; ?>
 </div>
-```
+
 
 </div>
 
@@ -253,7 +258,7 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </h5>
     </div>
 
-```
+
 <div class="card-body">
     <?php if (empty($recentSessions)): ?>
         <p class="text-secondary mb-0">
@@ -288,8 +293,52 @@ $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
         </div>
     <?php endif; ?>
 </div>
-```
 
+
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fa-solid fa-bullseye text-primary"></i> Temas con menor porcentaje de acierto
+        </h5>
+    </div>
+
+    <div class="card-body">
+        <?php if (empty($weakTopics)): ?>
+            <p class="text-secondary mb-0">
+                Todavía no hay suficientes respuestas registradas para detectar temas a reforzar.
+                Responde algunas preguntas más para que esta sección sea útil.
+            </p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Bloque</th>
+                            <th>Tema</th>
+                            <th class="text-end">Total</th>
+                            <th class="text-end">Aciertos</th>
+                            <th class="text-end">Fallos</th>
+                            <th class="text-end">% acierto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($weakTopics as $row): ?>
+                            <tr>
+                                <td><?php echo safe_text($row['bloque'] ?? ''); ?></td>
+                                <td><?php echo safe_text($row['tema'] ?? ''); ?></td>
+                                <td class="text-end"><?php echo (int)$row['total_answers']; ?></td>
+                                <td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td>
+                                <td class="text-end text-danger fw-bold"><?php echo (int)$row['wrong_answers']; ?></td>
+                                <td class="text-end fw-bold"><?php echo format_percentage($row['accuracy_percentage']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </div>
 </div>
 
 <?php include 'includes/footer.php'; ?>
