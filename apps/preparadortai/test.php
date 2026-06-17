@@ -98,6 +98,8 @@ if ($correccionFinal) {
     </div>
 </div>
 
+<div id="save-error-alert" class="alert alert-danger shadow-sm border-0 d-none"></div>
+
 <?php if ($modo === 'refuerzo'): ?>
     <div class="alert alert-info shadow-sm border-0">
         Modo refuerzo activo
@@ -266,7 +268,9 @@ function seleccionarRespuestaFinal(elemento) {
     for (let i = 0; i < opciones.length; i++) {
         opciones[i].classList.remove('active');
         opciones[i].classList.remove('selected-answer');
+
         const iconState = opciones[i].querySelector('.icon-state');
+
         if (iconState) {
             iconState.className = 'fa-regular fa-circle mt-1 me-3 text-secondary icon-state';
         }
@@ -276,6 +280,7 @@ function seleccionarRespuestaFinal(elemento) {
     elemento.classList.add('selected-answer');
 
     const iconState = elemento.querySelector('.icon-state');
+
     if (iconState) {
         iconState.classList.replace('fa-circle', 'fa-circle-dot');
         iconState.classList.add('fa-solid');
@@ -341,6 +346,7 @@ function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
             opciones[i].classList.add('correct-answer');
 
             const correctIcon = opciones[i].querySelector('.icon-state');
+
             if (correctIcon) {
                 correctIcon.className = 'fa-solid fa-circle-check mt-1 me-3 text-success icon-state';
             }
@@ -351,17 +357,20 @@ function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
 
     if (esCorrecta) {
         elemento.classList.add('correct-answer');
+
         if (iconState) {
             iconState.className = 'fa-solid fa-circle-check mt-1 me-3 text-success icon-state';
         }
     } else {
         elemento.classList.add('wrong-answer');
+
         if (iconState) {
             iconState.className = 'fa-solid fa-circle-xmark mt-1 me-3 text-danger icon-state';
         }
     }
 
     let justif = elemento.querySelector('.justificacion');
+
     if (justif) justif.classList.remove('d-none');
 
     if (guardarIntento) {
@@ -370,9 +379,16 @@ function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
 }
 
 function guardarRespuesta(elemento, esCorrecta) {
+    const questionId = parseInt(elemento.dataset.questionId, 10);
+
+    if (!elemento.dataset.testSessionId || Number.isNaN(questionId)) {
+        mostrarErrorGuardado('No se ha podido preparar el guardado de esta respuesta.');
+        return;
+    }
+
     const payload = {
         test_session_id: elemento.dataset.testSessionId,
-        question_id: parseInt(elemento.dataset.questionId, 10),
+        question_id: questionId,
         selected_answer: elemento.dataset.selectedAnswer,
         correct_answer: elemento.dataset.correctAnswer,
         is_correct: esCorrecta ? 1 : 0,
@@ -384,20 +400,37 @@ function guardarRespuesta(elemento, esCorrecta) {
     fetch('logic/save_attempt.php', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
         },
         body: JSON.stringify(payload)
     })
     .then(function(response) {
-        if (!response.ok) {
-            return response.text().then(function(text) {
-                throw new Error('HTTP ' + response.status + ': ' + text);
-            });
-        }
+        return response.json().then(function(data) {
+            if (!response.ok || !data.success) {
+                const errorMessage = data.error || 'Error desconocido al guardar la respuesta.';
+                const details = data.details ? ' ' + data.details : '';
+                throw new Error(errorMessage + details);
+            }
+
+            return data;
+        });
     })
     .catch(function(error) {
+        mostrarErrorGuardado('No se ha guardado una respuesta. ' + error.message);
         console.error('Could not save test attempt', error);
     });
+}
+
+function mostrarErrorGuardado(message) {
+    const alert = document.getElementById('save-error-alert');
+
+    if (!alert) {
+        return;
+    }
+
+    alert.textContent = message;
+    alert.classList.remove('d-none');
 }
 </script>
 
