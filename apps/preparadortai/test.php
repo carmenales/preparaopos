@@ -20,6 +20,9 @@ $catSafe = htmlspecialchars($cat, ENT_QUOTES, 'UTF-8');
 
 $examen = str_contains($cat, 'CUESTIONARIO');
 $modo = isset($_GET['modo']) ? $_GET['modo'] : '';
+$correccion = isset($_GET['correccion']) ? $_GET['correccion'] : '';
+$correccionFinal = $correccion === 'final';
+
 $filtroBloque = isset($_GET['bloque']) && $_GET['bloque'] !== '' ? (int)$_GET['bloque'] : null;
 $filtroTema = isset($_GET['tema']) && $_GET['tema'] !== '' ? (int)$_GET['tema'] : null;
 
@@ -66,6 +69,19 @@ while (mysqli_stmt_fetch($stmt)) {
 }
 
 mysqli_stmt_close($stmt);
+
+$queryParams = $_GET;
+if ($correccionFinal) {
+    unset($queryParams['correccion']);
+    $toggleCorrectionUrl = 'test.php?' . http_build_query($queryParams);
+    $toggleCorrectionText = 'Corregir al responder';
+    $toggleCorrectionIcon = 'fa-bolt';
+} else {
+    $queryParams['correccion'] = 'final';
+    $toggleCorrectionUrl = 'test.php?' . http_build_query($queryParams);
+    $toggleCorrectionText = 'Corregir al final';
+    $toggleCorrectionIcon = 'fa-list-check';
+}
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -73,7 +89,13 @@ mysqli_stmt_close($stmt);
         <i class="fa-solid fa-clipboard-question"></i> <?php echo $catSafe; ?>
     </h2>
 
-    <span class="badge bg-secondary fs-6 rounded-pill"><?php echo count($preguntas); ?> Preguntas</span>
+    <div class="d-flex gap-2 align-items-center">
+        <a href="<?php echo htmlspecialchars($toggleCorrectionUrl, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-outline-primary btn-sm">
+            <i class="fa-solid <?php echo $toggleCorrectionIcon; ?>"></i> <?php echo $toggleCorrectionText; ?>
+        </a>
+
+        <span class="badge bg-secondary fs-6 rounded-pill"><?php echo count($preguntas); ?> Preguntas</span>
+    </div>
 </div>
 
 <?php if ($modo === 'refuerzo'): ?>
@@ -85,6 +107,12 @@ mysqli_stmt_close($stmt);
         <?php if ($filtroTema !== null): ?>
             · Tema <?php echo (int)$filtroTema; ?>
         <?php endif; ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($correccionFinal): ?>
+    <div class="alert alert-secondary shadow-sm border-0">
+        Corrección al final activa. Marca una respuesta por pregunta y pulsa <strong>Corregir test</strong>.
     </div>
 <?php endif; ?>
 
@@ -139,7 +167,7 @@ mysqli_stmt_close($stmt);
                 }
             ?>
 
-            <div class="card mb-5 shadow-sm border-0">
+            <div class="card mb-5 shadow-sm border-0 question-card" data-question-card="true">
                 <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
                     <h5 class="fw-bold text-dark d-flex">
                         <span class="badge bg-primary me-3 align-self-start"><?php echo $qIndex++; ?></span>
@@ -169,6 +197,7 @@ mysqli_stmt_close($stmt);
                                     data-categoria="<?php echo htmlspecialchars($pCategoria ?? '', ENT_QUOTES, 'UTF-8'); ?>"
                                     data-bloque="<?php echo htmlspecialchars((string) ($pBloque ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
                                     data-tema="<?php echo htmlspecialchars((string) ($pTema ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                    data-is-correct="<?php echo $esCorrecta; ?>"
                                     onclick="verificarRespuesta(this, <?php echo $esCorrecta; ?>)">
 
                                 <div class="d-flex w-100 justify-content-between">
@@ -195,38 +224,152 @@ mysqli_stmt_close($stmt);
                 </div>
             </div>
             <?php } ?>
+
+            <?php if ($correccionFinal): ?>
+                <div class="card mb-5 shadow-sm border-0">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="fw-bold">Corrección al final</div>
+                            <div class="text-secondary small">Se guardarán las respuestas seleccionadas cuando corrijas el test.</div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary" onclick="corregirTestCompleto()">
+                            <i class="fa-solid fa-list-check"></i> Corregir test
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultado-final" class="alert alert-primary shadow-sm border-0 d-none"></div>
+            <?php endif; ?>
         </div>
     </div>
 <?php endif; ?>
 
 <script>
+const correccionFinal = <?php echo $correccionFinal ? 'true' : 'false'; ?>;
+
 function verificarRespuesta(elemento, esCorrecta) {
+    if (correccionFinal) {
+        seleccionarRespuestaFinal(elemento);
+        return;
+    }
+
+    corregirRespuestaInmediata(elemento, esCorrecta, true);
+}
+
+function seleccionarRespuestaFinal(elemento) {
+    if (elemento.parentElement.classList.contains('answered')) return;
+
+    let parent = elemento.parentElement;
+    let opciones = parent.children;
+
+    for (let i = 0; i < opciones.length; i++) {
+        opciones[i].classList.remove('active');
+        opciones[i].classList.remove('selected-answer');
+        const iconState = opciones[i].querySelector('.icon-state');
+        if (iconState) {
+            iconState.className = 'fa-regular fa-circle mt-1 me-3 text-secondary icon-state';
+        }
+    }
+
+    elemento.classList.add('active');
+    elemento.classList.add('selected-answer');
+
+    const iconState = elemento.querySelector('.icon-state');
+    if (iconState) {
+        iconState.classList.replace('fa-circle', 'fa-circle-dot');
+        iconState.classList.add('fa-solid');
+    }
+}
+
+function corregirTestCompleto() {
+    const questionCards = document.querySelectorAll('[data-question-card="true"]');
+    let total = questionCards.length;
+    let answered = 0;
+    let correct = 0;
+
+    questionCards.forEach(function(card) {
+        const selected = card.querySelector('.selected-answer');
+
+        if (!selected) {
+            card.classList.add('border', 'border-warning');
+            return;
+        }
+
+        answered++;
+        card.classList.remove('border', 'border-warning');
+
+        const isCorrect = selected.dataset.isCorrect === 'true';
+
+        if (isCorrect) {
+            correct++;
+        }
+
+        corregirRespuestaInmediata(selected, isCorrect, true);
+    });
+
+    const resultBox = document.getElementById('resultado-final');
+
+    if (answered < total) {
+        resultBox.classList.remove('d-none', 'alert-primary', 'alert-success');
+        resultBox.classList.add('alert-warning');
+        resultBox.innerHTML = 'Faltan preguntas por responder: ' + answered + ' de ' + total + '.';
+        return;
+    }
+
+    const wrong = total - correct;
+    const percentage = total === 0 ? 0 : Math.round((correct * 10000) / total) / 100;
+
+    resultBox.classList.remove('d-none', 'alert-warning');
+    resultBox.classList.add('alert-success');
+    resultBox.innerHTML = 'Resultado final: <strong>' + correct + '</strong> aciertos, <strong>' + wrong + '</strong> fallos. Acierto: <strong>' + percentage.toLocaleString('es-ES') + '%</strong>.';
+}
+
+function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
     if (elemento.parentElement.classList.contains('answered')) return;
 
     let parent = elemento.parentElement;
     parent.classList.add('answered');
 
     let opciones = parent.children;
-    for(let i=0; i<opciones.length; i++) {
+
+    for (let i = 0; i < opciones.length; i++) {
         opciones[i].classList.add('processed');
         opciones[i].style.cursor = 'default';
+
+        if (opciones[i].dataset.isCorrect === 'true') {
+            opciones[i].classList.add('correct-answer');
+
+            const correctIcon = opciones[i].querySelector('.icon-state');
+            if (correctIcon) {
+                correctIcon.className = 'fa-solid fa-circle-check mt-1 me-3 text-success icon-state';
+            }
+        }
     }
 
     const iconState = elemento.querySelector('.icon-state');
 
     if (esCorrecta) {
         elemento.classList.add('correct-answer');
-        iconState.classList.replace('fa-circle', 'fa-circle-check');
-        iconState.classList.add('fa-solid', 'text-success');
+        if (iconState) {
+            iconState.className = 'fa-solid fa-circle-check mt-1 me-3 text-success icon-state';
+        }
     } else {
         elemento.classList.add('wrong-answer');
-        iconState.classList.replace('fa-circle', 'fa-circle-xmark');
-        iconState.classList.add('fa-solid', 'text-danger');
+        if (iconState) {
+            iconState.className = 'fa-solid fa-circle-xmark mt-1 me-3 text-danger icon-state';
+        }
     }
 
     let justif = elemento.querySelector('.justificacion');
-    if(justif) justif.classList.remove('d-none');
+    if (justif) justif.classList.remove('d-none');
 
+    if (guardarIntento) {
+        guardarRespuesta(elemento, esCorrecta);
+    }
+}
+
+function guardarRespuesta(elemento, esCorrecta) {
     const payload = {
         test_session_id: elemento.dataset.testSessionId,
         question_id: parseInt(elemento.dataset.questionId, 10),
