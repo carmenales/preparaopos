@@ -11,6 +11,7 @@
 *.db
 db/local/*
 !db/local/.gitkeep
+!db/migrations/*.sql
 
 # Archives
 *.zip
