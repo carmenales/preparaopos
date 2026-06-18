@@ -68,6 +68,9 @@ if (!$summary) {
     exit;
 }
 
+$wrongAnswers = (int)$summary['wrong_answers'];
+$failedReviewUrl = 'test.php?modo=falladas&session_id=' . urlencode($summary['test_session_id']);
+
 $attemptsSql = "
     SELECT
         ta.id,
@@ -106,6 +109,12 @@ mysqli_stmt_close($stmt);
     </h2>
 
     <div class="d-flex gap-2">
+        <?php if ($wrongAnswers > 0): ?>
+            <a href="<?php echo safe_text($failedReviewUrl); ?>" class="btn btn-outline-danger">
+                <i class="fa-solid fa-rotate-left"></i> Repasar falladas
+            </a>
+        <?php endif; ?>
+
         <a href="estadisticas.php" class="btn btn-outline-primary">
             <i class="fa-solid fa-arrow-left"></i> Volver
         </a>
