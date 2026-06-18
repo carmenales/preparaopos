@@ -41,6 +41,8 @@ function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions) 
     return '<span class="badge bg-warning text-dark">Parcial</span>';
 }
 
+$updatedQuestionSet = isset($_GET['updated_question_set']) ? (int)$_GET['updated_question_set'] : 0;
+
 $filterOrganismo = isset($_GET['organismo']) ? trim($_GET['organismo']) : '';
 $filterProceso = isset($_GET['proceso_selectivo']) ? trim($_GET['proceso_selectivo']) : '';
 $filterYear = isset($_GET['year']) ? trim($_GET['year']) : '';
@@ -144,6 +146,7 @@ $progressSql = "
     SELECT
         question_counts.categoria,
         question_counts.total_questions,
+        question_sets.id AS question_set_id,
         question_sets.organismo,
         question_sets.proceso_selectivo,
         question_sets.convocatoria_year,
@@ -210,6 +213,12 @@ foreach ($questionnaires as $row) {
         <i class="fa-solid fa-chart-line"></i> Estadísticas
     </a>
 </div>
+
+<?php if ($updatedQuestionSet === 1): ?>
+    <div class="alert alert-success shadow-sm border-0">
+        Metadatos del cuestionario actualizados correctamente.
+    </div>
+<?php endif; ?>
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">
@@ -357,9 +366,11 @@ foreach ($questionnaires as $row) {
                                 $sessionCount = (int)$row['session_count'];
                                 $maxAnswersInSession = (int)$row['max_answers_in_session'];
                                 $lastSessionId = $row['last_session_id'];
+                                $questionSetId = (int)$row['question_set_id'];
 
                                 $testUrl = 'test.php?categoria=' . urlencode($categoria);
                                 $detailUrl = $lastSessionId ? 'detalle_sesion.php?session_id=' . urlencode($lastSessionId) : null;
+                                $editUrl = $questionSetId > 0 ? 'editar_cuestionario.php?id=' . $questionSetId : null;
                             ?>
 
                             <tr>
@@ -408,6 +419,12 @@ foreach ($questionnaires as $row) {
                                         <?php if ($detailUrl): ?>
                                             <a href="<?php echo safe_text($detailUrl); ?>" class="btn btn-outline-secondary btn-sm">
                                                 <i class="fa-solid fa-eye"></i> Última sesión
+                                            </a>
+                                        <?php endif; ?>
+
+                                        <?php if ($editUrl): ?>
+                                            <a href="<?php echo safe_text($editUrl); ?>" class="btn btn-outline-dark btn-sm">
+                                                <i class="fa-solid fa-pen"></i> Editar
                                             </a>
                                         <?php endif; ?>
                                     </div>
