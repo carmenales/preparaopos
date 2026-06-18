@@ -29,14 +29,6 @@ function format_percentage($value) {
     return number_format((float)$value, 2, ',', '.') . '%';
 }
 
-function infer_questionnaire_type($categoria) {
-    if (stripos($categoria, 'CUESTIONARIO') === 0) {
-        return 'Examen oficial';
-    }
-
-    return 'Test temático';
-}
-
 function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions) {
     if ($sessionCount === 0) {
         return '<span class="badge bg-secondary">Pendiente</span>';
@@ -48,6 +40,59 @@ function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions) 
 
     return '<span class="badge bg-warning text-dark">Parcial</span>';
 }
+
+$filterOrganismo = isset($_GET['organismo']) ? trim($_GET['organismo']) : '';
+$filterProceso = isset($_GET['proceso_selectivo']) ? trim($_GET['proceso_selectivo']) : '';
+$filterYear = isset($_GET['year']) ? trim($_GET['year']) : '';
+$filterTipo = isset($_GET['tipo']) ? trim($_GET['tipo']) : '';
+
+$whereClauses = [];
+
+if ($filterOrganismo !== '') {
+    $whereClauses[] = "COALESCE(question_sets.organismo, '') = '" . mysqli_real_escape_string($link, $filterOrganismo) . "'";
+}
+
+if ($filterProceso !== '') {
+    $whereClauses[] = "COALESCE(question_sets.proceso_selectivo, '') = '" . mysqli_real_escape_string($link, $filterProceso) . "'";
+}
+
+if ($filterYear !== '') {
+    $whereClauses[] = "question_sets.convocatoria_year = " . (int)$filterYear;
+}
+
+if ($filterTipo !== '') {
+    $whereClauses[] = "COALESCE(question_sets.tipo, '') = '" . mysqli_real_escape_string($link, $filterTipo) . "'";
+}
+
+$metadataFilterSql = empty($whereClauses) ? '' : 'WHERE ' . implode(' AND ', $whereClauses);
+
+$organismos = fetch_all_rows($link, "
+    SELECT DISTINCT organismo
+    FROM question_sets
+    WHERE organismo IS NOT NULL AND organismo <> ''
+    ORDER BY organismo
+");
+
+$procesos = fetch_all_rows($link, "
+    SELECT DISTINCT proceso_selectivo
+    FROM question_sets
+    WHERE proceso_selectivo IS NOT NULL AND proceso_selectivo <> ''
+    ORDER BY proceso_selectivo
+");
+
+$years = fetch_all_rows($link, "
+    SELECT DISTINCT convocatoria_year
+    FROM question_sets
+    WHERE convocatoria_year IS NOT NULL
+    ORDER BY convocatoria_year DESC
+");
+
+$tipos = fetch_all_rows($link, "
+    SELECT DISTINCT tipo
+    FROM question_sets
+    WHERE tipo IS NOT NULL AND tipo <> ''
+    ORDER BY tipo
+");
 
 $progressSql = "
     WITH question_counts AS (
@@ -99,6 +144,12 @@ $progressSql = "
     SELECT
         question_counts.categoria,
         question_counts.total_questions,
+        question_sets.organismo,
+        question_sets.proceso_selectivo,
+        question_sets.convocatoria_year,
+        question_sets.turno,
+        question_sets.tipo,
+        question_sets.descripcion,
         COALESCE(category_progress.session_count, 0) AS session_count,
         COALESCE(category_progress.max_answers_in_session, 0) AS max_answers_in_session,
         category_progress.best_accuracy_percentage,
@@ -110,15 +161,21 @@ $progressSql = "
         last_sessions.wrong_answers AS last_wrong_answers,
         last_sessions.accuracy_percentage AS last_accuracy_percentage
     FROM question_counts
+    LEFT JOIN question_sets
+        ON question_sets.categoria = question_counts.categoria
     LEFT JOIN category_progress
         ON category_progress.categoria = question_counts.categoria
     LEFT JOIN last_sessions
         ON last_sessions.categoria = question_counts.categoria
+    $metadataFilterSql
     ORDER BY
         CASE
             WHEN COALESCE(category_progress.session_count, 0) = 0 THEN 0
             ELSE 1
         END ASC,
+        question_sets.organismo ASC,
+        question_sets.proceso_selectivo ASC,
+        question_sets.convocatoria_year DESC,
         question_counts.categoria ASC
 ";
 
@@ -195,26 +252,99 @@ foreach ($questionnaires as $row) {
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white">
         <h5 class="mb-0 fw-bold">
+            <i class="fa-solid fa-filter text-primary"></i> Filtros
+        </h5>
+    </div>
+
+    <div class="card-body">
+        <form method="get" action="progreso_cuestionarios.php" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="organismo" class="form-label">Organismo</label>
+                <select id="organismo" name="organismo" class="form-select">
+                    <option value="">Todos</option>
+                    <?php foreach ($organismos as $row): ?>
+                        <option value="<?php echo safe_text($row['organismo']); ?>" <?php echo $filterOrganismo === $row['organismo'] ? 'selected' : ''; ?>>
+                            <?php echo safe_text($row['organismo']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="proceso_selectivo" class="form-label">Proceso selectivo</label>
+                <select id="proceso_selectivo" name="proceso_selectivo" class="form-select">
+                    <option value="">Todos</option>
+                    <?php foreach ($procesos as $row): ?>
+                        <option value="<?php echo safe_text($row['proceso_selectivo']); ?>" <?php echo $filterProceso === $row['proceso_selectivo'] ? 'selected' : ''; ?>>
+                            <?php echo safe_text($row['proceso_selectivo']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="year" class="form-label">Año</label>
+                <select id="year" name="year" class="form-select">
+                    <option value="">Todos</option>
+                    <?php foreach ($years as $row): ?>
+                        <option value="<?php echo (int)$row['convocatoria_year']; ?>" <?php echo $filterYear === (string)$row['convocatoria_year'] ? 'selected' : ''; ?>>
+                            <?php echo (int)$row['convocatoria_year']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select id="tipo" name="tipo" class="form-select">
+                    <option value="">Todos</option>
+                    <?php foreach ($tipos as $row): ?>
+                        <option value="<?php echo safe_text($row['tipo']); ?>" <?php echo $filterTipo === $row['tipo'] ? 'selected' : ''; ?>>
+                            <?php echo safe_text($row['tipo']); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-filter"></i> Filtrar
+                </button>
+
+                <a href="progreso_cuestionarios.php" class="btn btn-outline-secondary">
+                    Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
             <i class="fa-solid fa-list-check text-primary"></i> Cuestionarios y tests disponibles
         </h5>
     </div>
 
     <div class="card-body">
         <?php if (empty($questionnaires)): ?>
-            <p class="text-secondary mb-0">No hay cuestionarios disponibles.</p>
+            <p class="text-secondary mb-0">No hay cuestionarios disponibles con los filtros seleccionados.</p>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th>Cuestionario / test</th>
+                            <th>Organismo</th>
+                            <th>Proceso selectivo</th>
+                            <th class="text-end">Año</th>
+                            <th>Turno</th>
                             <th>Tipo</th>
                             <th class="text-end">Preguntas</th>
                             <th class="text-end">Sesiones</th>
                             <th class="text-end">Estado</th>
                             <th class="text-end">Último resultado</th>
                             <th class="text-end">Mejor resultado</th>
-                            <th class="text-end">Última vez</th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -235,9 +365,16 @@ foreach ($questionnaires as $row) {
                             <tr>
                                 <td>
                                     <div class="fw-semibold"><?php echo safe_text($categoria); ?></div>
+                                    <?php if (!empty($row['descripcion'])): ?>
+                                        <div class="text-secondary small"><?php echo safe_text($row['descripcion']); ?></div>
+                                    <?php endif; ?>
                                 </td>
 
-                                <td><?php echo safe_text(infer_questionnaire_type($categoria)); ?></td>
+                                <td><?php echo safe_text($row['organismo'] ?: '-'); ?></td>
+                                <td><?php echo safe_text($row['proceso_selectivo'] ?: '-'); ?></td>
+                                <td class="text-end"><?php echo safe_text($row['convocatoria_year'] ?: '-'); ?></td>
+                                <td><?php echo safe_text($row['turno'] ?: '-'); ?></td>
+                                <td><?php echo safe_text($row['tipo'] ?: '-'); ?></td>
 
                                 <td class="text-end"><?php echo $totalQuestions; ?></td>
 
@@ -260,10 +397,6 @@ foreach ($questionnaires as $row) {
 
                                 <td class="text-end">
                                     <?php echo format_percentage($row['best_accuracy_percentage']); ?>
-                                </td>
-
-                                <td class="text-end">
-                                    <?php echo safe_text($row['last_started_at'] ?: '-'); ?>
                                 </td>
 
                                 <td class="text-end">
