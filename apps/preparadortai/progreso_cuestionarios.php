@@ -42,6 +42,7 @@ function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions) 
 }
 
 $updatedQuestionSet = isset($_GET['updated_question_set']) ? (int)$_GET['updated_question_set'] : 0;
+$syncedQuestionSets = isset($_GET['synced_question_sets']) ? (int)$_GET['synced_question_sets'] : null;
 
 $filterOrganismo = isset($_GET['organismo']) ? trim($_GET['organismo']) : '';
 $filterProceso = isset($_GET['proceso_selectivo']) ? trim($_GET['proceso_selectivo']) : '';
@@ -95,6 +96,19 @@ $tipos = fetch_all_rows($link, "
     WHERE tipo IS NOT NULL AND tipo <> ''
     ORDER BY tipo
 ");
+
+$missingMetadataRows = fetch_all_rows($link, "
+    SELECT COUNT(DISTINCT ptype.categoria) AS total
+    FROM ptype
+    LEFT JOIN question_sets
+        ON question_sets.categoria = ptype.categoria
+    WHERE
+        ptype.categoria IS NOT NULL
+        AND ptype.categoria <> ''
+        AND question_sets.id IS NULL
+");
+
+$missingMetadataCount = (int)($missingMetadataRows[0]['total'] ?? 0);
 
 $progressSql = "
     WITH question_counts AS (
@@ -209,14 +223,37 @@ foreach ($questionnaires as $row) {
         <i class="fa-solid fa-clipboard-list"></i> Progreso de cuestionarios
     </h2>
 
-    <a href="estadisticas.php" class="btn btn-outline-primary">
-        <i class="fa-solid fa-chart-line"></i> Estadísticas
-    </a>
+    <div class="d-flex gap-2">
+        <form method="post" action="logic/sync_question_sets.php">
+            <button type="submit" class="btn btn-outline-secondary" <?php echo $missingMetadataCount === 0 ? 'disabled' : ''; ?>>
+                <i class="fa-solid fa-rotate"></i> Sincronizar metadatos
+                <?php if ($missingMetadataCount > 0): ?>
+                    <span class="badge bg-danger ms-1"><?php echo $missingMetadataCount; ?></span>
+                <?php endif; ?>
+            </button>
+        </form>
+
+        <a href="estadisticas.php" class="btn btn-outline-primary">
+            <i class="fa-solid fa-chart-line"></i> Estadísticas
+        </a>
+    </div>
 </div>
 
 <?php if ($updatedQuestionSet === 1): ?>
     <div class="alert alert-success shadow-sm border-0">
         Metadatos del cuestionario actualizados correctamente.
+    </div>
+<?php endif; ?>
+
+<?php if ($syncedQuestionSets !== null): ?>
+    <div class="alert alert-success shadow-sm border-0">
+        Se han creado <?php echo $syncedQuestionSets; ?> registros de metadatos para cuestionarios nuevos.
+    </div>
+<?php endif; ?>
+
+<?php if ($missingMetadataCount > 0): ?>
+    <div class="alert alert-warning shadow-sm border-0">
+        Hay <?php echo $missingMetadataCount; ?> categorías con preguntas pero sin metadatos. Pulsa <strong>Sincronizar metadatos</strong>.
     </div>
 <?php endif; ?>
 
