@@ -77,7 +77,11 @@ $paginaActual = basename($_SERVER['PHP_SELF']);
             </a>
             
             <a href="agregar.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo ($paginaActual == 'agregar.php') ? 'active' : ''; ?>">
-                <i class="fa-solid fa-plus-circle"></i> Añadir Nueva
+                <i class="fa-solid fa-plus-circle"></i> Añadir Nueva Pregunta
+            </a>
+
+            <a href="nueva_categoria.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo ($paginaActual == 'nueva_categoria.php') ? 'active' : ''; ?>">
+                <i class="fa-solid fa-tag"></i> Añadir Nueva Categoría
             </a>
 
             <div class="sidebar-header mt-2">Sistema</div>

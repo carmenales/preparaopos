@@ -5,6 +5,8 @@ function safe_text($value) {
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
+$selectedCategory = trim((string)($_GET['categoria'] ?? ''));
+
 $categories = [];
 $sqlCategories = "
     SELECT categoria
@@ -16,12 +18,20 @@ $resCategories = mysqli_query($link, $sqlCategories);
 while ($row = mysqli_fetch_assoc($resCategories)) {
     $categories[] = $row['categoria'];
 }
+
+$selectedCategoryExists = in_array($selectedCategory, $categories, true);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-primary fw-bold"><i class="fa-solid fa-plus-circle"></i> Añadir Nueva Pregunta</h2>
     <a href="gestionar.php" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-arrow-left"></i> Volver</a>
 </div>
+
+<?php if (isset($_GET['created_category']) && $selectedCategory !== ''): ?>
+    <div class="alert alert-success">
+        Categoría creada correctamente. Ya puedes añadir preguntas a <strong><?php echo safe_text($selectedCategory); ?></strong>.
+    </div>
+<?php endif; ?>
 
 <div class="row justify-content-center">
     <div class="col-lg-10">
@@ -44,20 +54,27 @@ while ($row = mysqli_fetch_assoc($resCategories)) {
 
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label for="categoria_select" class="form-label">Categoría</label>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label for="categoria_select" class="form-label">Categoría</label>
+                                <a href="nueva_categoria.php" class="small text-decoration-none">
+                                    <i class="fa-solid fa-folder-plus"></i> Nueva
+                                </a>
+                            </div>
+
                             <select class="form-select" id="categoria_select" required>
                                 <option value="">Selecciona una categoría...</option>
                                 <?php foreach ($categories as $category): ?>
-                                    <option value="<?php echo safe_text($category); ?>">
+                                    <option value="<?php echo safe_text($category); ?>" <?php echo $selectedCategory === $category ? 'selected' : ''; ?>>
                                         <?php echo safe_text($category); ?>
                                     </option>
                                 <?php endforeach; ?>
-                                <option value="__new__">+ Nueva categoría manual</option>
+                                <option value="__new__" <?php echo ($selectedCategory !== '' && !$selectedCategoryExists) ? 'selected' : ''; ?>>+ Nueva categoría manual</option>
                             </select>
 
                             <input type="text"
-                                   class="form-control mt-2 d-none"
+                                   class="form-control mt-2 <?php echo ($selectedCategory !== '' && !$selectedCategoryExists) ? '' : 'd-none'; ?>"
                                    id="categoria_nueva"
+                                   value="<?php echo ($selectedCategory !== '' && !$selectedCategoryExists) ? safe_text($selectedCategory) : ''; ?>"
                                    placeholder="Nueva categoría">
 
                             <div class="form-text">

@@ -20,7 +20,8 @@ function has_category_info($row) {
         || !empty($row['proceso_selectivo'])
         || !empty($row['convocatoria_year'])
         || !empty($row['turno'])
-        || !empty($row['tipo']);
+        || !empty($row['tipo'])
+        || !empty($row['descripcion']);
 }
 ?>
 
@@ -35,6 +36,10 @@ function has_category_info($row) {
     <div class="d-flex gap-2">
         <a href="progreso_cuestionarios.php" class="btn btn-outline-primary rounded-pill shadow-sm">
             <i class="fa-solid fa-clipboard-list"></i> Progreso
+        </a>
+
+        <a href="nueva_categoria.php" class="btn btn-outline-success rounded-pill shadow-sm">
+            <i class="fa-solid fa-folder-plus"></i> Nueva Categoría
         </a>
 
         <a href="agregar.php" class="btn btn-success rounded-pill shadow-sm">
@@ -111,7 +116,7 @@ function has_category_info($row) {
                             <?php endif; ?>
 
                             <?php if (!empty($row['question_set_id'])): ?>
-                                <a href="editar_cuestionario.php?id=<?php echo (int)$row['question_set_id']; ?>" class="btn btn-sm btn-outline-dark py-0 px-2">
+                                <a href="editar_cuestionario.php?id=<?php echo (int)$row['question_set_id']; ?>" class="btn btn-sm btn-outline-dark py-0 px-2" title="Editar información de categoría">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
                             <?php endif; ?>
@@ -192,7 +197,7 @@ function has_category_info($row) {
                             <?php endif; ?>
 
                             <?php if (!empty($row['question_set_id'])): ?>
-                                <a href="editar_cuestionario.php?id=<?php echo (int)$row['question_set_id']; ?>" class="btn btn-sm btn-outline-dark py-0 px-2">
+                                <a href="editar_cuestionario.php?id=<?php echo (int)$row['question_set_id']; ?>" class="btn btn-sm btn-outline-dark py-0 px-2" title="Editar información de categoría">
                                     <i class="fa-solid fa-pen"></i>
                                 </a>
                             <?php endif; ?>
