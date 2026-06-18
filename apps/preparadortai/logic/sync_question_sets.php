@@ -44,15 +44,19 @@ $sql = "
         END AS tipo,
         NULL AS descripcion
     FROM (
-        SELECT DISTINCT ptype.categoria
+        SELECT DISTINCT categoria
         FROM ptype
-        LEFT JOIN question_sets
-            ON question_sets.categoria = ptype.categoria
-        WHERE
-            ptype.categoria IS NOT NULL
-            AND ptype.categoria <> ''
-            AND question_sets.id IS NULL
+        WHERE categoria IS NOT NULL AND categoria <> ''
+
+        UNION
+
+        SELECT DISTINCT categoria
+        FROM rtype
+        WHERE categoria IS NOT NULL AND categoria <> ''
     ) source_categories
+    LEFT JOIN question_sets
+        ON question_sets.categoria = source_categories.categoria
+    WHERE question_sets.id IS NULL
 ";
 
 if (!mysqli_query($link, $sql)) {
