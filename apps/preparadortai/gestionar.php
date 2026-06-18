@@ -23,6 +23,175 @@ function has_category_info($row) {
         || !empty($row['tipo'])
         || !empty($row['descripcion']);
 }
+
+function bind_dynamic_params($stmt, $types, $params) {
+    if ($types === '' || empty($params)) {
+        return;
+    }
+
+    $refs = [];
+    $refs[] = $types;
+
+    foreach ($params as $key => $value) {
+        $refs[] = &$params[$key];
+    }
+
+    call_user_func_array([$stmt, 'bind_param'], $refs);
+}
+
+function fetch_all_rows($link, $sql, $types = '', $params = []) {
+    $stmt = mysqli_prepare($link, $sql);
+
+    if (!$stmt) {
+        return [];
+    }
+
+    bind_dynamic_params($stmt, $types, $params);
+
+    mysqli_stmt_execute($stmt);
+    $res = mysqli_stmt_get_result($stmt);
+    $rows = [];
+
+    while ($row = mysqli_fetch_assoc($res)) {
+        $rows[] = $row;
+    }
+
+    mysqli_stmt_close($stmt);
+
+    return $rows;
+}
+
+$filtroCategoria = trim((string)($_GET['categoria'] ?? ''));
+$filtroBloque = trim((string)($_GET['bloque'] ?? ''));
+$filtroTema = trim((string)($_GET['tema'] ?? ''));
+$filtroTexto = trim((string)($_GET['texto'] ?? ''));
+
+$hayFiltros = $filtroCategoria !== ''
+    || $filtroBloque !== ''
+    || $filtroTema !== ''
+    || $filtroTexto !== '';
+
+$categories = [];
+$sqlCategories = "
+    SELECT categoria
+    FROM question_sets
+    WHERE categoria IS NOT NULL AND categoria <> ''
+
+    UNION
+
+    SELECT DISTINCT categoria
+    FROM ptype
+    WHERE categoria IS NOT NULL AND categoria <> ''
+
+    UNION
+
+    SELECT DISTINCT categoria
+    FROM rtype
+    WHERE categoria IS NOT NULL AND categoria <> ''
+
+    ORDER BY categoria
+";
+$resCategories = mysqli_query($link, $sqlCategories);
+
+while ($row = mysqli_fetch_assoc($resCategories)) {
+    $categories[] = $row['categoria'];
+}
+
+$ptypeWhere = [];
+$ptypeTypes = '';
+$ptypeParams = [];
+
+if ($filtroCategoria !== '') {
+    $ptypeWhere[] = 'p.categoria = ?';
+    $ptypeTypes .= 's';
+    $ptypeParams[] = $filtroCategoria;
+}
+
+if ($filtroBloque !== '') {
+    $ptypeWhere[] = 'p.bloque = ?';
+    $ptypeTypes .= 's';
+    $ptypeParams[] = $filtroBloque;
+}
+
+if ($filtroTema !== '') {
+    $ptypeWhere[] = 'p.tema = ?';
+    $ptypeTypes .= 's';
+    $ptypeParams[] = $filtroTema;
+}
+
+if ($filtroTexto !== '') {
+    $ptypeWhere[] = '(p.pregunta LIKE ? OR p.respuesta LIKE ? OR p.categoria LIKE ?)';
+    $ptypeTypes .= 'sss';
+    $search = '%' . $filtroTexto . '%';
+    $ptypeParams[] = $search;
+    $ptypeParams[] = $search;
+    $ptypeParams[] = $search;
+}
+
+$ptypeWhereSql = empty($ptypeWhere) ? '' : 'WHERE ' . implode(' AND ', $ptypeWhere);
+
+$sqlPtype = "
+    SELECT
+        p.*,
+        qs.id AS question_set_id,
+        qs.organismo,
+        qs.proceso_selectivo,
+        qs.convocatoria_year,
+        qs.turno,
+        qs.tipo,
+        qs.descripcion
+    FROM ptype p
+    LEFT JOIN question_sets qs
+        ON qs.categoria = p.categoria
+    $ptypeWhereSql
+    ORDER BY p.id DESC
+";
+
+$ptypeRows = fetch_all_rows($link, $sqlPtype, $ptypeTypes, $ptypeParams);
+
+$rtypeWhere = [];
+$rtypeTypes = '';
+$rtypeParams = [];
+
+if ($filtroBloque !== '' || $filtroTema !== '') {
+    $rtypeWhere[] = '1 = 0';
+}
+
+if ($filtroCategoria !== '') {
+    $rtypeWhere[] = 'r.categoria = ?';
+    $rtypeTypes .= 's';
+    $rtypeParams[] = $filtroCategoria;
+}
+
+if ($filtroTexto !== '') {
+    $rtypeWhere[] = '(r.pregunta LIKE ? OR r.respuesta LIKE ? OR r.categoria LIKE ?)';
+    $rtypeTypes .= 'sss';
+    $search = '%' . $filtroTexto . '%';
+    $rtypeParams[] = $search;
+    $rtypeParams[] = $search;
+    $rtypeParams[] = $search;
+}
+
+$rtypeWhereSql = empty($rtypeWhere) ? '' : 'WHERE ' . implode(' AND ', $rtypeWhere);
+
+$sqlRtype = "
+    SELECT
+        r.*,
+        qs.id AS question_set_id,
+        qs.organismo,
+        qs.proceso_selectivo,
+        qs.convocatoria_year,
+        qs.turno,
+        qs.tipo,
+        qs.descripcion
+    FROM rtype r
+    LEFT JOIN question_sets qs
+        ON qs.categoria = r.categoria
+    $rtypeWhereSql
+    ORDER BY r.id DESC
+";
+
+$rtypeRows = fetch_all_rows($link, $sqlRtype, $rtypeTypes, $rtypeParams);
 ?>
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
@@ -45,6 +214,63 @@ function has_category_info($row) {
         <a href="agregar.php" class="btn btn-success rounded-pill shadow-sm">
             <i class="fa-solid fa-plus"></i> Nueva Pregunta
         </a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+        <form method="get" action="gestionar.php">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="fa-solid fa-filter"></i> Filtros</h5>
+
+                <div class="d-flex gap-2">
+                    <a href="gestionar.php" class="btn btn-sm btn-outline-secondary">
+                        <i class="fa-solid fa-eraser"></i> Limpiar
+                    </a>
+
+                    <button type="submit" class="btn btn-sm btn-primary">
+                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar filtros
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <label for="categoria" class="form-label small fw-bold">Categoría</label>
+                    <select id="categoria" name="categoria" class="form-select form-select-sm">
+                        <option value="">Todas</option>
+                        <?php foreach ($categories as $category): ?>
+                            <option value="<?php echo safe_text($category); ?>" <?php echo $filtroCategoria === $category ? 'selected' : ''; ?>>
+                                <?php echo safe_text($category); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col-lg-2 col-md-3">
+                    <label for="bloque" class="form-label small fw-bold">Bloque</label>
+                    <input type="number" id="bloque" name="bloque" class="form-control form-control-sm" value="<?php echo safe_text($filtroBloque); ?>" placeholder="Ej. 2">
+                </div>
+
+                <div class="col-lg-2 col-md-3">
+                    <label for="tema" class="form-label small fw-bold">Tema</label>
+                    <input type="number" id="tema" name="tema" class="form-control form-control-sm" value="<?php echo safe_text($filtroTema); ?>" placeholder="Ej. 5">
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <label for="texto" class="form-label small fw-bold">Texto en pregunta/respuesta</label>
+                    <input type="text" id="texto" name="texto" class="form-control form-control-sm" value="<?php echo safe_text($filtroTexto); ?>" placeholder="Buscar texto...">
+                </div>
+            </div>
+        </form>
+
+        <?php if ($hayFiltros): ?>
+            <div class="alert alert-light border mt-3 mb-0 small">
+                Resultados filtrados:
+                <strong><?php echo count($ptypeRows); ?></strong> preguntas tipo test
+                y <strong><?php echo count($rtypeRows); ?></strong> preguntas de relacionar.
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 
@@ -71,26 +297,7 @@ function has_category_info($row) {
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $sql = "
-                    SELECT
-                        p.*,
-                        qs.id AS question_set_id,
-                        qs.organismo,
-                        qs.proceso_selectivo,
-                        qs.convocatoria_year,
-                        qs.turno,
-                        qs.tipo,
-                        qs.descripcion
-                    FROM ptype p
-                    LEFT JOIN question_sets qs
-                        ON qs.categoria = p.categoria
-                    ORDER BY p.id DESC
-                ";
-                $res = mysqli_query($link, $sql);
-
-                while($row = mysqli_fetch_assoc($res)){
-                ?>
+                <?php foreach($ptypeRows as $row){ ?>
                 <tr>
                     <td><span class="badge bg-secondary"><?php echo (int)$row['id']; ?></span></td>
 
@@ -152,26 +359,7 @@ function has_category_info($row) {
                 </tr>
             </thead>
             <tbody>
-                <?php
-                $sql = "
-                    SELECT
-                        r.*,
-                        qs.id AS question_set_id,
-                        qs.organismo,
-                        qs.proceso_selectivo,
-                        qs.convocatoria_year,
-                        qs.turno,
-                        qs.tipo,
-                        qs.descripcion
-                    FROM rtype r
-                    LEFT JOIN question_sets qs
-                        ON qs.categoria = r.categoria
-                    ORDER BY r.id DESC
-                ";
-                $res = mysqli_query($link, $sql);
-
-                while($row = mysqli_fetch_assoc($res)){
-                ?>
+                <?php foreach($rtypeRows as $row){ ?>
                 <tr>
                     <td><span class="badge bg-secondary"><?php echo (int)$row['id']; ?></span></td>
 
