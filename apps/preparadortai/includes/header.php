@@ -46,6 +46,10 @@ $paginaActual = basename($_SERVER['PHP_SELF']);
                 <i class="fa-solid fa-gauge-high"></i> Dashboard
             </a>
 
+            <a href="progreso_cuestionarios.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo ($paginaActual == 'progreso_cuestionarios.php') ? 'active' : ''; ?>">
+                <i class="fa-solid fa-clipboard-list"></i> Progreso cuestionarios
+            </a>
+
             <a href="estadisticas.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo ($paginaActual == 'estadisticas.php') ? 'active' : ''; ?>">
                 <i class="fa-solid fa-chart-line"></i> Estadísticas
             </a>
