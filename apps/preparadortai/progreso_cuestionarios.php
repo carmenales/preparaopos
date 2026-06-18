@@ -407,6 +407,7 @@ foreach ($questionnaires as $row) {
 
                                 $testUrl = 'test.php?categoria=' . urlencode($categoria);
                                 $detailUrl = $lastSessionId ? 'detalle_sesion.php?session_id=' . urlencode($lastSessionId) : null;
+                                $sessionsUrl = $questionSetId > 0 ? 'sesiones_cuestionario.php?id=' . $questionSetId : null;
                                 $editUrl = $questionSetId > 0 ? 'editar_cuestionario.php?id=' . $questionSetId : null;
                             ?>
 
@@ -456,6 +457,12 @@ foreach ($questionnaires as $row) {
                                         <?php if ($detailUrl): ?>
                                             <a href="<?php echo safe_text($detailUrl); ?>" class="btn btn-outline-secondary btn-sm">
                                                 <i class="fa-solid fa-eye"></i> Última sesión
+                                            </a>
+                                        <?php endif; ?>
+
+                                        <?php if ($sessionsUrl): ?>
+                                            <a href="<?php echo safe_text($sessionsUrl); ?>" class="btn btn-outline-secondary btn-sm">
+                                                <i class="fa-solid fa-clock-rotate-left"></i> Sesiones
                                             </a>
                                         <?php endif; ?>
 
