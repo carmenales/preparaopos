@@ -250,15 +250,6 @@ foreach ($questionnaires as $row) {
     </h2>
 
     <div class="d-flex gap-2">
-        <form method="post" action="logic/sync_question_sets.php">
-            <button type="submit" class="btn btn-outline-secondary" <?php echo $missingMetadataCount === 0 ? 'disabled' : ''; ?>>
-                <i class="fa-solid fa-rotate"></i> Sincronizar metadatos
-                <?php if ($missingMetadataCount > 0): ?>
-                    <span class="badge bg-danger ms-1"><?php echo $missingMetadataCount; ?></span>
-                <?php endif; ?>
-            </button>
-        </form>
-
         <a href="estadisticas.php" class="btn btn-outline-primary">
             <i class="fa-solid fa-chart-line"></i> Estadísticas
         </a>
@@ -271,17 +262,7 @@ foreach ($questionnaires as $row) {
     </div>
 <?php endif; ?>
 
-<?php if ($syncedQuestionSets !== null): ?>
-    <div class="alert alert-success shadow-sm border-0">
-        Se han creado <?php echo $syncedQuestionSets; ?> registros de metadatos para cuestionarios nuevos.
-    </div>
-<?php endif; ?>
 
-<?php if ($missingMetadataCount > 0): ?>
-    <div class="alert alert-warning shadow-sm border-0">
-        Hay <?php echo $missingMetadataCount; ?> categorías con preguntas pero sin metadatos. Pulsa <strong>Sincronizar metadatos</strong>.
-    </div>
-<?php endif; ?>
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">
@@ -437,7 +418,6 @@ foreach ($questionnaires as $row) {
                                 $testUrl = 'test.php?categoria=' . urlencode($categoria);
                                 $detailUrl = $lastSessionId ? 'detalle_sesion.php?session_id=' . urlencode($lastSessionId) : null;
                                 $sessionsUrl = $questionSetId > 0 ? 'sesiones_cuestionario.php?id=' . $questionSetId : null;
-                                $editUrl = $questionSetId > 0 ? 'editar_cuestionario.php?id=' . $questionSetId : null;
                             ?>
 
                             <tr>
@@ -497,12 +477,6 @@ foreach ($questionnaires as $row) {
                                         <?php if ($sessionsUrl): ?>
                                             <a href="<?php echo safe_text($sessionsUrl); ?>" class="btn btn-outline-secondary btn-sm">
                                                 <i class="fa-solid fa-clock-rotate-left"></i> Sesiones
-                                            </a>
-                                        <?php endif; ?>
-
-                                        <?php if ($editUrl): ?>
-                                            <a href="<?php echo safe_text($editUrl); ?>" class="btn btn-outline-dark btn-sm">
-                                                <i class="fa-solid fa-pen"></i> Editar
                                             </a>
                                         <?php endif; ?>
                                     </div>
