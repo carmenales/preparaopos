@@ -29,9 +29,25 @@ function format_percentage($value) {
     return number_format((float)$value, 2, ',', '.') . '%';
 }
 
-function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions) {
+function format_decimal($value) {
+    if ($value === null || $value === '') {
+        return '-';
+    }
+
+    return number_format((float)$value, 2, ',', '.');
+}
+
+function is_ayto_madrid_aux_tic_category($category) {
+    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+}
+
+function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions, $category = '') {
     if ($sessionCount === 0) {
         return '<span class="badge bg-secondary">Pendiente</span>';
+    }
+
+    if (is_ayto_madrid_aux_tic_category($category)) {
+        return '<span class="badge bg-success">Realizado</span>';
     }
 
     if ($totalQuestions > 0 && $maxAnswersInSession >= $totalQuestions) {
@@ -120,27 +136,34 @@ $progressSql = "
     ),
     session_stats AS (
         SELECT
-            categoria,
-            test_session_id,
-            MIN(created_at) AS started_at,
-            MAX(created_at) AS finished_at,
+            test_attempts.categoria,
+            test_attempts.test_session_id,
+            MIN(test_attempts.created_at) AS started_at,
+            MAX(test_attempts.created_at) AS finished_at,
             COUNT(*) AS answered_questions,
-            COALESCE(SUM(is_correct = 1), 0) AS correct_answers,
-            COALESCE(SUM(is_correct = 0), 0) AS wrong_answers,
+            COALESCE(SUM(test_attempts.is_correct = 1), 0) AS correct_answers,
+            COALESCE(SUM(test_attempts.is_correct = 0), 0) AS wrong_answers,
             CASE
                 WHEN COUNT(*) = 0 THEN 0
-                ELSE ROUND(SUM(is_correct = 1) * 100 / COUNT(*), 2)
-            END AS accuracy_percentage
+                ELSE ROUND(SUM(test_attempts.is_correct = 1) * 100 / COUNT(*), 2)
+            END AS accuracy_percentage,
+            CASE
+                WHEN COALESCE(MAX(question_counts.total_questions), 0) = 0 THEN NULL
+                ELSE ROUND(GREATEST(0, (COALESCE(SUM(test_attempts.is_correct = 1), 0) - (COALESCE(SUM(test_attempts.is_correct = 0), 0) / 3)) * 10 / MAX(question_counts.total_questions)), 2)
+            END AS official_score
         FROM test_attempts
-        WHERE test_session_id IS NOT NULL
-        GROUP BY categoria, test_session_id
+        LEFT JOIN question_counts
+            ON question_counts.categoria = test_attempts.categoria
+        WHERE test_attempts.test_session_id IS NOT NULL
+        GROUP BY test_attempts.categoria, test_attempts.test_session_id
     ),
     category_progress AS (
         SELECT
             categoria,
             COUNT(*) AS session_count,
             MAX(answered_questions) AS max_answers_in_session,
-            MAX(accuracy_percentage) AS best_accuracy_percentage
+            MAX(accuracy_percentage) AS best_accuracy_percentage,
+            MAX(official_score) AS best_official_score
         FROM session_stats
         GROUP BY categoria
     ),
@@ -170,13 +193,15 @@ $progressSql = "
         COALESCE(category_progress.session_count, 0) AS session_count,
         COALESCE(category_progress.max_answers_in_session, 0) AS max_answers_in_session,
         category_progress.best_accuracy_percentage,
+        category_progress.best_official_score,
         last_sessions.test_session_id AS last_session_id,
         last_sessions.started_at AS last_started_at,
         last_sessions.finished_at AS last_finished_at,
         last_sessions.answered_questions AS last_answered_questions,
         last_sessions.correct_answers AS last_correct_answers,
         last_sessions.wrong_answers AS last_wrong_answers,
-        last_sessions.accuracy_percentage AS last_accuracy_percentage
+        last_sessions.accuracy_percentage AS last_accuracy_percentage,
+        last_sessions.official_score AS last_official_score
     FROM question_counts
     LEFT JOIN question_sets
         ON question_sets.categoria = question_counts.categoria
@@ -207,10 +232,11 @@ foreach ($questionnaires as $row) {
     $sessionCount = (int)$row['session_count'];
     $maxAnswersInSession = (int)$row['max_answers_in_session'];
     $totalQuestions = (int)$row['total_questions'];
+    $isAytoOfficial = is_ayto_madrid_aux_tic_category($row['categoria']);
 
     if ($sessionCount === 0) {
         $pendingCount++;
-    } elseif ($totalQuestions > 0 && $maxAnswersInSession >= $totalQuestions) {
+    } elseif ($isAytoOfficial || ($totalQuestions > 0 && $maxAnswersInSession >= $totalQuestions)) {
         $completedCount++;
     } else {
         $partialCount++;
@@ -288,7 +314,7 @@ foreach ($questionnaires as $row) {
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Completos</div>
+                <div class="text-secondary small text-uppercase fw-bold">Completos / realizados</div>
                 <div class="display-6 fw-bold text-success"><?php echo $completedCount; ?></div>
             </div>
         </div>
@@ -399,10 +425,13 @@ foreach ($questionnaires as $row) {
                         <?php foreach ($questionnaires as $row): ?>
                             <?php
                                 $categoria = $row['categoria'];
+                                $isAytoOfficial = is_ayto_madrid_aux_tic_category($categoria);
                                 $totalQuestions = (int)$row['total_questions'];
                                 $sessionCount = (int)$row['session_count'];
                                 $maxAnswersInSession = (int)$row['max_answers_in_session'];
                                 $lastSessionId = $row['last_session_id'];
+                                $lastAnswered = (int)($row['last_answered_questions'] ?? 0);
+                                $lastBlank = $isAytoOfficial ? max(0, $totalQuestions - $lastAnswered) : null;
                                 $questionSetId = (int)$row['question_set_id'];
 
                                 $testUrl = 'test.php?categoria=' . urlencode($categoria);
@@ -430,12 +459,17 @@ foreach ($questionnaires as $row) {
                                 <td class="text-end"><?php echo $sessionCount; ?></td>
 
                                 <td class="text-end">
-                                    <?php echo get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions); ?>
+                                    <?php echo get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions, $categoria); ?>
                                 </td>
 
                                 <td class="text-end">
                                     <?php if ($row['last_accuracy_percentage'] === null): ?>
                                         <span class="text-secondary">-</span>
+                                    <?php elseif ($isAytoOfficial): ?>
+                                        <div class="fw-bold"><?php echo format_decimal($row['last_official_score']); ?> / 10</div>
+                                        <div class="text-secondary small">
+                                            Contestadas: <?php echo $lastAnswered; ?> · Blanco: <?php echo $lastBlank; ?> · Total: <?php echo $totalQuestions; ?>
+                                        </div>
                                     <?php else: ?>
                                         <div class="fw-bold"><?php echo format_percentage($row['last_accuracy_percentage']); ?></div>
                                         <div class="text-secondary small">
@@ -445,7 +479,7 @@ foreach ($questionnaires as $row) {
                                 </td>
 
                                 <td class="text-end">
-                                    <?php echo format_percentage($row['best_accuracy_percentage']); ?>
+                                    <?php echo $isAytoOfficial ? format_decimal($row['best_official_score']) . ' / 10' : format_percentage($row['best_accuracy_percentage']); ?>
                                 </td>
 
                                 <td class="text-end">

@@ -39,6 +39,18 @@ function format_percentage($value) {
     return number_format((float)$value, 2, ',', '.') . '%';
 }
 
+function format_decimal($value) {
+    if ($value === null || $value === '') {
+        return '-';
+    }
+
+    return number_format((float)$value, 2, ',', '.');
+}
+
+function is_ayto_madrid_aux_tic_category($category) {
+    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+}
+
 $globalStatsSql = "
     SELECT
       COUNT(*) AS total_answers,
@@ -83,21 +95,35 @@ $topicStatsSql = "
 ";
 
 $recentSessionsSql = "
+    WITH question_counts AS (
+        SELECT
+            categoria,
+            COUNT(*) AS total_questions
+        FROM ptype
+        GROUP BY categoria
+    )
     SELECT
-      test_session_id,
-      MIN(created_at) AS started_at,
-      MAX(created_at) AS finished_at,
-      MAX(categoria) AS categoria,
+      ta.test_session_id,
+      MIN(ta.created_at) AS started_at,
+      MAX(ta.created_at) AS finished_at,
+      MAX(ta.categoria) AS categoria,
+      COALESCE(MAX(question_counts.total_questions), 0) AS total_questions,
       COUNT(*) AS total_answers,
-      COALESCE(SUM(is_correct = 1), 0) AS correct_answers,
-      COALESCE(SUM(is_correct = 0), 0) AS wrong_answers,
+      COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
+      COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
       CASE
         WHEN COUNT(*) = 0 THEN 0
-        ELSE ROUND(SUM(is_correct = 1) * 100 / COUNT(*), 2)
-      END AS accuracy_percentage
-    FROM test_attempts
-    WHERE test_session_id IS NOT NULL
-    GROUP BY test_session_id
+        ELSE ROUND(SUM(ta.is_correct = 1) * 100 / COUNT(*), 2)
+      END AS accuracy_percentage,
+      CASE
+        WHEN COALESCE(MAX(question_counts.total_questions), 0) = 0 THEN NULL
+        ELSE ROUND(GREATEST(0, (COALESCE(SUM(ta.is_correct = 1), 0) - (COALESCE(SUM(ta.is_correct = 0), 0) / 3)) * 10 / MAX(question_counts.total_questions)), 2)
+      END AS official_score
+    FROM test_attempts ta
+    LEFT JOIN question_counts
+        ON question_counts.categoria = ta.categoria
+    WHERE ta.test_session_id IS NOT NULL
+    GROUP BY ta.test_session_id
     ORDER BY started_at DESC
     LIMIT 10
 ";
@@ -141,7 +167,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         </div>
     </div>
 
-
 <div class="col-md-3">
     <div class="card shadow-sm border-0 h-100">
         <div class="card-body">
@@ -168,8 +193,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         </div>
     </div>
 </div>
-
-
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
@@ -178,7 +201,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
             <i class="fa-solid fa-layer-group text-primary"></i> Rendimiento por categoría
         </h5>
     </div>
-
 
 <div class="card-body">
     <?php if (empty($categoryStats)): ?>
@@ -210,8 +232,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         </div>
     <?php endif; ?>
 </div>
-
-
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
@@ -220,7 +240,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
             <i class="fa-solid fa-book text-primary"></i> Rendimiento por bloque y tema
         </h5>
     </div>
-
 
 <div class="card-body">
     <?php if (empty($topicStats)): ?>
@@ -254,8 +273,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         </div>
     <?php endif; ?>
 </div>
-
-
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
@@ -265,11 +282,10 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         </h5>
     </div>
 
-
 <div class="card-body">
     <?php if (empty($recentSessions)): ?>
         <p class="text-secondary mb-0">
-            Todavía no hay sesiones registradas. Las respuestas antiguas pueden aparecer en las estadísticas globales, pero no tendrán sesión asociada.
+            Todavía no hay sesiones registradas.
         </p>
     <?php else: ?>
         <div class="table-responsive">
@@ -278,22 +294,32 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
                     <tr>
                         <th>Fecha inicio</th>
                         <th>Categoría</th>
-                        <th class="text-end">Total</th>
+                        <th class="text-end">Contestadas</th>
+                        <th class="text-end">En blanco</th>
                         <th class="text-end">Aciertos</th>
                         <th class="text-end">Fallos</th>
-                        <th class="text-end">% acierto</th>
+                        <th class="text-end">Resultado</th>
                         <th class="text-end">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($recentSessions as $row): ?>
+                        <?php
+                            $isOfficial = is_ayto_madrid_aux_tic_category($row['categoria']);
+                            $totalQuestions = (int)$row['total_questions'];
+                            $answered = (int)$row['total_answers'];
+                            $blank = $isOfficial ? max(0, $totalQuestions - $answered) : null;
+                        ?>
                         <tr>
                             <td><?php echo safe_text($row['started_at']); ?></td>
                             <td><?php echo safe_text($row['categoria'] ?: 'Sin categoría'); ?></td>
-                            <td class="text-end"><?php echo (int)$row['total_answers']; ?></td>
+                            <td class="text-end"><?php echo $answered; ?></td>
+                            <td class="text-end"><?php echo $isOfficial ? (int)$blank : '-'; ?></td>
                             <td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td>
                             <td class="text-end text-danger"><?php echo (int)$row['wrong_answers']; ?></td>
-                            <td class="text-end fw-bold"><?php echo format_percentage($row['accuracy_percentage']); ?></td>
+                            <td class="text-end fw-bold">
+                                <?php echo $isOfficial ? format_decimal($row['official_score']) . ' / 10' : format_percentage($row['accuracy_percentage']); ?>
+                            </td>
                             <td class="text-end">
                                 <a href="detalle_sesion.php?session_id=<?php echo urlencode($row['test_session_id']); ?>" class="btn btn-outline-primary btn-sm">
                                     <i class="fa-solid fa-eye"></i> Ver detalle
@@ -306,8 +332,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         </div>
     <?php endif; ?>
 </div>
-
-
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
@@ -321,7 +345,6 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         <?php if (empty($weakTopics)): ?>
             <p class="text-secondary mb-0">
                 Todavía no hay suficientes respuestas registradas para detectar temas a reforzar.
-                Responde algunas preguntas más para que esta sección sea útil.
             </p>
         <?php else: ?>
             <div class="table-responsive">
