@@ -88,7 +88,7 @@ $totalPreguntas = $totalTest + $totalRel;
     <div class="hero-dashboard shadow">
         <div class="row align-items-center">
             <div class="col-lg-8">
-                <h1 class="display-5 fw-bold mb-3">Preparador TAI <span class="text-info">v2.0</span></h1>
+                <h1 class="display-5 fw-bold mb-3">Preparador TAI <span class="text-info">v3.0</span></h1>
                 <p class="lead opacity-75 mb-0">Entrenamiento especializado para el Cuerpo de Técnicos Auxiliares de Informática de la Administración del Estado.</p>
             </div>
         </div>

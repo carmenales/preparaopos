@@ -10,11 +10,11 @@ $questionSetId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if ($questionSetId <= 0) {
     ?>
     <div class="alert alert-danger shadow-sm border-0">
-        Cuestionario no válido.
+        Categoría no válida.
     </div>
 
-    <a href="progreso_cuestionarios.php" class="btn btn-outline-primary">
-        <i class="fa-solid fa-arrow-left"></i> Volver a progreso
+    <a href="categorias.php" class="btn btn-outline-primary">
+        <i class="fa-solid fa-arrow-left"></i> Volver a categorías
     </a>
     <?php
     include 'includes/footer.php';
@@ -45,11 +45,11 @@ mysqli_stmt_close($stmt);
 if (!$questionSet) {
     ?>
     <div class="alert alert-warning shadow-sm border-0">
-        No se ha encontrado el cuestionario.
+        No se ha encontrado la categoría.
     </div>
 
-    <a href="progreso_cuestionarios.php" class="btn btn-outline-primary">
-        <i class="fa-solid fa-arrow-left"></i> Volver a progreso
+    <a href="categorias.php" class="btn btn-outline-primary">
+        <i class="fa-solid fa-arrow-left"></i> Volver a categorías
     </a>
     <?php
     include 'includes/footer.php';
@@ -59,10 +59,10 @@ if (!$questionSet) {
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-primary fw-bold">
-        <i class="fa-solid fa-pen-to-square"></i> Editar metadatos
+        <i class="fa-solid fa-pen-to-square"></i> Editar categoría
     </h2>
 
-    <a href="progreso_cuestionarios.php" class="btn btn-outline-primary">
+    <a href="categorias.php" class="btn btn-outline-primary">
         <i class="fa-solid fa-arrow-left"></i> Volver
     </a>
 </div>
@@ -70,23 +70,26 @@ if (!$questionSet) {
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white">
         <h5 class="mb-0 fw-bold">
-            <i class="fa-solid fa-clipboard-list text-primary"></i> Cuestionario
+            <i class="fa-solid fa-tags text-primary"></i> Datos de la categoría
         </h5>
     </div>
 
     <div class="card-body">
         <form method="post" action="logic/update_question_set.php">
             <input type="hidden" name="id" value="<?php echo (int)$questionSet['id']; ?>">
+            <input type="hidden" name="old_categoria" value="<?php echo safe_text($questionSet['categoria']); ?>">
 
             <div class="mb-3">
-                <label for="categoria" class="form-label">Categoría original</label>
+                <label for="categoria" class="form-label">Categoría</label>
                 <input type="text"
                        id="categoria"
+                       name="categoria"
                        class="form-control"
                        value="<?php echo safe_text($questionSet['categoria']); ?>"
-                       readonly>
+                       required>
                 <div class="form-text">
-                    Este valor enlaza con las preguntas existentes y no se edita desde aquí.
+                    Si cambias este valor, se actualizará también en las preguntas y sesiones asociadas.
+                    No se permite usar una categoría que ya exista.
                 </div>
             </div>
 
@@ -122,6 +125,7 @@ if (!$questionSet) {
                         <option value="GSI">
                         <option value="TIC Superior">
                         <option value="Técnico Gestión STI">
+                        <option value="Auxiliar TIC">
                     </datalist>
                 </div>
 
@@ -176,12 +180,12 @@ if (!$questionSet) {
                               name="descripcion"
                               class="form-control"
                               rows="3"
-                              placeholder="Notas internas sobre este cuestionario"><?php echo safe_text($questionSet['descripcion']); ?></textarea>
+                              placeholder="Notas internas sobre esta categoría"><?php echo safe_text($questionSet['descripcion']); ?></textarea>
                 </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="progreso_cuestionarios.php" class="btn btn-outline-secondary">
+                <a href="categorias.php" class="btn btn-outline-secondary">
                     Cancelar
                 </a>
 
