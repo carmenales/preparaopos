@@ -57,13 +57,42 @@ function get_status_badge($sessionCount, $maxAnswersInSession, $totalQuestions, 
     return '<span class="badge bg-warning text-dark">Parcial</span>';
 }
 
+function selected_attr($currentValue, $optionValue) {
+    return (string)$currentValue === (string)$optionValue ? 'selected' : '';
+}
+
+function active_view_class($currentView, $view) {
+    return $currentView === $view ? 'btn-primary' : 'btn-outline-primary';
+}
+
+function build_query_string($overrides = []) {
+    $params = $_GET;
+
+    foreach ($overrides as $key => $value) {
+        if ($value === null || $value === '') {
+            unset($params[$key]);
+        } else {
+            $params[$key] = $value;
+        }
+    }
+
+    return http_build_query($params);
+}
+
 $updatedQuestionSet = isset($_GET['updated_question_set']) ? (int)$_GET['updated_question_set'] : 0;
-$syncedQuestionSets = isset($_GET['synced_question_sets']) ? (int)$_GET['synced_question_sets'] : null;
 
 $filterOrganismo = isset($_GET['organismo']) ? trim($_GET['organismo']) : '';
 $filterProceso = isset($_GET['proceso_selectivo']) ? trim($_GET['proceso_selectivo']) : '';
 $filterYear = isset($_GET['year']) ? trim($_GET['year']) : '';
+$filterTurno = isset($_GET['turno']) ? trim($_GET['turno']) : '';
 $filterTipo = isset($_GET['tipo']) ? trim($_GET['tipo']) : '';
+$view = isset($_GET['view']) ? trim($_GET['view']) : 'done';
+
+$allowedViews = ['done', 'pending', 'all'];
+
+if (!in_array($view, $allowedViews, true)) {
+    $view = 'done';
+}
 
 $whereClauses = [];
 
@@ -77,6 +106,10 @@ if ($filterProceso !== '') {
 
 if ($filterYear !== '') {
     $whereClauses[] = "question_sets.convocatoria_year = " . (int)$filterYear;
+}
+
+if ($filterTurno !== '') {
+    $whereClauses[] = "COALESCE(question_sets.turno, '') = '" . mysqli_real_escape_string($link, $filterTurno) . "'";
 }
 
 if ($filterTipo !== '') {
@@ -106,6 +139,13 @@ $years = fetch_all_rows($link, "
     ORDER BY convocatoria_year DESC
 ");
 
+$turnos = fetch_all_rows($link, "
+    SELECT DISTINCT turno
+    FROM question_sets
+    WHERE turno IS NOT NULL AND turno <> ''
+    ORDER BY turno
+");
+
 $tipos = fetch_all_rows($link, "
     SELECT DISTINCT tipo
     FROM question_sets
@@ -113,25 +153,13 @@ $tipos = fetch_all_rows($link, "
     ORDER BY tipo
 ");
 
-$missingMetadataRows = fetch_all_rows($link, "
-    SELECT COUNT(DISTINCT ptype.categoria) AS total
-    FROM ptype
-    LEFT JOIN question_sets
-        ON question_sets.categoria = ptype.categoria
-    WHERE
-        ptype.categoria IS NOT NULL
-        AND ptype.categoria <> ''
-        AND question_sets.id IS NULL
-");
-
-$missingMetadataCount = (int)($missingMetadataRows[0]['total'] ?? 0);
-
 $progressSql = "
     WITH question_counts AS (
         SELECT
             categoria,
             COUNT(*) AS total_questions
         FROM ptype
+        WHERE categoria IS NOT NULL AND categoria <> ''
         GROUP BY categoria
     ),
     session_stats AS (
@@ -163,7 +191,8 @@ $progressSql = "
             COUNT(*) AS session_count,
             MAX(answered_questions) AS max_answers_in_session,
             MAX(accuracy_percentage) AS best_accuracy_percentage,
-            MAX(official_score) AS best_official_score
+            MAX(official_score) AS best_official_score,
+            MAX(started_at) AS last_started_at_for_order
         FROM session_stats
         GROUP BY categoria
     ),
@@ -194,6 +223,7 @@ $progressSql = "
         COALESCE(category_progress.max_answers_in_session, 0) AS max_answers_in_session,
         category_progress.best_accuracy_percentage,
         category_progress.best_official_score,
+        category_progress.last_started_at_for_order,
         last_sessions.test_session_id AS last_session_id,
         last_sessions.started_at AS last_started_at,
         last_sessions.finished_at AS last_finished_at,
@@ -212,9 +242,10 @@ $progressSql = "
     $metadataFilterSql
     ORDER BY
         CASE
-            WHEN COALESCE(category_progress.session_count, 0) = 0 THEN 0
-            ELSE 1
+            WHEN COALESCE(category_progress.session_count, 0) = 0 THEN 1
+            ELSE 0
         END ASC,
+        category_progress.last_started_at_for_order DESC,
         question_sets.organismo ASC,
         question_sets.proceso_selectivo ASC,
         question_sets.convocatoria_year DESC,
@@ -225,6 +256,7 @@ $questionnaires = fetch_all_rows($link, $progressSql);
 
 $totalQuestionnaires = count($questionnaires);
 $pendingCount = 0;
+$attemptedCount = 0;
 $partialCount = 0;
 $completedCount = 0;
 
@@ -236,20 +268,53 @@ foreach ($questionnaires as $row) {
 
     if ($sessionCount === 0) {
         $pendingCount++;
-    } elseif ($isAytoOfficial || ($totalQuestions > 0 && $maxAnswersInSession >= $totalQuestions)) {
-        $completedCount++;
     } else {
-        $partialCount++;
+        $attemptedCount++;
+
+        if ($isAytoOfficial || ($totalQuestions > 0 && $maxAnswersInSession >= $totalQuestions)) {
+            $completedCount++;
+        } else {
+            $partialCount++;
+        }
     }
+}
+
+$displayQuestionnaires = array_values(array_filter($questionnaires, function ($row) use ($view) {
+    $sessionCount = (int)$row['session_count'];
+
+    if ($view === 'done') {
+        return $sessionCount > 0;
+    }
+
+    if ($view === 'pending') {
+        return $sessionCount === 0;
+    }
+
+    return true;
+}));
+
+$viewTitle = 'Cuestionarios realizados';
+
+if ($view === 'pending') {
+    $viewTitle = 'Cuestionarios pendientes';
+} elseif ($view === 'all') {
+    $viewTitle = 'Todos los cuestionarios';
 }
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-primary fw-bold">
-        <i class="fa-solid fa-clipboard-list"></i> Progreso de cuestionarios
-    </h2>
+    <div>
+        <h2 class="text-primary fw-bold mb-1">
+            <i class="fa-solid fa-clipboard-list"></i> Progreso
+        </h2>
+        <p class="text-secondary small mb-0">Seguimiento por cuestionario y acceso rápido a sesiones, estadísticas e historial.</p>
+    </div>
 
     <div class="d-flex gap-2">
+        <a href="historial_sesiones.php" class="btn btn-outline-secondary">
+            <i class="fa-solid fa-clock-rotate-left"></i> Historial
+        </a>
+
         <a href="estadisticas.php" class="btn btn-outline-primary">
             <i class="fa-solid fa-chart-line"></i> Estadísticas
         </a>
@@ -261,8 +326,6 @@ foreach ($questionnaires as $row) {
         Metadatos del cuestionario actualizados correctamente.
     </div>
 <?php endif; ?>
-
-
 
 <div class="row g-4 mb-4">
     <div class="col-md-3">
@@ -277,8 +340,19 @@ foreach ($questionnaires as $row) {
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
+                <div class="text-secondary small text-uppercase fw-bold">Realizados</div>
+                <div class="display-6 fw-bold text-success"><?php echo $attemptedCount; ?></div>
+                <div class="text-secondary small">Con al menos una sesión</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
                 <div class="text-secondary small text-uppercase fw-bold">Pendientes</div>
                 <div class="display-6 fw-bold text-secondary"><?php echo $pendingCount; ?></div>
+                <div class="text-secondary small">Sin sesiones registradas</div>
             </div>
         </div>
     </div>
@@ -288,15 +362,33 @@ foreach ($questionnaires as $row) {
             <div class="card-body">
                 <div class="text-secondary small text-uppercase fw-bold">Parciales</div>
                 <div class="display-6 fw-bold text-warning"><?php echo $partialCount; ?></div>
+                <div class="text-secondary small">No oficiales sin completar</div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="col-md-3">
-        <div class="card shadow-sm border-0 h-100">
-            <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Completos / realizados</div>
-                <div class="display-6 fw-bold text-success"><?php echo $completedCount; ?></div>
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-body">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div>
+                <div class="text-secondary small text-uppercase fw-bold">Vista</div>
+                <div class="fw-semibold"><?php echo safe_text($viewTitle); ?></div>
+            </div>
+
+            <div class="btn-group" role="group" aria-label="Vista de progreso">
+                <a href="progreso_cuestionarios.php?<?php echo safe_text(build_query_string(['view' => 'done'])); ?>" class="btn <?php echo active_view_class($view, 'done'); ?>">
+                    Realizados
+                    <span class="badge bg-light text-dark ms-1"><?php echo $attemptedCount; ?></span>
+                </a>
+                <a href="progreso_cuestionarios.php?<?php echo safe_text(build_query_string(['view' => 'pending'])); ?>" class="btn <?php echo active_view_class($view, 'pending'); ?>">
+                    Pendientes
+                    <span class="badge bg-light text-dark ms-1"><?php echo $pendingCount; ?></span>
+                </a>
+                <a href="progreso_cuestionarios.php?<?php echo safe_text(build_query_string(['view' => 'all'])); ?>" class="btn <?php echo active_view_class($view, 'all'); ?>">
+                    Todos
+                    <span class="badge bg-light text-dark ms-1"><?php echo $totalQuestionnaires; ?></span>
+                </a>
             </div>
         </div>
     </div>
@@ -311,12 +403,14 @@ foreach ($questionnaires as $row) {
 
     <div class="card-body">
         <form method="get" action="progreso_cuestionarios.php" class="row g-3 align-items-end">
-            <div class="col-md-3">
+            <input type="hidden" name="view" value="<?php echo safe_text($view); ?>">
+
+            <div class="col-md-2">
                 <label for="organismo" class="form-label">Organismo</label>
                 <select id="organismo" name="organismo" class="form-select">
                     <option value="">Todos</option>
                     <?php foreach ($organismos as $row): ?>
-                        <option value="<?php echo safe_text($row['organismo']); ?>" <?php echo $filterOrganismo === $row['organismo'] ? 'selected' : ''; ?>>
+                        <option value="<?php echo safe_text($row['organismo']); ?>" <?php echo selected_attr($filterOrganismo, $row['organismo']); ?>>
                             <?php echo safe_text($row['organismo']); ?>
                         </option>
                     <?php endforeach; ?>
@@ -328,20 +422,32 @@ foreach ($questionnaires as $row) {
                 <select id="proceso_selectivo" name="proceso_selectivo" class="form-select">
                     <option value="">Todos</option>
                     <?php foreach ($procesos as $row): ?>
-                        <option value="<?php echo safe_text($row['proceso_selectivo']); ?>" <?php echo $filterProceso === $row['proceso_selectivo'] ? 'selected' : ''; ?>>
+                        <option value="<?php echo safe_text($row['proceso_selectivo']); ?>" <?php echo selected_attr($filterProceso, $row['proceso_selectivo']); ?>>
                             <?php echo safe_text($row['proceso_selectivo']); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
             </div>
 
-            <div class="col-md-2">
+            <div class="col-md-1">
                 <label for="year" class="form-label">Año</label>
                 <select id="year" name="year" class="form-select">
                     <option value="">Todos</option>
                     <?php foreach ($years as $row): ?>
-                        <option value="<?php echo (int)$row['convocatoria_year']; ?>" <?php echo $filterYear === (string)$row['convocatoria_year'] ? 'selected' : ''; ?>>
+                        <option value="<?php echo (int)$row['convocatoria_year']; ?>" <?php echo selected_attr($filterYear, $row['convocatoria_year']); ?>>
                             <?php echo (int)$row['convocatoria_year']; ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="turno" class="form-label">Turno</label>
+                <select id="turno" name="turno" class="form-select">
+                    <option value="">Todos</option>
+                    <?php foreach ($turnos as $row): ?>
+                        <option value="<?php echo safe_text($row['turno']); ?>" <?php echo selected_attr($filterTurno, $row['turno']); ?>>
+                            <?php echo safe_text($row['turno']); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -352,7 +458,7 @@ foreach ($questionnaires as $row) {
                 <select id="tipo" name="tipo" class="form-select">
                     <option value="">Todos</option>
                     <?php foreach ($tipos as $row): ?>
-                        <option value="<?php echo safe_text($row['tipo']); ?>" <?php echo $filterTipo === $row['tipo'] ? 'selected' : ''; ?>>
+                        <option value="<?php echo safe_text($row['tipo']); ?>" <?php echo selected_attr($filterTipo, $row['tipo']); ?>>
                             <?php echo safe_text($row['tipo']); ?>
                         </option>
                     <?php endforeach; ?>
@@ -364,7 +470,7 @@ foreach ($questionnaires as $row) {
                     <i class="fa-solid fa-filter"></i> Filtrar
                 </button>
 
-                <a href="progreso_cuestionarios.php" class="btn btn-outline-secondary">
+                <a href="progreso_cuestionarios.php?view=<?php echo safe_text($view); ?>" class="btn btn-outline-secondary">
                     Limpiar
                 </a>
             </div>
@@ -373,15 +479,16 @@ foreach ($questionnaires as $row) {
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0 fw-bold">
-            <i class="fa-solid fa-list-check text-primary"></i> Cuestionarios y tests disponibles
+            <i class="fa-solid fa-list-check text-primary"></i> <?php echo safe_text($viewTitle); ?>
         </h5>
+        <span class="badge bg-secondary"><?php echo count($displayQuestionnaires); ?></span>
     </div>
 
     <div class="card-body">
-        <?php if (empty($questionnaires)): ?>
-            <p class="text-secondary mb-0">No hay cuestionarios disponibles con los filtros seleccionados.</p>
+        <?php if (empty($displayQuestionnaires)): ?>
+            <p class="text-secondary mb-0">No hay cuestionarios en esta vista con los filtros seleccionados.</p>
         <?php else: ?>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -403,7 +510,7 @@ foreach ($questionnaires as $row) {
                     </thead>
 
                     <tbody>
-                        <?php foreach ($questionnaires as $row): ?>
+                        <?php foreach ($displayQuestionnaires as $row): ?>
                             <?php
                                 $categoria = $row['categoria'];
                                 $isAytoOfficial = is_ayto_madrid_aux_tic_category($categoria);
@@ -474,7 +581,7 @@ foreach ($questionnaires as $row) {
                                             </a>
                                         <?php endif; ?>
 
-                                        <?php if ($sessionsUrl): ?>
+                                        <?php if ($sessionsUrl && $sessionCount > 0): ?>
                                             <a href="<?php echo safe_text($sessionsUrl); ?>" class="btn btn-outline-secondary btn-sm">
                                                 <i class="fa-solid fa-clock-rotate-left"></i> Sesiones
                                             </a>
