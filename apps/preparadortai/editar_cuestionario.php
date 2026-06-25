@@ -13,8 +13,8 @@ if ($questionSetId <= 0) {
         Cuestionario no válido.
     </div>
 
-    <a href="progreso_cuestionarios.php" class="btn btn-outline-primary">
-        <i class="fa-solid fa-arrow-left"></i> Volver a progreso
+    <a href="categorias.php" class="btn btn-outline-primary">
+        <i class="fa-solid fa-arrow-left"></i> Volver a Categorías
     </a>
     <?php
     include 'includes/footer.php';
@@ -48,8 +48,8 @@ if (!$questionSet) {
         No se ha encontrado el cuestionario.
     </div>
 
-    <a href="progreso_cuestionarios.php" class="btn btn-outline-primary">
-        <i class="fa-solid fa-arrow-left"></i> Volver a progreso
+    <a href="categorias.php" class="btn btn-outline-primary">
+        <i class="fa-solid fa-arrow-left"></i> Volver a Categorías
     </a>
     <?php
     include 'includes/footer.php';
@@ -62,7 +62,7 @@ if (!$questionSet) {
         <i class="fa-solid fa-pen-to-square"></i> Editar metadatos
     </h2>
 
-    <a href="progreso_cuestionarios.php" class="btn btn-outline-primary">
+    <a href="categorias.php" class="btn btn-outline-primary">
         <i class="fa-solid fa-arrow-left"></i> Volver
     </a>
 </div>
@@ -181,7 +181,7 @@ if (!$questionSet) {
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
-                <a href="progreso_cuestionarios.php" class="btn btn-outline-secondary">
+                <a href="categorias.php" class="btn btn-outline-secondary">
                     Cancelar
                 </a>
 

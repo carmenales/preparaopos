@@ -19,7 +19,7 @@ function menu_active($pages, $paginaActual) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Preparador TAI v2.0</title>
+    <title>Preparador TAI v3.0</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -35,7 +35,7 @@ function menu_active($pages, $paginaActual) {
                 <i class="fa-solid fa-graduation-cap fa-xl text-white"></i>
                 <div>
                     <span class="brand-title">PREPARADOR TAI</span>
-                    <span class="brand-version">v2.0</span>
+                    <span class="brand-version">v3.0</span>
                 </div>
             </div>
         </div>
@@ -78,16 +78,16 @@ function menu_active($pages, $paginaActual) {
                 <i class="fa-solid fa-database"></i> Banco de preguntas
             </a>
 
+            <a href="agregar.php" class="list-group-item list-group-item-action list-group-item-dark ps-5 small <?php echo menu_active('agregar.php', $paginaActual); ?>">
+                <i class="fa-solid fa-plus-circle"></i> Nueva pregunta
+            </a>
+
             <a href="categorias.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo menu_active(['categorias.php', 'editar_cuestionario.php'], $paginaActual); ?>">
                 <i class="fa-solid fa-tags"></i> Categorías
             </a>
 
-            <a href="agregar.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo menu_active('agregar.php', $paginaActual); ?>">
-                <i class="fa-solid fa-plus-circle"></i> Nueva pregunta
-            </a>
-
-            <a href="nueva_categoria.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo menu_active('nueva_categoria.php', $paginaActual); ?>">
-                <i class="fa-solid fa-tag"></i> Nueva categoría
+            <a href="nueva_categoria.php" class="list-group-item list-group-item-action list-group-item-dark ps-5 small <?php echo menu_active('nueva_categoria.php', $paginaActual); ?>">
+                <i class="fa-solid fa-plus"></i> Nueva categoría
             </a>
 
             <div class="sidebar-header mt-2">Sistema</div>
