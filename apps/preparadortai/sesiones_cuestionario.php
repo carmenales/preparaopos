@@ -13,9 +13,36 @@ function format_percentage($value) {
     return number_format((float)$value, 2, ',', '.') . '%';
 }
 
-function get_status_badge($answeredQuestions, $totalQuestions) {
+function format_decimal($value) {
+    if ($value === null || $value === '') {
+        return '-';
+    }
+
+    return number_format((float)$value, 2, ',', '.');
+}
+
+function is_ayto_madrid_aux_tic_category($category) {
+    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+}
+
+function calculate_official_score($correctAnswers, $wrongAnswers, $totalQuestions) {
+    if ($totalQuestions <= 0) {
+        return null;
+    }
+
+    $netScore = $correctAnswers - ($wrongAnswers / 3);
+    $score = max(0, $netScore) * 10 / $totalQuestions;
+
+    return round($score, 2);
+}
+
+function get_status_badge($answeredQuestions, $totalQuestions, $usesOfficialScoring = false) {
     if ($answeredQuestions === 0) {
         return '<span class="badge bg-secondary">Sin respuestas</span>';
+    }
+
+    if ($usesOfficialScoring) {
+        return '<span class="badge bg-success">Realizado</span>';
     }
 
     if ($totalQuestions > 0 && $answeredQuestions >= $totalQuestions) {
@@ -76,6 +103,8 @@ if (!$questionSet) {
     exit;
 }
 
+$usesOfficialScoring = is_ayto_madrid_aux_tic_category($questionSet['categoria']);
+
 $totalQuestionsSql = "
     SELECT COUNT(*) AS total_questions
     FROM ptype
@@ -119,6 +148,15 @@ $sessionsResult = mysqli_stmt_get_result($stmt);
 $sessions = [];
 
 while ($row = mysqli_fetch_assoc($sessionsResult)) {
+    $answeredQuestions = (int)$row['answered_questions'];
+    $correctAnswers = (int)$row['correct_answers'];
+    $wrongAnswers = (int)$row['wrong_answers'];
+
+    $row['blank_questions'] = max(0, $totalQuestions - $answeredQuestions);
+    $row['official_score'] = $usesOfficialScoring
+        ? calculate_official_score($correctAnswers, $wrongAnswers, $totalQuestions)
+        : null;
+
     $sessions[] = $row;
 }
 
@@ -128,12 +166,15 @@ $totalSessions = count($sessions);
 $completeSessions = 0;
 $partialSessions = 0;
 $bestAccuracy = null;
+$bestOfficialScore = null;
 $lastSessionDate = null;
 
 foreach ($sessions as $session) {
     $answeredQuestions = (int)$session['answered_questions'];
 
-    if ($totalQuestions > 0 && $answeredQuestions >= $totalQuestions) {
+    if ($usesOfficialScoring) {
+        $completeSessions++;
+    } elseif ($totalQuestions > 0 && $answeredQuestions >= $totalQuestions) {
         $completeSessions++;
     } else {
         $partialSessions++;
@@ -141,6 +182,10 @@ foreach ($sessions as $session) {
 
     if ($bestAccuracy === null || (float)$session['accuracy_percentage'] > $bestAccuracy) {
         $bestAccuracy = (float)$session['accuracy_percentage'];
+    }
+
+    if ($usesOfficialScoring && ($bestOfficialScore === null || (float)$session['official_score'] > $bestOfficialScore)) {
+        $bestOfficialScore = (float)$session['official_score'];
     }
 
     if ($lastSessionDate === null) {
@@ -213,7 +258,7 @@ $testUrl = 'test.php?categoria=' . urlencode($questionSet['categoria']);
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Preguntas</div>
+                <div class="text-secondary small text-uppercase fw-bold"><?php echo $usesOfficialScoring ? 'Preguntas válidas' : 'Preguntas'; ?></div>
                 <div class="display-6 fw-bold text-dark"><?php echo $totalQuestions; ?></div>
             </div>
         </div>
@@ -231,11 +276,15 @@ $testUrl = 'test.php?categoria=' . urlencode($questionSet['categoria']);
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Completas / Parciales</div>
+                <div class="text-secondary small text-uppercase fw-bold"><?php echo $usesOfficialScoring ? 'Realizadas' : 'Completas / Parciales'; ?></div>
                 <div class="fs-4 fw-bold">
-                    <span class="text-success"><?php echo $completeSessions; ?></span>
-                    /
-                    <span class="text-warning"><?php echo $partialSessions; ?></span>
+                    <?php if ($usesOfficialScoring): ?>
+                        <span class="text-success"><?php echo $completeSessions; ?></span>
+                    <?php else: ?>
+                        <span class="text-success"><?php echo $completeSessions; ?></span>
+                        /
+                        <span class="text-warning"><?php echo $partialSessions; ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -244,8 +293,10 @@ $testUrl = 'test.php?categoria=' . urlencode($questionSet['categoria']);
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Mejor resultado</div>
-                <div class="display-6 fw-bold text-success"><?php echo format_percentage($bestAccuracy); ?></div>
+                <div class="text-secondary small text-uppercase fw-bold"><?php echo $usesOfficialScoring ? 'Mejor nota oficial' : 'Mejor resultado'; ?></div>
+                <div class="display-6 fw-bold text-success">
+                    <?php echo $usesOfficialScoring ? format_decimal($bestOfficialScore) : format_percentage($bestAccuracy); ?>
+                </div>
             </div>
         </div>
     </div>
@@ -268,11 +319,15 @@ $testUrl = 'test.php?categoria=' . urlencode($questionSet['categoria']);
                         <tr>
                             <th>Fecha inicio</th>
                             <th>Fecha fin</th>
-                            <th class="text-end">Respondidas</th>
+                            <th class="text-end">Estado</th>
+                            <th class="text-end">Contestadas</th>
+                            <?php if ($usesOfficialScoring): ?>
+                                <th class="text-end">En blanco</th>
+                                <th class="text-end">Total válidas</th>
+                            <?php endif; ?>
                             <th class="text-end">Aciertos</th>
                             <th class="text-end">Fallos</th>
-                            <th class="text-end">% acierto</th>
-                            <th class="text-end">Estado</th>
+                            <th class="text-end"><?php echo $usesOfficialScoring ? 'Nota oficial' : '% acierto'; ?></th>
                             <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
@@ -287,12 +342,20 @@ $testUrl = 'test.php?categoria=' . urlencode($questionSet['categoria']);
                             <tr>
                                 <td><?php echo safe_text($session['started_at']); ?></td>
                                 <td><?php echo safe_text($session['finished_at']); ?></td>
-                                <td class="text-end"><?php echo $answeredQuestions; ?> / <?php echo $totalQuestions; ?></td>
+                                <td class="text-end">
+                                    <?php echo get_status_badge($answeredQuestions, $totalQuestions, $usesOfficialScoring); ?>
+                                </td>
+                                <td class="text-end"><?php echo $answeredQuestions; ?></td>
+
+                                <?php if ($usesOfficialScoring): ?>
+                                    <td class="text-end"><?php echo (int)$session['blank_questions']; ?></td>
+                                    <td class="text-end"><?php echo $totalQuestions; ?></td>
+                                <?php endif; ?>
+
                                 <td class="text-end text-success"><?php echo (int)$session['correct_answers']; ?></td>
                                 <td class="text-end text-danger"><?php echo (int)$session['wrong_answers']; ?></td>
-                                <td class="text-end fw-bold"><?php echo format_percentage($session['accuracy_percentage']); ?></td>
-                                <td class="text-end">
-                                    <?php echo get_status_badge($answeredQuestions, $totalQuestions); ?>
+                                <td class="text-end fw-bold">
+                                    <?php echo $usesOfficialScoring ? format_decimal($session['official_score']) . ' / 10' : format_percentage($session['accuracy_percentage']); ?>
                                 </td>
                                 <td class="text-end">
                                     <a href="<?php echo safe_text($detailUrl); ?>" class="btn btn-outline-secondary btn-sm">
