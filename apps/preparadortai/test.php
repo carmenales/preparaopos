@@ -10,6 +10,17 @@ function safe_text($value) {
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
+function is_ayto_madrid_aux_tic_category($category) {
+    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+}
+
+function is_exam_category($category) {
+    $category = (string)$category;
+
+    return str_contains($category, 'CUESTIONARIO')
+        || is_ayto_madrid_aux_tic_category($category);
+}
+
 $cat = isset($_GET["categoria"]) ? trim($_GET["categoria"]) : '';
 $modo = isset($_GET['modo']) ? $_GET['modo'] : '';
 $failedMode = $modo === 'falladas';
@@ -81,7 +92,7 @@ if ($errorMessage === null && $failedMode) {
     }
 
     $whereSql = implode(" AND ", $whereClauses);
-    $examen = str_contains($cat, 'CUESTIONARIO');
+    $examen = is_exam_category($cat);
 
     if ($examen) {
         $sql = "select id, pregunta, respuesta, img_path, justif, categoria, bloque, tema from ptype where $whereSql ORDER BY id";
@@ -135,6 +146,13 @@ $emptyBackUrl = $failedMode && preg_match('/^[a-f0-9]{32}$/', $sessionId)
     : 'refuerzo.php';
 
 $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuerzo';
+
+$officialScoringEnabled = is_ayto_madrid_aux_tic_category($cat)
+    && !$failedMode
+    && $modo !== 'refuerzo'
+    && $filtroBloque === null
+    && $filtroTema === null
+    && !empty($preguntas);
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -184,8 +202,13 @@ $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuer
 
 <?php if ($correccionFinal && $errorMessage === null && !empty($preguntas)): ?>
     <div class="alert alert-secondary shadow-sm border-0">
-        Corrección al final activa. Marca una respuesta por pregunta y pulsa <strong>Corregir test</strong>.
+        Corrección al final activa. Puedes marcar una respuesta por pregunta o dejarla sin contestar.
+        <?php if ($officialScoringEnabled): ?>
+            Las preguntas sin respuesta contarán como <strong>blanco</strong> en la puntuación oficial estimada.
+        <?php endif; ?>
     </div>
+<?php elseif (!$correccionFinal && $officialScoringEnabled): ?>
+    <div id="resultado-parcial" class="alert alert-primary shadow-sm border-0 d-none"></div>
 <?php endif; ?>
 
 <?php if ($errorMessage === null && empty($preguntas)): ?>
@@ -215,7 +238,7 @@ $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuer
                 $pBloque = $p[6];
                 $pTema = $p[7];
 
-                $esExamenPregunta = str_contains((string)$pCategoria, 'CUESTIONARIO');
+                $esExamenPregunta = is_exam_category($pCategoria);
 
                 // Obtener opciones
                 $opciones = [];
@@ -308,7 +331,10 @@ $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuer
                     <div class="card-body d-flex justify-content-between align-items-center">
                         <div>
                             <div class="fw-bold">Corrección al final</div>
-                            <div class="text-secondary small">Se guardarán las respuestas seleccionadas cuando corrijas el test.</div>
+                            <div class="text-secondary small">
+                                Se guardarán las respuestas seleccionadas cuando corrijas el test.
+                                Las preguntas no seleccionadas quedarán como no contestadas.
+                            </div>
                         </div>
 
                         <button type="button" class="btn btn-primary" onclick="corregirTestCompleto()">
@@ -325,6 +351,8 @@ $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuer
 
 <script>
 const correccionFinal = <?php echo $correccionFinal ? 'true' : 'false'; ?>;
+const officialScoringEnabled = <?php echo $officialScoringEnabled ? 'true' : 'false'; ?>;
+const currentTestSessionId = '<?php echo safe_text($testSessionId); ?>';
 
 function verificarRespuesta(elemento, esCorrecta) {
     if (correccionFinal) {
@@ -372,13 +400,14 @@ function corregirTestCompleto() {
     questionCards.forEach(function(card) {
         const selected = card.querySelector('.selected-answer');
 
+        card.classList.remove('border', 'border-warning');
+
         if (!selected) {
-            card.classList.add('border', 'border-warning');
+            marcarPreguntaEnBlanco(card);
             return;
         }
 
         answered++;
-        card.classList.remove('border', 'border-warning');
 
         const isCorrect = selected.dataset.isCorrect === 'true';
 
@@ -389,21 +418,48 @@ function corregirTestCompleto() {
         corregirRespuestaInmediata(selected, isCorrect, true);
     });
 
+    const wrong = answered - correct;
+    const blank = total - answered;
     const resultBox = document.getElementById('resultado-final');
 
-    if (answered < total) {
-        resultBox.classList.remove('d-none', 'alert-primary', 'alert-success');
-        resultBox.classList.add('alert-warning');
-        resultBox.innerHTML = 'Faltan preguntas por responder: ' + answered + ' de ' + total + '.';
-        return;
+    resultBox.classList.remove('d-none', 'alert-warning', 'alert-primary');
+    resultBox.classList.add('alert-success');
+    resultBox.innerHTML = construirHtmlResultado(correct, wrong, blank, total, answered > 0);
+}
+
+function marcarPreguntaEnBlanco(card) {
+    const correctOption = card.querySelector('[data-is-correct="true"]');
+    const options = card.querySelectorAll('.opcion-test');
+
+    options.forEach(function(option) {
+        option.classList.add('processed');
+        option.style.cursor = 'default';
+    });
+
+    if (correctOption) {
+        correctOption.classList.add('correct-answer');
+
+        const correctIcon = correctOption.querySelector('.icon-state');
+
+        if (correctIcon) {
+            correctIcon.className = 'fa-solid fa-circle-check mt-1 me-3 text-success icon-state';
+        }
+
+        const justif = correctOption.querySelector('.justificacion');
+
+        if (justif) {
+            justif.classList.remove('d-none');
+        }
     }
 
-    const wrong = total - correct;
-    const percentage = total === 0 ? 0 : Math.round((correct * 10000) / total) / 100;
+    const cardBody = card.querySelector('.card-body');
 
-    resultBox.classList.remove('d-none', 'alert-warning');
-    resultBox.classList.add('alert-success');
-    resultBox.innerHTML = 'Resultado final: <strong>' + correct + '</strong> aciertos, <strong>' + wrong + '</strong> fallos. Acierto: <strong>' + percentage.toLocaleString('es-ES') + '%</strong>.';
+    if (cardBody && !card.querySelector('.blank-answer-alert')) {
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-secondary small mb-3 blank-answer-alert';
+        alert.innerHTML = '<i class="fa-regular fa-circle me-1"></i> No contestada. Cuenta como blanco y no penaliza.';
+        cardBody.insertBefore(alert, cardBody.firstChild);
+    }
 }
 
 function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
@@ -411,6 +467,8 @@ function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
 
     let parent = elemento.parentElement;
     parent.classList.add('answered');
+
+    elemento.classList.add('selected-answer');
 
     let opciones = parent.children;
 
@@ -452,6 +510,117 @@ function corregirRespuestaInmediata(elemento, esCorrecta, guardarIntento) {
     if (guardarIntento) {
         guardarRespuesta(elemento, esCorrecta);
     }
+
+    actualizarResultadoParcial();
+}
+
+function obtenerResultadoActual() {
+    const questionCards = document.querySelectorAll('[data-question-card="true"]');
+    let total = questionCards.length;
+    let answered = 0;
+    let correct = 0;
+
+    questionCards.forEach(function(card) {
+        const selected = card.querySelector('.selected-answer');
+
+        if (!selected) {
+            return;
+        }
+
+        answered++;
+
+        if (selected.dataset.isCorrect === 'true') {
+            correct++;
+        }
+    });
+
+    const wrong = answered - correct;
+    const blank = total - answered;
+
+    return {
+        total: total,
+        answered: answered,
+        correct: correct,
+        wrong: wrong,
+        blank: blank
+    };
+}
+
+function actualizarResultadoParcial() {
+    if (!officialScoringEnabled || correccionFinal) {
+        return;
+    }
+
+    const resultBox = document.getElementById('resultado-parcial');
+
+    if (!resultBox) {
+        return;
+    }
+
+    const result = obtenerResultadoActual();
+
+    if (result.answered === 0) {
+        resultBox.classList.add('d-none');
+        return;
+    }
+
+    resultBox.classList.remove('d-none');
+    resultBox.innerHTML = construirHtmlResultado(result.correct, result.wrong, result.blank, result.total, true, true);
+}
+
+function calcularNotaOficial(correct, wrong, total) {
+    if (total === 0) {
+        return 0;
+    }
+
+    const net = correct - (wrong / 3);
+    const score = Math.max(0, net) * 10 / total;
+
+    return Math.round(score * 100) / 100;
+}
+
+function construirHtmlResultado(correct, wrong, blank, total, hasSavedAnswers, partial = false) {
+    const answered = correct + wrong;
+    const percentage = total === 0 ? 0 : Math.round((correct * 10000) / total) / 100;
+
+    let html = '';
+
+    if (partial) {
+        html += '<div class="fw-bold mb-1">Puntuación estimada si dejas el resto en blanco</div>';
+    } else {
+        html += '<div class="fw-bold mb-1">Resultado final</div>';
+    }
+
+    html += '<div>';
+    html += '<strong>' + correct + '</strong> aciertos, ';
+    html += '<strong>' + wrong + '</strong> fallos, ';
+    html += '<strong>' + blank + '</strong> en blanco.';
+    html += '</div>';
+
+    if (officialScoringEnabled) {
+        const score = calcularNotaOficial(correct, wrong, total);
+        const statusClass = score >= 5 ? 'text-success' : 'text-danger';
+        const statusText = score >= 5 ? 'Superado' : 'No superado';
+
+        html += '<hr>';
+        html += '<div>Nota oficial estimada: <strong class="' + statusClass + '">' + score.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong> / 10 ';
+        html += '<span class="badge ' + (score >= 5 ? 'bg-success' : 'bg-danger') + ' ms-2">' + statusText + '</span></div>';
+        html += '<div class="small text-secondary mt-1">Regla: correcta +1, errónea -1/3, blanco 0. Total de preguntas válidas: ' + total + '.</div>';
+    } else {
+        html += '<div>Acierto sobre el total: <strong>' + percentage.toLocaleString('es-ES') + '%</strong>.</div>';
+    }
+
+    if (hasSavedAnswers) {
+        html += '<div class="mt-3">';
+        html += '<a class="btn btn-sm btn-outline-primary" href="detalle_sesion.php?session_id=' + encodeURIComponent(currentTestSessionId) + '">';
+        html += '<i class="fa-solid fa-list-check"></i> Ver detalle de sesión';
+        html += '</a>';
+        html += '</div>';
+    } else {
+        html += '<div class="alert alert-warning mt-3 mb-0">No se ha guardado ninguna respuesta porque has dejado todo en blanco.</div>';
+    }
+
+    return html;
 }
 
 function guardarRespuesta(elemento, esCorrecta) {
