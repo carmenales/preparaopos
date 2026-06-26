@@ -31,6 +31,28 @@ function safe_text($value) {
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
+function truncate_text($value, $maxLength = 160) {
+    $text = trim((string)($value ?? ''));
+
+    if ($text === '') {
+        return '-';
+    }
+
+    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+        if (mb_strlen($text, 'UTF-8') <= $maxLength) {
+            return $text;
+        }
+
+        return mb_substr($text, 0, $maxLength, 'UTF-8') . '...';
+    }
+
+    if (strlen($text) <= $maxLength) {
+        return $text;
+    }
+
+    return substr($text, 0, $maxLength) . '...';
+}
+
 function format_percentage($value) {
     if ($value === null || $value === '') {
         return '0,00%';
@@ -425,10 +447,38 @@ $topicStatsSql = "
     ORDER BY accuracy_percentage ASC, total_answers DESC
 ";
 
+$recurrentMistakesFilterSql = $sessionFilterSql . " AND ta.question_id IS NOT NULL";
+
+$recurrentMistakesSql = "
+    SELECT
+        ta.question_id,
+        MAX(ta.categoria) AS categoria,
+        MAX(ta.bloque) AS bloque,
+        MAX(ta.tema) AS tema,
+        MAX(ptype.pregunta) AS pregunta,
+        COUNT(*) AS total_attempts,
+        COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
+        COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
+        CASE
+            WHEN COUNT(*) = 0 THEN 0
+            ELSE ROUND(SUM(ta.is_correct = 0) * 100 / COUNT(*), 2)
+        END AS error_percentage,
+        MAX(ta.created_at) AS last_seen_at
+    FROM test_attempts ta
+    LEFT JOIN ptype
+        ON ptype.id = ta.question_id
+    $recurrentMistakesFilterSql
+    GROUP BY ta.question_id
+    HAVING wrong_answers >= 2
+    ORDER BY wrong_answers DESC, error_percentage DESC, total_attempts DESC
+    LIMIT 10
+";
+
 $globalStats = fetch_single_row($link, $globalStatsSql);
 $categoryStats = fetch_all_rows($link, $categoryStatsSql);
 $blockStats = fetch_all_rows($link, $blockStatsSql);
 $topicStats = fetch_all_rows($link, $topicStatsSql);
+$recurrentMistakes = fetch_all_rows($link, $recurrentMistakesSql);
 
 $weakTopics = [];
 
@@ -792,6 +842,69 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
                 </div>
             </div>
         </div>
+    </div>
+</div>
+
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0 fw-bold">
+            <i class="fa-solid fa-triangle-exclamation text-primary"></i> Preguntas con fallos recurrentes
+        </h5>
+    </div>
+
+    <div class="card-body">
+        <?php if (empty($recurrentMistakes)): ?>
+            <p class="text-secondary mb-0">
+                No hay preguntas con fallos recurrentes en el rango seleccionado.
+            </p>
+        <?php else: ?>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Pregunta</th>
+                            <th>Bloque / tema</th>
+                            <th class="text-end">Intentos</th>
+                            <th class="text-end">Fallos</th>
+                            <th class="text-end">% error</th>
+                            <th class="text-end">Última vez</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recurrentMistakes as $row): ?>
+                            <?php
+                                $repeatUrl = 'test.php?categoria=' . urlencode($row['categoria']);
+                            ?>
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold"><?php echo safe_text(truncate_text($row['pregunta'], 180)); ?></div>
+                                    <div class="text-secondary small"><?php echo safe_text($row['categoria'] ?: 'Sin categoría'); ?></div>
+                                </td>
+                                <td>
+                                    <div><?php echo safe_text($row['bloque'] ?: '-'); ?></div>
+                                    <div class="text-secondary small"><?php echo safe_text($row['tema'] ?: '-'); ?></div>
+                                </td>
+                                <td class="text-end"><?php echo (int)$row['total_attempts']; ?></td>
+                                <td class="text-end text-danger fw-bold"><?php echo (int)$row['wrong_answers']; ?></td>
+                                <td class="text-end fw-bold"><?php echo format_percentage($row['error_percentage']); ?></td>
+                                <td class="text-end"><?php echo safe_text($row['last_seen_at']); ?></td>
+                                <td class="text-end">
+                                    <a href="<?php echo safe_text($repeatUrl); ?>" class="btn btn-outline-secondary btn-sm">
+                                        <i class="fa-solid fa-rotate-right"></i> Repetir categoría
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <p class="text-secondary small mb-0">
+                Solo se muestran preguntas con al menos 2 fallos dentro del rango y filtros seleccionados.
+            </p>
+        <?php endif; ?>
     </div>
 </div>
 
