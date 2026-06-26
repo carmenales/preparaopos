@@ -47,6 +47,18 @@ function format_decimal($value) {
     return number_format((float)$value, 2, ',', '.');
 }
 
+
+function format_signed_decimal($value, $suffix = '') {
+    if ($value === null || $value === '') {
+        return '-';
+    }
+
+    $floatValue = (float)$value;
+    $prefix = $floatValue > 0 ? '+' : '';
+
+    return $prefix . number_format($floatValue, 2, ',', '.') . $suffix;
+}
+
 function selected_attr($currentValue, $optionValue) {
     return (string)$currentValue === (string)$optionValue ? 'selected' : '';
 }
@@ -75,6 +87,57 @@ function is_ayto_madrid_aux_tic_category($category) {
 
 function is_official_exam_row($row) {
     return ($row['tipo'] ?? '') === 'Examen oficial' || is_ayto_madrid_aux_tic_category($row['categoria'] ?? '');
+}
+
+
+function get_session_metric($row) {
+    if (is_ayto_madrid_aux_tic_category($row['categoria'] ?? '') && $row['official_score'] !== null && $row['official_score'] !== '') {
+        return [
+            'type' => 'official',
+            'value' => (float)$row['official_score'],
+            'display' => format_decimal($row['official_score']) . ' / 10',
+            'delta_suffix' => ' pts.'
+        ];
+    }
+
+    return [
+        'type' => 'percentage',
+        'value' => (float)($row['accuracy_percentage'] ?? 0),
+        'display' => format_percentage($row['accuracy_percentage'] ?? 0),
+        'delta_suffix' => ' pp.'
+    ];
+}
+
+function get_trend_badge($delta) {
+    if ($delta === null) {
+        return '<span class="badge bg-secondary">Sin comparación</span>';
+    }
+
+    if ($delta > 0.01) {
+        return '<span class="badge bg-success">Mejora</span>';
+    }
+
+    if ($delta < -0.01) {
+        return '<span class="badge bg-danger">Baja</span>';
+    }
+
+    return '<span class="badge bg-light text-dark">Igual</span>';
+}
+
+function get_priority_badge($row) {
+    $total = (int)($row['total_answers'] ?? 0);
+    $wrong = (int)($row['wrong_answers'] ?? 0);
+    $accuracy = (float)($row['accuracy_percentage'] ?? 0);
+
+    if (($total >= 10 && $accuracy < 60) || $wrong >= 10) {
+        return '<span class="badge bg-danger">Alta</span>';
+    }
+
+    if (($total >= 5 && $accuracy < 75) || $wrong >= 5) {
+        return '<span class="badge bg-warning text-dark">Media</span>';
+    }
+
+    return '<span class="badge bg-secondary">Baja</span>';
 }
 
 $filterOrganismo = isset($_GET['organismo']) ? trim($_GET['organismo']) : '';
@@ -305,8 +368,25 @@ $categoryStats = fetch_all_rows($link, $categoryStatsSql);
 $blockStats = fetch_all_rows($link, $blockStatsSql);
 $topicStats = fetch_all_rows($link, $topicStatsSql);
 
-$weakTopics = array_filter($topicStats, function ($row) {
-    return (int)$row['total_answers'] >= 3;
+$weakTopics = [];
+
+foreach ($topicStats as $row) {
+    if ((int)$row['total_answers'] < 3) {
+        continue;
+    }
+
+    $accuracy = (float)$row['accuracy_percentage'];
+    $wrong = (int)$row['wrong_answers'];
+    $row['priority_score'] = $wrong * max(0, 100 - $accuracy);
+    $weakTopics[] = $row;
+}
+
+usort($weakTopics, function ($a, $b) {
+    if ($a['priority_score'] === $b['priority_score']) {
+        return (int)$b['wrong_answers'] <=> (int)$a['wrong_answers'];
+    }
+
+    return $a['priority_score'] < $b['priority_score'] ? 1 : -1;
 });
 
 $weakTopics = array_slice($weakTopics, 0, 10);
@@ -334,6 +414,77 @@ $officialScores = array_values(array_filter(array_map(function ($row) {
 $lastOfficialScore = !empty($officialScores) ? $officialScores[0] : null;
 $bestOfficialScore = !empty($officialScores) ? max($officialScores) : null;
 $avgOfficialScore = !empty($officialScores) ? array_sum($officialScores) / count($officialScores) : null;
+
+$evolutionRows = [];
+$previousMetric = null;
+$chronologicalSessions = array_reverse($sessions);
+
+foreach ($chronologicalSessions as $session) {
+    $metric = get_session_metric($session);
+    $delta = null;
+
+    if ($previousMetric !== null && $previousMetric['type'] === $metric['type']) {
+        $delta = $metric['value'] - $previousMetric['value'];
+    }
+
+    $evolutionRows[] = [
+        'session' => $session,
+        'metric' => $metric,
+        'delta' => $delta,
+    ];
+
+    $previousMetric = $metric;
+}
+
+$officialExamRanking = [];
+
+foreach ($aytoOfficialSessions as $session) {
+    if ($session['official_score'] === null || $session['official_score'] === '') {
+        continue;
+    }
+
+    $category = $session['categoria'];
+
+    if (!isset($officialExamRanking[$category])) {
+        $officialExamRanking[$category] = [
+            'categoria' => $category,
+            'organismo' => $session['organismo'],
+            'proceso_selectivo' => $session['proceso_selectivo'],
+            'convocatoria_year' => $session['convocatoria_year'],
+            'turno' => $session['turno'],
+            'attempts' => 0,
+            'score_sum' => 0,
+            'best_score' => null,
+            'last_score' => $session['official_score'],
+            'last_started_at' => $session['started_at'],
+            'last_session_id' => $session['test_session_id'],
+        ];
+    }
+
+    $score = (float)$session['official_score'];
+    $officialExamRanking[$category]['attempts']++;
+    $officialExamRanking[$category]['score_sum'] += $score;
+
+    if ($officialExamRanking[$category]['best_score'] === null || $score > $officialExamRanking[$category]['best_score']) {
+        $officialExamRanking[$category]['best_score'] = $score;
+    }
+}
+
+$officialExamRanking = array_values($officialExamRanking);
+
+foreach ($officialExamRanking as &$examRow) {
+    $examRow['avg_score'] = $examRow['attempts'] > 0 ? $examRow['score_sum'] / $examRow['attempts'] : null;
+}
+
+unset($examRow);
+
+usort($officialExamRanking, function ($a, $b) {
+    if ($a['best_score'] === $b['best_score']) {
+        return strcmp((string)$b['last_started_at'], (string)$a['last_started_at']);
+    }
+
+    return $a['best_score'] < $b['best_score'] ? 1 : -1;
+});
 $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attempts'] : null;
 ?>
 
@@ -342,7 +493,7 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
         <h2 class="text-primary fw-bold mb-1">
             <i class="fa-solid fa-chart-line"></i> Estadísticas
         </h2>
-        <p class="text-secondary small mb-0">Análisis de rendimiento según las sesiones seleccionadas.</p>
+        <p class="text-secondary small mb-0">Análisis de rendimiento, evolución y áreas débiles.</p>
     </div>
 
     <div class="d-flex gap-2">
@@ -489,6 +640,64 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
     <div class="col-md-3"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-secondary small text-uppercase fw-bold">Media nota oficial</div><div class="display-6 fw-bold text-dark"><?php echo format_decimal($avgOfficialScore); ?></div><div class="text-secondary small">Sobre 10</div></div></div></div>
 </div>
 
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white"><h5 class="mb-0 fw-bold"><i class="fa-solid fa-arrow-trend-up text-primary"></i> Evolución de sesiones</h5></div>
+    <div class="card-body">
+        <?php if (empty($evolutionRows)): ?>
+            <p class="text-secondary mb-0">No hay sesiones con los filtros seleccionados.</p>
+        <?php else: ?>
+            <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Fecha</th><th>Categoría</th><th class="text-end">Resultado</th><th class="text-end">Variación</th><th class="text-end">Tendencia</th><th class="text-end">Acciones</th></tr></thead><tbody>
+                <?php foreach ($evolutionRows as $row): ?>
+                    <?php
+                        $session = $row['session'];
+                        $metric = $row['metric'];
+                        $delta = $row['delta'];
+                        $deltaClass = $delta === null ? 'text-secondary' : ($delta >= 0 ? 'text-success' : 'text-danger');
+                        $detailUrl = 'detalle_sesion.php?session_id=' . urlencode($session['test_session_id']);
+                    ?>
+                    <tr>
+                        <td><?php echo safe_text($session['started_at']); ?></td>
+                        <td><div class="fw-semibold"><?php echo safe_text($session['categoria'] ?: 'Sin categoría'); ?></div><?php if (!empty($session['tipo'])): ?><div class="text-secondary small"><?php echo safe_text($session['tipo']); ?></div><?php endif; ?></td>
+                        <td class="text-end fw-bold"><?php echo safe_text($metric['display']); ?></td>
+                        <td class="text-end fw-bold <?php echo $deltaClass; ?>"><?php echo $delta === null ? '-' : format_signed_decimal($delta, $metric['delta_suffix']); ?></td>
+                        <td class="text-end"><?php echo get_trend_badge($delta); ?></td>
+                        <td class="text-end"><a href="<?php echo safe_text($detailUrl); ?>" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-eye"></i> Detalle</a></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody></table></div>
+            <p class="text-secondary small mb-0">La variación solo se calcula cuando la sesión anterior usa la misma escala: nota oficial sobre 10 o porcentaje.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white"><h5 class="mb-0 fw-bold"><i class="fa-solid fa-file-signature text-primary"></i> Ranking de exámenes oficiales</h5></div>
+    <div class="card-body">
+        <?php if (empty($officialExamRanking)): ?>
+            <p class="text-secondary mb-0">Todavía no hay exámenes oficiales con nota calculable.</p>
+        <?php else: ?>
+            <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Examen</th><th class="text-end">Intentos</th><th class="text-end">Última nota</th><th class="text-end">Mejor nota</th><th class="text-end">Media</th><th class="text-end">Última fecha</th><th class="text-end">Acciones</th></tr></thead><tbody>
+                <?php foreach ($officialExamRanking as $row): ?>
+                    <?php
+                        $detailUrl = 'detalle_sesion.php?session_id=' . urlencode($row['last_session_id']);
+                        $repeatUrl = 'test.php?categoria=' . urlencode($row['categoria']);
+                    ?>
+                    <tr>
+                        <td><div class="fw-semibold"><?php echo safe_text($row['categoria']); ?></div><div class="text-secondary small"><?php echo safe_text(trim(($row['organismo'] ?? '') . ' · ' . ($row['proceso_selectivo'] ?? '') . ' · ' . ($row['convocatoria_year'] ?? '') . ' · ' . ($row['turno'] ?? ''), ' ·')); ?></div></td>
+                        <td class="text-end"><?php echo (int)$row['attempts']; ?></td>
+                        <td class="text-end fw-bold text-primary"><?php echo format_decimal($row['last_score']); ?> / 10</td>
+                        <td class="text-end fw-bold text-success"><?php echo format_decimal($row['best_score']); ?> / 10</td>
+                        <td class="text-end fw-bold"><?php echo format_decimal($row['avg_score']); ?> / 10</td>
+                        <td class="text-end"><?php echo safe_text($row['last_started_at']); ?></td>
+                        <td class="text-end"><div class="d-flex gap-2 justify-content-end"><a href="<?php echo safe_text($detailUrl); ?>" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-eye"></i> Detalle</a><a href="<?php echo safe_text($repeatUrl); ?>" class="btn btn-outline-secondary btn-sm"><i class="fa-solid fa-rotate-right"></i> Repetir</a></div></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody></table></div>
+        <?php endif; ?>
+    </div>
+</div>
+
 <div class="card shadow-sm border-0 mb-4">
     <div class="card-header bg-white"><h5 class="mb-0 fw-bold"><i class="fa-solid fa-layer-group text-primary"></i> Rendimiento por categoría</h5></div>
     <div class="card-body">
@@ -539,16 +748,17 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
 </div>
 
 <div class="card shadow-sm border-0 mb-4">
-    <div class="card-header bg-white"><h5 class="mb-0 fw-bold"><i class="fa-solid fa-bullseye text-primary"></i> Temas con menor porcentaje de acierto</h5></div>
+    <div class="card-header bg-white"><h5 class="mb-0 fw-bold"><i class="fa-solid fa-bullseye text-primary"></i> Diagnóstico de áreas débiles</h5></div>
     <div class="card-body">
         <?php if (empty($weakTopics)): ?>
             <p class="text-secondary mb-0">Todavía no hay suficientes respuestas registradas para detectar temas a reforzar.</p>
         <?php else: ?>
-            <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Bloque</th><th>Tema</th><th class="text-end">Total</th><th class="text-end">Aciertos</th><th class="text-end">Fallos</th><th class="text-end">% acierto</th></tr></thead><tbody>
+            <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Bloque</th><th>Tema</th><th class="text-end">Prioridad</th><th class="text-end">Total</th><th class="text-end">Aciertos</th><th class="text-end">Fallos</th><th class="text-end">% acierto</th><th class="text-end">Indicador</th></tr></thead><tbody>
                 <?php foreach ($weakTopics as $row): ?>
-                    <tr><td><?php echo safe_text($row['bloque'] ?? ''); ?></td><td><?php echo safe_text($row['tema'] ?? ''); ?></td><td class="text-end"><?php echo (int)$row['total_answers']; ?></td><td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td><td class="text-end text-danger fw-bold"><?php echo (int)$row['wrong_answers']; ?></td><td class="text-end fw-bold"><?php echo format_percentage($row['accuracy_percentage']); ?></td></tr>
+                    <tr><td><?php echo safe_text($row['bloque'] ?? ''); ?></td><td><?php echo safe_text($row['tema'] ?? ''); ?></td><td class="text-end"><?php echo get_priority_badge($row); ?></td><td class="text-end"><?php echo (int)$row['total_answers']; ?></td><td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td><td class="text-end text-danger fw-bold"><?php echo (int)$row['wrong_answers']; ?></td><td class="text-end fw-bold"><?php echo format_percentage($row['accuracy_percentage']); ?></td><td class="text-end text-secondary small"><?php echo format_decimal($row['priority_score']); ?></td></tr>
                 <?php endforeach; ?>
             </tbody></table></div>
+            <p class="text-secondary small mb-0">El indicador prioriza temas con más fallos y menor porcentaje de acierto. Se ignoran temas con menos de 3 respuestas.</p>
         <?php endif; ?>
     </div>
 </div>
