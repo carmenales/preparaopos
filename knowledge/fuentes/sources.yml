@@ -1,0 +1,21 @@
+# Fuentes comunes reutilizables por varios procesos selectivos.
+# Las fuentes específicas de una convocatoria concreta pueden guardarse dentro de cada proceso.
+
+sources:
+  - id: rd-311-2022-ens
+    title: "Real Decreto 311/2022, por el que se regula el Esquema Nacional de Seguridad"
+    type: "real-decreto"
+    official: true
+    url: "https://www.boe.es/buscar/act.php?id=BOE-A-2022-7191"
+    local_pdf: null
+    extracted_md: null
+    status: "pendiente_revision"
+    retrieved_at: null
+    tags:
+      - seguridad
+      - ens
+      - normativa
+      - administracion-publica
+    applies_to:
+      - "comunidad-madrid/administracion-digital"
+      - "comunidad-madrid/ciberseguridad"
