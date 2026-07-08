@@ -7,7 +7,7 @@ sources:
     type: "real-decreto"
     official: true
     url: "https://www.boe.es/buscar/act.php?id=BOE-A-2022-7191"
-    local_pdf: null
+    local_pdf: pdf/rd-311-2022-ens.pdf
     extracted_md: null
     status: "pendiente_revision"
     retrieved_at: null
@@ -16,6 +16,25 @@ sources:
       - ens
       - normativa
       - administracion-publica
+    applies_to:
+      - "comunidad-madrid/administracion-digital"
+      - "comunidad-madrid/ciberseguridad"
+
+  - id: eurlex-reglamento-ue-2024-1689-ia-act
+    title: "Reglamento (UE) 2024/1689, por el que se establecen normas armonizadas en materia de inteligencia artificial"
+    type: "reglamento-ue"
+    official: true
+    url: "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    local_pdf: pdf/reglamento-ue-2024-1689-ia-act.pdf
+    extracted_md: null
+    status: "pendiente_revision"
+    retrieved_at: null
+    tags:
+      - inteligencia-artificial
+      - ia-act
+      - normativa
+      - union-europea
+      - tecnologia
     applies_to:
       - "comunidad-madrid/administracion-digital"
       - "comunidad-madrid/ciberseguridad"
