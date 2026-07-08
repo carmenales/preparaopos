@@ -8,7 +8,7 @@ sources:
     official: true
     url: "https://www.boe.es/buscar/act.php?id=BOE-A-2022-7191"
     local_pdf: pdf/rd-311-2022-ens.pdf
-    extracted_md: null
+    extracted_md: extracted/rd-311-2022-ens.md
     status: "pendiente_revision"
     retrieved_at: null
     tags:
@@ -26,7 +26,7 @@ sources:
     official: true
     url: "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
     local_pdf: pdf/reglamento-ue-2024-1689-ia-act.pdf
-    extracted_md: null
+    extracted_md: extracted/reglamento-ue-2024-1689-ia-act.md
     status: "pendiente_revision"
     retrieved_at: null
     tags:
