@@ -5,12 +5,13 @@ type: "apunte"
 status: "borrador"
 processes:
   - "comunidad-madrid/administracion-digital"
-profiles: []
+official_topic: ""
 source_ids: []
 tags: []
 created_at: null
 last_reviewed: null
 ai_generated: true
+ai_sources: []
 needs_human_review: true
 ---
 
@@ -22,10 +23,10 @@ needs_human_review: true
 
 ## Desarrollo
 
-## Normativa o fuentes relacionadas
-
 ## Conceptos que suelen preguntarse
 
 ## Posibles preguntas tipo test
+
+## Normativa o fuentes relacionadas
 
 ## Dudas o puntos pendientes
