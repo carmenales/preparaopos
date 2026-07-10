@@ -17,6 +17,7 @@ created_at: "2026-07-09"
 last_reviewed: null
 ai_generated: true
 ai_sources:
+  - "chatgpt"
   - "perplexity"
   - "gemini"
   - "base-apunte"

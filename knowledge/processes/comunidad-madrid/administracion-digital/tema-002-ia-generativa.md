@@ -5,7 +5,6 @@ type: "apunte"
 status: "borrador"
 processes:
   - "comunidad-madrid/administracion-digital"
-  - "comunidad-madrid/agencia-ciberseguridad"
 official_topic: "Tema 2. IA Generativa"
 source_ids: []
 tags:
@@ -24,6 +23,7 @@ ai_sources:
   - "chatgpt"
   - "perplexity"
   - "gemini"
+  - "base-apunte"
 needs_human_review: true
 ---
 
