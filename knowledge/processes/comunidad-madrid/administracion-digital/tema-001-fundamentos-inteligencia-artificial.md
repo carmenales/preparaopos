@@ -155,63 +155,105 @@ Los modelos ML se degradan de forma silente aunque el código no falle (errores 
 ## Posibles preguntas tipo test
 
 **Pregunta 1.** Según el Art. 3.1 del Reglamento (UE) 2024/1689, ¿cuál de los siguientes elementos es un requisito clave para que un software sea considerado "sistema de IA"?
+
 A. Estar basado exclusivamente en redes neuronales.
+
 B. Funcionar siempre con total autonomía y sin supervisión.
+
 C. Inferir la manera de generar resultados (predicciones, recomendaciones, etc.) a partir de información de entrada.
+
 D. Ser un programa informático que opera bajo reglas estáticas "if-then" sin motor de inferencia.
+
 **Respuesta correcta: C.** (La norma exige capacidad de inferencia; descarta software determinista clásico sin ella).
 
 **Pregunta 2.** En un proyecto de la Administración se dispone de un histórico de miles de reclamaciones etiquetadas previamente por funcionarios en las categorías: "Tributos", "Medio Ambiente", "Sanidad". Se requiere automatizar el triaje. ¿Qué enfoque técnico es el adecuado?
+
 A. Clustering jerárquico.
+
 B. Clasificación mediante aprendizaje supervisado.
+
 C. Regresión mediante aprendizaje no supervisado.
+
 D. Reducción de dimensionalidad algorítmica.
+
 **Respuesta correcta: B.** (Existen etiquetas objetivo, se busca predecir clases discretas).
 
 **Pregunta 3.** Si utilizamos un algoritmo de Regresión Logística, estamos aplicando un modelo de:
+
 A. Aprendizaje no supervisado para agrupamiento.
+
 B. Aprendizaje supervisado para predicción continua.
+
 C. Aprendizaje supervisado para clasificación.
+
 D. Aprendizaje por refuerzo iterativo.
+
 **Respuesta correcta: C.** (Es un distractor clásico. Su salida pasa por una función sigmoide para predecir probabilidades entre clases).
 
 **Pregunta 4.** En el preprocesamiento de PLN, ¿cuál es la principal diferencia entre el *Stemming* y la Lematización?
+
 A. El Stemming utiliza un análisis morfológico detallado, la Lematización aplica recortes heurísticos.
+
 B. La Lematización busca reducir la palabra a un lema válido existente en el idioma, el Stemming aplica reglas de recorte rápido.
+
 C. Ambos conceptos son sinónimos absolutos y obligatorios en el uso de Transformers.
+
 D. El Stemming solo se aplica a IA Generativa y la Lematización a ML clásico.
-**Respuesta correcta: B.** **Pregunta 5.** En el ámbito de MLOps, ¿cómo se denomina el fenómeno por el cual la relación estadística subyacente entre las variables de entrada y la variable objetivo cambia con el tiempo, invalidando la eficacia del modelo?
+
+**Respuesta correcta: B.** 
+
+**Pregunta 5.** En el ámbito de MLOps, ¿cómo se denomina el fenómeno por el cual la relación estadística subyacente entre las variables de entrada y la variable objetivo cambia con el tiempo, invalidando la eficacia del modelo?
+
 A. Data Drift (Deriva de datos o Covariate Shift).
+
 B. Continuous Training (CT).
+
 C. Concept Drift (Deriva de concepto).
+
 D. Training-Serving Skew.
+
 **Respuesta correcta: C.** (El cambio en la relación o definición de lo que se predice es deriva de concepto).
 
 **Pregunta 6.** Un algoritmo capaz de extraer automáticamente representaciones o características complejas (Feature Learning) a partir de datos brutos como píxeles de una imagen, sin que un ingeniero defina manualmente qué variables importar, es característico de:
+
 A. Machine Learning tradicional.
+
 B. Aprendizaje por refuerzo estocástico.
+
 C. Deep Learning.
+
 D. Árboles de decisión clásicos.
+
 **Respuesta correcta: C.** (La extracción jerárquica automática de características diferencia al DL del ML clásico).
 
 **Pregunta 7.** El Art. 12 del Reglamento (UE) 2024/1689 exige de forma específica garantizar la trazabilidad durante el funcionamiento mediante la generación automática de un registro de eventos ("logs"). Esta obligación recae explícitamente sobre:
+
 A. Sistemas de IA de alto riesgo.
+
 B. Únicamente sobre Modelos Generativos (LLMs).
+
 C. Cualquier tipo de software de las Administraciones Públicas.
+
 D. Solo sistemas basados en Clustering no supervisado.
+
 **Respuesta correcta: A.**
 
 **Pregunta 8.** ¿Qué diferencia importante introduce el ciclo MLOps respecto al ciclo de vida del software tradicional (DevOps)?
 A. No necesita validación técnica, basta con el test de la API.
+
 B. Añade a la gestión de versiones de código la gestión de datos, características (features) y el artefacto del modelo.
+
 C. DevOps realiza Continuous Training (CT) y MLOps Continuous Integration (CI).
+
 D. El rendimiento en MLOps solo depende de bugs en el código, ignorando el entorno.
+
 **Respuesta correcta: B.**
 
 ## Normativa o fuentes relacionadas
 
 * **Fuentes de Convocatoria:** BOCM, 11 de junio de 2026, Resolución 352/2026.
-* **Fuentes Normativas:** * **Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo (Ley de Inteligencia Artificial)**. Fuente esencial para las definiciones jurídicas de IA (Art. 3) y obligaciones de registro (Art. 12).
+* **Fuentes Normativas:** 
+  * **Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo (Ley de Inteligencia Artificial)**. Fuente esencial para las definiciones jurídicas de IA (Art. 3) y obligaciones de registro (Art. 12).
   * Reglamento (UE) 2016/679 (RGPD) y RD 311/2022 (Esquema Nacional de Seguridad).
 * **Estándares Oficiales:**
   * **ISO/IEC 22989:2022 (UNE-EN ISO/IEC 22989:2023)**: *Information technology — Artificial intelligence concepts and terminology*. Norma de referencia para el vocabulario técnico puramente tecnológico (ML, DL, supervisado).

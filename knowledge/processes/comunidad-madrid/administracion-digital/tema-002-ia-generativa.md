@@ -178,59 +178,99 @@ La evaluación cualitativa es compleja y requiere métricas específicas:
 ## Posibles preguntas tipo test
 
 **Pregunta 1.** En la arquitectura de un modelo basado en Transformers, ¿qué mecanismo permite evaluar la importancia de cada token de una frase con respecto a todos los demás de forma simultánea y paralela?
+
 A. El truncamiento heurístico de raíces (Stemming).
+
 B. El mecanismo de Autoatención (Self-Attention).
+
 C. Las Redes Neuronales Recurrentes (RNN).
+
 D. El ajuste del parámetro de Perplejidad.
+
 **Respuesta correcta: B.** (La Autoatención pondera relaciones en toda la secuencia a la vez, resolviendo el cuello de botella secuencial de las RNN).
 
 **Pregunta 2.** Según el Art. 3 del Reglamento (UE) 2024/1689, un modelo de lenguaje masivo usado exclusivamente para investigación y creación de prototipos antes de su comercialización:
+
 A. Se considera modelo de IA de uso general con riesgo sistémico.
+
 B. Queda excluido de la definición legal de modelo de IA de uso general.
+
 C. Se considera automáticamente un sistema de IA de alto riesgo.
+
 D. Requiere marcado CE obligatorio inmediato.
+
 **Respuesta correcta: B.**
 
 **Pregunta 3.** La Agencia para la Administración Digital desea integrar un LLM corporativo que consulte en tiempo real normativas publicadas en el BOCM diario para responder a ciudadanos, controlando los permisos de acceso y sin coste de reentrenamiento. La técnica de arquitectura recomendada es:
+
 A. Continuous Pre-training diario desde cero.
+
 B. Fine-Tuning profundo con todos los PDFs.
+
 C. Generación Aumentada por Recuperación (RAG).
+
 D. Ajuste fino eficiente mediante LoRA (Low-Rank Adaptation).
+
 **Respuesta correcta: C.** (RAG consulta la información dinámica en tiempo de inferencia y permite aplicar control de acceso en la fase de búsqueda, sin reentrenar ni ajustar pesos neuronales).
 
 **Pregunta 4.** Si al invocar la API de inferencia de un LLM establecemos el parámetro "Temperatura" en un valor de 0 (cero), el comportamiento esperado del sistema será:
+
 A. Generar textos aleatorios con alta variabilidad léxica.
+
 B. Volverse altamente determinista (Greedy decoding), eligiendo siempre el token con mayor probabilidad.
+
 C. Devolver un error de saturación de GPU (Out of Memory).
+
 D. Reducir la ventana de contexto al mínimo permitido.
+
 **Respuesta correcta: B.**
 
 **Pregunta 5.** ¿Cuál es la diferencia principal entre las técnicas de Fine-Tuning y el uso de RAG en aplicaciones con LLMs?
+
 A. RAG modifica los pesos neuronales del modelo; el Fine-Tuning no.
+
 B. RAG inyecta conocimiento temporal en el contexto durante la inferencia; Fine-Tuning ajusta permanentemente los pesos matemáticos del modelo.
+
 C. RAG solo se utiliza en modelos Encoder-only; Fine-Tuning en Decoder-only.
+
 D. No existe diferencia, son términos sinónimos definidos por el estándar NIST.
+
 **Respuesta correcta: B.**
 
 **Pregunta 6.** Dentro del ciclo de vida LLMOps, si requerimos ajustar el estilo o la estructura de respuesta de un LLM muy pesado pero carecemos de grandes recursos computacionales, la técnica más adecuada para "congelar" el modelo base e inyectar pequeñas matrices entrenables es:
+
 A. RAG Vectorial.
+
 B. RLHF estocástico.
+
 C. LoRA (Low-Rank Adaptation).
+
 D. Tokenización BPE.
+
 **Respuesta correcta: C.** (LoRA es la técnica estándar de Parameter-Efficient Fine-Tuning (PEFT) para estos escenarios).
 
 **Pregunta 7.** ¿Qué afirmación sobre el límite de la "Ventana de Contexto" (Context Window) de un LLM es correcta?
+
 A. Se mide en Megabytes exactos de texto procesado.
+
 B. Equivale a una base de datos relacional ilimitada para el modelo.
+
 C. Determina la cantidad finita máxima de tokens (entrada + salida) que el modelo puede procesar en una inferencia.
+
 D. Aumentar la ventana de contexto elimina automáticamente las alucinaciones del modelo.
+
 **Respuesta correcta: C.**
 
 **Pregunta 8.** En el marco de LLMOps y evaluación de respuestas de lenguaje natural, ¿qué métrica suele utilizarse tradicionalmente para medir el grado de incertidumbre o duda de un modelo al predecir la siguiente palabra en una secuencia?
+
 A. Similitud del Coseno (Cosine Similarity).
+
 B. Perplejidad (Perplexity).
+
 C. Exactitud (Accuracy).
+
 D. Distancia Euclidiana.
+
 **Respuesta correcta: B.**
 
 ## Normativa o fuentes relacionadas
