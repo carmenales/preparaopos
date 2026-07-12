@@ -14,27 +14,72 @@ function format_percentage($value) {
 }
 
 function format_decimal($value, $decimals = 2) {
+    if ($value === null || $value === '') {
+        return '-';
+    }
+
     return number_format((float)$value, $decimals, ',', '.');
 }
 
-function is_ayto_madrid_aux_tic_category($category) {
-    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+function format_score_scale($value) {
+    if ($value === null || $value === '') {
+        return '10';
+    }
+
+    $floatValue = (float)$value;
+
+    if (abs($floatValue - round($floatValue)) < 0.0001) {
+        return (string)(int)round($floatValue);
+    }
+
+    return format_decimal($floatValue);
 }
 
-function calculate_official_score($correctAnswers, $wrongAnswers, $totalQuestions) {
-    if ($totalQuestions <= 0) {
+function is_official_exam_question_set($questionSet) {
+    return ($questionSet['tipo'] ?? '') === 'Examen oficial';
+}
+
+function has_official_scoring_rule($questionSet) {
+    return is_official_exam_question_set($questionSet)
+        && ($questionSet['scoring_rule_code'] ?? '') !== ''
+        && ($questionSet['correct_score'] ?? null) !== null
+        && ($questionSet['wrong_penalty'] ?? null) !== null;
+}
+
+function calculate_official_score_from_rule($correctAnswers, $wrongAnswers, $blankAnswers, $totalQuestions, $questionSet) {
+    if ($totalQuestions <= 0 || !has_official_scoring_rule($questionSet)) {
         return null;
     }
 
-    $penalty = $wrongAnswers / 3;
-    $netScore = $correctAnswers - $penalty;
-    $score = max(0, $netScore) * 10 / $totalQuestions;
+    $correctScore = (float)$questionSet['correct_score'];
+    $wrongPenalty = (float)$questionSet['wrong_penalty'];
+    $blankScore = (float)($questionSet['blank_score'] ?? 0);
+    $scoreScale = (float)($questionSet['score_scale'] ?? 10);
+    $minScoreZero = (int)($questionSet['min_score_zero'] ?? 1) === 1;
+
+    if ($correctScore <= 0 || $scoreScale <= 0) {
+        return null;
+    }
+
+    $rawDirectScore = ($correctAnswers * $correctScore)
+        - ($wrongAnswers * $wrongPenalty)
+        + ($blankAnswers * $blankScore);
+
+    $directScore = $minScoreZero ? max(0, $rawDirectScore) : $rawDirectScore;
+    $score = $directScore * $scoreScale / ($totalQuestions * $correctScore);
+    $passThreshold = $scoreScale / 2;
 
     return [
-        'penalty' => $penalty,
-        'net_score' => $netScore,
+        'raw_direct_score' => $rawDirectScore,
+        'direct_score' => round($directScore, 2),
         'score' => round($score, 2),
-        'passed' => round($score, 2) >= 5,
+        'score_scale' => $scoreScale,
+        'pass_threshold' => $passThreshold,
+        'passed' => round($score, 2) >= $passThreshold,
+        'correct_score' => $correctScore,
+        'wrong_penalty' => $wrongPenalty,
+        'blank_score' => $blankScore,
+        'min_score_zero' => $minScoreZero,
     ];
 }
 
@@ -100,23 +145,33 @@ $category = (string)($summary['categoria'] ?? '');
 $failedReviewUrl = 'test.php?modo=falladas&session_id=' . urlencode($summary['test_session_id']);
 
 $questionSet = null;
-$totalCategoryQuestions = null;
-$blankAnswers = null;
+$totalCategoryQuestions = 0;
+$blankAnswers = 0;
 $officialScore = null;
 $hasOfficialScoring = false;
 
 $questionSetSql = "
     SELECT
-        id,
-        categoria,
-        organismo,
-        proceso_selectivo,
-        convocatoria_year,
-        turno,
-        tipo,
-        descripcion
-    FROM question_sets
-    WHERE categoria = ?
+        qs.id,
+        qs.categoria,
+        qs.organismo,
+        qs.proceso_selectivo,
+        qs.convocatoria_year,
+        qs.turno,
+        qs.tipo,
+        qs.descripcion,
+        qs.scoring_rule_id,
+        sr.code AS scoring_rule_code,
+        sr.name AS scoring_rule_name,
+        sr.correct_score,
+        sr.wrong_penalty,
+        sr.blank_score,
+        sr.score_scale,
+        sr.min_score_zero
+    FROM question_sets qs
+    LEFT JOIN scoring_rules sr
+        ON sr.id = qs.scoring_rule_id
+    WHERE qs.categoria = ?
     LIMIT 1
 ";
 
@@ -141,11 +196,17 @@ $totalQuestionsRow = mysqli_fetch_assoc($totalQuestionsResult);
 mysqli_stmt_close($stmt);
 
 $totalCategoryQuestions = (int)($totalQuestionsRow['total_questions'] ?? 0);
+$hasOfficialScoring = $questionSet && has_official_scoring_rule($questionSet);
 
-if (is_ayto_madrid_aux_tic_category($category) && $totalCategoryQuestions > 0) {
-    $hasOfficialScoring = true;
+if ($hasOfficialScoring && $totalCategoryQuestions > 0) {
     $blankAnswers = max(0, $totalCategoryQuestions - $totalAnswers);
-    $officialScore = calculate_official_score($correctAnswers, $wrongAnswers, $totalCategoryQuestions);
+    $officialScore = calculate_official_score_from_rule(
+        $correctAnswers,
+        $wrongAnswers,
+        $blankAnswers,
+        $totalCategoryQuestions,
+        $questionSet
+    );
 }
 
 $attemptsSql = "
@@ -154,14 +215,15 @@ $attemptsSql = "
         ta.question_id,
         p.pregunta,
         ta.selected_answer,
-        ta.correct_answer,
+        COALESCE(ta.correct_answer, p.respuesta) AS correct_answer,
         ta.is_correct,
         ta.categoria,
         ta.bloque,
         ta.tema,
         ta.created_at
     FROM test_attempts ta
-    LEFT JOIN ptype p ON p.id = ta.question_id
+    LEFT JOIN ptype p
+        ON p.id = ta.question_id
     WHERE ta.test_session_id = ?
     ORDER BY ta.created_at ASC, ta.id ASC
 ";
@@ -275,10 +337,21 @@ if ($hasOfficialScoring) {
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Respuestas</div>
-                <div class="display-6 fw-bold text-dark">
-                    <?php echo (int)$summary['total_answers']; ?>
+                <div class="text-secondary small text-uppercase fw-bold">
+                    <?php echo $hasOfficialScoring ? 'Contestadas / total' : 'Respuestas'; ?>
                 </div>
+                <div class="display-6 fw-bold text-dark">
+                    <?php if ($hasOfficialScoring): ?>
+                        <?php echo (int)$totalAnswers; ?> / <?php echo (int)$totalCategoryQuestions; ?>
+                    <?php else: ?>
+                        <?php echo (int)$summary['total_answers']; ?>
+                    <?php endif; ?>
+                </div>
+                <?php if ($hasOfficialScoring): ?>
+                    <div class="text-secondary small">
+                        Blancas: <?php echo (int)$blankAnswers; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -292,6 +365,11 @@ if ($hasOfficialScoring) {
                     /
                     <span class="text-danger"><?php echo (int)$summary['wrong_answers']; ?></span>
                 </div>
+                <?php if ($hasOfficialScoring): ?>
+                    <div class="text-secondary small">
+                        No contestadas: <?php echo (int)$blankAnswers; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -299,10 +377,15 @@ if ($hasOfficialScoring) {
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">% acierto</div>
+                <div class="text-secondary small text-uppercase fw-bold">% acierto contestadas</div>
                 <div class="display-6 fw-bold text-primary">
                     <?php echo format_percentage($summary['accuracy_percentage']); ?>
                 </div>
+                <?php if ($hasOfficialScoring && $officialScore !== null): ?>
+                    <div class="text-secondary small">
+                        Nota oficial: <?php echo format_decimal($officialScore['score']); ?> / <?php echo format_score_scale($officialScore['score_scale']); ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -323,36 +406,42 @@ if ($hasOfficialScoring) {
                     <div class="display-6 fw-bold <?php echo $officialScore['passed'] ? 'text-success' : 'text-danger'; ?>">
                         <?php echo format_decimal($officialScore['score']); ?>
                     </div>
-                    <div class="text-secondary small">sobre 10</div>
+                    <div class="text-secondary small">
+                        sobre <?php echo format_score_scale($officialScore['score_scale']); ?>
+                    </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="text-secondary small text-uppercase fw-bold">Mínimo de la parte</div>
+                    <div class="text-secondary small text-uppercase fw-bold">Referencia</div>
                     <?php if ($officialScore['passed']): ?>
-                        <span class="badge bg-success fs-6">Superado</span>
+                        <span class="badge bg-success fs-6">≥ <?php echo format_decimal($officialScore['pass_threshold']); ?></span>
                     <?php else: ?>
-                        <span class="badge bg-danger fs-6">No superado</span>
+                        <span class="badge bg-danger fs-6">&lt; <?php echo format_decimal($officialScore['pass_threshold']); ?></span>
                     <?php endif; ?>
-                    <div class="text-secondary small mt-1">Mínimo: 5,00</div>
+                    <div class="text-secondary small mt-1">
+                        Mitad de la escala configurada
+                    </div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="text-secondary small text-uppercase fw-bold">Válidas / blanco</div>
+                    <div class="text-secondary small text-uppercase fw-bold">Total / blanco</div>
                     <div class="fs-4 fw-bold text-dark">
                         <?php echo (int)$totalCategoryQuestions; ?>
                         /
                         <?php echo (int)$blankAnswers; ?>
                     </div>
-                    <div class="text-secondary small">preguntas válidas / no contestadas</div>
+                    <div class="text-secondary small">preguntas del examen / no contestadas</div>
                 </div>
 
                 <div class="col-md-3">
-                    <div class="text-secondary small text-uppercase fw-bold">Puntuación neta</div>
+                    <div class="text-secondary small text-uppercase fw-bold">Puntuación directa</div>
                     <div class="fs-4 fw-bold text-dark">
-                        <?php echo format_decimal($officialScore['net_score']); ?>
+                        <?php echo format_decimal($officialScore['direct_score']); ?>
                     </div>
                     <div class="text-secondary small">
-                        <?php echo (int)$correctAnswers; ?> - <?php echo (int)$wrongAnswers; ?>/3
+                        <?php echo (int)$correctAnswers; ?> aciertos,
+                        <?php echo (int)$wrongAnswers; ?> fallos,
+                        <?php echo (int)$blankAnswers; ?> blancas
                     </div>
                 </div>
             </div>
@@ -360,14 +449,19 @@ if ($hasOfficialScoring) {
             <hr>
 
             <div class="small text-secondary">
-                Regla aplicada para Ayuntamiento de Madrid Auxiliar TIC:
-                correcta +1, errónea -1/3, no contestada 0.
-                La nota se calcula sobre las preguntas válidas de esta categoría y se redondea a dos decimales.
+                <strong>Regla aplicada:</strong>
+                <?php echo safe_text($questionSet['scoring_rule_name'] ?: $questionSet['scoring_rule_code']); ?>.
+                Correcta +<?php echo format_decimal($officialScore['correct_score'], 4); ?>,
+                errónea -<?php echo format_decimal($officialScore['wrong_penalty'], 4); ?>,
+                no contestada <?php echo format_decimal($officialScore['blank_score'], 4); ?>.
+                <?php if ($officialScore['min_score_zero']): ?>
+                    La puntuación directa negativa se recorta a 0.
+                <?php endif; ?>
             </div>
 
             <?php if ($totalAnswers < $totalCategoryQuestions): ?>
                 <div class="alert alert-warning mt-3 mb-0">
-                    Esta sesión tiene menos respuestas registradas que preguntas válidas en la categoría.
+                    Esta sesión tiene menos respuestas registradas que preguntas del examen.
                     Se han considerado <strong><?php echo (int)$blankAnswers; ?></strong> preguntas como no contestadas.
                 </div>
             <?php endif; ?>
@@ -388,13 +482,20 @@ if ($hasOfficialScoring) {
         <p class="mb-1"><strong>ID sesión:</strong> <code><?php echo safe_text($summary['test_session_id']); ?></code></p>
 
         <?php if ($questionSet): ?>
-            <p class="mb-0">
+            <p class="mb-1">
                 <strong>Tipo:</strong>
                 <?php echo safe_text($questionSet['tipo'] ?: '-'); ?>
                 <?php if (!empty($questionSet['organismo']) || !empty($questionSet['proceso_selectivo'])): ?>
                     · <?php echo safe_text(trim(($questionSet['organismo'] ?? '') . ' ' . ($questionSet['proceso_selectivo'] ?? ''))); ?>
                 <?php endif; ?>
             </p>
+
+            <?php if ($hasOfficialScoring): ?>
+                <p class="mb-0">
+                    <strong>Regla de puntuación:</strong>
+                    <?php echo safe_text($questionSet['scoring_rule_name'] ?: $questionSet['scoring_rule_code']); ?>
+                </p>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 </div>
@@ -409,8 +510,8 @@ if ($hasOfficialScoring) {
     <div class="card-body">
         <?php if ($hasOfficialScoring): ?>
             <div class="alert alert-light border small">
-                En los exámenes oficiales, el detalle muestra también las preguntas no contestadas para que puedas ver la respuesta correcta.
-                Las no contestadas cuentan como blanco y no penalizan.
+                En los exámenes oficiales con regla de puntuación configurada, el detalle muestra también las preguntas no contestadas.
+                Las no contestadas cuentan como blanco según la regla asociada al cuestionario.
             </div>
         <?php endif; ?>
 
@@ -445,11 +546,12 @@ if ($hasOfficialScoring) {
 
                                 <td>
                                     <?php if ($row['selected_answer'] === null || $row['selected_answer'] === ''): ?>
-                                        <span class="text-secondary">—</span>
+                                        <span class="text-secondary">No contestada</span>
                                     <?php else: ?>
                                         <?php echo safe_text($row['selected_answer']); ?>
                                     <?php endif; ?>
                                 </td>
+
                                 <td><?php echo safe_text($row['correct_answer']); ?></td>
 
                                 <td class="text-center">

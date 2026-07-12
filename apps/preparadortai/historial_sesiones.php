@@ -37,12 +37,29 @@ function format_decimal($value) {
     return number_format((float)$value, 2, ',', '.');
 }
 
-function is_ayto_madrid_aux_tic_category($category) {
-    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+function format_score_scale($value) {
+    if ($value === null || $value === '') {
+        return '10';
+    }
+
+    $floatValue = (float)$value;
+
+    if (abs($floatValue - round($floatValue)) < 0.0001) {
+        return (string)(int)round($floatValue);
+    }
+
+    return format_decimal($floatValue);
 }
 
 function is_official_exam_row($row) {
-    return ($row['tipo'] ?? '') === 'Examen oficial' || is_ayto_madrid_aux_tic_category($row['categoria'] ?? '');
+    return ($row['tipo'] ?? '') === 'Examen oficial';
+}
+
+function has_official_scoring($row) {
+    return is_official_exam_row($row)
+        && ($row['scoring_rule_code'] ?? '') !== ''
+        && ($row['official_score'] ?? null) !== null
+        && ($row['official_score'] ?? '') !== '';
 }
 
 function selected_attr($currentValue, $optionValue) {
@@ -139,36 +156,91 @@ $sessionsSql = "
         FROM ptype
         WHERE categoria IS NOT NULL AND categoria <> ''
         GROUP BY categoria
+    ),
+    session_stats AS (
+        SELECT
+            ta.test_session_id,
+            MIN(ta.created_at) AS started_at,
+            MAX(ta.created_at) AS finished_at,
+            MAX(ta.categoria) AS categoria,
+            MAX(qs.organismo) AS organismo,
+            MAX(qs.proceso_selectivo) AS proceso_selectivo,
+            MAX(qs.convocatoria_year) AS convocatoria_year,
+            MAX(qs.turno) AS turno,
+            MAX(qs.tipo) AS tipo,
+            MAX(sr.code) AS scoring_rule_code,
+            MAX(sr.name) AS scoring_rule_name,
+            MAX(sr.correct_score) AS correct_score,
+            MAX(sr.wrong_penalty) AS wrong_penalty,
+            COALESCE(MAX(sr.blank_score), 0) AS blank_score,
+            COALESCE(MAX(sr.score_scale), 10) AS score_scale,
+            COALESCE(MAX(sr.min_score_zero), 1) AS min_score_zero,
+            COALESCE(MAX(question_counts.total_questions), 0) AS total_questions,
+            COUNT(*) AS total_answers,
+            COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
+            COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
+            CASE
+                WHEN COUNT(*) = 0 THEN 0
+                ELSE ROUND(SUM(ta.is_correct = 1) * 100 / COUNT(*), 2)
+            END AS accuracy_percentage
+        FROM test_attempts ta
+        LEFT JOIN question_sets qs
+            ON qs.categoria = ta.categoria
+        LEFT JOIN scoring_rules sr
+            ON sr.id = qs.scoring_rule_id
+        LEFT JOIN question_counts
+            ON question_counts.categoria = ta.categoria
+        $whereSql
+        GROUP BY ta.test_session_id
+    ),
+    session_scores AS (
+        SELECT
+            session_stats.*,
+            GREATEST(0, total_questions - total_answers) AS blank_answers,
+            (
+                (correct_answers * COALESCE(correct_score, 0))
+                - (wrong_answers * COALESCE(wrong_penalty, 0))
+                + (GREATEST(0, total_questions - total_answers) * COALESCE(blank_score, 0))
+            ) AS raw_official_direct_score
+        FROM session_stats
     )
     SELECT
-        ta.test_session_id,
-        MIN(ta.created_at) AS started_at,
-        MAX(ta.created_at) AS finished_at,
-        MAX(ta.categoria) AS categoria,
-        MAX(qs.organismo) AS organismo,
-        MAX(qs.proceso_selectivo) AS proceso_selectivo,
-        MAX(qs.convocatoria_year) AS convocatoria_year,
-        MAX(qs.turno) AS turno,
-        MAX(qs.tipo) AS tipo,
-        COALESCE(MAX(question_counts.total_questions), 0) AS total_questions,
-        COUNT(*) AS total_answers,
-        COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
-        COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
+        session_scores.*,
         CASE
-            WHEN COUNT(*) = 0 THEN 0
-            ELSE ROUND(SUM(ta.is_correct = 1) * 100 / COUNT(*), 2)
-        END AS accuracy_percentage,
+            WHEN tipo = 'Examen oficial'
+                AND scoring_rule_code IS NOT NULL
+                AND correct_score IS NOT NULL
+                AND wrong_penalty IS NOT NULL
+                AND total_questions > 0
+                AND correct_score > 0
+            THEN ROUND(
+                CASE
+                    WHEN min_score_zero = 1 THEN GREATEST(0, raw_official_direct_score)
+                    ELSE raw_official_direct_score
+                END,
+                2
+            )
+            ELSE NULL
+        END AS official_direct_score,
         CASE
-            WHEN COALESCE(MAX(question_counts.total_questions), 0) = 0 THEN NULL
-            ELSE ROUND(GREATEST(0, (COALESCE(SUM(ta.is_correct = 1), 0) - (COALESCE(SUM(ta.is_correct = 0), 0) / 3)) * 10 / MAX(question_counts.total_questions)), 2)
+            WHEN tipo = 'Examen oficial'
+                AND scoring_rule_code IS NOT NULL
+                AND correct_score IS NOT NULL
+                AND wrong_penalty IS NOT NULL
+                AND total_questions > 0
+                AND correct_score > 0
+            THEN ROUND(
+                (
+                    CASE
+                        WHEN min_score_zero = 1 THEN GREATEST(0, raw_official_direct_score)
+                        ELSE raw_official_direct_score
+                    END
+                ) * score_scale / (total_questions * correct_score),
+                2
+            )
+            ELSE NULL
         END AS official_score
-    FROM test_attempts ta
-    LEFT JOIN question_sets qs
-        ON qs.categoria = ta.categoria
-    LEFT JOIN question_counts
-        ON question_counts.categoria = ta.categoria
-    $whereSql
-    GROUP BY ta.test_session_id
+    FROM session_scores
     ORDER BY started_at DESC
     LIMIT 200
 ";
@@ -319,7 +391,7 @@ $sessions = fetch_all_rows($link, $sessionsSql);
                         <?php foreach ($sessions as $row): ?>
                             <?php
                                 $isOfficial = is_official_exam_row($row);
-                                $isAytoOfficial = is_ayto_madrid_aux_tic_category($row['categoria']);
+                                $hasScoring = has_official_scoring($row);
                                 $totalQuestions = (int)$row['total_questions'];
                                 $answered = (int)$row['total_answers'];
                                 $blank = $isOfficial ? max(0, $totalQuestions - $answered) : null;
@@ -335,6 +407,12 @@ $sessions = fetch_all_rows($link, $sessionsSql);
                                             <?php echo safe_text(trim(($row['organismo'] ?? '') . ' · ' . ($row['proceso_selectivo'] ?? '') . ' · ' . ($row['convocatoria_year'] ?? ''), ' ·')); ?>
                                         </div>
                                     <?php endif; ?>
+
+                                    <?php if ($hasScoring): ?>
+                                        <div class="text-secondary small">
+                                            Regla: <?php echo safe_text($row['scoring_rule_code']); ?>
+                                        </div>
+                                    <?php endif; ?>
                                 </td>
                                 <td><?php echo safe_text($row['tipo'] ?: '-'); ?></td>
                                 <td class="text-end"><?php echo $answered; ?></td>
@@ -342,7 +420,11 @@ $sessions = fetch_all_rows($link, $sessionsSql);
                                 <td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td>
                                 <td class="text-end text-danger"><?php echo (int)$row['wrong_answers']; ?></td>
                                 <td class="text-end fw-bold">
-                                    <?php echo $isAytoOfficial ? format_decimal($row['official_score']) . ' / 10' : format_percentage($row['accuracy_percentage']); ?>
+                                    <?php if ($hasScoring): ?>
+                                        <?php echo format_decimal($row['official_score']); ?> / <?php echo format_score_scale($row['score_scale']); ?>
+                                    <?php else: ?>
+                                        <?php echo format_percentage($row['accuracy_percentage']); ?>
+                                    <?php endif; ?>
                                 </td>
                                 <td class="text-end">
                                     <div class="d-flex gap-2 justify-content-end">
