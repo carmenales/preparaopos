@@ -10,15 +10,66 @@ function safe_text($value) {
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-function is_ayto_madrid_aux_tic_category($category) {
-    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
+function format_decimal($value, $decimals = 2) {
+    return number_format((float)$value, $decimals, ',', '.');
 }
 
-function is_exam_category($category) {
+function fetch_question_set_with_scoring($link, $category) {
+    if ($category === '') {
+        return null;
+    }
+
+    $sql = "
+        SELECT
+            qs.id,
+            qs.categoria,
+            qs.organismo,
+            qs.proceso_selectivo,
+            qs.convocatoria_year,
+            qs.turno,
+            qs.tipo,
+            qs.descripcion,
+            qs.scoring_rule_id,
+            sr.code AS scoring_rule_code,
+            sr.name AS scoring_rule_name,
+            sr.correct_score,
+            sr.wrong_penalty,
+            sr.blank_score,
+            sr.score_scale,
+            sr.min_score_zero
+        FROM question_sets qs
+        LEFT JOIN scoring_rules sr
+            ON sr.id = qs.scoring_rule_id
+        WHERE qs.categoria = ?
+        LIMIT 1
+    ";
+
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "s", $category);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+
+    return $row ?: null;
+}
+
+function is_official_exam_question_set($questionSet) {
+    return ($questionSet['tipo'] ?? '') === 'Examen oficial';
+}
+
+function has_official_scoring_rule($questionSet) {
+    return is_official_exam_question_set($questionSet)
+        && ($questionSet['scoring_rule_code'] ?? '') !== ''
+        && ($questionSet['correct_score'] ?? null) !== null
+        && ($questionSet['wrong_penalty'] ?? null) !== null;
+}
+
+function is_exam_category($category, $questionSet = null) {
     $category = (string)$category;
 
-    return str_contains($category, 'CUESTIONARIO')
-        || is_ayto_madrid_aux_tic_category($category);
+    return strpos($category, 'CUESTIONARIO') !== false
+        || is_official_exam_question_set($questionSet);
 }
 
 $cat = isset($_GET["categoria"]) ? trim($_GET["categoria"]) : '';
@@ -35,6 +86,7 @@ $filtroTema = isset($_GET['tema']) && $_GET['tema'] !== '' ? (int)$_GET['tema'] 
 $testSessionId = bin2hex(random_bytes(16));
 $preguntas = [];
 $errorMessage = null;
+$questionSet = fetch_question_set_with_scoring($link, $cat);
 
 if ($failedMode && !preg_match('/^[a-f0-9]{32}$/', $sessionId)) {
     $errorMessage = 'Sesión de origen no válida para repasar falladas.';
@@ -79,6 +131,7 @@ if ($errorMessage === null && $failedMode) {
 
     if (!empty($preguntas)) {
         $cat = $preguntas[0][5] ?? '';
+        $questionSet = fetch_question_set_with_scoring($link, $cat);
     }
 } elseif ($errorMessage === null) {
     $whereClauses = ["categoria = ?"];
@@ -92,7 +145,7 @@ if ($errorMessage === null && $failedMode) {
     }
 
     $whereSql = implode(" AND ", $whereClauses);
-    $examen = is_exam_category($cat);
+    $examen = is_exam_category($cat, $questionSet);
 
     if ($examen) {
         $sql = "select id, pregunta, respuesta, img_path, justif, categoria, bloque, tema from ptype where $whereSql ORDER BY id";
@@ -147,12 +200,23 @@ $emptyBackUrl = $failedMode && preg_match('/^[a-f0-9]{32}$/', $sessionId)
 
 $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuerzo';
 
-$officialScoringEnabled = is_ayto_madrid_aux_tic_category($cat)
+$officialScoringEnabled = has_official_scoring_rule($questionSet)
     && !$failedMode
     && $modo !== 'refuerzo'
     && $filtroBloque === null
     && $filtroTema === null
     && !empty($preguntas);
+
+$scoringRule = [
+    'enabled' => $officialScoringEnabled,
+    'code' => $questionSet['scoring_rule_code'] ?? null,
+    'name' => $questionSet['scoring_rule_name'] ?? null,
+    'correctScore' => (float)($questionSet['correct_score'] ?? 1),
+    'wrongPenalty' => (float)($questionSet['wrong_penalty'] ?? 0),
+    'blankScore' => (float)($questionSet['blank_score'] ?? 0),
+    'scoreScale' => (float)($questionSet['score_scale'] ?? 10),
+    'minScoreZero' => (int)($questionSet['min_score_zero'] ?? 1) === 1,
+];
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -204,11 +268,21 @@ $officialScoringEnabled = is_ayto_madrid_aux_tic_category($cat)
     <div class="alert alert-secondary shadow-sm border-0">
         Corrección al final activa. Puedes marcar una respuesta por pregunta o dejarla sin contestar.
         <?php if ($officialScoringEnabled): ?>
-            Las preguntas sin respuesta contarán como <strong>blanco</strong> en la puntuación oficial estimada.
+            Las preguntas sin respuesta contarán como <strong>blanco</strong> en la puntuación oficial estimada según la regla configurada.
         <?php endif; ?>
     </div>
 <?php elseif (!$correccionFinal && $officialScoringEnabled): ?>
     <div id="resultado-parcial" class="alert alert-primary shadow-sm border-0 d-none"></div>
+<?php endif; ?>
+
+<?php if ($officialScoringEnabled): ?>
+    <div class="alert alert-light border small">
+        <strong>Regla de puntuación:</strong>
+        <?php echo safe_text($scoringRule['name'] ?: $scoringRule['code']); ?>.
+        Correcta +<?php echo format_decimal($scoringRule['correctScore'], 4); ?>,
+        errónea -<?php echo format_decimal($scoringRule['wrongPenalty'], 4); ?>,
+        blanco <?php echo format_decimal($scoringRule['blankScore'], 4); ?>.
+    </div>
 <?php endif; ?>
 
 <?php if ($errorMessage === null && empty($preguntas)): ?>
@@ -238,7 +312,7 @@ $officialScoringEnabled = is_ayto_madrid_aux_tic_category($cat)
                 $pBloque = $p[6];
                 $pTema = $p[7];
 
-                $esExamenPregunta = is_exam_category($pCategoria);
+                $esExamenPregunta = is_exam_category($pCategoria, $questionSet);
 
                 // Obtener opciones
                 $opciones = [];
@@ -353,6 +427,7 @@ $officialScoringEnabled = is_ayto_madrid_aux_tic_category($cat)
 const correccionFinal = <?php echo $correccionFinal ? 'true' : 'false'; ?>;
 const officialScoringEnabled = <?php echo $officialScoringEnabled ? 'true' : 'false'; ?>;
 const currentTestSessionId = '<?php echo safe_text($testSessionId); ?>';
+const scoringRule = <?php echo json_encode($scoringRule, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 
 function verificarRespuesta(elemento, esCorrecta) {
     if (correccionFinal) {
@@ -457,7 +532,7 @@ function marcarPreguntaEnBlanco(card) {
     if (cardBody && !card.querySelector('.blank-answer-alert')) {
         const alert = document.createElement('div');
         alert.className = 'alert alert-secondary small mb-3 blank-answer-alert';
-        alert.innerHTML = '<i class="fa-regular fa-circle me-1"></i> No contestada. Cuenta como blanco y no penaliza.';
+        alert.innerHTML = '<i class="fa-regular fa-circle me-1"></i> No contestada. Cuenta como blanco según la regla configurada.';
         cardBody.insertBefore(alert, cardBody.firstChild);
     }
 }
@@ -568,19 +643,31 @@ function actualizarResultadoParcial() {
     resultBox.innerHTML = construirHtmlResultado(result.correct, result.wrong, result.blank, result.total, true, true);
 }
 
-function calcularNotaOficial(correct, wrong, total) {
-    if (total === 0) {
-        return 0;
+function calcularNotaOficial(correct, wrong, blank, total) {
+    if (!officialScoringEnabled || total === 0 || scoringRule.correctScore <= 0 || scoringRule.scoreScale <= 0) {
+        return {
+            directScore: 0,
+            score: 0
+        };
     }
 
-    const net = correct - (wrong / 3);
-    const score = Math.max(0, net) * 10 / total;
+    let directScore = (correct * scoringRule.correctScore)
+        - (wrong * scoringRule.wrongPenalty)
+        + (blank * scoringRule.blankScore);
 
-    return Math.round(score * 100) / 100;
+    if (scoringRule.minScoreZero) {
+        directScore = Math.max(0, directScore);
+    }
+
+    const score = directScore * scoringRule.scoreScale / (total * scoringRule.correctScore);
+
+    return {
+        directScore: Math.round(directScore * 100) / 100,
+        score: Math.round(score * 100) / 100
+    };
 }
 
 function construirHtmlResultado(correct, wrong, blank, total, hasSavedAnswers, partial = false) {
-    const answered = correct + wrong;
     const percentage = total === 0 ? 0 : Math.round((correct * 10000) / total) / 100;
 
     let html = '';
@@ -598,14 +685,16 @@ function construirHtmlResultado(correct, wrong, blank, total, hasSavedAnswers, p
     html += '</div>';
 
     if (officialScoringEnabled) {
-        const score = calcularNotaOficial(correct, wrong, total);
-        const statusClass = score >= 5 ? 'text-success' : 'text-danger';
-        const statusText = score >= 5 ? 'Superado' : 'No superado';
+        const officialScore = calcularNotaOficial(correct, wrong, blank, total);
+        const threshold = scoringRule.scoreScale / 2;
+        const statusClass = officialScore.score >= threshold ? 'text-success' : 'text-danger';
+        const statusText = officialScore.score >= threshold ? 'Superado' : 'No superado';
 
         html += '<hr>';
-        html += '<div>Nota oficial estimada: <strong class="' + statusClass + '">' + score.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong> / 10 ';
-        html += '<span class="badge ' + (score >= 5 ? 'bg-success' : 'bg-danger') + ' ms-2">' + statusText + '</span></div>';
-        html += '<div class="small text-secondary mt-1">Regla: correcta +1, errónea -1/3, blanco 0. Total de preguntas válidas: ' + total + '.</div>';
+        html += '<div>Puntuación directa: <strong>' + officialScore.directScore.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong></div>';
+        html += '<div>Nota oficial estimada: <strong class="' + statusClass + '">' + officialScore.score.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + '</strong> / ' + scoringRule.scoreScale.toLocaleString('es-ES') + ' ';
+        html += '<span class="badge ' + (officialScore.score >= threshold ? 'bg-success' : 'bg-danger') + ' ms-2">' + statusText + '</span></div>';
+        html += '<div class="small text-secondary mt-1">Regla: ' + (scoringRule.name || scoringRule.code) + '. Total de preguntas válidas: ' + total + '.</div>';
     } else {
         html += '<div>Acierto sobre el total: <strong>' + percentage.toLocaleString('es-ES') + '%</strong>.</div>';
     }

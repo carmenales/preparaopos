@@ -103,21 +103,41 @@ function build_query_string($overrides = []) {
     return http_build_query($params);
 }
 
-function is_ayto_madrid_aux_tic_category($category) {
-    return strpos((string)$category, 'AYTO MADRID AUX TIC') === 0;
-}
-
 function is_official_exam_row($row) {
-    return ($row['tipo'] ?? '') === 'Examen oficial' || is_ayto_madrid_aux_tic_category($row['categoria'] ?? '');
+    return ($row['tipo'] ?? '') === 'Examen oficial';
 }
 
+function has_official_scoring($row) {
+    return is_official_exam_row($row)
+        && ($row['official_score'] ?? null) !== null
+        && ($row['official_score'] ?? '') !== ''
+        && ($row['scoring_rule_code'] ?? null) !== null
+        && ($row['correct_score'] ?? null) !== null
+        && ($row['wrong_penalty'] ?? null) !== null;
+}
+
+function format_score_scale($value) {
+    if ($value === null || $value === '') {
+        return '10';
+    }
+
+    $floatValue = (float)$value;
+
+    if (abs($floatValue - round($floatValue)) < 0.0001) {
+        return (string)(int)round($floatValue);
+    }
+
+    return format_decimal($floatValue);
+}
 
 function get_session_metric($row) {
-    if (is_ayto_madrid_aux_tic_category($row['categoria'] ?? '') && $row['official_score'] !== null && $row['official_score'] !== '') {
+    if (has_official_scoring($row)) {
+        $scale = $row['score_scale'] ?? 10;
+
         return [
             'type' => 'official',
             'value' => (float)$row['official_score'],
-            'display' => format_decimal($row['official_score']) . ' / 10',
+            'display' => format_decimal($row['official_score']) . ' / ' . format_score_scale($scale),
             'delta_suffix' => ' pts.'
         ];
     }
@@ -182,7 +202,7 @@ function average_accuracy_from_sessions($sessions) {
 
 function average_official_score_from_sessions($sessions) {
     return average_value(array_map(function ($row) {
-        if (!is_ayto_madrid_aux_tic_category($row['categoria'] ?? '')) {
+        if (!has_official_scoring($row)) {
             return null;
         }
 
@@ -191,8 +211,9 @@ function average_official_score_from_sessions($sessions) {
 }
 
 function get_result_band($session) {
-    if (is_ayto_madrid_aux_tic_category($session['categoria'] ?? '') && $session['official_score'] !== null && $session['official_score'] !== '') {
-        $value = (float)$session['official_score'] * 10;
+    if (has_official_scoring($session)) {
+        $scale = (float)($session['score_scale'] ?? 10);
+        $value = $scale > 0 ? ((float)$session['official_score'] * 100 / $scale) : 0;
     } else {
         $value = (float)($session['accuracy_percentage'] ?? 0);
     }
@@ -339,6 +360,13 @@ $sessionsSql = "
             MAX(qs.convocatoria_year) AS convocatoria_year,
             MAX(qs.turno) AS turno,
             MAX(qs.tipo) AS tipo,
+            MAX(sr.code) AS scoring_rule_code,
+            MAX(sr.name) AS scoring_rule_name,
+            MAX(sr.correct_score) AS correct_score,
+            MAX(sr.wrong_penalty) AS wrong_penalty,
+            COALESCE(MAX(sr.blank_score), 0) AS blank_score,
+            COALESCE(MAX(sr.score_scale), 10) AS score_scale,
+            COALESCE(MAX(sr.min_score_zero), 1) AS min_score_zero,
             COALESCE(MAX(question_counts.total_questions), 0) AS total_questions,
             COUNT(*) AS total_answers,
             COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
@@ -346,21 +374,65 @@ $sessionsSql = "
             CASE
                 WHEN COUNT(*) = 0 THEN 0
                 ELSE ROUND(SUM(ta.is_correct = 1) * 100 / COUNT(*), 2)
-            END AS accuracy_percentage,
-            CASE
-                WHEN COALESCE(MAX(question_counts.total_questions), 0) = 0 THEN NULL
-                ELSE ROUND(GREATEST(0, (COALESCE(SUM(ta.is_correct = 1), 0) - (COALESCE(SUM(ta.is_correct = 0), 0) / 3)) * 10 / MAX(question_counts.total_questions)), 2)
-            END AS official_score
+            END AS accuracy_percentage
         FROM test_attempts ta
         LEFT JOIN question_sets qs
             ON qs.categoria = ta.categoria
+        LEFT JOIN scoring_rules sr
+            ON sr.id = qs.scoring_rule_id
         LEFT JOIN question_counts
             ON question_counts.categoria = ta.categoria
         $whereSql
         GROUP BY ta.test_session_id
+    ),
+    session_scores AS (
+        SELECT
+            session_stats.*,
+            GREATEST(0, total_questions - total_answers) AS blank_answers,
+            (
+                (correct_answers * COALESCE(correct_score, 0))
+                - (wrong_answers * COALESCE(wrong_penalty, 0))
+                + (GREATEST(0, total_questions - total_answers) * COALESCE(blank_score, 0))
+            ) AS raw_official_direct_score
+        FROM session_stats
     )
-    SELECT *
-    FROM session_stats
+    SELECT
+        session_scores.*,
+        CASE
+            WHEN tipo = 'Examen oficial'
+                AND scoring_rule_code IS NOT NULL
+                AND correct_score IS NOT NULL
+                AND wrong_penalty IS NOT NULL
+                AND total_questions > 0
+                AND correct_score > 0
+            THEN ROUND(
+                CASE
+                    WHEN min_score_zero = 1 THEN GREATEST(0, raw_official_direct_score)
+                    ELSE raw_official_direct_score
+                END,
+                2
+            )
+            ELSE NULL
+        END AS official_direct_score,
+        CASE
+            WHEN tipo = 'Examen oficial'
+                AND scoring_rule_code IS NOT NULL
+                AND correct_score IS NOT NULL
+                AND wrong_penalty IS NOT NULL
+                AND total_questions > 0
+                AND correct_score > 0
+            THEN ROUND(
+                (
+                    CASE
+                        WHEN min_score_zero = 1 THEN GREATEST(0, raw_official_direct_score)
+                        ELSE raw_official_direct_score
+                    END
+                ) * score_scale / (total_questions * correct_score),
+                2
+            )
+            ELSE NULL
+        END AS official_score
+    FROM session_scores
     ORDER BY started_at DESC
     $limitSql
 ";
@@ -509,17 +581,17 @@ $wrongAnswers = (int)($globalStats['wrong_answers'] ?? 0);
 $accuracyPercentage = $globalStats['accuracy_percentage'] ?? 0;
 
 $totalSessions = count($sessions);
-$officialSessions = array_filter($sessions, function ($row) {
+$officialSessions = array_values(array_filter($sessions, function ($row) {
     return is_official_exam_row($row);
-});
+}));
 
-$aytoOfficialSessions = array_filter($sessions, function ($row) {
-    return is_ayto_madrid_aux_tic_category($row['categoria'] ?? '');
-});
+$officialScoredSessions = array_values(array_filter($officialSessions, function ($row) {
+    return has_official_scoring($row);
+}));
 
 $officialScores = array_values(array_filter(array_map(function ($row) {
     return $row['official_score'];
-}, $aytoOfficialSessions), function ($value) {
+}, $officialScoredSessions), function ($value) {
     return $value !== null && $value !== '';
 }));
 
@@ -550,7 +622,7 @@ foreach ($chronologicalSessions as $session) {
 
 $officialExamRanking = [];
 
-foreach ($aytoOfficialSessions as $session) {
+foreach ($officialScoredSessions as $session) {
     if ($session['official_score'] === null || $session['official_score'] === '') {
         continue;
     }
@@ -600,11 +672,8 @@ usort($officialExamRanking, function ($a, $b) {
 
 $latestFiveSessions = array_slice($sessions, 0, 5);
 $previousFiveSessions = array_slice($sessions, 5, 5);
-$latestThreeOfficialSessions = array_values(array_filter($sessions, function ($row) {
-    return is_ayto_madrid_aux_tic_category($row['categoria'] ?? '');
-}));
-$previousThreeOfficialSessions = array_slice($latestThreeOfficialSessions, 3, 3);
-$latestThreeOfficialSessions = array_slice($latestThreeOfficialSessions, 0, 3);
+$latestThreeOfficialSessions = array_slice($officialScoredSessions, 0, 3);
+$previousThreeOfficialSessions = array_slice($officialScoredSessions, 3, 3);
 
 $latestFiveAccuracy = average_accuracy_from_sessions($latestFiveSessions);
 $previousFiveAccuracy = average_accuracy_from_sessions($previousFiveSessions);
@@ -794,7 +863,7 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
 
 <div class="row g-4 mb-4">
     <div class="col-md-3"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-secondary small text-uppercase fw-bold">Exámenes oficiales</div><div class="display-6 fw-bold text-dark"><?php echo count($officialSessions); ?></div><div class="text-secondary small">Sesiones de tipo examen oficial</div></div></div></div>
-    <div class="col-md-3"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-secondary small text-uppercase fw-bold">Última nota oficial</div><div class="display-6 fw-bold text-primary"><?php echo format_decimal($lastOfficialScore); ?></div><div class="text-secondary small">Solo AYTO Madrid Aux TIC</div></div></div></div>
+    <div class="col-md-3"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-secondary small text-uppercase fw-bold">Última nota oficial</div><div class="display-6 fw-bold text-primary"><?php echo format_decimal($lastOfficialScore); ?></div><div class="text-secondary small">Según regla configurada</div></div></div></div>
     <div class="col-md-3"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-secondary small text-uppercase fw-bold">Mejor nota oficial</div><div class="display-6 fw-bold text-success"><?php echo format_decimal($bestOfficialScore); ?></div><div class="text-secondary small">Sobre 10</div></div></div></div>
     <div class="col-md-3"><div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-secondary small text-uppercase fw-bold">Media nota oficial</div><div class="display-6 fw-bold text-dark"><?php echo format_decimal($avgOfficialScore); ?></div><div class="text-secondary small">Sobre 10</div></div></div></div>
 </div>
@@ -949,7 +1018,7 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
                     </tr>
                 <?php endforeach; ?>
             </tbody></table></div>
-            <p class="text-secondary small mb-0">La variación solo se calcula cuando la sesión anterior usa la misma escala: nota oficial sobre 10 o porcentaje.</p>
+            <p class="text-secondary small mb-0">La variación solo se calcula cuando la sesión anterior usa la misma escala: nota oficial configurada o porcentaje.</p>
         <?php endif; ?>
     </div>
 </div>
