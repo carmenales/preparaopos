@@ -1,0 +1,17 @@
+process:
+  id: cam-agencia-digital
+  name: "Agencia para la Administración Digital de la Comunidad de Madrid"
+  organism: "Comunidad de Madrid"
+  group: null
+  scale: null
+  priority: "alta"
+
+syllabus:
+  - id: tema-001
+    title: ""
+    block: ""
+    official_text: ""
+    common_notes: []
+    specific_notes: []
+    source_ids: []
+    status: "pendiente"
