@@ -1,0 +1,40 @@
+# Fuentes comunes reutilizables por varios procesos selectivos.
+# Las fuentes específicas de una convocatoria concreta pueden guardarse dentro de cada proceso.
+
+sources:
+  - id: rd-311-2022-ens
+    title: "Real Decreto 311/2022, por el que se regula el Esquema Nacional de Seguridad"
+    type: "real-decreto"
+    official: true
+    url: "https://www.boe.es/buscar/act.php?id=BOE-A-2022-7191"
+    local_pdf: pdf/rd-311-2022-ens.pdf
+    extracted_md: extracted/rd-311-2022-ens.md
+    status: "pendiente_revision"
+    retrieved_at: null
+    tags:
+      - seguridad
+      - ens
+      - normativa
+      - administracion-publica
+    applies_to:
+      - "comunidad-madrid/administracion-digital"
+      - "comunidad-madrid/ciberseguridad"
+
+  - id: eurlex-reglamento-ue-2024-1689-ia-act
+    title: "Reglamento (UE) 2024/1689, por el que se establecen normas armonizadas en materia de inteligencia artificial"
+    type: "reglamento-ue"
+    official: true
+    url: "https://eur-lex.europa.eu/eli/reg/2024/1689/oj"
+    local_pdf: pdf/reglamento-ue-2024-1689-ia-act.pdf
+    extracted_md: extracted/reglamento-ue-2024-1689-ia-act.md
+    status: "pendiente_revision"
+    retrieved_at: null
+    tags:
+      - inteligencia-artificial
+      - ia-act
+      - normativa
+      - union-europea
+      - tecnologia
+    applies_to:
+      - "comunidad-madrid/administracion-digital"
+      - "comunidad-madrid/ciberseguridad"

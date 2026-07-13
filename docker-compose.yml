@@ -16,6 +16,22 @@ services:
     depends_on:
       - db
 
+  studyassistant:
+    build:
+      context: .
+      dockerfile: infra/docker/php/Dockerfile
+    container_name: preparaopos-studyassistant-web
+    ports:
+      - "8090:8080"
+    working_dir: /workspace
+    user: "www-data"
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ./apps/studyassistant:/workspace/apps/studyassistant:ro
+      - ./knowledge:/workspace/knowledge:ro
+    command: php -S 0.0.0.0:8080 -t /workspace/apps/studyassistant
+
   db:
     image: mariadb:10.4
     container_name: preparaopos-preparadortai-db
