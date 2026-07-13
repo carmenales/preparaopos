@@ -26,21 +26,6 @@ needs_human_review: true
 
 # Fundamentos de Inteligencia Artificial
 
-## Encaje en la convocatoria
-
-Este tema corresponde al **Tema 1 del Anexo 3** de la Resolución 352/2026, de 9 de junio, de la Consejera-Delegada de la Agencia para la Administración Digital de la Comunidad de Madrid, publicada en el BOCM de 11 de junio de 2026. Es transversal y aplica tanto al perfil **P01 (IA aplicada al ciclo de vida del software)** como al perfil **P02 (Gobierno de IA)**. Es, además, el tema base sobre el que se asientan conceptualmente los temas posteriores (IA Generativa e IA Agéntica).
-
-El **Bloque 1** de la fase de oposición consiste en **45 preguntas tipo test y 5 de reserva**, con **cuatro opciones**, **1 punto por acierto** y **-0,25 puntos por respuesta errónea**. La duración máxima es de **1 hora y 30 minutos** y se exige superar el **50 % de los puntos posibles** (22,5 puntos).
-
-Consecuencia práctica: al existir penalización por fallo, es crucial distinguir conceptos próximos que los tribunales usan como distractores: **clasificación vs. regresión**, **clustering vs. clasificación**, **stemming vs. lematización**, **NLU vs. NLG**, **data drift vs. concept drift** y la definición técnica frente a la definición jurídica (**Reglamento UE 2024/1689**).
-
-Estrategia de estudio para este tema:
-- Memorizar las jerarquías: **Deep Learning ⊂ Machine Learning ⊂ Inteligencia Artificial**.
-- Entender que no toda la IA es Machine Learning; existen enfoques simbólicos y basados en conocimiento, aunque la normativa exige el componente de *inferencia*.
-- Distinguir claramente entre el modelo (artefacto entrenado) y el sistema de IA (solución completa que incluye interfaces, reglas de negocio y controles).
-- Para P01: priorizar MLOps, CI/CD/CT, y monitorización.
-- Para P02: priorizar la definición legal de IA, riesgos, y el registro de eventos (Art. 12 AI Act).
-
 ## Ideas clave
 
 1. **Inteligencia Artificial (IA)** es el campo general orientado a construir sistemas capaces de percibir, razonar, aprender y actuar.
