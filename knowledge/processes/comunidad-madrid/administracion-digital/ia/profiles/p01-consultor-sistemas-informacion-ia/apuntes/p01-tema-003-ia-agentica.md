@@ -1,20 +1,23 @@
 ---
-id: "tema-003-ia-agentica"
+id: "cm-ad-ia-p01-tema-003-ia-agentica"
 title: "IA Agéntica"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 3. IA Agéntica"
-source_ids: []
+source_ids:
 tags:
-  - inteligencia-artificial
-  - ia-generativa
-  - ia-agentica
-  - agentes-ia
-  - observabilidad
-  - prompt-engineering
-  - agentops
+  - "inteligencia-artificial"
+  - "ia-generativa"
+  - "ia-agentica"
+  - "agentes-ia"
+  - "observabilidad"
+  - "prompt-engineering"
+  - "agentops"
 created_at: "2026-07-09"
 last_reviewed: null
 ai_generated: true

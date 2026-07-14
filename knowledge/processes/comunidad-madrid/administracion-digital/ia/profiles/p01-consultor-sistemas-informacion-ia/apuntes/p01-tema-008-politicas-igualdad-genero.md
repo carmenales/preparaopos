@@ -1,18 +1,21 @@
 ---
-id: "tema-008-politicas-igualdad-genero"
+id: "cm-ad-ia-p01-tema-008-politicas-igualdad-genero"
 title: "Políticas de Igualdad de Género"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 8. Políticas de Igualdad de Género"
-source_ids: []
+source_ids:
 tags:
-  - igualdad-genero
-  - politicas-igualdad
-  - ley-organica-3-2007
-  - empleo-publico
-  - discriminacion
+  - "igualdad-genero"
+  - "politicas-igualdad"
+  - "ley-organica-3-2007"
+  - "empleo-publico"
+  - "discriminacion"
 created_at: "2026-07-10"
 last_reviewed: null
 ai_generated: true

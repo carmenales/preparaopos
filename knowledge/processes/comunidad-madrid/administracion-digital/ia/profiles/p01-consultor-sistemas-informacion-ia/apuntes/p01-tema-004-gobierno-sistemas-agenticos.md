@@ -1,23 +1,25 @@
 ---
-id: "tema-004-gobierno-sistemas-agenticos"
+id: "cm-ad-ia-p01-tema-004-gobierno-sistemas-agenticos"
 title: "Gobierno de los sistemas agénticos"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
-  - "comunidad-madrid/agencia-ciberseguridad"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 4. Gobierno de los sistemas agénticos"
-source_ids: []
+source_ids:
 tags:
-  - inteligencia-artificial
-  - ia-agentica
-  - gobernanza-ia
-  - agentes-ia
-  - supervisión-humana
-  - hitl
-  - seguridad
-  - trazabilidad
-  - agentops
+  - "inteligencia-artificial"
+  - "ia-agentica"
+  - "gobernanza-ia"
+  - "agentes-ia"
+  - "supervisión-humana"
+  - "hitl"
+  - "seguridad"
+  - "trazabilidad"
+  - "agentops"
 created_at: "2026-07-10"
 last_reviewed: null
 ai_generated: true
