@@ -1,20 +1,23 @@
 ---
-id: "tema-007-ia-aplicada-sdlc"
+id: "cm-ad-ia-p01-tema-007-ia-aplicada-sdlc"
 title: "IA aplicada al ciclo de vida de desarrollo del software"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 7. IA aplicada al ciclo de vida de desarrollo del software"
-source_ids: []
+source_ids:
 tags:
-  - inteligencia-artificial
-  - ia-generativa
-  - sdlc
-  - devsecops
-  - llm-coding
-  - metricas-dora
-  - nist-ssdf
+  - "inteligencia-artificial"
+  - "ia-generativa"
+  - "sdlc"
+  - "devsecops"
+  - "llm-coding"
+  - "metricas-dora"
+  - "nist-ssdf"
 created_at: "2026-07-10"
 last_reviewed: null
 ai_generated: true

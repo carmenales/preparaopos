@@ -1,22 +1,25 @@
 ---
-id: "tema-006-arquitectura"
+id: "cm-ad-ia-p01-tema-006-arquitectura"
 title: "Arquitectura"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 6. Arquitectura"
-source_ids: []
+source_ids:
 tags:
-  - arquitectura
-  - integracion
-  - apis
-  - eventos
-  - microservicios
-  - kubernetes
-  - cloud-hibrida
-  - arquitectura-datos
-  - ia-gateway
+  - "arquitectura"
+  - "integracion"
+  - "apis"
+  - "eventos"
+  - "microservicios"
+  - "kubernetes"
+  - "cloud-hibrida"
+  - "arquitectura-datos"
+  - "ia-gateway"
 created_at: "2026-07-10"
 last_reviewed: null
 ai_generated: true

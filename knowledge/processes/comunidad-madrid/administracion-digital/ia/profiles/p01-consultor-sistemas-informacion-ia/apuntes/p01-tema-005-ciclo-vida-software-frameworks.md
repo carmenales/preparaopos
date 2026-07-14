@@ -1,23 +1,26 @@
 ---
-id: "tema-005-ciclo-vida-software-frameworks"
+id: "cm-ad-ia-p01-tema-005-ciclo-vida-software-frameworks"
 title: "Ciclo de vida del software y frameworks"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 5. Ciclo de vida del software y frameworks"
-source_ids: []
+source_ids:
 tags:
-  - ciclo-de-vida-software
-  - sdlc
-  - agile
-  - scrum
-  - pruebas-software
-  - istqb
-  - ci-cd
-  - java
-  - spring
-  - microservicios
+  - "ciclo-de-vida-software"
+  - "sdlc"
+  - "agile"
+  - "scrum"
+  - "pruebas-software"
+  - "istqb"
+  - "ci-cd"
+  - "java"
+  - "spring"
+  - "microservicios"
 created_at: "2026-07-10"
 last_reviewed: null
 ai_generated: true

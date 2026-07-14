@@ -1,21 +1,24 @@
 ---
-id: "tema-002-ia-generativa"
+id: "cm-ad-ia-p01-tema-002-ia-generativa"
 title: "IA Generativa"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 2. IA Generativa"
-source_ids: []
+source_ids:
 tags:
-  - inteligencia-artificial
-  - ia-generativa
-  - llm
-  - tokenizacion
-  - embeddings
-  - transformer
-  - rag
-  - llmops
+  - "inteligencia-artificial"
+  - "ia-generativa"
+  - "llm"
+  - "tokenizacion"
+  - "embeddings"
+  - "transformer"
+  - "rag"
+  - "llmops"
 created_at: "2026-07-09"
 last_reviewed: null
 ai_generated: true

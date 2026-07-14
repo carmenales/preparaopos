@@ -1,18 +1,21 @@
 ---
-id: "tema-001-fundamentos-inteligencia-artificial"
+id: "cm-ad-ia-p01-tema-001-fundamentos-inteligencia-artificial"
 title: "Fundamentos de Inteligencia Artificial"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+official_profile: "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
 official_topic: "Tema 1. Fundamentos de Inteligencia Artificial"
-source_ids: []
+source_ids:
 tags:
-  - inteligencia-artificial
-  - machine-learning
-  - deep-learning
-  - pln
-  - mlops
+  - "inteligencia-artificial"
+  - "machine-learning"
+  - "deep-learning"
+  - "pln"
+  - "mlops"
 created_at: "2026-07-09"
 last_reviewed: null
 ai_generated: true

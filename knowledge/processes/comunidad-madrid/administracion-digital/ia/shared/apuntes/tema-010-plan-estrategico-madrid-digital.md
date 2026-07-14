@@ -1,19 +1,25 @@
 ---
-id: "tema-010-pemd-2022-2026"
+id: "cm-ad-ia-tema-010-plan-estrategico-madrid-digital"
 title: "Plan Estratégico de Madrid Digital 2022-2026"
 type: "apunte"
 status: "borrador"
 processes:
-  - "comunidad-madrid/administracion-digital"
+  - "comunidad-madrid/administracion-digital/ia"
+profiles:
+  - "p01-consultor-sistemas-informacion-ia"
+  - "p02-consultor-sistemas-informacion-gobierno-ia"
+official_profiles:
+  - "P01 - Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software"
+  - "P02 - Consultor de Sistemas de Información - Gobierno de IA"
 official_topic: "Tema 10. Plan Estratégico de Madrid Digital 2022-2026"
-source_ids: []
+source_ids:
 tags:
-  - pemd
-  - madrid-digital
-  - estrategia-tic
-  - ejes-estrategicos
-  - administracion-digital
-created_at: "2026-07-10"
+  - "pemd"
+  - "madrid-digital"
+  - "estrategia-tic"
+  - "ejes-estrategicos"
+  - "administracion-digital"
+created_at: "2026-07-14"
 last_reviewed: null
 ai_generated: true
 ai_sources:
