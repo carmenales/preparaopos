@@ -41,6 +41,9 @@ def parse_scalar(value: str) -> Any:
 
 
 def parse_frontmatter(markdown: str) -> tuple[dict[str, Any], str]:
+    markdown = markdown.lstrip("\ufeff")
+    markdown = markdown.replace("\r\n", "\n").replace("\r", "\n")
+
     if not markdown.startswith("---\n"):
         return {}, markdown
 
@@ -111,8 +114,20 @@ def first_non_empty_paragraph(body: str, max_length: int = 260) -> str:
 def should_include(path: Path, knowledge_root: Path) -> bool:
     if path.suffix.lower() != ".md":
         return False
-    relative_parts = set(path.relative_to(knowledge_root).parts)
-    return not bool(relative_parts & EXCLUDED_PARTS)
+
+    relative_parts = path.relative_to(knowledge_root).parts
+    relative_parts_set = set(relative_parts)
+
+    if relative_parts_set & EXCLUDED_PARTS:
+        return False
+
+    if path.name.lower() == "readme.md":
+        return False
+
+    if "apuntes" not in relative_parts:
+        return False
+
+    return True
 
 
 def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]:
@@ -124,6 +139,10 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
 
         raw = path.read_text(encoding="utf-8")
         metadata, body = parse_frontmatter(raw)
+
+        if metadata.get("type") != "apunte":
+            continue
+
         headings = extract_headings(body)
         title = metadata.get("title") or (headings[0]["text"] if headings else path.stem.replace("-", " ").title())
         note_id = metadata.get("id") or path.stem
@@ -134,6 +153,8 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
             "path": path.as_posix(),
             "relative_path": path.relative_to(knowledge_root).as_posix(),
             "processes": metadata.get("processes", []),
+            "profiles": metadata.get("profiles", []),
+            "official_profile": metadata.get("official_profile"),
             "official_topic": metadata.get("official_topic"),
             "source_ids": metadata.get("source_ids", []),
             "tags": metadata.get("tags", []),
