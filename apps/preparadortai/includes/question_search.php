@@ -18,17 +18,53 @@ function topic_search_truncate($value, $length = 180) {
         : $value;
 }
 
+function topic_search_limit_text($value, $length = 200) {
+    $value = trim((string)$value);
+
+    if (function_exists('mb_substr')) {
+        return mb_substr($value, 0, $length, 'UTF-8');
+    }
+
+    return substr($value, 0, $length);
+}
+
+function topic_search_normalize_queries($rawQueries, $legacyQuery = '', $maxQueries = 6) {
+    if (!is_array($rawQueries)) {
+        $rawQueries = [$rawQueries];
+    }
+
+    if (empty($rawQueries) && trim((string)$legacyQuery) !== '') {
+        $rawQueries = [$legacyQuery];
+    }
+
+    $queries = [];
+
+    foreach ($rawQueries as $rawQuery) {
+        $query = topic_search_limit_text($rawQuery);
+
+        if ($query === '') {
+            continue;
+        }
+
+        $key = function_exists('mb_strtolower')
+            ? mb_strtolower($query, 'UTF-8')
+            : strtolower($query);
+
+        $queries[$key] = $query;
+
+        if (count($queries) >= $maxQueries) {
+            break;
+        }
+    }
+
+    return array_values($queries);
+}
+
 function topic_search_normalize_terms($query, $maxTerms = 8) {
-    $query = trim((string)$query);
+    $query = topic_search_limit_text($query);
 
     if ($query === '') {
         return [];
-    }
-
-    if (function_exists('mb_substr')) {
-        $query = mb_substr($query, 0, 200, 'UTF-8');
-    } else {
-        $query = substr($query, 0, 200);
     }
 
     preg_match_all('/"([^"]+)"|(\S+)/u', $query, $matches, PREG_SET_ORDER);
@@ -95,14 +131,16 @@ function topic_search_categories($link) {
 }
 
 function topic_search_questions($link, $filters, $limit = 500) {
-    $query = trim((string)($filters['q'] ?? ''));
+    $queries = topic_search_normalize_queries(
+        $filters['topics'] ?? [],
+        $filters['q'] ?? ''
+    );
     $category = trim((string)($filters['categoria'] ?? ''));
     $block = trim((string)($filters['bloque'] ?? ''));
     $topic = trim((string)($filters['tema'] ?? ''));
-    $terms = topic_search_normalize_terms($query);
 
     $where = [];
-    $having = [];
+    $queryGroups = [];
     $types = '';
     $params = [];
 
@@ -133,14 +171,26 @@ function topic_search_questions($link, $filters, $limit = 500) {
         COALESCE(i.justif, '')
     )";
 
-    foreach ($terms as $term) {
-        $having[] = "MAX($searchableText LIKE ?) = 1";
-        $types .= 's';
-        $params[] = '%' . $term . '%';
+    foreach ($queries as $query) {
+        $terms = topic_search_normalize_terms($query);
+
+        if (empty($terms)) {
+            continue;
+        }
+
+        $termClauses = [];
+
+        foreach ($terms as $term) {
+            $termClauses[] = "MAX($searchableText LIKE ?) = 1";
+            $types .= 's';
+            $params[] = '%' . $term . '%';
+        }
+
+        $queryGroups[] = '(' . implode(' AND ', $termClauses) . ')';
     }
 
     $whereSql = empty($where) ? '' : 'WHERE ' . implode(' AND ', $where);
-    $havingSql = empty($having) ? '' : 'HAVING ' . implode(' AND ', $having);
+    $havingSql = empty($queryGroups) ? '' : 'HAVING (' . implode(' OR ', $queryGroups) . ')';
     $limit = max(1, min((int)$limit, 500));
 
     $sql = "

@@ -2,13 +2,16 @@
 include 'includes/header.php';
 require_once __DIR__ . '/includes/question_search.php';
 
-$query = trim((string)($_GET['q'] ?? ''));
+$queries = topic_search_normalize_queries(
+    $_GET['topics'] ?? [],
+    $_GET['q'] ?? ''
+);
 $category = trim((string)($_GET['categoria'] ?? ''));
 $block = trim((string)($_GET['bloque'] ?? ''));
 $topic = trim((string)($_GET['tema'] ?? ''));
 $error = trim((string)($_GET['error'] ?? ''));
 
-$hasFilters = $query !== '' || $category !== '' || $block !== '' || $topic !== '';
+$hasFilters = !empty($queries) || $category !== '' || $block !== '' || $topic !== '';
 $categories = topic_search_categories($link);
 $results = [];
 $searchError = null;
@@ -16,7 +19,7 @@ $searchError = null;
 if ($hasFilters) {
     try {
         $results = topic_search_questions($link, [
-            'q' => $query,
+            'topics' => $queries,
             'categoria' => $category,
             'bloque' => $block,
             'tema' => $topic,
@@ -26,6 +29,7 @@ if ($hasFilters) {
     }
 }
 
+$formQueries = empty($queries) ? [''] : $queries;
 $defaultQuestionCount = min(20, max(1, count($results)));
 ?>
 
@@ -35,7 +39,7 @@ $defaultQuestionCount = min(20, max(1, count($results)));
             <i class="fa-solid fa-magnifying-glass-chart"></i> Práctica temática
         </h2>
         <p class="text-secondary small mb-0">
-            Busca preguntas relacionadas con un tema y genera un test con los resultados seleccionados.
+            Combina una o varias temáticas y genera un test con las preguntas encontradas.
         </p>
     </div>
 </div>
@@ -55,47 +59,69 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
         <form method="get" action="practica_tematica.php">
-            <div class="row g-3 align-items-end">
-                <div class="col-lg-5">
-                    <label for="q" class="form-label small fw-bold">Palabras o frases</label>
-                    <input
-                        type="text"
-                        id="q"
-                        name="q"
-                        class="form-control"
-                        value="<?php echo topic_search_safe_text($query); ?>"
-                        placeholder='Ej. oracle backup, tcp ip, "modelo OSI"'
-                        maxlength="200"
-                    >
-                    <div class="form-text">Todas las palabras deben aparecer en el contenido de la pregunta.</div>
-                </div>
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <label class="form-label small fw-bold">Temáticas</label>
 
-                <div class="col-lg-3">
-                    <label for="categoria" class="form-label small fw-bold">Categoría</label>
-                    <select id="categoria" name="categoria" class="form-select">
-                        <option value="">Todas</option>
-                        <?php foreach ($categories as $item): ?>
-                            <option value="<?php echo topic_search_safe_text($item); ?>" <?php echo $category === $item ? 'selected' : ''; ?>>
-                                <?php echo topic_search_safe_text($item); ?>
-                            </option>
+                    <div id="topic-query-list" class="d-grid gap-2">
+                        <?php foreach ($formQueries as $index => $query): ?>
+                            <div class="input-group topic-query-row">
+                                <span class="input-group-text">Tema <?php echo (int)$index + 1; ?></span>
+                                <input
+                                    type="text"
+                                    name="topics[]"
+                                    class="form-control"
+                                    value="<?php echo topic_search_safe_text($query); ?>"
+                                    placeholder='Ej. tcp ip o "modelo OSI"'
+                                    maxlength="200"
+                                >
+                                <button type="button" class="btn btn-outline-danger remove-topic-query" title="Eliminar temática">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
                         <?php endforeach; ?>
-                    </select>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-2">
+                        <div class="form-text">
+                            Dentro de una temática se exigen todas las palabras. Entre temáticas se aplica OR.
+                        </div>
+                        <button type="button" id="add-topic-query" class="btn btn-sm btn-outline-primary">
+                            <i class="fa-solid fa-plus"></i> Añadir temática
+                        </button>
+                    </div>
                 </div>
 
-                <div class="col-lg-1 col-md-3">
-                    <label for="bloque" class="form-label small fw-bold">Bloque</label>
-                    <input type="number" id="bloque" name="bloque" class="form-control" min="0" value="<?php echo topic_search_safe_text($block); ?>">
-                </div>
+                <div class="col-lg-5">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="categoria" class="form-label small fw-bold">Categoría</label>
+                            <select id="categoria" name="categoria" class="form-select">
+                                <option value="">Todas</option>
+                                <?php foreach ($categories as $item): ?>
+                                    <option value="<?php echo topic_search_safe_text($item); ?>" <?php echo $category === $item ? 'selected' : ''; ?>>
+                                        <?php echo topic_search_safe_text($item); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                <div class="col-lg-1 col-md-3">
-                    <label for="tema" class="form-label small fw-bold">Tema</label>
-                    <input type="number" id="tema" name="tema" class="form-control" min="0" value="<?php echo topic_search_safe_text($topic); ?>">
-                </div>
+                        <div class="col-4">
+                            <label for="bloque" class="form-label small fw-bold">Bloque</label>
+                            <input type="number" id="bloque" name="bloque" class="form-control" min="0" value="<?php echo topic_search_safe_text($block); ?>">
+                        </div>
 
-                <div class="col-lg-2 d-grid">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-magnifying-glass"></i> Buscar
-                    </button>
+                        <div class="col-4">
+                            <label for="tema" class="form-label small fw-bold">Tema</label>
+                            <input type="number" id="tema" name="tema" class="form-control" min="0" value="<?php echo topic_search_safe_text($topic); ?>">
+                        </div>
+
+                        <div class="col-4 d-grid align-items-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-magnifying-glass"></i> Buscar
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </form>
@@ -104,8 +130,7 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 
 <?php if (!$hasFilters): ?>
     <div class="alert alert-info shadow-sm border-0">
-        Prueba búsquedas como <strong>oracle backup</strong>, <strong>soc siem</strong>,
-        <strong>san nas das</strong> o <strong>protección de datos</strong>.
+        Ejemplo: añade una temática <strong>tcp ip</strong> y otra <strong>oracle backup</strong> para combinar ambas en un mismo test.
     </div>
 <?php elseif ($searchError === null && empty($results)): ?>
     <div class="alert alert-warning shadow-sm border-0">
@@ -113,10 +138,20 @@ $defaultQuestionCount = min(20, max(1, count($results)));
     </div>
 <?php elseif ($searchError === null): ?>
     <form method="post" action="logic/start_topic_test.php" id="topic-test-form">
-        <input type="hidden" name="q" value="<?php echo topic_search_safe_text($query); ?>">
+        <?php foreach ($queries as $query): ?>
+            <input type="hidden" name="topics[]" value="<?php echo topic_search_safe_text($query); ?>">
+        <?php endforeach; ?>
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <?php foreach ($queries as $query): ?>
+                        <span class="badge rounded-pill bg-info text-dark">
+                            <i class="fa-solid fa-tag"></i> <?php echo topic_search_safe_text($query); ?>
+                        </span>
+                    <?php endforeach; ?>
+                </div>
+
                 <div class="row g-3 align-items-end">
                     <div class="col-lg-4">
                         <div class="fw-bold">
@@ -206,12 +241,87 @@ $defaultQuestionCount = min(20, max(1, count($results)));
     </form>
 <?php endif; ?>
 
+<template id="topic-query-template">
+    <div class="input-group topic-query-row">
+        <span class="input-group-text">Tema</span>
+        <input
+            type="text"
+            name="topics[]"
+            class="form-control"
+            value=""
+            placeholder='Ej. oracle backup'
+            maxlength="200"
+        >
+        <button type="button" class="btn btn-outline-danger remove-topic-query" title="Eliminar temática">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+</template>
+
 <script>
 (function () {
+    const queryList = document.getElementById('topic-query-list');
+    const addQueryButton = document.getElementById('add-topic-query');
+    const queryTemplate = document.getElementById('topic-query-template');
     const selectAll = document.getElementById('select-all');
     const checkboxes = Array.from(document.querySelectorAll('.topic-question-checkbox'));
     const form = document.getElementById('topic-test-form');
     const maxQuestions = document.getElementById('max_questions');
+    const maxTopicQueries = 6;
+
+    function renumberQueryRows() {
+        if (!queryList) return;
+
+        const rows = Array.from(queryList.querySelectorAll('.topic-query-row'));
+
+        rows.forEach(function (row, index) {
+            const label = row.querySelector('.input-group-text');
+            const removeButton = row.querySelector('.remove-topic-query');
+
+            if (label) {
+                label.textContent = 'Tema ' + (index + 1);
+            }
+
+            if (removeButton) {
+                removeButton.disabled = rows.length === 1;
+            }
+        });
+
+        if (addQueryButton) {
+            addQueryButton.disabled = rows.length >= maxTopicQueries;
+        }
+    }
+
+    function attachRemoveHandler(button) {
+        button.addEventListener('click', function () {
+            const rows = queryList.querySelectorAll('.topic-query-row');
+
+            if (rows.length <= 1) return;
+
+            button.closest('.topic-query-row').remove();
+            renumberQueryRows();
+        });
+    }
+
+    if (queryList) {
+        queryList.querySelectorAll('.remove-topic-query').forEach(attachRemoveHandler);
+    }
+
+    if (addQueryButton && queryTemplate && queryList) {
+        addQueryButton.addEventListener('click', function () {
+            if (queryList.querySelectorAll('.topic-query-row').length >= maxTopicQueries) return;
+
+            const fragment = queryTemplate.content.cloneNode(true);
+            const removeButton = fragment.querySelector('.remove-topic-query');
+            const input = fragment.querySelector('input');
+
+            attachRemoveHandler(removeButton);
+            queryList.appendChild(fragment);
+            renumberQueryRows();
+
+            if (input) input.focus();
+        });
+    }
 
     function selectedCount() {
         return checkboxes.filter(function (checkbox) {
@@ -254,6 +364,7 @@ $defaultQuestionCount = min(20, max(1, count($results)));
         });
     }
 
+    renumberQueryRows();
     updateControls();
 })();
 </script>

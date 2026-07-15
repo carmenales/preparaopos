@@ -1,5 +1,6 @@
 <?php
 include 'includes/header.php';
+require_once __DIR__ . '/includes/question_search.php';
 
 // Funciones auxiliares
 function cmp($a, $b) {
@@ -150,7 +151,8 @@ $cat = isset($_GET["categoria"]) ? trim($_GET["categoria"]) : '';
 $modo = isset($_GET['modo']) ? $_GET['modo'] : '';
 $failedMode = $modo === 'falladas';
 $topicMode = $modo === 'tematico';
-$topicQuery = trim((string)($_GET['q'] ?? ''));
+$topicQueries = topic_search_normalize_queries($_GET['topics'] ?? [], $_GET['q'] ?? '');
+$topicLabel = implode(' + ', $topicQueries);
 $topicIdsRaw = trim((string)($_GET['ids'] ?? ''));
 $topicIds = [];
 
@@ -279,8 +281,8 @@ if ($errorMessage === null && $topicMode) {
 if ($topicMode) {
     $pageTitle = 'Práctica temática';
 
-    if ($topicQuery !== '') {
-        $pageTitle .= ' · ' . $topicQuery;
+    if ($topicLabel !== '') {
+        $pageTitle .= ' · ' . $topicLabel;
     }
 } else {
     $pageTitle = $failedMode ? 'Repaso de preguntas falladas' : $cat;
@@ -305,7 +307,7 @@ if ($correccionFinal) {
 }
 
 if ($topicMode) {
-    $topicBackParams = $topicQuery !== '' ? ['q' => $topicQuery] : [];
+    $topicBackParams = !empty($topicQueries) ? ['topics' => $topicQueries] : [];
     $emptyBackUrl = 'practica_tematica.php';
 
     if (!empty($topicBackParams)) {
@@ -375,8 +377,11 @@ $scoringRule = [
 <?php elseif ($topicMode): ?>
     <div class="alert alert-info shadow-sm border-0">
         Práctica temática activa.
-        <?php if ($topicQuery !== ''): ?>
-            Búsqueda: <strong><?php echo safe_text($topicQuery); ?></strong>.
+        <?php if (!empty($topicQueries)): ?>
+            Temáticas:
+            <?php foreach ($topicQueries as $topicQuery): ?>
+                <span class="badge rounded-pill bg-info text-dark me-1"><?php echo safe_text($topicQuery); ?></span>
+            <?php endforeach; ?>
         <?php endif; ?>
         Las preguntas pueden pertenecer a categorías diferentes.
     </div>
