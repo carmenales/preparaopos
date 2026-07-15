@@ -1,5 +1,6 @@
 <?php
 include 'includes/header.php';
+require_once __DIR__ . '/includes/question_search.php';
 
 // Funciones auxiliares
 function cmp($a, $b) {
@@ -12,6 +13,80 @@ function safe_text($value) {
 
 function format_decimal($value, $decimals = 2) {
     return number_format((float)$value, $decimals, ',', '.');
+}
+
+
+function bind_dynamic_test_params($stmt, $types, &$params) {
+    if ($types === '' || empty($params)) {
+        return;
+    }
+
+    $refs = [$types];
+
+    foreach ($params as $key => $value) {
+        $refs[] = &$params[$key];
+    }
+
+    call_user_func_array([$stmt, 'bind_param'], $refs);
+}
+
+function fetch_questions_by_ids($link, $ids) {
+    if (empty($ids)) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($ids), '?'));
+    $sql = "
+        SELECT
+            id,
+            pregunta,
+            respuesta,
+            img_path,
+            justif,
+            categoria,
+            bloque,
+            tema
+        FROM ptype
+        WHERE id IN ($placeholders)
+    ";
+
+    $stmt = mysqli_prepare($link, $sql);
+
+    if (!$stmt) {
+        return [];
+    }
+
+    $params = array_values($ids);
+    $types = str_repeat('i', count($params));
+    bind_dynamic_test_params($stmt, $types, $params);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $byId = [];
+
+    while ($row = mysqli_fetch_assoc($result)) {
+        $byId[(int)$row['id']] = [
+            (int)$row['id'],
+            $row['pregunta'],
+            $row['respuesta'],
+            $row['img_path'],
+            $row['justif'],
+            $row['categoria'],
+            $row['bloque'],
+            $row['tema'],
+        ];
+    }
+
+    mysqli_stmt_close($stmt);
+
+    $questions = [];
+
+    foreach ($ids as $id) {
+        if (isset($byId[(int)$id])) {
+            $questions[] = $byId[(int)$id];
+        }
+    }
+
+    return $questions;
 }
 
 function fetch_question_set_with_scoring($link, $category) {
@@ -75,6 +150,24 @@ function is_exam_category($category, $questionSet = null) {
 $cat = isset($_GET["categoria"]) ? trim($_GET["categoria"]) : '';
 $modo = isset($_GET['modo']) ? $_GET['modo'] : '';
 $failedMode = $modo === 'falladas';
+$topicMode = $modo === 'tematico';
+$topicQueries = topic_search_normalize_queries($_GET['topics'] ?? [], $_GET['q'] ?? '');
+$topicLabel = implode(' + ', $topicQueries);
+$topicIdsRaw = trim((string)($_GET['ids'] ?? ''));
+$topicIds = [];
+
+if ($topicMode && $topicIdsRaw !== '') {
+    foreach (explode(',', $topicIdsRaw) as $rawId) {
+        $rawId = trim($rawId);
+
+        if (ctype_digit($rawId) && (int)$rawId > 0) {
+            $topicIds[(int)$rawId] = (int)$rawId;
+        }
+    }
+
+    $topicIds = array_slice(array_values($topicIds), 0, 100);
+}
+
 $sessionId = isset($_GET['session_id']) ? trim($_GET['session_id']) : '';
 
 $correccion = isset($_GET['correccion']) ? $_GET['correccion'] : '';
@@ -92,7 +185,17 @@ if ($failedMode && !preg_match('/^[a-f0-9]{32}$/', $sessionId)) {
     $errorMessage = 'Sesión de origen no válida para repasar falladas.';
 }
 
-if ($errorMessage === null && $failedMode) {
+if ($topicMode && empty($topicIds)) {
+    $errorMessage = 'No se ha recibido una selección válida de preguntas para la práctica temática.';
+}
+
+if ($errorMessage === null && $topicMode) {
+    $preguntas = fetch_questions_by_ids($link, $topicIds);
+
+    if (empty($preguntas)) {
+        $errorMessage = 'Las preguntas seleccionadas ya no están disponibles.';
+    }
+} elseif ($errorMessage === null && $failedMode) {
     $sql = "
         SELECT
             p.id,
@@ -175,9 +278,18 @@ if ($errorMessage === null && $failedMode) {
     mysqli_stmt_close($stmt);
 }
 
-$pageTitle = $failedMode ? 'Repaso de preguntas falladas' : $cat;
-if ($failedMode && $cat !== '') {
-    $pageTitle .= ' · ' . $cat;
+if ($topicMode) {
+    $pageTitle = 'Práctica temática';
+
+    if ($topicLabel !== '') {
+        $pageTitle .= ' · ' . $topicLabel;
+    }
+} else {
+    $pageTitle = $failedMode ? 'Repaso de preguntas falladas' : $cat;
+
+    if ($failedMode && $cat !== '') {
+        $pageTitle .= ' · ' . $cat;
+    }
 }
 
 $queryParams = $_GET;
@@ -194,14 +306,26 @@ if ($correccionFinal) {
     $toggleCorrectionIcon = 'fa-list-check';
 }
 
-$emptyBackUrl = $failedMode && preg_match('/^[a-f0-9]{32}$/', $sessionId)
-    ? 'detalle_sesion.php?session_id=' . urlencode($sessionId)
-    : 'refuerzo.php';
+if ($topicMode) {
+    $topicBackParams = !empty($topicQueries) ? ['topics' => $topicQueries] : [];
+    $emptyBackUrl = 'practica_tematica.php';
 
-$emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuerzo';
+    if (!empty($topicBackParams)) {
+        $emptyBackUrl .= '?' . http_build_query($topicBackParams);
+    }
+
+    $emptyBackText = 'Volver a práctica temática';
+} else {
+    $emptyBackUrl = $failedMode && preg_match('/^[a-f0-9]{32}$/', $sessionId)
+        ? 'detalle_sesion.php?session_id=' . urlencode($sessionId)
+        : 'refuerzo.php';
+
+    $emptyBackText = $failedMode ? 'Volver al detalle de sesión' : 'Volver a refuerzo';
+}
 
 $officialScoringEnabled = has_official_scoring_rule($questionSet)
     && !$failedMode
+    && !$topicMode
     && $modo !== 'refuerzo'
     && $filtroBloque === null
     && $filtroTema === null
@@ -250,6 +374,17 @@ $scoringRule = [
         Modo repaso de falladas activo. Estás practicando solo las preguntas falladas de la sesión seleccionada.
         Las respuestas de este repaso se guardarán como una sesión nueva.
     </div>
+<?php elseif ($topicMode): ?>
+    <div class="alert alert-info shadow-sm border-0">
+        Práctica temática activa.
+        <?php if (!empty($topicQueries)): ?>
+            Temáticas:
+            <?php foreach ($topicQueries as $topicQuery): ?>
+                <span class="badge rounded-pill bg-info text-dark me-1"><?php echo safe_text($topicQuery); ?></span>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        Las preguntas pueden pertenecer a categorías diferentes.
+    </div>
 <?php endif; ?>
 
 <?php if ($modo === 'refuerzo'): ?>
@@ -289,6 +424,8 @@ $scoringRule = [
     <div class="alert alert-warning shadow-sm border-0">
         <?php if ($failedMode): ?>
             Esta sesión no tiene preguntas falladas para repasar.
+        <?php elseif ($topicMode): ?>
+            No hay preguntas disponibles para la práctica temática seleccionada.
         <?php else: ?>
             No hay preguntas disponibles con los filtros seleccionados.
         <?php endif; ?>
@@ -302,6 +439,8 @@ $scoringRule = [
         <div class="col-lg-10">
             <?php
             $qIndex = 1;
+            $questionSetsByCategory = [];
+
             foreach ($preguntas as $p) {
                 $pId = $p[0];
                 $pTexto = $p[1];
@@ -312,7 +451,17 @@ $scoringRule = [
                 $pBloque = $p[6];
                 $pTema = $p[7];
 
-                $esExamenPregunta = is_exam_category($pCategoria, $questionSet);
+                $questionSetPregunta = $questionSet;
+
+                if ($topicMode) {
+                    if (!array_key_exists($pCategoria, $questionSetsByCategory)) {
+                        $questionSetsByCategory[$pCategoria] = fetch_question_set_with_scoring($link, $pCategoria);
+                    }
+
+                    $questionSetPregunta = $questionSetsByCategory[$pCategoria];
+                }
+
+                $esExamenPregunta = is_exam_category($pCategoria, $questionSetPregunta);
 
                 // Obtener opciones
                 $opciones = [];
