@@ -9,6 +9,7 @@ if (file_exists('includes/config.php')) {
 }
 
 $paginaActual = basename($_SERVER['PHP_SELF']);
+$modoActual = trim((string)($_GET['modo'] ?? ''));
 
 function menu_active($pages, $paginaActual) {
     return in_array($paginaActual, (array)$pages, true) ? 'active' : '';
@@ -48,12 +49,16 @@ function menu_active($pages, $paginaActual) {
                 <i class="fa-solid fa-gauge-high"></i> Dashboard
             </a>
 
-            <a href="examenes.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo menu_active(['examenes.php', 'test.php'], $paginaActual); ?>">
+            <a href="examenes.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo ($paginaActual === 'examenes.php' || ($paginaActual === 'test.php' && $modoActual !== 'tematico')) ? 'active' : ''; ?>">
                 <i class="fa-solid fa-file-signature"></i> Exámenes oficiales
             </a>
 
             <a href="temas.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo menu_active('temas.php', $paginaActual); ?>">
                 <i class="fa-solid fa-book-open"></i> Repasar temas
+            </a>
+
+            <a href="practica_tematica.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo ($paginaActual === 'practica_tematica.php' || ($paginaActual === 'test.php' && $modoActual === 'tematico')) ? 'active' : ''; ?>">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Práctica temática
             </a>
 
             <a href="practica.php" class="list-group-item list-group-item-action list-group-item-dark <?php echo menu_active('practica.php', $paginaActual); ?>">
