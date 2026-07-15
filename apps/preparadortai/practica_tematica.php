@@ -58,7 +58,7 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 
 <div class="card border-0 shadow-sm mb-4">
     <div class="card-body">
-        <form method="get" action="practica_tematica.php">
+        <form method="get" action="practica_tematica.php" id="topic-search-form">
             <div class="row g-3">
                 <div class="col-lg-7">
                     <label class="form-label small fw-bold">Temáticas</label>
@@ -75,8 +75,9 @@ $defaultQuestionCount = min(20, max(1, count($results)));
                                     placeholder='Ej. tcp ip o "modelo OSI"'
                                     maxlength="200"
                                 >
-                                <button type="button" class="btn btn-outline-danger remove-topic-query" title="Eliminar temática">
+                                <button type="button" class="btn btn-outline-danger remove-topic-query" title="Quitar temática" aria-label="Quitar temática">
                                     <i class="fa-solid fa-xmark"></i>
+                                    <span class="d-none d-md-inline ms-1">Quitar</span>
                                 </button>
                             </div>
                         <?php endforeach; ?>
@@ -144,11 +145,21 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
-                <div class="d-flex flex-wrap gap-2 mb-3">
-                    <?php foreach ($queries as $query): ?>
-                        <span class="badge rounded-pill bg-info text-dark">
-                            <i class="fa-solid fa-tag"></i> <?php echo topic_search_safe_text($query); ?>
-                        </span>
+                <div class="d-flex flex-wrap gap-2 mb-3 align-items-center">
+                    <span class="small fw-bold text-secondary me-1">Temáticas activas:</span>
+
+                    <?php foreach ($queries as $index => $query): ?>
+                        <button
+                            type="button"
+                            class="btn btn-sm rounded-pill bg-info text-dark border-0 active-topic-chip"
+                            data-topic-index="<?php echo (int)$index; ?>"
+                            title="Quitar esta temática y actualizar los resultados"
+                            aria-label="Quitar temática <?php echo topic_search_safe_text($query); ?>"
+                        >
+                            <i class="fa-solid fa-tag"></i>
+                            <?php echo topic_search_safe_text($query); ?>
+                            <i class="fa-solid fa-xmark ms-1"></i>
+                        </button>
                     <?php endforeach; ?>
                 </div>
 
@@ -252,8 +263,9 @@ $defaultQuestionCount = min(20, max(1, count($results)));
             placeholder='Ej. oracle backup'
             maxlength="200"
         >
-        <button type="button" class="btn btn-outline-danger remove-topic-query" title="Eliminar temática">
+        <button type="button" class="btn btn-outline-danger remove-topic-query" title="Quitar temática" aria-label="Quitar temática">
             <i class="fa-solid fa-xmark"></i>
+            <span class="d-none d-md-inline ms-1">Quitar</span>
         </button>
     </div>
 </template>
@@ -266,13 +278,19 @@ $defaultQuestionCount = min(20, max(1, count($results)));
     const selectAll = document.getElementById('select-all');
     const checkboxes = Array.from(document.querySelectorAll('.topic-question-checkbox'));
     const form = document.getElementById('topic-test-form');
+    const searchForm = document.getElementById('topic-search-form');
+    const activeTopicChips = Array.from(document.querySelectorAll('.active-topic-chip'));
     const maxQuestions = document.getElementById('max_questions');
     const maxTopicQueries = 6;
 
-    function renumberQueryRows() {
-        if (!queryList) return;
+    function getQueryRows() {
+        return queryList
+            ? Array.from(queryList.querySelectorAll('.topic-query-row'))
+            : [];
+    }
 
-        const rows = Array.from(queryList.querySelectorAll('.topic-query-row'));
+    function renumberQueryRows() {
+        const rows = getQueryRows();
 
         rows.forEach(function (row, index) {
             const label = row.querySelector('.input-group-text');
@@ -283,7 +301,15 @@ $defaultQuestionCount = min(20, max(1, count($results)));
             }
 
             if (removeButton) {
-                removeButton.disabled = rows.length === 1;
+                const isOnlyRow = rows.length === 1;
+                removeButton.disabled = isOnlyRow;
+                removeButton.title = isOnlyRow
+                    ? 'Debe existir al menos una temática'
+                    : 'Quitar temática';
+                removeButton.setAttribute(
+                    'aria-label',
+                    isOnlyRow ? 'Debe existir al menos una temática' : 'Quitar temática'
+                );
             }
         });
 
@@ -292,36 +318,71 @@ $defaultQuestionCount = min(20, max(1, count($results)));
         }
     }
 
-    function attachRemoveHandler(button) {
-        button.addEventListener('click', function () {
-            const rows = queryList.querySelectorAll('.topic-query-row');
+    function removeQueryRow(row) {
+        const rows = getQueryRows();
 
-            if (rows.length <= 1) return;
+        if (!row || rows.length <= 1) {
+            return;
+        }
 
-            button.closest('.topic-query-row').remove();
-            renumberQueryRows();
-        });
+        row.remove();
+        renumberQueryRows();
     }
 
+    // Delegación de eventos: funciona también con las filas añadidas dinámicamente.
     if (queryList) {
-        queryList.querySelectorAll('.remove-topic-query').forEach(attachRemoveHandler);
+        queryList.addEventListener('click', function (event) {
+            const removeButton = event.target.closest('.remove-topic-query');
+
+            if (!removeButton || !queryList.contains(removeButton)) {
+                return;
+            }
+
+            event.preventDefault();
+            removeQueryRow(removeButton.closest('.topic-query-row'));
+        });
     }
 
     if (addQueryButton && queryTemplate && queryList) {
         addQueryButton.addEventListener('click', function () {
-            if (queryList.querySelectorAll('.topic-query-row').length >= maxTopicQueries) return;
+            if (getQueryRows().length >= maxTopicQueries) {
+                return;
+            }
 
             const fragment = queryTemplate.content.cloneNode(true);
-            const removeButton = fragment.querySelector('.remove-topic-query');
-            const input = fragment.querySelector('input');
-
-            attachRemoveHandler(removeButton);
             queryList.appendChild(fragment);
             renumberQueryRows();
 
-            if (input) input.focus();
+            const rows = getQueryRows();
+            const lastInput = rows.length > 0
+                ? rows[rows.length - 1].querySelector('input[name="topics[]"]')
+                : null;
+
+            if (lastInput) {
+                lastInput.focus();
+            }
         });
     }
+
+    activeTopicChips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            if (!searchForm || !queryList) {
+                return;
+            }
+
+            const topicIndex = parseInt(chip.dataset.topicIndex, 10);
+            const rows = getQueryRows();
+
+            if (Number.isNaN(topicIndex) || !rows[topicIndex]) {
+                return;
+            }
+
+            rows[topicIndex].remove();
+            renumberQueryRows();
+
+            searchForm.submit();
+        });
+    });
 
     function selectedCount() {
         return checkboxes.filter(function (checkbox) {
@@ -330,7 +391,9 @@ $defaultQuestionCount = min(20, max(1, count($results)));
     }
 
     function updateControls() {
-        if (!selectAll || !maxQuestions) return;
+        if (!selectAll || !maxQuestions) {
+            return;
+        }
 
         const selected = selectedCount();
         selectAll.checked = selected === checkboxes.length && checkboxes.length > 0;
