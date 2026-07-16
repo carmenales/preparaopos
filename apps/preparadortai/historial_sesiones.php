@@ -52,14 +52,30 @@ function format_score_scale($value) {
 }
 
 function is_official_exam_row($row) {
-    return ($row['tipo'] ?? '') === 'Examen oficial';
+    return !is_thematic_session($row)
+        && ($row['tipo'] ?? '') === 'Examen oficial';
 }
+
 
 function has_official_scoring($row) {
     return is_official_exam_row($row)
         && ($row['scoring_rule_code'] ?? '') !== ''
         && ($row['official_score'] ?? null) !== null
         && ($row['official_score'] ?? '') !== '';
+}
+
+function is_thematic_session($row) {
+    return ($row['session_mode'] ?? '') === 'tematico';
+}
+
+function session_topics_array($row) {
+    $raw = trim((string)($row['session_topics'] ?? ''));
+
+    if ($raw === '') {
+        return [];
+    }
+
+    return array_values(array_filter(array_map('trim', explode('||', $raw))));
 }
 
 function selected_attr($currentValue, $optionValue) {
@@ -92,7 +108,12 @@ if ($filterTurno !== '') {
 }
 
 if ($filterTipo !== '') {
-    $whereClauses[] = "COALESCE(qs.tipo, '') = '" . mysqli_real_escape_string($link, $filterTipo) . "'";
+    if ($filterTipo === 'Práctica temática') {
+        $whereClauses[] = "COALESCE(sm.session_mode, '') = 'tematico'";
+    } else {
+        $whereClauses[] = "COALESCE(qs.tipo, '') = '" . mysqli_real_escape_string($link, $filterTipo) . "'";
+        $whereClauses[] = "COALESCE(sm.session_mode, '') <> 'tematico'";
+    }
 }
 
 if ($filterCategoria !== '') {
@@ -134,11 +155,20 @@ $turnos = fetch_all_rows($link, "
 ");
 
 $tipos = fetch_all_rows($link, "
-    SELECT DISTINCT qs.tipo
-    FROM test_attempts ta
-    INNER JOIN question_sets qs ON qs.categoria = ta.categoria
-    WHERE qs.tipo IS NOT NULL AND qs.tipo <> ''
-    ORDER BY qs.tipo
+    SELECT tipo
+    FROM (
+        SELECT DISTINCT qs.tipo AS tipo
+        FROM test_attempts ta
+        INNER JOIN question_sets qs ON qs.categoria = ta.categoria
+        WHERE qs.tipo IS NOT NULL AND qs.tipo <> ''
+
+        UNION
+
+        SELECT 'Práctica temática' AS tipo
+        FROM test_sessions
+        WHERE mode = 'tematico'
+    ) available_types
+    ORDER BY tipo
 ");
 
 $categorias = fetch_all_rows($link, "
@@ -157,6 +187,24 @@ $sessionsSql = "
         WHERE categoria IS NOT NULL AND categoria <> ''
         GROUP BY categoria
     ),
+    session_metadata AS (
+        SELECT
+            ts.id AS test_session_id,
+            ts.mode AS session_mode,
+            ts.title AS session_title,
+            ts.correction_mode,
+            ts.total_questions AS configured_total_questions,
+            GROUP_CONCAT(tst.topic_label ORDER BY tst.position SEPARATOR '||') AS session_topics
+        FROM test_sessions ts
+        LEFT JOIN test_session_topics tst
+            ON tst.test_session_id = ts.id
+        GROUP BY
+            ts.id,
+            ts.mode,
+            ts.title,
+            ts.correction_mode,
+            ts.total_questions
+    ),
     session_stats AS (
         SELECT
             ta.test_session_id,
@@ -168,6 +216,10 @@ $sessionsSql = "
             MAX(qs.convocatoria_year) AS convocatoria_year,
             MAX(qs.turno) AS turno,
             MAX(qs.tipo) AS tipo,
+            MAX(sm.session_mode) AS session_mode,
+            MAX(sm.session_title) AS session_title,
+            MAX(sm.correction_mode) AS correction_mode,
+            MAX(sm.session_topics) AS session_topics,
             MAX(sr.code) AS scoring_rule_code,
             MAX(sr.name) AS scoring_rule_name,
             MAX(sr.correct_score) AS correct_score,
@@ -175,7 +227,11 @@ $sessionsSql = "
             COALESCE(MAX(sr.blank_score), 0) AS blank_score,
             COALESCE(MAX(sr.score_scale), 10) AS score_scale,
             COALESCE(MAX(sr.min_score_zero), 1) AS min_score_zero,
-            COALESCE(MAX(question_counts.total_questions), 0) AS total_questions,
+            CASE
+                WHEN MAX(sm.session_mode) = 'tematico'
+                    THEN COALESCE(MAX(sm.configured_total_questions), COUNT(*))
+                ELSE COALESCE(MAX(question_counts.total_questions), 0)
+            END AS total_questions,
             COUNT(*) AS total_answers,
             COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
             COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
@@ -190,6 +246,8 @@ $sessionsSql = "
             ON sr.id = qs.scoring_rule_id
         LEFT JOIN question_counts
             ON question_counts.categoria = ta.categoria
+        LEFT JOIN session_metadata sm
+            ON sm.test_session_id = ta.test_session_id
         $whereSql
         GROUP BY ta.test_session_id
     ),
@@ -207,7 +265,8 @@ $sessionsSql = "
     SELECT
         session_scores.*,
         CASE
-            WHEN tipo = 'Examen oficial'
+            WHEN COALESCE(session_mode, '') <> 'tematico'
+                AND tipo = 'Examen oficial'
                 AND scoring_rule_code IS NOT NULL
                 AND correct_score IS NOT NULL
                 AND wrong_penalty IS NOT NULL
@@ -223,7 +282,8 @@ $sessionsSql = "
             ELSE NULL
         END AS official_direct_score,
         CASE
-            WHEN tipo = 'Examen oficial'
+            WHEN COALESCE(session_mode, '') <> 'tematico'
+                AND tipo = 'Examen oficial'
                 AND scoring_rule_code IS NOT NULL
                 AND correct_score IS NOT NULL
                 AND wrong_penalty IS NOT NULL
@@ -377,7 +437,7 @@ $sessions = fetch_all_rows($link, $sessionsSql);
                     <thead>
                         <tr>
                             <th>Fecha</th>
-                            <th>Categoría</th>
+                            <th>Sesión / categoría</th>
                             <th>Tipo</th>
                             <th class="text-end">Contestadas</th>
                             <th class="text-end">En blanco</th>
@@ -390,19 +450,40 @@ $sessions = fetch_all_rows($link, $sessionsSql);
                     <tbody>
                         <?php foreach ($sessions as $row): ?>
                             <?php
+                                $isThematic = is_thematic_session($row);
                                 $isOfficial = is_official_exam_row($row);
                                 $hasScoring = has_official_scoring($row);
+                                $topics = session_topics_array($row);
                                 $totalQuestions = (int)$row['total_questions'];
                                 $answered = (int)$row['total_answers'];
-                                $blank = $isOfficial ? max(0, $totalQuestions - $answered) : null;
+                                $blank = ($isOfficial || $isThematic) ? max(0, $totalQuestions - $answered) : null;
                                 $detailUrl = 'detalle_sesion.php?session_id=' . urlencode($row['test_session_id']);
-                                $repeatUrl = 'test.php?categoria=' . urlencode($row['categoria']);
+
+                                if ($isThematic) {
+                                    $repeatParams = !empty($topics) ? ['topics' => $topics] : [];
+                                    $repeatUrl = 'practica_tematica.php';
+
+                                    if (!empty($repeatParams)) {
+                                        $repeatUrl .= '?' . http_build_query($repeatParams);
+                                    }
+                                } else {
+                                    $repeatUrl = 'test.php?categoria=' . urlencode($row['categoria']);
+                                }
                             ?>
                             <tr>
                                 <td><?php echo safe_text($row['started_at']); ?></td>
                                 <td>
-                                    <div class="fw-semibold"><?php echo safe_text($row['categoria'] ?: 'Sin categoría'); ?></div>
-                                    <?php if (!empty($row['organismo']) || !empty($row['proceso_selectivo']) || !empty($row['convocatoria_year'])): ?>
+                                    <div class="fw-semibold">
+                                        <?php echo safe_text($isThematic ? ($row['session_title'] ?: 'Práctica temática') : ($row['categoria'] ?: 'Sin categoría')); ?>
+                                    </div>
+
+                                    <?php if ($isThematic && !empty($topics)): ?>
+                                        <div class="mt-1">
+                                            <?php foreach ($topics as $topicLabel): ?>
+                                                <span class="badge rounded-pill bg-info text-dark me-1"><?php echo safe_text($topicLabel); ?></span>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php elseif (!empty($row['organismo']) || !empty($row['proceso_selectivo']) || !empty($row['convocatoria_year'])): ?>
                                         <div class="text-secondary small">
                                             <?php echo safe_text(trim(($row['organismo'] ?? '') . ' · ' . ($row['proceso_selectivo'] ?? '') . ' · ' . ($row['convocatoria_year'] ?? ''), ' ·')); ?>
                                         </div>
@@ -414,9 +495,9 @@ $sessions = fetch_all_rows($link, $sessionsSql);
                                         </div>
                                     <?php endif; ?>
                                 </td>
-                                <td><?php echo safe_text($row['tipo'] ?: '-'); ?></td>
+                                <td><?php echo safe_text($isThematic ? 'Práctica temática' : ($row['tipo'] ?: '-')); ?></td>
                                 <td class="text-end"><?php echo $answered; ?></td>
-                                <td class="text-end"><?php echo $isOfficial ? (int)$blank : '-'; ?></td>
+                                <td class="text-end"><?php echo ($isOfficial || $isThematic) ? (int)$blank : '-'; ?></td>
                                 <td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td>
                                 <td class="text-end text-danger"><?php echo (int)$row['wrong_answers']; ?></td>
                                 <td class="text-end fw-bold">
