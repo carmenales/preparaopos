@@ -103,9 +103,23 @@ function build_query_string($overrides = []) {
     return http_build_query($params);
 }
 
-function is_official_exam_row($row) {
-    return ($row['tipo'] ?? '') === 'Examen oficial';
+function is_thematic_session($row) {
+    return ($row['session_mode'] ?? '') === 'tematico';
 }
+
+function session_display_title($row) {
+    if (is_thematic_session($row)) {
+        return $row['session_title'] ?: 'Práctica temática';
+    }
+
+    return $row['categoria'] ?: 'Sin categoría';
+}
+
+function is_official_exam_row($row) {
+    return !is_thematic_session($row)
+        && ($row['tipo'] ?? '') === 'Examen oficial';
+}
+
 
 function has_official_scoring($row) {
     return is_official_exam_row($row)
@@ -283,7 +297,12 @@ if ($filterTurno !== '') {
 }
 
 if ($filterTipo !== '') {
-    $whereClauses[] = "COALESCE(qs.tipo, '') = '" . mysqli_real_escape_string($link, $filterTipo) . "'";
+    if ($filterTipo === 'Práctica temática') {
+        $whereClauses[] = "COALESCE(sm.session_mode, '') = 'tematico'";
+    } else {
+        $whereClauses[] = "COALESCE(qs.tipo, '') = '" . mysqli_real_escape_string($link, $filterTipo) . "'";
+        $whereClauses[] = "COALESCE(sm.session_mode, '') <> 'tematico'";
+    }
 }
 
 if ($filterCategoria !== '') {
@@ -326,11 +345,20 @@ $turnos = fetch_all_rows($link, "
 ");
 
 $tipos = fetch_all_rows($link, "
-    SELECT DISTINCT qs.tipo
-    FROM test_attempts ta
-    INNER JOIN question_sets qs ON qs.categoria = ta.categoria
-    WHERE qs.tipo IS NOT NULL AND qs.tipo <> ''
-    ORDER BY qs.tipo
+    SELECT tipo
+    FROM (
+        SELECT DISTINCT qs.tipo AS tipo
+        FROM test_attempts ta
+        INNER JOIN question_sets qs ON qs.categoria = ta.categoria
+        WHERE qs.tipo IS NOT NULL AND qs.tipo <> ''
+
+        UNION
+
+        SELECT 'Práctica temática' AS tipo
+        FROM test_sessions
+        WHERE mode = 'tematico'
+    ) available_types
+    ORDER BY tipo
 ");
 
 $categorias = fetch_all_rows($link, "
@@ -349,6 +377,24 @@ $sessionsSql = "
         WHERE categoria IS NOT NULL AND categoria <> ''
         GROUP BY categoria
     ),
+    session_metadata AS (
+        SELECT
+            ts.id AS test_session_id,
+            ts.mode AS session_mode,
+            ts.title AS session_title,
+            ts.correction_mode,
+            ts.total_questions AS configured_total_questions,
+            GROUP_CONCAT(tst.topic_label ORDER BY tst.position SEPARATOR '||') AS session_topics
+        FROM test_sessions ts
+        LEFT JOIN test_session_topics tst
+            ON tst.test_session_id = ts.id
+        GROUP BY
+            ts.id,
+            ts.mode,
+            ts.title,
+            ts.correction_mode,
+            ts.total_questions
+    ),
     session_stats AS (
         SELECT
             ta.test_session_id,
@@ -360,6 +406,10 @@ $sessionsSql = "
             MAX(qs.convocatoria_year) AS convocatoria_year,
             MAX(qs.turno) AS turno,
             MAX(qs.tipo) AS tipo,
+            MAX(sm.session_mode) AS session_mode,
+            MAX(sm.session_title) AS session_title,
+            MAX(sm.correction_mode) AS correction_mode,
+            MAX(sm.session_topics) AS session_topics,
             MAX(sr.code) AS scoring_rule_code,
             MAX(sr.name) AS scoring_rule_name,
             MAX(sr.correct_score) AS correct_score,
@@ -367,7 +417,11 @@ $sessionsSql = "
             COALESCE(MAX(sr.blank_score), 0) AS blank_score,
             COALESCE(MAX(sr.score_scale), 10) AS score_scale,
             COALESCE(MAX(sr.min_score_zero), 1) AS min_score_zero,
-            COALESCE(MAX(question_counts.total_questions), 0) AS total_questions,
+            CASE
+                WHEN MAX(sm.session_mode) = 'tematico'
+                    THEN COALESCE(MAX(sm.configured_total_questions), COUNT(*))
+                ELSE COALESCE(MAX(question_counts.total_questions), 0)
+            END AS total_questions,
             COUNT(*) AS total_answers,
             COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
             COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
@@ -382,6 +436,8 @@ $sessionsSql = "
             ON sr.id = qs.scoring_rule_id
         LEFT JOIN question_counts
             ON question_counts.categoria = ta.categoria
+        LEFT JOIN session_metadata sm
+            ON sm.test_session_id = ta.test_session_id
         $whereSql
         GROUP BY ta.test_session_id
     ),
@@ -399,7 +455,8 @@ $sessionsSql = "
     SELECT
         session_scores.*,
         CASE
-            WHEN tipo = 'Examen oficial'
+            WHEN COALESCE(session_mode, '') <> 'tematico'
+                AND tipo = 'Examen oficial'
                 AND scoring_rule_code IS NOT NULL
                 AND correct_score IS NOT NULL
                 AND wrong_penalty IS NOT NULL
@@ -415,7 +472,8 @@ $sessionsSql = "
             ELSE NULL
         END AS official_direct_score,
         CASE
-            WHEN tipo = 'Examen oficial'
+            WHEN COALESCE(session_mode, '') <> 'tematico'
+                AND tipo = 'Examen oficial'
                 AND scoring_rule_code IS NOT NULL
                 AND correct_score IS NOT NULL
                 AND wrong_penalty IS NOT NULL
@@ -546,11 +604,58 @@ $recurrentMistakesSql = "
     LIMIT 10
 ";
 
+$thematicPerformanceSql = "
+    SELECT
+        tst.topic_label,
+        COUNT(DISTINCT ta.test_session_id) AS total_sessions,
+        COUNT(*) AS total_answers,
+        COALESCE(SUM(ta.is_correct = 1), 0) AS correct_answers,
+        COALESCE(SUM(ta.is_correct = 0), 0) AS wrong_answers,
+        CASE
+            WHEN COUNT(*) = 0 THEN 0
+            ELSE ROUND(SUM(ta.is_correct = 1) * 100 / COUNT(*), 2)
+        END AS accuracy_percentage,
+        MAX(ta.created_at) AS last_seen_at
+    FROM test_attempts ta
+    INNER JOIN test_session_question_topics tsqt
+        ON tsqt.test_session_id = ta.test_session_id
+        AND tsqt.question_id = ta.question_id
+    INNER JOIN test_session_topics tst
+        ON tst.id = tsqt.topic_id
+    $sessionFilterSql
+    GROUP BY tst.topic_label
+    ORDER BY accuracy_percentage ASC, wrong_answers DESC, total_answers DESC
+";
+
 $globalStats = fetch_single_row($link, $globalStatsSql);
 $categoryStats = fetch_all_rows($link, $categoryStatsSql);
 $blockStats = fetch_all_rows($link, $blockStatsSql);
 $topicStats = fetch_all_rows($link, $topicStatsSql);
 $recurrentMistakes = fetch_all_rows($link, $recurrentMistakesSql);
+$thematicPerformance = fetch_all_rows($link, $thematicPerformanceSql);
+
+$weakThematicTopics = [];
+
+foreach ($thematicPerformance as $row) {
+    if ((int)$row['total_answers'] < 3) {
+        continue;
+    }
+
+    $accuracy = (float)$row['accuracy_percentage'];
+    $wrong = (int)$row['wrong_answers'];
+    $row['priority_score'] = $wrong * max(0, 100 - $accuracy);
+    $weakThematicTopics[] = $row;
+}
+
+usort($weakThematicTopics, function ($a, $b) {
+    if ($a['priority_score'] === $b['priority_score']) {
+        return (int)$b['wrong_answers'] <=> (int)$a['wrong_answers'];
+    }
+
+    return $a['priority_score'] < $b['priority_score'] ? 1 : -1;
+});
+
+$weakThematicTopics = array_slice($weakThematicTopics, 0, 10);
 
 $weakTopics = [];
 
@@ -1010,7 +1115,7 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
                     ?>
                     <tr>
                         <td><?php echo safe_text($session['started_at']); ?></td>
-                        <td><div class="fw-semibold"><?php echo safe_text($session['categoria'] ?: 'Sin categoría'); ?></div><?php if (!empty($session['tipo'])): ?><div class="text-secondary small"><?php echo safe_text($session['tipo']); ?></div><?php endif; ?></td>
+                        <td><div class="fw-semibold"><?php echo safe_text(session_display_title($session)); ?></div><div class="text-secondary small"><?php echo safe_text(is_thematic_session($session) ? 'Práctica temática' : ($session['tipo'] ?: '-')); ?></div></td>
                         <td class="text-end fw-bold"><?php echo safe_text($metric['display']); ?></td>
                         <td class="text-end fw-bold <?php echo $deltaClass; ?>"><?php echo $delta === null ? '-' : format_signed_decimal($delta, $metric['delta_suffix']); ?></td>
                         <td class="text-end"><?php echo get_trend_badge($delta); ?></td>
@@ -1065,6 +1170,65 @@ $deletedAttempts = isset($_GET['deleted_attempts']) ? (int)$_GET['deleted_attemp
                     </tr>
                 <?php endforeach; ?>
             </tbody></table></div>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="fa-solid fa-tags text-primary"></i> Rendimiento por temática de búsqueda</h5>
+        <span class="badge bg-secondary"><?php echo count($thematicPerformance); ?></span>
+    </div>
+    <div class="card-body">
+        <?php if (empty($thematicPerformance)): ?>
+            <p class="text-secondary mb-0">Todavía no hay respuestas registradas en prácticas temáticas.</p>
+        <?php else: ?>
+            <div class="table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Temática</th><th class="text-end">Sesiones</th><th class="text-end">Total</th><th class="text-end">Aciertos</th><th class="text-end">Fallos</th><th class="text-end">% acierto</th><th class="text-end">Prioridad</th><th class="text-end">Acción</th></tr></thead><tbody>
+                <?php foreach ($thematicPerformance as $row): ?>
+                    <?php
+                        $priorityRow = $row;
+                        $priorityRow['priority_score'] = (int)$row['wrong_answers'] * max(0, 100 - (float)$row['accuracy_percentage']);
+                        $practiceUrl = 'practica_tematica.php?' . http_build_query(['topics' => [$row['topic_label']]]);
+                    ?>
+                    <tr>
+                        <td><span class="badge rounded-pill bg-info text-dark"><?php echo safe_text($row['topic_label']); ?></span></td>
+                        <td class="text-end"><?php echo (int)$row['total_sessions']; ?></td>
+                        <td class="text-end"><?php echo (int)$row['total_answers']; ?></td>
+                        <td class="text-end text-success"><?php echo (int)$row['correct_answers']; ?></td>
+                        <td class="text-end text-danger fw-bold"><?php echo (int)$row['wrong_answers']; ?></td>
+                        <td class="text-end fw-bold"><?php echo format_percentage($row['accuracy_percentage']); ?></td>
+                        <td class="text-end"><?php echo get_priority_badge($priorityRow); ?></td>
+                        <td class="text-end"><a href="<?php echo safe_text($practiceUrl); ?>" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-rotate-right"></i> Practicar</a></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody></table></div>
+            <p class="text-secondary small mb-0">Una pregunta puede contribuir a más de una temática cuando coincide con varios grupos de búsqueda.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-white"><h5 class="mb-0 fw-bold"><i class="fa-solid fa-triangle-exclamation text-warning"></i> Temáticas de búsqueda a reforzar</h5></div>
+    <div class="card-body">
+        <?php if (empty($weakThematicTopics)): ?>
+            <p class="text-secondary mb-0">No hay suficientes datos para priorizar temáticas. Se requieren al menos 3 respuestas por temática.</p>
+        <?php else: ?>
+            <div class="row g-3">
+                <?php foreach ($weakThematicTopics as $row): ?>
+                    <?php $practiceUrl = 'practica_tematica.php?' . http_build_query(['topics' => [$row['topic_label']]]); ?>
+                    <div class="col-md-4">
+                        <div class="border rounded p-3 bg-white h-100">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                <span class="fw-bold"><?php echo safe_text($row['topic_label']); ?></span>
+                                <?php echo get_priority_badge($row); ?>
+                            </div>
+                            <div class="small text-secondary mb-2"><?php echo (int)$row['total_answers']; ?> respuestas · <?php echo (int)$row['wrong_answers']; ?> fallos</div>
+                            <div class="d-flex justify-content-between small mb-2"><span>% acierto</span><strong><?php echo format_percentage($row['accuracy_percentage']); ?></strong></div>
+                            <a href="<?php echo safe_text($practiceUrl); ?>" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-play"></i> Reforzar</a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
     </div>
 </div>
