@@ -13,12 +13,109 @@ function topic_test_redirect_error($message, $queries = []) {
     exit;
 }
 
+function topic_test_insert_session($link, $sessionId, $queries, $correctionMode, $questionIds) {
+    $title = empty($queries)
+        ? 'Práctica temática'
+        : 'Práctica temática: ' . implode(' + ', $queries);
+
+    if (function_exists('mb_substr')) {
+        $title = mb_substr($title, 0, 255, 'UTF-8');
+    } else {
+        $title = substr($title, 0, 255);
+    }
+
+    $totalQuestions = count($questionIds);
+
+    $sql = "
+        INSERT INTO test_sessions
+            (id, mode, title, correction_mode, total_questions)
+        VALUES
+            (?, 'tematico', ?, ?, ?)
+    ";
+
+    $stmt = mysqli_prepare($link, $sql);
+
+    if (!$stmt) {
+        throw new RuntimeException('No se ha podido preparar el registro de la sesión.');
+    }
+
+    mysqli_stmt_bind_param($stmt, 'sssi', $sessionId, $title, $correctionMode, $totalQuestions);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        $error = mysqli_stmt_error($stmt);
+        mysqli_stmt_close($stmt);
+        throw new RuntimeException('No se ha podido registrar la sesión: ' . $error);
+    }
+
+    mysqli_stmt_close($stmt);
+
+    foreach ($queries as $position => $query) {
+        $topicSql = "
+            INSERT INTO test_session_topics
+                (test_session_id, topic_label, position)
+            VALUES
+                (?, ?, ?)
+        ";
+        $topicStmt = mysqli_prepare($link, $topicSql);
+
+        if (!$topicStmt) {
+            throw new RuntimeException('No se ha podido preparar el registro de una temática.');
+        }
+
+        mysqli_stmt_bind_param($topicStmt, 'ssi', $sessionId, $query, $position);
+
+        if (!mysqli_stmt_execute($topicStmt)) {
+            $error = mysqli_stmt_error($topicStmt);
+            mysqli_stmt_close($topicStmt);
+            throw new RuntimeException('No se ha podido registrar una temática: ' . $error);
+        }
+
+        $topicId = mysqli_insert_id($link);
+        mysqli_stmt_close($topicStmt);
+
+        $matchingRows = topic_search_questions($link, ['topics' => [$query]], 500);
+        $matchingIds = [];
+
+        foreach ($matchingRows as $row) {
+            $matchingIds[(int)$row['id']] = true;
+        }
+
+        $mapSql = "
+            INSERT IGNORE INTO test_session_question_topics
+                (test_session_id, question_id, topic_id)
+            VALUES
+                (?, ?, ?)
+        ";
+        $mapStmt = mysqli_prepare($link, $mapSql);
+
+        if (!$mapStmt) {
+            throw new RuntimeException('No se ha podido preparar la relación entre temática y pregunta.');
+        }
+
+        foreach ($questionIds as $questionId) {
+            if (!isset($matchingIds[(int)$questionId])) {
+                continue;
+            }
+
+            mysqli_stmt_bind_param($mapStmt, 'sii', $sessionId, $questionId, $topicId);
+
+            if (!mysqli_stmt_execute($mapStmt)) {
+                $error = mysqli_stmt_error($mapStmt);
+                mysqli_stmt_close($mapStmt);
+                throw new RuntimeException('No se ha podido relacionar una pregunta con su temática: ' . $error);
+            }
+        }
+
+        mysqli_stmt_close($mapStmt);
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     topic_test_redirect_error('Solicitud no válida.');
 }
 
 $queries = topic_search_normalize_queries($_POST['topics'] ?? [], $_POST['q'] ?? '');
-$correction = ($_POST['correccion'] ?? '') === 'final' ? 'final' : 'inmediata';
+$correctionMode = ($_POST['correccion'] ?? '') === 'final' ? 'final' : 'inmediata';
 $rawIds = $_POST['question_ids'] ?? [];
 
 if (!is_array($rawIds)) {
@@ -75,17 +172,35 @@ $maxQuestions = filter_var($_POST['max_questions'] ?? count($ids), FILTER_VALIDA
 $maxQuestions = min((int)$maxQuestions, count($ids), 100);
 shuffle($ids);
 $ids = array_slice($ids, 0, $maxQuestions);
+$testSessionId = bin2hex(random_bytes(16));
+
+mysqli_begin_transaction($link);
+
+try {
+    topic_test_insert_session(
+        $link,
+        $testSessionId,
+        $queries,
+        $correctionMode,
+        $ids
+    );
+    mysqli_commit($link);
+} catch (Throwable $exception) {
+    mysqli_rollback($link);
+    topic_test_redirect_error($exception->getMessage(), $queries);
+}
 
 $params = [
     'modo' => 'tematico',
     'ids' => implode(',', $ids),
+    'test_session_id' => $testSessionId,
 ];
 
 if (!empty($queries)) {
     $params['topics'] = $queries;
 }
 
-if ($correction === 'final') {
+if ($correctionMode === 'final') {
     $params['correccion'] = 'final';
 }
 

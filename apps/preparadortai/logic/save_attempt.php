@@ -74,52 +74,124 @@ if ($isCorrect !== 0 && $isCorrect !== 1) {
     exit;
 }
 
-$sql = "
-    INSERT INTO test_attempts
-        (test_session_id, question_id, selected_answer, correct_answer, is_correct, categoria, bloque, tema)
-    VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?)
-";
+mysqli_begin_transaction($link);
 
-$stmt = mysqli_prepare($link, $sql);
+try {
+    $findSql = "
+        SELECT id
+        FROM test_attempts
+        WHERE test_session_id = ? AND question_id = ?
+        ORDER BY id DESC
+        LIMIT 1
+        FOR UPDATE
+    ";
+    $findStmt = mysqli_prepare($link, $findSql);
 
-if ($stmt === false) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'error' => 'Could not prepare insert statement',
-        'details' => mysqli_error($link)
-    ]);
-    exit;
-}
+    if (!$findStmt) {
+        throw new RuntimeException('Could not prepare lookup statement: ' . mysqli_error($link));
+    }
 
-mysqli_stmt_bind_param(
-    $stmt,
-    "sissisii",
-    $testSessionId,
-    $questionId,
-    $selectedAnswer,
-    $correctAnswer,
-    $isCorrect,
-    $categoria,
-    $bloque,
-    $tema
-);
+    mysqli_stmt_bind_param($findStmt, 'si', $testSessionId, $questionId);
+    mysqli_stmt_execute($findStmt);
+    $findResult = mysqli_stmt_get_result($findStmt);
+    $existingAttempt = mysqli_fetch_assoc($findResult);
+    mysqli_stmt_close($findStmt);
 
-if (!mysqli_stmt_execute($stmt)) {
+    if ($existingAttempt) {
+        $attemptId = (int)$existingAttempt['id'];
+        $sql = "
+            UPDATE test_attempts
+            SET
+                selected_answer = ?,
+                correct_answer = ?,
+                is_correct = ?,
+                categoria = ?,
+                bloque = ?,
+                tema = ?
+            WHERE id = ?
+        ";
+        $stmt = mysqli_prepare($link, $sql);
+
+        if (!$stmt) {
+            throw new RuntimeException('Could not prepare update statement: ' . mysqli_error($link));
+        }
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            'ssisiii',
+            $selectedAnswer,
+            $correctAnswer,
+            $isCorrect,
+            $categoria,
+            $bloque,
+            $tema,
+            $attemptId
+        );
+    } else {
+        $sql = "
+            INSERT INTO test_attempts
+                (test_session_id, question_id, selected_answer, correct_answer, is_correct, categoria, bloque, tema)
+            VALUES
+                (?, ?, ?, ?, ?, ?, ?, ?)
+        ";
+        $stmt = mysqli_prepare($link, $sql);
+
+        if (!$stmt) {
+            throw new RuntimeException('Could not prepare insert statement: ' . mysqli_error($link));
+        }
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            'sissisii',
+            $testSessionId,
+            $questionId,
+            $selectedAnswer,
+            $correctAnswer,
+            $isCorrect,
+            $categoria,
+            $bloque,
+            $tema
+        );
+    }
+
+    if (!mysqli_stmt_execute($stmt)) {
+        $details = mysqli_stmt_error($stmt);
+        mysqli_stmt_close($stmt);
+        throw new RuntimeException('Could not save test attempt: ' . $details);
+    }
+
+    if (!$existingAttempt) {
+        $attemptId = mysqli_insert_id($link);
+    }
+
+    mysqli_stmt_close($stmt);
+
+    $touchStmt = mysqli_prepare(
+        $link,
+        'UPDATE test_sessions SET updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    );
+
+    if ($touchStmt) {
+        mysqli_stmt_bind_param($touchStmt, 's', $testSessionId);
+        mysqli_stmt_execute($touchStmt);
+        mysqli_stmt_close($touchStmt);
+    }
+
+    mysqli_commit($link);
+} catch (Throwable $exception) {
+    mysqli_rollback($link);
     http_response_code(500);
     echo json_encode([
         'success' => false,
         'error' => 'Could not save test attempt',
-        'details' => mysqli_stmt_error($stmt)
+        'details' => $exception->getMessage(),
     ]);
     exit;
 }
 
-$attemptId = mysqli_insert_id($link);
-
 echo json_encode([
     'success' => true,
-    'attempt_id' => $attemptId
+    'attempt_id' => $attemptId,
+    'updated' => (bool)$existingAttempt,
 ]);
 exit;
