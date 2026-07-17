@@ -89,6 +89,32 @@ function fetch_questions_by_ids($link, $ids) {
     return $questions;
 }
 
+function fetch_thematic_session($link, $sessionId) {
+    if (!preg_match('/^[a-f0-9]{32}$/', (string)$sessionId)) {
+        return null;
+    }
+
+    $sql = "
+        SELECT id, mode, title, correction_mode, total_questions
+        FROM test_sessions
+        WHERE id = ? AND mode = 'tematico'
+        LIMIT 1
+    ";
+    $stmt = mysqli_prepare($link, $sql);
+
+    if (!$stmt) {
+        return null;
+    }
+
+    mysqli_stmt_bind_param($stmt, 's', $sessionId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+
+    return $row ?: null;
+}
+
 function fetch_question_set_with_scoring($link, $category) {
     if ($category === '') {
         return null;
@@ -154,6 +180,7 @@ $topicMode = $modo === 'tematico';
 $topicQueries = topic_search_normalize_queries($_GET['topics'] ?? [], $_GET['q'] ?? '');
 $topicLabel = implode(' + ', $topicQueries);
 $topicIdsRaw = trim((string)($_GET['ids'] ?? ''));
+$topicTestSessionId = trim((string)($_GET['test_session_id'] ?? ''));
 $topicIds = [];
 
 if ($topicMode && $topicIdsRaw !== '') {
@@ -176,13 +203,20 @@ $correccionFinal = $correccion === 'final';
 $filtroBloque = isset($_GET['bloque']) && $_GET['bloque'] !== '' ? (int)$_GET['bloque'] : null;
 $filtroTema = isset($_GET['tema']) && $_GET['tema'] !== '' ? (int)$_GET['tema'] : null;
 
-$testSessionId = bin2hex(random_bytes(16));
+$testSessionId = ($topicMode && preg_match('/^[a-f0-9]{32}$/', $topicTestSessionId))
+    ? $topicTestSessionId
+    : bin2hex(random_bytes(16));
 $preguntas = [];
 $errorMessage = null;
 $questionSet = fetch_question_set_with_scoring($link, $cat);
+$topicSession = $topicMode ? fetch_thematic_session($link, $topicTestSessionId) : null;
 
 if ($failedMode && !preg_match('/^[a-f0-9]{32}$/', $sessionId)) {
     $errorMessage = 'Sesión de origen no válida para repasar falladas.';
+}
+
+if ($topicMode && $topicSession === null) {
+    $errorMessage = 'La sesión temática no es válida o no está registrada.';
 }
 
 if ($topicMode && empty($topicIds)) {
@@ -194,6 +228,19 @@ if ($errorMessage === null && $topicMode) {
 
     if (empty($preguntas)) {
         $errorMessage = 'Las preguntas seleccionadas ya no están disponibles.';
+    } else {
+        $correctionMode = $correccionFinal ? 'final' : 'inmediata';
+        $totalTopicQuestions = count($preguntas);
+        $sessionStmt = mysqli_prepare(
+            $link,
+            "UPDATE test_sessions SET correction_mode = ?, total_questions = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND mode = 'tematico'"
+        );
+
+        if ($sessionStmt) {
+            mysqli_stmt_bind_param($sessionStmt, 'sis', $correctionMode, $totalTopicQuestions, $testSessionId);
+            mysqli_stmt_execute($sessionStmt);
+            mysqli_stmt_close($sessionStmt);
+        }
     }
 } elseif ($errorMessage === null && $failedMode) {
     $sql = "

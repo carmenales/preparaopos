@@ -83,6 +83,16 @@ function calculate_official_score_from_rule($correctAnswers, $wrongAnswers, $bla
     ];
 }
 
+function session_topics_array($raw) {
+    $raw = trim((string)$raw);
+
+    if ($raw === '') {
+        return [];
+    }
+
+    return array_values(array_filter(array_map('trim', explode('||', $raw))));
+}
+
 $sessionId = isset($_GET['session_id']) ? trim($_GET['session_id']) : '';
 
 if (!preg_match('/^[a-f0-9]{32}$/', $sessionId)) {
@@ -98,6 +108,31 @@ if (!preg_match('/^[a-f0-9]{32}$/', $sessionId)) {
     include 'includes/footer.php';
     exit;
 }
+
+$sessionMetadataSql = "
+    SELECT
+        ts.id,
+        ts.mode,
+        ts.title,
+        ts.correction_mode,
+        ts.total_questions,
+        GROUP_CONCAT(tst.topic_label ORDER BY tst.position SEPARATOR '||') AS session_topics
+    FROM test_sessions ts
+    LEFT JOIN test_session_topics tst
+        ON tst.test_session_id = ts.id
+    WHERE ts.id = ?
+    GROUP BY ts.id, ts.mode, ts.title, ts.correction_mode, ts.total_questions
+";
+
+$stmt = mysqli_prepare($link, $sessionMetadataSql);
+mysqli_stmt_bind_param($stmt, 's', $sessionId);
+mysqli_stmt_execute($stmt);
+$sessionMetadataResult = mysqli_stmt_get_result($stmt);
+$sessionMetadata = mysqli_fetch_assoc($sessionMetadataResult) ?: null;
+mysqli_stmt_close($stmt);
+
+$isThematic = ($sessionMetadata['mode'] ?? '') === 'tematico';
+$sessionTopics = session_topics_array($sessionMetadata['session_topics'] ?? '');
 
 $summarySql = "
     SELECT
@@ -142,6 +177,9 @@ $wrongAnswers = (int)$summary['wrong_answers'];
 $correctAnswers = (int)$summary['correct_answers'];
 $totalAnswers = (int)$summary['total_answers'];
 $category = (string)($summary['categoria'] ?? '');
+$sessionTitle = $isThematic
+    ? (string)($sessionMetadata['title'] ?? 'Práctica temática')
+    : $category;
 $failedReviewUrl = 'test.php?modo=falladas&session_id=' . urlencode($summary['test_session_id']);
 
 $questionSet = null;
@@ -196,7 +234,15 @@ $totalQuestionsRow = mysqli_fetch_assoc($totalQuestionsResult);
 mysqli_stmt_close($stmt);
 
 $totalCategoryQuestions = (int)($totalQuestionsRow['total_questions'] ?? 0);
-$hasOfficialScoring = $questionSet && has_official_scoring_rule($questionSet);
+$hasOfficialScoring = !$isThematic && $questionSet && has_official_scoring_rule($questionSet);
+
+if ($isThematic) {
+    $totalCategoryQuestions = max(
+        $totalAnswers,
+        (int)($sessionMetadata['total_questions'] ?? $totalAnswers)
+    );
+    $blankAnswers = max(0, $totalCategoryQuestions - $totalAnswers);
+}
 
 if ($hasOfficialScoring && $totalCategoryQuestions > 0) {
     $blankAnswers = max(0, $totalCategoryQuestions - $totalAnswers);
@@ -296,9 +342,14 @@ if ($hasOfficialScoring) {
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="text-primary fw-bold">
-        <i class="fa-solid fa-list-check"></i> Detalle de sesión
-    </h2>
+    <div>
+        <h2 class="text-primary fw-bold mb-1">
+            <i class="fa-solid fa-list-check"></i> Detalle de sesión
+        </h2>
+        <?php if ($isThematic): ?>
+            <div class="text-secondary"><?php echo safe_text($sessionTitle); ?></div>
+        <?php endif; ?>
+    </div>
 
     <div class="d-flex gap-2">
         <?php if ($wrongAnswers > 0): ?>
@@ -322,13 +373,24 @@ if ($hasOfficialScoring) {
     </div>
 </div>
 
+<?php if ($isThematic && !empty($sessionTopics)): ?>
+    <div class="alert alert-info shadow-sm border-0">
+        <strong>Temáticas:</strong>
+        <?php foreach ($sessionTopics as $topicLabel): ?>
+            <span class="badge rounded-pill bg-info text-dark ms-1"><?php echo safe_text($topicLabel); ?></span>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
 <div class="row g-4 mb-4">
     <div class="col-md-3">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="text-secondary small text-uppercase fw-bold">Categoría</div>
+                <div class="text-secondary small text-uppercase fw-bold">
+                    <?php echo $isThematic ? 'Sesión' : 'Categoría'; ?>
+                </div>
                 <div class="fs-5 fw-bold text-dark">
-                    <?php echo safe_text($summary['categoria'] ?: 'Sin categoría'); ?>
+                    <?php echo safe_text($isThematic ? $sessionTitle : ($summary['categoria'] ?: 'Sin categoría')); ?>
                 </div>
             </div>
         </div>
@@ -338,16 +400,16 @@ if ($hasOfficialScoring) {
         <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
                 <div class="text-secondary small text-uppercase fw-bold">
-                    <?php echo $hasOfficialScoring ? 'Contestadas / total' : 'Respuestas'; ?>
+                    <?php echo ($hasOfficialScoring || $isThematic) ? 'Contestadas / total' : 'Respuestas'; ?>
                 </div>
                 <div class="display-6 fw-bold text-dark">
-                    <?php if ($hasOfficialScoring): ?>
+                    <?php if ($hasOfficialScoring || $isThematic): ?>
                         <?php echo (int)$totalAnswers; ?> / <?php echo (int)$totalCategoryQuestions; ?>
                     <?php else: ?>
                         <?php echo (int)$summary['total_answers']; ?>
                     <?php endif; ?>
                 </div>
-                <?php if ($hasOfficialScoring): ?>
+                <?php if ($hasOfficialScoring || $isThematic): ?>
                     <div class="text-secondary small">
                         Blancas: <?php echo (int)$blankAnswers; ?>
                     </div>
@@ -365,7 +427,7 @@ if ($hasOfficialScoring) {
                     /
                     <span class="text-danger"><?php echo (int)$summary['wrong_answers']; ?></span>
                 </div>
-                <?php if ($hasOfficialScoring): ?>
+                <?php if ($hasOfficialScoring || $isThematic): ?>
                     <div class="text-secondary small">
                         No contestadas: <?php echo (int)$blankAnswers; ?>
                     </div>
