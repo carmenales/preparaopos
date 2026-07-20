@@ -37,8 +37,6 @@ needs_human_review: true
 
 Este tema corresponde al **Tema 6 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026) exclusivo para el perfil **P02: Consultor de Sistemas de Información especialista en Gobierno de IA** de la Agencia para la Administración Digital de la Comunidad de Madrid. 
 
-Tras estudiar en el Tema 5 la norma legal pura (*AI Act*, RGPD, ISO 42001), este Tema 6 evalúa la **implementación organizativa y técnica** de dicha norma en la Administración Pública. En un examen tipo test con penalización, el tribunal buscará que el opositor discrimine rigurosamente entre *Gobierno* (dirigir y evaluar) y *Gestión* (construir y operar), que conozca la estructura del **NIST AI RMF 1.0** y que distinga las fases de ataque a la IA según las taxonomías de **ENISA** (Data Poisoning vs. Evasión). Asimismo, debe entenderse el concepto emergente de **GovOps**: la traducción de la ética y la ley en código ejecutable (*Policy-as-Code*) dentro de los *pipelines* de MLOps/LLMOps.
-
 ## Ideas clave
 
 1.  **Gobierno vs. Gestión (ISO/IEC 38507 / COBIT):** El **Gobierno** evalúa, dirige y monitoriza (EDM) asegurando la alineación con la estrategia y la legalidad. La **Gestión** planifica, construye, ejecuta y controla. El gobierno recae en la alta dirección/comités; la gestión en los equipos técnicos.

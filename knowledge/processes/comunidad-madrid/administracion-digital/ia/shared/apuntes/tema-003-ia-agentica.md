@@ -40,8 +40,6 @@ needs_human_review: true
 
 Este tema corresponde al **Tema 3 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), dentro de las áreas de conocimiento del Bloque 1 de la Fase 1 de oposición, común a los perfiles **P01: Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software** y **P02: Consultor de Sistemas de Información - Especialista en Gobierno de IA** de la Agencia para la Administración Digital de la Comunidad de Madrid.
 
-La prueba consta de **45 preguntas tipo test (+5 de reserva)**, con **penalización de -0,25 puntos por error**. El contenido base (arquitecturas de agentes, componentes, observabilidad, prompt engineering y AgentOps) es común, pero el enfoque de estudio difiere: para **P01** el énfasis recae en la precisión técnica de la implementación (ReAct, *Function Calling*, tipos de memoria), mientras que para **P02** el estudio se traslada a **cómo controlar la autonomía, auditar la trayectoria de decisiones, gestionar los riesgos de seguridad (OWASP) y garantizar el cumplimiento normativo (AI Act y ENS)**.
-
 A nivel normativo, aunque la "IA Agéntica" no es una categoría estricta en el Reglamento (UE) 2024/1689 (Ley de IA), los sistemas agénticos están sujetos a las obligaciones de trazabilidad, gestión de riesgos, supervisión humana (HITL) y registro de logs (Art. 12), especialmente en casos de alto riesgo. En un examen tipo test, es crucial distinguir entre la "observabilidad" técnica de *AgentOps* y el "registro de eventos" (*logging*) como obligación legal, así como diferenciar un *Prompt* como instrucción de código frente a un *Prompt* como mecanismo de control lógico (*Guardrail*).
 
 ## Ideas clave

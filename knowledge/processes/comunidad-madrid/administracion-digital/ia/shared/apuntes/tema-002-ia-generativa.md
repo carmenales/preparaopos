@@ -42,8 +42,6 @@ Este tema corresponde al **Tema 2 del Anexo 3** de la Resolución 352/2026 (BOCM
 
 El epígrafe oficial incluye cinco bloques: **LLMs: tokenización, embeddings y predicción**, **arquitectura transformer**, **Generación Aumentada por Recuperación (RAG)**, **usos y limitaciones** y **conceptos de LLMOps**. Se apoya directamente en el Tema 1 (Fundamentos) y conecta con el Tema 3 (IA Agéntica). El contenido base es común a ambos perfiles, pero el enfoque de estudio difiere: para **P01** el énfasis recae en la mecánica técnica y la implementación (algoritmos de tokenización, decodificación, PEFT/LoRA), mientras que para **P02** el estudio se traslada a las **implicaciones de gobernanza, riesgo, cumplimiento y auditoría** de estos sistemas en la Administración Pública.
 
-La prueba es tipo test con penalización, por lo que el enfoque debe ser estrictamente técnico y normativo, evitando divulgación genérica. Es crucial dominar con precisión las diferencias entre **modelo fundacional**, **modelo de IA de uso general (GPAI)**, **RAG vs. Fine-Tuning**, **arquitecturas secuenciales vs. atención paralela**, las métricas propias de **LLMOps** y las obligaciones del Reglamento (UE) 2024/1689 (Ley de IA) aplicables a estos sistemas.
-
 ## Ideas clave
 
 1. **IA Generativa vs. Discriminativa:** La IA generativa produce contenido nuevo (texto, código, imagen) basándose en distribuciones de probabilidad aprendidas en un entrenamiento masivo. La discriminativa clasifica o predice (ej. fraude/no fraude). Ambas presentan riesgos distintos de auditoría.

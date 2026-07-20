@@ -38,8 +38,6 @@ needs_human_review: true
 
 Este tema es el **núcleo jurídico-técnico** del perfil **P02: Consultor de Sistemas de Información especialista en Gobierno de IA** (Tema 5 del Anexo 3 de la Resolución 352/2026). El tribunal exige un conocimiento riguroso de la arquitectura del **Reglamento (UE) 2024/1689 (Ley de IA / *AI Act*)**, focalizándose en el enfoque basado en riesgos, la distinción exacta de roles (Proveedor frente a Responsable del despliegue), la interacción normativa con el **RGPD** y los marcos certificables como la norma **ISO/IEC 42001**. 
 
-En un examen tipo test con penalización, no se admiten aproximaciones vagas; se evaluarán excepciones legales, plazos de aplicación y obligaciones documentales específicas. Es fundamental entender la complementariedad entre las evaluaciones de impacto (DPIA/EIPD del RGPD vs. FRIA de la Ley de IA) y el tratamiento de la propiedad intelectual en el entrenamiento de modelos.
-
 ## Ideas clave
 
 1.  **AI Act (Enfoque Basado en Riesgo):** Reglamento europeo de aplicación directa. Clasifica los sistemas en 4 niveles: Riesgo Inaceptable (Prohibido, Art. 5), Alto Riesgo (Altamente regulado, Art. 6), Riesgo de Transparencia (Deepfakes/Chatbots, Art. 50) y Riesgo Mínimo.

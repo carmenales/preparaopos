@@ -39,8 +39,6 @@ Este tema corresponde al **Tema 5 del Anexo 3** de la Resolución 352/2026 (BOCM
 
 El epígrafe exige conocimientos técnicos profundos sobre cinco bloques: **fases del ciclo de vida del software**, **modelo tradicional y modelo agile**, **pruebas del software**, **integración y despliegue continuo (CI/CD)** y **frameworks del stack de Java (3 capas y microservicios)**. 
 
-Para un examen tipo test con penalización, el objetivo es diferenciar terminología técnica oficial y estándares de la industria (ISO/IEC/IEEE 12207, ISO/IEC 14764, Glosario ISTQB, Scrum Guide 2020) frente a conceptos coloquiales. Son fuente de distractores clásicos las diferencias entre **Delivery vs. Deployment**, **Verificación vs. Validación**, **JPA vs. Hibernate**, los **roles de Scrum** (actualizados a la guía 2020) y los **tipos de mantenimiento** según la ISO 14764.
-
 ## Ideas clave
 
 - **Ciclo de Vida (SDLC):** Abarca desde la concepción hasta la retirada del producto. La norma de referencia para los procesos del ciclo de vida es la **ISO/IEC/IEEE 12207**.
