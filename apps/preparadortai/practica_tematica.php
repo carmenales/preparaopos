@@ -10,8 +10,21 @@ $category = trim((string)($_GET['categoria'] ?? ''));
 $block = trim((string)($_GET['bloque'] ?? ''));
 $topic = trim((string)($_GET['tema'] ?? ''));
 $error = trim((string)($_GET['error'] ?? ''));
+$autoSearch = isset($_GET['autosearch']);
 
-$hasFilters = !empty($queries) || $category !== '' || $block !== '' || $topic !== '';
+$filters = [
+    'topics'    => $_GET['topics'] ?? [],
+    'categoria' => $_GET['categoria'] ?? '',
+    'bloque'    => $_GET['bloque'] ?? '',
+    'tema'      => $_GET['tema'] ?? '',
+];
+
+$hasFilters =
+    $autoSearch ||
+    !empty($queries) ||
+    $category !== '' ||
+    $block !== '' ||
+    $topic !== '';
 $categories = topic_search_categories($link);
 $results = [];
 $searchError = null;
@@ -29,7 +42,16 @@ if ($hasFilters) {
     }
 }
 
-$formQueries = empty($queries) ? [''] : $queries;
+$formQueries = [];
+
+if (!empty($_GET['topics'])) {
+    $formQueries = $_GET['topics'];
+} elseif (!empty($queries)) {
+    $formQueries = $queries;
+} else {
+    $formQueries = [''];
+}
+
 $defaultQuestionCount = min(20, max(1, count($results)));
 ?>
 
