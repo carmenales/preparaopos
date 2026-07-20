@@ -110,11 +110,17 @@ function topic_test_insert_session($link, $sessionId, $queries, $correctionMode,
     }
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+$topics = $_POST['topics'] ?? [];
+
+if (empty($topics) && !empty($_GET['topics'])) {
+    $topics = is_array($_GET['topics']) ? $_GET['topics'] : [$_GET['topics']];
+}
+
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($topics)) {
     topic_test_redirect_error('Solicitud no válida.');
 }
 
-$queries = topic_search_normalize_queries($_POST['topics'] ?? [], $_POST['q'] ?? '');
+$queries = topic_search_normalize_queries($topics, $_POST['q'] ?? '');
 $correctionMode = ($_POST['correccion'] ?? '') === 'final' ? 'final' : 'inmediata';
 $rawIds = $_POST['question_ids'] ?? [];
 
