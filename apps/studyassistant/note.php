@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/knowledge.php';
 require_once __DIR__ . '/includes/markdown.php';
+require_once __DIR__ . '/../shared/helpers/url.php';
 
 $notes = sa_load_index();
 $id = isset($_GET['id']) ? trim($_GET['id']) : '';
@@ -46,12 +47,10 @@ require __DIR__ . '/includes/header.php';
                 <p style="margin:1rem 0;">
                     <a
                         class="button-primary"
-                        href="../preparadortai/practica_tematica.php?<?=
-                            http_build_query([
-                                'topics' => $topicQueries,
-                                'autosearch' => 1
-                            ]);
-                        ?>">
+                        href="<?= get_tai_url('practica_tematica.php?' . http_build_query([
+                            'topics' => $topicQueries,
+                            'autosearch' => 1
+                        ])); ?>">
                         📝 Practicar este tema
                     </a>
                 </p>
