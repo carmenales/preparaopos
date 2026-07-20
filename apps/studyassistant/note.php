@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/includes/knowledge.php';
 require_once __DIR__ . '/includes/markdown.php';
+require_once __DIR__ . '/../shared/helpers/url.php';
 
 $notes = sa_load_index();
 $id = isset($_GET['id']) ? trim($_GET['id']) : '';
@@ -20,6 +21,16 @@ if (!$note) {
     }
 }
 
+$topicQueries = [];
+
+if (!empty($note['official_topic'])) {
+    if (preg_match('/Tema\s+\d+\.\s*(.+)$/i', $note['official_topic'], $matches)) {
+        $topicQueries[] = trim($matches[1]);
+    } else {
+        $topicQueries[] = trim($note['official_topic']);
+    }
+}
+
 $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
 ?>
@@ -31,6 +42,19 @@ require __DIR__ . '/includes/header.php';
     <div class="note-layout">
         <aside class="note-sidebar">
             <a class="button-secondary" href="index.php">← Volver</a>
+
+            <?php if (!empty($topicQueries)): ?>
+                <p style="margin:1rem 0;">
+                    <a
+                        class="button-primary"
+                        href="<?= get_tai_url('practica_tematica.php?' . http_build_query([
+                            'topics' => $topicQueries,
+                            'autosearch' => 1
+                        ])); ?>">
+                        📝 Practicar este tema
+                    </a>
+                </p>
+            <?php endif; ?>
 
             <h3>Metadatos</h3>
 

@@ -13,6 +13,7 @@ services:
       DB_NAME: preparadortai
     volumes:
       - ./apps/preparadortai:/var/www/html
+      - ./apps/shared:/var/www/shared:ro
     depends_on:
       - db
 
@@ -30,6 +31,7 @@ services:
     volumes:
       - ./apps/studyassistant:/workspace/apps/studyassistant:ro
       - ./knowledge:/workspace/knowledge:ro
+      - ./apps/shared:/workspace/apps/shared:ro
     command: php -S 0.0.0.0:8080 -t /workspace/apps/studyassistant
 
   db:

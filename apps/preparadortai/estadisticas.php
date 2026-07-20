@@ -431,13 +431,13 @@ $sessionsSql = "
             END AS accuracy_percentage
         FROM test_attempts ta
         LEFT JOIN question_sets qs
-            ON qs.categoria = ta.categoria
+            ON CONVERT(qs.categoria USING utf8mb4) = CONVERT(ta.categoria USING utf8mb4)
         LEFT JOIN scoring_rules sr
             ON sr.id = qs.scoring_rule_id
         LEFT JOIN question_counts
-            ON question_counts.categoria = ta.categoria
+            ON CONVERT(question_counts.categoria USING utf8mb4) = CONVERT(ta.categoria USING utf8mb4)
         LEFT JOIN session_metadata sm
-            ON sm.test_session_id = ta.test_session_id
+            ON CONVERT(sm.test_session_id USING utf8mb4) = CONVERT(ta.test_session_id USING utf8mb4)
         $whereSql
         GROUP BY ta.test_session_id
     ),
@@ -538,7 +538,7 @@ $categoryStatsSql = "
         END AS accuracy_percentage
     FROM test_attempts ta
     LEFT JOIN question_sets qs
-        ON qs.categoria = ta.categoria
+        ON CONVERT(qs.categoria USING utf8mb4) = CONVERT(ta.categoria USING utf8mb4)
     $sessionFilterSql
     GROUP BY ta.categoria
     ORDER BY accuracy_percentage ASC, total_answers DESC
@@ -618,7 +618,7 @@ $thematicPerformanceSql = "
         MAX(ta.created_at) AS last_seen_at
     FROM test_attempts ta
     INNER JOIN test_session_question_topics tsqt
-        ON tsqt.test_session_id = ta.test_session_id
+        ON CONVERT(tsqt.test_session_id USING utf8mb4) = CONVERT(ta.test_session_id USING utf8mb4)
         AND tsqt.question_id = ta.question_id
     INNER JOIN test_session_topics tst
         ON tst.id = tsqt.topic_id

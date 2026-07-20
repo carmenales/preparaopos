@@ -1,5 +1,6 @@
 <?php
 include 'includes/header.php';
+require_once __DIR__ . '/../shared/helpers/url.php';
 
 function safe_text($value) {
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
@@ -355,6 +356,12 @@ if ($hasOfficialScoring) {
         <?php if ($wrongAnswers > 0): ?>
             <a href="<?php echo safe_text($failedReviewUrl); ?>" class="btn btn-outline-danger">
                 <i class="fa-solid fa-rotate-left"></i> Repasar falladas
+            </a>
+        <?php endif; ?>
+
+        <?php if ($sessionMetadata['mode'] === 'tematico'): ?>
+            <a class="btn btn-outline-secondary" href="<?php echo get_study_url(); ?>">
+                <i class="fa-solid fa-book"></i> Volver a Study Assistant
             </a>
         <?php endif; ?>
 
