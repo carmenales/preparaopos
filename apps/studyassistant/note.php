@@ -24,6 +24,34 @@ $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
 ?>
 
+<?php
+$topicQueries = [];
+
+if (!empty($note['official_topic'])) {
+    $topicQueries[] = $note['official_topic'];
+}
+
+foreach ($note['tags'] ?? [] as $tag) {
+    $topicQueries[] = $tag;
+}
+
+$topicQueries = array_values(array_unique($topicQueries));
+?>
+
+<?php if (!empty($topicQueries)): ?>
+
+<div class="study-actions">
+
+    <a
+        class="button-primary"
+        href="../preparadortai/practica_tematica.php?topics[]=<?= urlencode($topicQueries[0]) ?>">
+        Practicar este tema
+    </a>
+
+</div>
+
+<?php endif; ?>
+
 <?php if ($error): ?>
     <div class="alert"><?php echo sa_safe_text($error); ?></div>
     <p><a class="button-secondary" href="index.php">Volver al listado</a></p>
