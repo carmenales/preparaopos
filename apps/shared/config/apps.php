@@ -1,4 +1,3 @@
-// Ruta: apps/shared/config/apps.php
 <?php
 
 return [
