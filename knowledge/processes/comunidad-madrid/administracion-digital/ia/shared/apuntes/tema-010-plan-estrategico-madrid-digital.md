@@ -35,8 +35,6 @@ needs_human_review: true
 
 Este tema es fundamental al tratarse de la "hoja de ruta" interna y organizativa de la propia **Agencia para la Administración Digital de la Comunidad de Madrid (Madrid Digital)**, organismo al que aspira el opositor. Corresponde al Tema 10 del Anexo 3 de la Resolución 352/2026 (BOCM 11/06/2026) y aplica transversalmente a los perfiles TIC (P01 y P02).
 
-Las preguntas de este tema son **estrictamente literales y numéricas**. El principal distractor en los exámenes es cruzar los datos y la estructura del **PEMD 2022-2026** (este tema) con los de la **Estrategia de Digitalización regional (EDCM 2023-2026)** vista en el Tema 9. 
-
 ## Ideas clave
 
 - **Estructura Categórica:** El PEMD se vertebra exactamente en **5 Objetivos Estratégicos**, **5 Ejes Estratégicos** y **27 Medidas** (frente a los 10 ejes y 64 medidas de la EDCM).

@@ -34,11 +34,7 @@ needs_human_review: true
 
 Este tema corresponde al **Tema 7 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), exclusivo para el perfil **P01 (Consultor de Sistemas de Información especialista en IA aplicada al ciclo de vida del software)** de la Agencia para la Administración Digital de la Comunidad de Madrid. 
 
-*(Aviso: En el perfil P02 este tema no existe, ya que a partir del Tema 5 su temario se desvía hacia el Gobierno de la IA).*
-
 El epígrafe oficial abarca: **implantación de la IA en el SDLC (estrategias, modelos de madurez y buenas prácticas)**, **modelos LLM específicos**, **casos de uso** e **indicadores de medición del retorno (ROI)**. 
-
-Para un examen tipo test con penalización, es crucial no estudiar este tema como un mero "uso de copilotos para programar". Los tribunales buscan rigor técnico e institucional: diferencias de arquitectura de inferencia (Fill-in-the-Middle), marcos de métricas científicamente validados (DORA y SPACE), guías de seguridad (NIST SP 800-218A y OWASP AISVS) y los riesgos operativos de la IA generativa (Shadow AI, Copyleft viral, Sesgo de Automatización).
 
 ## Ideas clave
 

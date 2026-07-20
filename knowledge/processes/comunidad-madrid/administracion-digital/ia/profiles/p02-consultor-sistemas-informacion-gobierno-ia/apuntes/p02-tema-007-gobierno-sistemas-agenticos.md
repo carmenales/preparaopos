@@ -39,8 +39,6 @@ Este tema corresponde al **Tema 7 del Anexo 3** de la Resolución 352/2026 (BOCM
 
 Es la continuación lógica del Tema 6 (GovOps) y la aplicación jurídico-operativa de los conceptos técnicos del Tema 3 (IA Agéntica). En este perfil, el foco no está en *cómo se programa* un agente, sino en **cómo se acota su autonomía, cómo se auditan sus decisiones, cómo se aseguran sus credenciales (M2M) y cómo se implementa la supervisión humana legalmente exigida**. 
 
-En un examen tipo test con penalización, el tribunal evaluará la capacidad del opositor para cruzar los conceptos técnicos (arquitecturas multi-agente, *prompt injection*) con las obligaciones del **Reglamento (UE) 2024/1689 (Ley de IA)** (Arts. 12 y 14) y del **Esquema Nacional de Seguridad (ENS - RD 311/2022)**. Es fundamental distinguir entre las modalidades de supervisión (HITL, HOTL, HOOTL) y no confundir la "observabilidad" técnica con la "auditoría" formal.
-
 ## Ideas clave
 
 1.  **Diferencia Agente vs. Modelo (Brecha de Autonomía):** Un modelo de IA responde a una entrada (salida única). Un **agente de IA** percibe, planifica, invoca herramientas y ejecuta acciones múltiples sin que un humano inicie cada paso. Esta autonomía exige controles de seguridad en tiempo real.

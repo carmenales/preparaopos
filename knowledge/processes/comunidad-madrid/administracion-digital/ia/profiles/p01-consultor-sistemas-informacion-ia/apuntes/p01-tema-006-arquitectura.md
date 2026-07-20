@@ -36,8 +36,6 @@ needs_human_review: true
 
 Este tema corresponde al **Tema 6 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), específico para el perfil **P01 (IA aplicada al ciclo de vida del software)** de la Agencia para la Administración Digital de la Comunidad de Madrid. 
 
-*(Aviso para opositores: En el perfil P02, el Tema 6 es distinto: "Gobernanza de la IA", por lo que este apunte es exclusivo para P01).*
-
 El tema abarca cinco grandes bloques de la ingeniería de sistemas moderna: **arquitecturas de integración** (APIs, ESB, Eventos), **microservicios con Kubernetes**, **modelos cloud híbridos**, **arquitectura de datos** (pipelines, calidad, ontologías) e **IA Gateway**. El examen, al ser tipo test con penalización, no busca definiciones divulgativas, sino discriminar fronteras técnicas muy finas: diferencias entre ETL y ELT, componentes específicos del *Control Plane* de Kubernetes, dimensiones de calidad del dato según estándares (ISO 8000 vs. DAMA), y diferencias entre el tráfico que gestiona un API Gateway frente a un IA Gateway.
 
 ## Ideas clave

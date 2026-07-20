@@ -38,8 +38,6 @@ needs_human_review: true
 
 Este tema es el núcleo fundacional del perfil **P02: Consultor de Sistemas de Información especialista en Gobierno de IA**, correspondiente al Tema 4 del Anexo 3 de la Resolución 352/2026 (BOCM 11/06/2026)[cite: 1]. 
 
-A diferencia de los temas anteriores puramente arquitectónicos, el tribunal evalúa aquí la capacidad de traducir **principios éticos abstractos en obligaciones jurídicas y controles auditables**. En un examen tipo test con penalización, es crucial discriminar los distintos marcos internacionales (la OCDE y la UNESCO son *soft law*; el Reglamento de IA es *hard law*) y no confundir herramientas legales limítrofes (la EIPD del RGPD frente a la FRIA de la Ley de IA). Especial atención merece la excepción legal del Art. 10.5 de la Ley de IA, que permite, de forma contraintuitiva pero estrictamente regulada, el tratamiento de datos personales sensibles para detectar sesgos.
-
 ## Ideas clave
 
 1.  **De la Ética al Derecho (Los 4 Pilares):** Equidad, Transparencia, Responsabilidad y Explicabilidad no son meras recomendaciones. El AI Act las materializa en obligaciones normativas concretas (ej. Art. 10 para sesgos/equidad, Art. 13 para transparencia)[cite: 2].
