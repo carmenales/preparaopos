@@ -20,37 +20,19 @@ if (!$note) {
     }
 }
 
-$pageTitle = $note['title'] ?? 'Apunte';
-require __DIR__ . '/includes/header.php';
-?>
-
-<?php
 $topicQueries = [];
 
 if (!empty($note['official_topic'])) {
-    $topicQueries[] = $note['official_topic'];
+    if (preg_match('/Tema\s+\d+\.\s*(.+)$/i', $note['official_topic'], $matches)) {
+        $topicQueries[] = trim($matches[1]);
+    } else {
+        $topicQueries[] = trim($note['official_topic']);
+    }
 }
 
-foreach ($note['tags'] ?? [] as $tag) {
-    $topicQueries[] = $tag;
-}
-
-$topicQueries = array_values(array_unique($topicQueries));
+$pageTitle = $note['title'] ?? 'Apunte';
+require __DIR__ . '/includes/header.php';
 ?>
-
-<?php if (!empty($topicQueries)): ?>
-
-<div class="study-actions">
-
-    <a
-        class="button-primary"
-        href="../preparadortai/practica_tematica.php?topics[]=<?= urlencode($topicQueries[0]) ?>">
-        Practicar este tema
-    </a>
-
-</div>
-
-<?php endif; ?>
 
 <?php if ($error): ?>
     <div class="alert"><?php echo sa_safe_text($error); ?></div>
@@ -59,6 +41,21 @@ $topicQueries = array_values(array_unique($topicQueries));
     <div class="note-layout">
         <aside class="note-sidebar">
             <a class="button-secondary" href="index.php">← Volver</a>
+
+            <?php if (!empty($topicQueries)): ?>
+                <p style="margin:1rem 0;">
+                    <a
+                        class="button-primary"
+                        href="../preparadortai/practica_tematica.php?<?=
+                            http_build_query([
+                                'topics' => $topicQueries,
+                                'autosearch' => 1
+                            ]);
+                        ?>">
+                        📝 Practicar este tema
+                    </a>
+                </p>
+            <?php endif; ?>
 
             <h3>Metadatos</h3>
 

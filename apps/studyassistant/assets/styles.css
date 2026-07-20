@@ -422,10 +422,16 @@ tr:nth-child(even) td {
     }
 }
 
-.study-actions{
-    margin-bottom:2rem;
+.button-primary {
+    display: inline-block;
+    padding: 0.65rem 1rem;
+    border-radius: 6px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
 }
 
-.study-actions .button-primary{
-    display:inline-block;
+.button-primary:hover {
+    background: #1d4ed8;
 }
