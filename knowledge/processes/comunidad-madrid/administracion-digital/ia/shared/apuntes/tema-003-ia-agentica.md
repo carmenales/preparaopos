@@ -40,255 +40,243 @@ needs_human_review: true
 
 Este tema corresponde al **Tema 3 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), dentro de las áreas de conocimiento del Bloque 1 de la Fase 1 de oposición, común a los perfiles **P01: Consultor de Sistemas de Información - IA Aplicada al Ciclo de Vida del Software** y **P02: Consultor de Sistemas de Información - Especialista en Gobierno de IA** de la Agencia para la Administración Digital de la Comunidad de Madrid.
 
-A nivel normativo, aunque la "IA Agéntica" no es una categoría estricta en el Reglamento (UE) 2024/1689 (Ley de IA), los sistemas agénticos están sujetos a las obligaciones de trazabilidad, gestión de riesgos, supervisión humana (HITL) y registro de logs (Art. 12), especialmente en casos de alto riesgo. En un examen tipo test, es crucial distinguir entre la "observabilidad" técnica de *AgentOps* y el "registro de eventos" (*logging*) como obligación legal, así como diferenciar un *Prompt* como instrucción de código frente a un *Prompt* como mecanismo de control lógico (*Guardrail*).
+Aunque la “IA agéntica” no aparece como categoría explícita en el Reglamento (UE) 2024/1689 (Ley de IA), los sistemas agénticos se consideran **sistemas de IA** y, cuando son de alto riesgo, están sujetos a obligaciones de gestión de riesgos, supervisión humana significativa, registro de eventos y trazabilidad (Arts. 9, 12 y 14), además de los principios del Esquema Nacional de Seguridad (ENS) en España. Es importante distinguir en examen entre la **observabilidad técnica** de AgentOps y el **registro de eventos** exigido legalmente, así como diferenciar el *prompt* como artefacto de configuración y control (*System Prompt*) frente a simples entradas de usuario.
 
 ## Ideas clave
 
-1. **Agente de IA vs. LLM:** Un LLM genera salidas estadísticas (texto, código). Un **Agente de IA** es una arquitectura de software que *usa* el LLM como motor de razonamiento dentro de un bucle de percepción, planificación y ejecución de acciones autónomas mediante herramientas, para perseguir objetivos y modificar su entorno.
-2. **ReAct Framework:** Paradigma fundamental en IA agéntica que unifica el razonamiento lógico (*Chain-of-Thought*) con la acción práctica (*Function Calling*) mediante la secuencia iterativa: *Thought → Action → Observation*.
-3. **Ejecución de herramientas (Function Calling):** El LLM **no ejecuta** código ni herramientas externas; emite una salida estructurada (típicamente JSON) decidiendo qué herramienta usar y con qué parámetros. El *framework* subyacente (orquestador, código tradicional) es quien invoca la API, valida los parámetros y devuelve la observación al modelo.
-4. **Riesgo y Autonomía:** A mayor autonomía y capacidad de uso de herramientas externas (ej. consultar un expediente real), mayor es la superficie de ataque y la necesidad de **mínimo privilegio (ABAC/RBAC)**, arquitecturas *Zero Trust*, trazabilidad y supervisión humana (*Human-in-the-loop*).
-5. **Observabilidad (Trazabilidad Estructural):** En sistemas agénticos, la observabilidad se basa en **Trazas (Traces)** y **Tramos (Spans)**, siguiendo las convenciones de OpenTelemetry, que documentan paso a paso el razonamiento (*Thought*) y la acción (*Action*) del agente. Es distinta de la Monitorización clásica (vigilar estado y alertas) y de la Auditoría legal (revisión formal con evidencias).
-6. **Cumplimiento Legal (Art. 12 AI Act):** Para sistemas de alto riesgo, la observabilidad es la implementación técnica del **registro automático de acontecimientos (logging)** exigido por el Reglamento (UE) 2024/1689, junto con la supervisión humana del Art. 14.
-7. **Prompt Engineering en Gobierno:** No es "hablar con la IA". Es la disciplina de diseñar y versionar instrucciones (*System Prompt*) como código fuente crítico, que actúan como barreras de seguridad (*Guardrails*), definiendo qué herramientas puede usar el agente y bajo qué condiciones debe detenerse o escalar al humano.
-8. **Inyección Indirecta de Prompts:** Es la vulnerabilidad más crítica en IA Agéntica (OWASP Top 10 LLM, LLM01). Ocurre cuando el agente, usando sus herramientas, lee un documento o fuente externa infectada con comandos ocultos que subvierten sus reglas operativas originales.
-9. **AgentOps:** Es la extensión operativa de MLOps/LLMOps. Se centra en gobernar el ciclo de vida de las trayectorias de decisión autónomas: control de bucles infinitos, evaluación dinámica (Tasa de éxito de tareas, *Trajectory Score*), gestión del coste por interacciones complejas y supervisión humana (HITL).
+1. **Agente de IA vs LLM:** Un LLM genera texto, código u otras salidas estadísticas. Un **agente de IA** es una arquitectura de software que usa el LLM como motor de razonamiento dentro de un bucle de percepción, planificación y ejecución de acciones mediante herramientas, para perseguir objetivos y modificar su entorno.
+2. **ReAct Framework:** Paradigma fundamental que unifica razonamiento (*Chain‑of‑Thought*) con acción (*Function Calling*) mediante la secuencia iterativa **Thought → Action → Observation**, base de muchas arquitecturas agénticas modernas.
+3. **Ejecución de herramientas (Function Calling):** El LLM no ejecuta código ni APIs; emite una salida estructurada (normalmente JSON) donde decide qué herramienta usar y con qué parámetros, y el orquestador (código tradicional) valida y ejecuta la llamada.
+4. **Riesgo y autonomía:** Cuanta más autonomía y más herramientas externas puede usar el agente (APIs, RAG, bases de datos), mayor es la superficie de ataque y más críticas son la gestión de identidades y privilegios, arquitecturas *Zero Trust*, trazabilidad y supervisión humana.
+5. **Observabilidad (trazabilidad estructural):** En sistemas agénticos, la observabilidad se basa en **traces y spans** siguiendo convenciones de OpenTelemetry, registrando el razonamiento, las acciones y las observaciones paso a paso; esto va más allá de la monitorización clásica de estado.
+6. **Cumplimiento legal (Art. 12 AI Act):** Para sistemas de alto riesgo, la observabilidad es la implementación técnica del registro automático de acontecimientos exigido por el AI Act, y se vincula con la supervisión humana del Art. 14.
+7. **Prompt engineering en gobierno:** Diseñar y versionar el *System Prompt* como código fuente crítico que actúa como **guardrail**, definiendo el rol del agente, qué puede hacer, qué herramientas puede usar y cuándo debe escalar al humano.
+8. **Inyección indirecta de prompts:** Vulnerabilidad crítica (OWASP LLM01/Top 10 Agentic) donde el agente, a través de sus herramientas, lee contenido externo infectado con comandos ocultos que subvierten sus reglas operativas.
+9. **AgentOps:** Extensión operativa de MLOps/LLMOps centrada en gobernar el ciclo de vida de las trayectorias de decisión de agentes, control de bucles, evaluación dinámica (Task Success Rate, Trajectory Score), costes por interacción y supervisión humana.
 
 ## Desarrollo
 
 ### 1. Concepto de agente: tipos, componentes e integración
 
-**Agente de IA:** Sistema que percibe su contexto, razona utilizando un modelo fundacional (LLM) y ejecuta acciones secuenciales de forma autónoma o semiautónoma mediante el uso de herramientas externas para alcanzar un objetivo definido, reevaluando el estado tras cada acción.
+Un **agente de IA** es un sistema que percibe su contexto (inputs, memoria, entorno), razona utilizando un modelo fundacional (LLM u otros) y ejecuta acciones secuenciales de forma autónoma o semiautónoma mediante herramientas externas, para alcanzar un objetivo definido y reevaluar el estado tras cada acción.
 
-#### 1.1. Diferencia entre Chatbot, RAG y Agente
+#### 1.1. Chatbot, RAG y agente
 
-* **Chatbot:** Interacción conversacional reactiva. Baja autonomía.
-* **RAG (Generación Aumentada por Recuperación):** Recupera información y la aporta al contexto. No planifica acciones ni modifica su entorno.
-* **Agente IA:** Decide interactivamente qué pasos dar, invoca herramientas (APIs, bases de datos) y reevalúa el estado tras cada acción.
+- **Chatbot:** interfaz conversacional reactiva; responde a entradas de usuario sin planificar acciones externas ni mantener objetivos a largo plazo.
+- **RAG:** patrón que recupera información de una base de conocimiento y la inyecta en el contexto para generar respuestas más fundamentadas, pero sin ejecutar acciones en sistemas externos.
+- **Agente de IA:** decide qué pasos dar, invoca herramientas (APIs, RAG, bases de datos, servicios de ticketing) y reevalúa el estado tras cada acción, pudiendo interactuar con múltiples sistemas corporativos.
 
-#### 1.2. Tipos de Arquitecturas (Perspectiva técnica y de Gobierno)
+#### 1.2. Arquitecturas: agente único y sistemas multi‑agente
 
-* **Agente Único (Single-Agent):** Un solo modelo orquesta la planificación y las herramientas en un mismo bucle de contexto. *Riesgo:* desviación del objetivo (*Prompt Drift*) en tareas largas y dificultad para aplicar el principio de segregación de funciones.
-* **Sistemas Multi-Agente (Multi-Agent Systems - MAS):** Múltiples agentes con *System Prompts* aislados y roles especializados que colaboran o delegan (ej. patrón Supervisor o Manager-Worker; un agente redacta, un agente auditor revisa normativamente, un agente orquestador dirige).
-  * *Ventaja:* Mejora el control y la modularidad.
-  * *Riesgo:* **Colusión de agentes** (cooperación anómala para eludir seguridad), aumento de latencia, coste, complejidad de la observabilidad y propagación en cascada de errores.
+- **Agente único (single‑agent):** un solo agente central con un System Prompt que orquesta planificación y herramientas dentro de un mismo bucle de contexto. Riesgos: desviación de objetivo (*prompt drift*), acoplamiento de responsabilidades y dificultad para aplicar segregación de funciones.
+- **Sistemas multi‑agente (MAS):** varios agentes con System Prompts diferenciados y roles especializados (supervisor, redactor, auditor, ejecutor) que colaboran o delegan tareas.
+  - Ventajas: modularidad, separación de responsabilidades, posibilidad de que un agente audite a otro.
+  - Riesgos: colusión entre agentes, latencias mayores, costes y complejidad de observabilidad, propagación en cascada de errores (relacionado con OWASP Agentic “Cascading Failures”).
 
-#### 1.3. Componentes Críticos (Foco de Auditoría)
+#### 1.3. Componentes críticos
 
-1. **Modelo (Brain/Core):** El LLM base con capacidad de razonamiento estructurado.
+1. **Modelo (brain/core):** LLM u otro modelo fundacional que genera razonamientos, planes y decisiones.
 2. **Memoria:**
-   * *A corto plazo (Short-term Memory):* El historial acumulado dentro de la ventana de contexto en una sesión activa (*In-Context Learning*); desaparece al finalizar la sesión.
-   * *A largo plazo (Long-term Memory):* Almacenamiento persistente externo (ej. bases de datos vectoriales) que permite recuperar contextos históricos por similitud semántica. *Implicación RGPD:* almacenar datos personales de ciudadanos en la memoria de un agente exige políticas estrictas de retención, minimización y mecanismos para el **Derecho de Supresión (Art. 17 RGPD)**.
-3. **Herramientas (Tools/Plugins/Function Calling):** Interfaces hacia sistemas externos (APIs, RAG, *sandboxes* de código), definidas mediante esquemas (JSON Schema). Constituyen el mayor vector de riesgo (OWASP LLM07): exigen arquitecturas *Zero Trust*, identidad de máquina con privilegios mínimos, y la validación final de los parámetros la ejecuta el orquestador (código tradicional), nunca el LLM.
-4. **Planificación (Planning):**
-   * *Descomposición:* partir un problema en subtareas lógicas.
-   * *Reflexión (Reflexion):* autocrítica tras observar el resultado de una acción, para iterar o corregir la estrategia.
-5. **Orquestación:** El marco de control lógico (ej. LangGraph) que rige el flujo, aplica *timeouts* y define cuándo detener el bucle o requerir aprobación humana (HITL).
+   - **Corto plazo:** historial de conversación y razones dentro de la ventana de contexto; se destruye al cerrar sesión.
+   - **Largo plazo:** almacenamiento persistente (bases vectoriales, BBDD) que conserva datos de casos, decisiones y estados pasados; exige políticas RGPD (minimización, retención, derecho de supresión).
+3. **Herramientas (tools/plugins):**
+   - Interfaces hacia sistemas externos (APIs, RAG, servicios de correo, bases de datos), definidas mediante esquemas (JSON Schema u otros).
+   - Vector de riesgo principal (Identity & Privilege Abuse, OWASP AS103): requieren identidad de máquina, mínimo privilegio, segmentación y validación de parámetros por el orquestador.
+4. **Planificación:**
+   - Descomposición del objetivo en subtareas.
+   - Reflexión sobre resultados (Reflexion) para corregir estrategias y adaptarse.
+5. **Orquestador / harness:**
+   - Código que gestiona el ciclo de vida del agente: inicialización, llamadas al modelo, llamadas a herramientas, gestión de errores, timeouts, límites de pasos y puntos HITL.
 
-#### 1.4. Integración y Protocolos Emergentes
+#### 1.4. Protocolos emergentes (MCP, Agent‑to‑Agent)
 
-* **MCP (Model Context Protocol):** Estándar abierto para conectar de forma segura agentes/modelos con fuentes de datos externas y herramientas locales, estandarizando la exposición de recursos.
-* **A2A (Agent2Agent Protocol):** Orientado a la interoperabilidad, descubrimiento, comunicación y delegación de tareas entre distintos agentes, útil en despliegues distribuidos.
+- **MCP (Model Context Protocol):** protocolo para describir y exponer herramientas, datos y capacidades disponibles a un modelo o agente de forma estándar, permitiendo descubrir y consumir recursos locales y remotos de forma segura.
+- **Agent‑to‑Agent (A2A):** patrones de comunicación y coordinación entre agentes, relevantes en ecosistemas multi‑agente donde se delegan tareas o se coordina información.
 
 ### 2. Observabilidad en agentes
 
-La naturaleza no determinista de los LLMs impide la depuración de software tradicional (APM), donde la ruta del código está predefinida. En IA Agéntica, el flujo de control es probabilístico y lo decide el LLM en tiempo real. La observabilidad es esencial para auditar *por qué* el agente tomó una decisión.
+La ejecución de un agente no es un flujo de código determinista, sino una secuencia de decisiones estadísticamente guiadas por el modelo. La **observabilidad** busca reconstruir qué hizo el agente y por qué, a través de trazas de telemetría estructuradas.
 
-#### 2.1. Trazas y Tramos (Traces and Spans) — Telemetría y OpenTelemetry
+#### 2.1. Traces y spans (OpenTelemetry)
 
-Basado en las convenciones semánticas de **OpenTelemetry para IA Generativa**:
-* **Traza (Trace):** Reconstrucción del recorrido completo de una petición del usuario de extremo a extremo (ej. `solicitud-123`).
-* **Tramo (Span):** Subdivisión atómica/temporal de una unidad de trabajo discreta dentro de la traza (ej. llamada de inferencia al LLM, invocación de la API de creación de tickets, búsqueda vectorial). Captura: el estado del prompt enviado, el razonamiento intermedio, la invocación de la herramienta (parámetros) y la respuesta de la herramienta (*Observation*).
+OpenTelemetry define convenciones semánticas para instrumentar aplicaciones, incluida IA generativa y agéntica:
 
-#### 2.2. Diferenciación Conceptual de Examen
+- **Trace (traza):** representa el recorrido completo de una solicitud o tarea end‑to‑end (por ejemplo, una interacción completa con un asistente agéntico).
+- **Span (tramo):** unidad de trabajo dentro de la traza (llamada al LLM, invocación a una herramienta, paso de pipeline) con sus propias etiquetas (prompt, parámetros, respuesta).
 
-| Concepto | Finalidad | Pregunta que responde |
-| :--- | :--- | :--- |
-| **Monitorización** | Vigilar estado y alertas (latencia, caídas). | ¿Está fallando el sistema? |
-| **Observabilidad** | Telemetría profunda (Trazas, Spans). | ¿Por qué el sistema tomó esta ruta? |
-| **Auditoría (Art. 12 AI Act)** | Revisión formal con evidencias de los logs. | ¿Cumplió las políticas y responsabilidades legales? |
+Todos los spans asociados a una misma ejecución comparten el mismo trace_id y pueden organizarse en jerarquía padre‑hijo, permitiendo reconstruir el árbol de decisiones del agente.
 
-#### 2.3. Métricas y Anomalías Específicas de Agentes
+#### 2.2. Monitorización, observabilidad y auditoría
 
-* **Consumo de Tokens / Coste por Tarea:** Los agentes iteran en bucle; el coste se multiplica exponencialmente por cada paso de razonamiento (un agente puede hacer 10 invocaciones al modelo para 1 sola respuesta al usuario).
-* **Latencia por Invocación vs. Latencia End-to-End.**
-* **Tasa de uso de herramientas y Tasa de fallo de herramientas.**
-* **Detección de Bucles Infinitos (Infinite Tool Loop):** El agente llama repetidamente a la misma herramienta sin lograr avanzar. Requiere mecanismos de corte (*Circuit Breakers* / *Timeouts*) y límites de pasos en el orquestador.
+| Concepto         | Finalidad                                                          |
+| :--------------- | :----------------------------------------------------------------- |
+| Monitorización   | Vigilar métricas y alertas (latencia, errores, consumo recursos).  |
+| Observabilidad   | Entender flujos internos y decisiones vía traces/spans.           |
+| Auditoría        | Revisar y documentar cumplimiento normativo a partir de registros.|
 
-#### 2.4. Exigencia Normativa
+Monitorizar responde a “¿está funcionando?”, observabilidad a “¿qué hizo y por qué?”, auditoría a “¿cumplió las políticas y obligaciones legales?”.
 
-El **Art. 12 del Reglamento (UE) 2024/1689** exige que los sistemas de alto riesgo incorporen capacidades de registro automático de eventos (*logging*) a lo largo de su ciclo de vida, lo cual hace que la observabilidad detallada sea un imperativo legal para el gobierno de la IA.
+#### 2.3. Métricas específicas
 
-### 3. Ingeniería de prompts (Prompt Engineering)
+- Consumo total de tokens por tarea y por agente.
+- Latencia por llamada y latencia end‑to‑end.
+- Tasa de uso y fallo de herramientas (por ejemplo, porcentaje de llamadas que generan errores o resultados inválidos).
+- Detección de bucles infinitos de herramientas (tool loops), con mecanismos de corte (timeouts, límites de pasos).
 
-Disciplina de diseño iterativo de instrucciones de entrada para optimizar la fiabilidad del modelo, gestionar el formato de salida y mitigar alucinaciones. Para el perfil de Gobierno (P02), el *Prompt Engineering* no es optimizar respuestas, sino **diseñar instrucciones operativas como un mecanismo de control de seguridad (Guardrails)**; un *prompt* en producción debe versionarse y tratarse como código fuente crítico.
+#### 2.4. Exigencia normativa
 
-#### 3.1. Arquitectura de Prompts en Agentes
+El **Art. 12 del AI Act** exige que los sistemas de alto riesgo dispongan de registro automático de acontecimientos para garantizar trazabilidad, lo que en arquitecturas agénticas se implementa mediante telemetría estructurada (traces, spans, logs enriquecidos) integrada en sistemas de registro y auditoría.
 
-* **System Prompt:** Instrucciones persistentes de alto nivel con máxima prioridad de atención en el modelo. Fija las reglas inmutables de seguridad y el marco de actuación.
-* **User Prompt:** La entrada del ciudadano/usuario, que nunca debe tener precedencia sobre el System Prompt.
+### 3. Prompt engineering en agentes y gobierno
 
-#### 3.2. Técnicas Estructurales
+El **prompt engineering** deja de ser simplemente “pedir bien las cosas” y pasa a ser diseño de artefactos de configuración críticos:
 
-* **Zero-shot / Few-shot:** Inclusión de cero o varios pares de ejemplos "entrada-salida" para adiestrar al modelo mediante aprendizaje en contexto.
-* **Chain-of-Thought (CoT - Cadena de Pensamiento):** Induce al modelo a generar pasos de razonamiento intermedios lógicos antes de la respuesta final, reduciendo errores matemáticos y lógicos. *Valor para P02:* proporciona **explicabilidad** a la decisión para auditorías posteriores.
-* **ReAct (Reasoning and Acting):** La técnica de prompt más crítica en IA agéntica. Combina CoT con interacción externa, forzando al modelo a ciclar en tres pasos estructurados:
-  1. **Thought (Pensamiento):** razonamiento interno sobre el estado actual.
-  2. **Action (Acción):** especificación de la herramienta a usar y sus argumentos.
-  3. **Observation (Observación):** resultado inyectado de vuelta al prompt tras la ejecución real de la herramienta por el sistema.
+- El **System Prompt** define el rol del agente, sus límites, sus herramientas, sus obligaciones normativas y su relación con el usuario.
+- Debe versionarse, revisarse y auditarse como código fuente, porque un cambio en el System Prompt puede alterar radicalmente el perfil de riesgo.
 
-#### 3.3. Prompt Injection (Vulnerabilidad OWASP LLM01)
+#### 3.1. Estructura de prompts
 
-Técnica de ataque donde el comportamiento del agente es manipulado mediante instrucciones adversarias:
-* **Directa (Jailbreak):** el usuario introduce comandos para eludir los Guardrails (ej. "Ignora tus directrices previas").
-* **Indirecta:** el mayor riesgo en la Administración. El agente utiliza una herramienta para leer un entorno externo (web, PDF, correo de terceros) que contiene instrucciones maliciosas ocultas. El LLM las asimila como una instrucción legítima y ejecuta acciones no autorizadas o dañinas (ej. extraer datos de otros expedientes, borrar información) creyendo que son legítimas.
+- **System Prompt:** instrucciones persistentes de máxima prioridad (rol, tono, políticas de seguridad, requisitos de cita de fuentes, reglas de escalado a humano).
+- **User Prompt:** entrada del usuario, que debe ser subordinada al System Prompt (no puede sobreescribirlo).
+
+#### 3.2. Técnicas
+
+- Zero‑shot / Few‑shot: incluir ejemplos de tareas y salidas correctas antes de la consulta.
+- Chain‑of‑Thought (CoT): pedir razonamiento paso a paso para ganar explicabilidad.
+- ReAct: estructurar el bucle en Thought → Action → Observation, explicitando las decisiones del agente.
+
+#### 3.3. Prompt injection
+
+- **Directa (jailbreaking):** instrucciones maliciosas en el prompt de usuario que intentan ignorar el System Prompt.
+- **Indirecta:** el agente usa una herramienta para leer contenido externo (web, PDF, email, repositorio) que contiene comandos ocultos y los trata como instrucciones legítimas.
+
+OWASP LLM01 identifica la *prompt injection* como riesgo crítico en aplicaciones LLM, y OWASP Top 10 Agentic extiende este riesgo a ecosistemas de agentes, enfatizando el peligro de instrucciones ocultas en datos de entrada.
 
 ### 4. AgentOps
 
-**AgentOps** es la extensión operativa de MLOps y LLMOps adaptada al ciclo de vida de los sistemas autónomos, combinando la gestión de modelos, prompts/generación y DevOps, centrada en gobernar el **ciclo de vida de las trayectorias de decisión autónomas**, los flujos multi-paso, la integración de herramientas y la gestión de la memoria adaptativa.
+**AgentOps** es la disciplina que aplica principios de MLOps y LLMOps a sistemas agénticos, gestionando su ciclo de vida operativo (configuración, despliegue, monitorización, evaluación, supervisión humana y seguridad).
 
-#### 4.1. Diferencias operativas entre disciplinas
+#### 4.1. Comparación con MLOps y LLMOps
 
-* **MLOps:** Optimiza modelos matemáticos (drift, exactitud, reentrenamiento).
-* **LLMOps:** Optimiza el uso de un modelo fundacional estático (RAG, evaluación de prompts, mitigación de toxicidad).
-* **AgentOps:** Gestiona el bucle de ejecución, permisos de herramientas, validación de esquemas JSON, límites de concurrencia y protocolos de supervisión humana.
+- **MLOps:** reentrenamiento, despliegue y monitorización de modelos ML supervisados/no supervisados, centrado en métricas como Accuracy y F1.
+- **LLMOps:** gestión de modelos fundacionales, prompting, RAG, evaluación de toxicidad, groundedness y coste por token.
+- **AgentOps:** añade gestión de bucles de decisión, permisos de herramientas, puntos HITL, límites de consumo y evaluación de trayectorias.
 
-#### 4.2. Funciones de Gobernanza en AgentOps
+#### 4.2. Funciones principales
 
-* **Gestión del Cambio y Versionado:** un cambio en el System Prompt o la adición de una nueva herramienta altera radicalmente el perfil de riesgo del agente; requiere *pipelines* de CI/CD con evaluaciones automatizadas.
-* **Evaluación Dinámica (Agent Evaluation):** a diferencia de un LLM que se evalúa por similitud de texto (BLEU/ROUGE) o Perplejidad, un agente se evalúa por:
-  * *Task Success Rate:* ¿consiguió el objetivo final?
-  * *Trajectory Score:* ¿fueron los pasos elegidos lógicos, óptimos y seguros?
-* **Control de Autonomía y Supervisión (HITL):** implementación técnica de puntos de control donde el agente se detiene y exige aprobación humana (*Human-in-the-loop*) antes de ejecutar una acción irreversible o con impacto legal/alto riesgo (ej. enviar una notificación formal, transacciones financieras).
-* **Prevención de Denegación de Cartera (Denial of Wallet):** mecanismos para detener a un agente si sus llamadas a APIs de pago o consumo de tokens exceden el presupuesto asignado por error o por un ataque adversario.
+- Versionado de System Prompts, herramientas y configuraciones de agente.
+- Evaluación dinámica:
+  - **Task Success Rate:** porcentaje de tareas en que el agente alcanza el objetivo correcto.
+  - **Trajectory Score:** calidad de los pasos intermedios (seguridad, eficiencia, cumplimiento de políticas).
+- Gestión de autonomía:
+  - Control del **action space** (conjunto de herramientas y permisos).
+  - Configuración de niveles de autonomía supervisada, semiautónoma y autónoma.
+- Supervisión humana (HITL y HOTA – Human‑Over‑The‑Agent):
+  - Puntos de control donde el agente requiere aprobación humana para acciones sensibles.
+  - Métricas como override rate (tasa de correcciones humanas) para medir efectividad de la supervisión.
 
-#### 4.3. Controles Críticos de Seguridad
+#### 4.3. Controles de seguridad
 
-* **Guardrails (Cortafuegos lógicos):** reglas validadoras en la entrada y la salida para sanitizar textos, evitar fugas de información (PII) o bloquear JSON malformados.
-* **HITL (Human-in-the-Loop):** aprobación explícita requerida antes de que el orquestador ejecute una acción irreversible.
-* **Evaluación Dinámica:** transición desde métricas estáticas (Perplejidad, BLEU) hacia la simulación de entornos para medir la Tasa de Éxito de Tareas.
+- Guardrails de entrada y salida.
+- Identity & Privilege Management (IAM) específico para agentes (evitar “vacío de atribución” descrito por OWASP Agentic AS103).
+- Observabilidad avanzada (traces/spans).
+- Gestión de límites de consumo (tokens, llamadas a API, costes).
 
 ## Conceptos que suelen preguntarse (Trampas comunes)
 
-| Concepto a distinguir | Realidad técnica / jurídica | Distractor típico en examen |
-| :--- | :--- | :--- |
-| **Agente vs. Chatbot** | El agente decide y ejecuta acciones; el chatbot solo conversa. | "Un chatbot basado en LLM es automáticamente un agente de IA". |
-| **CoT vs. ReAct** | CoT es razonamiento interno lineal en texto. ReAct interrumpe para interactuar con herramientas externas (Action/Observation). | "CoT y ReAct son sinónimos técnicos y ambos siempre llaman a APIs". |
-| **Memoria vs. Ventana de Contexto** | Memoria (largo plazo, ej. BBDD vectorial) retiene datos entre sesiones. Ventana de Contexto (corto plazo) es el límite de tokens por llamada y se destruye al cerrar la sesión. | "Ampliar la ventana de contexto crea una memoria semántica persistente infinita". |
-| **Ejecución de Herramientas** | El LLM emite una propuesta (ej. JSON); el Orquestador valida permisos y ejecuta la API. | "El modelo LLM se conecta directamente a la base de datos y ejecuta el comando". |
-| **Inyección Indirecta de Prompts** | El ataque proviene de los datos ingeridos (documentos, webs) leídos por el agente de forma autónoma. | "La inyección indirecta solo ocurre cuando el administrador teclea mal el prompt". |
-| **Trazas vs. Logs** | Las Trazas reconstruyen la relación causal del flujo completo (Spans); los logs son eventos discretos estáticos. | "Guardar un fichero plano de logs garantiza el 100% de la explicabilidad del modelo". |
-| **Observabilidad vs. APM** | La observabilidad en agentes rastrea decisiones estocásticas (spans, prompts); el APM sigue código predecible determinista. | "El APM tradicional es suficiente para depurar sistemas multi-agente". |
-| **AgentOps vs. LLMOps** | AgentOps añade la gestión del bucle autónomo, estado, HITL y herramientas externas a LLMOps. | "AgentOps se enfoca exclusivamente en entrenar los pesos del modelo neuronal". |
+| Concepto                         | Realidad técnica / jurídica                                                 | Distractor típico en examen                                |
+| :------------------------------- | :--------------------------------------------------------------------------- | :--------------------------------------------------------- |
+| Agente vs chatbot                | El agente decide y ejecuta acciones; el chatbot solo conversa.             | “Todo chatbot LLM es automáticamente un agente de IA”.     |
+| CoT vs ReAct                     | CoT es razonamiento interno; ReAct intercala acciones externas.            | “CoT y ReAct son sinónimos y siempre llaman a APIs”.       |
+| Memoria vs ventana de contexto   | Memoria = almacenamiento persistente; ventana de contexto = tokens por llamada.| “Aumentar contexto crea memoria persistente infinita”.  |
+| LLM vs herramienta               | El LLM propone; la herramienta (API) es ejecutada por el orquestador.      | “El modelo LLM ejecuta directamente SQL o comandos shell”. |
+| Prompt injection indirecta       | Viene de datos externos consumidos por herramientas del agente.            | “Solo ocurre cuando el usuario escribe instrucciones malas”.|
+| Trace vs span                    | Trace = ejecución completa; span = unidad de trabajo dentro de la trace.   | “Trace y span son equivalentes y se usan indistintamente”. |
+| AgentOps vs LLMOps               | AgentOps añade bucles, herramientas y HITL; LLMOps se centra en modelo/contexto.| “AgentOps solo trata del entrenamiento de pesos”.      |
 
 ## Posibles preguntas tipo test
 
-**Pregunta 1.** En el diseño de una arquitectura de agente de IA basada en el patrón ReAct, la estructura del bucle de decisión se define obligatoriamente por la siguiente secuencia:
+**Pregunta 1.** En un agente basado en ReAct, ¿qué secuencia describe correctamente el ciclo de decisión?
 
-A. System Prompt → User Prompt → Output Parser.
+A. System Prompt → User Prompt → Output Parser.  
+B. Ingesta → Chunking → Búsqueda vectorial.  
+C. Thought → Action → Observation.  
+D. Zero‑shot → Few‑shot → Chain‑of‑Thought.
 
-B. Ingesta → Chunking → Búsqueda Vectorial.
+**Respuesta correcta: C.**
 
-C. Thought (Pensamiento) → Action (Acción) → Observation (Observación).
+**Pregunta 2.** ¿Quién valida y ejecuta físicamente la llamada a una API corporativa en un sistema agéntico con herramientas?
 
-D. Zero-shot → Few-shot → Chain-of-Thought.
+A. El modelo de lenguaje (LLM).  
+B. La memoria a largo plazo del agente.  
+C. El código del orquestador tras recibir la propuesta de parámetros del modelo.  
+D. El protocolo de trazas HTTP.
 
-**Respuesta correcta: C.** (Es la tríada fundacional del framework ReAct para agentes autónomos).
+**Respuesta correcta: C.**
 
-**Pregunta 2.** En el contexto de un sistema agéntico que integra invocación a herramientas externas (Tool Calling), ¿quién es el responsable técnico de validar los parámetros de entrada y ejecutar físicamente la llamada a la API corporativa?
+**Pregunta 3.** ¿Cuál de las siguientes situaciones describe una inyección indirecta de prompts?
 
-A. El modelo de lenguaje (LLM), utilizando su red neuronal interna.
-
-B. La Memoria a Largo Plazo del agente.
-
-C. El código de la aplicación subyacente (Orquestador/Framework) tras recibir la respuesta estructurada del modelo.
-
-D. El protocolo W3C Trace Context de forma automática.
-
-**Respuesta correcta: C.** (El LLM propone los argumentos, típicamente en JSON; el framework orquestador ejecuta la acción y asegura los permisos, clave de seguridad OWASP LLM07).
-
-**Pregunta 3.** ¿Cuál de las siguientes situaciones describe con precisión una vulnerabilidad de Inyección Indirecta de Prompts (Indirect Prompt Injection) en un agente de soporte público?
-
-A. El modelo es reentrenado (Fine-Tuning) por un desarrollador con un dataset corrupto (Data Poisoning).
-
-B. Un ciudadano envía una consulta y el agente, utilizando su herramienta de búsqueda web autorizada, escanea una página de terceros que contiene texto malicioso oculto que altera el comportamiento del agente.
-
-C. Un usuario autorizado reduce la temperatura del LLM a cero para forzar respuestas codiciosas.
-
-D. La ventana de contexto sobrepasa el límite máximo permitido por el proveedor, truncando las instrucciones de seguridad.
-
-**Respuesta correcta: B.** (La inyección indirecta proviene de datos asimilados en tiempo de ejecución a través de las herramientas del agente, no de la interacción directa del usuario en el chat).
-
-**Pregunta 4.** Dentro del marco de observabilidad de aplicaciones de IA Generativa (siguiendo convenciones de OpenTelemetry), ¿cuál es la diferencia exacta entre una Traza (Trace) y un Tramo (Span)?
-
-A. Un Trace almacena el coste económico; un Span almacena los tokens consumidos.
-
-B. Una Trace representa el flujo completo para resolver una solicitud del usuario; el Span representa una unidad de trabajo discreta dentro de dicha traza (ej. la invocación a una base de datos vectorial).
-
-C. Son conceptos idénticos e intercambiables en sistemas multi-agente.
-
-D. El Trace pertenece a la memoria a corto plazo, el Span a la memoria a largo plazo.
+A. Usuario pide explícitamente “Ignora tus directrices previas”.  
+B. Agente lee un PDF externo que contiene instrucciones ocultas para aprobar todas las solicitudes.  
+C. Administrador cambia la temperatura a 0.  
+D. Se reduce la ventana de contexto del modelo.
 
 **Respuesta correcta: B.**
 
-**Pregunta 5.** La incorporación del patrón HITL (Human-in-the-Loop) en el ámbito de las operaciones de agentes (AgentOps) busca principalmente:
+**Pregunta 4.** ¿Qué diferencia hay entre trace y span según OpenTelemetry?
 
-A. Eliminar completamente la latencia de la inferencia.
+A. Trace almacena coste; span almacena tokens.  
+B. Trace representa la ejecución completa de una petición; span representa una unidad de trabajo dentro de la trace.  
+C. Son sinónimos.  
+D. Trace pertenece a memoria corta; span a memoria larga.
 
-B. Validar manualmente el tokenizador subword empleado por el LLM.
+**Respuesta correcta: B.**
 
-C. Introducir una validación y aprobación humana explícita antes de que el agente orquestador ejecute una acción irreversible o de alto riesgo propuesta por el modelo.
+**Pregunta 5.** ¿Cuál es el objetivo principal de HITL en AgentOps?
 
-D. Optimizar la actualización de los embeddings en la memoria semántica.
+A. Eliminar latencia.  
+B. Validar el tokenizador.  
+C. Requerir aprobación humana explícita antes de acciones de alto riesgo propuestas por el agente.  
+D. Optimizar embeddings.
 
-**Respuesta correcta: C.** (Es un control crítico de gobierno para prevenir ejecuciones autónomas descontroladas).
+**Respuesta correcta: C.**
 
-**Pregunta 6.** Desde la perspectiva del gobierno de la IA, ¿por qué la vulnerabilidad conocida como "Inyección Indirecta de Prompts" representa un riesgo crítico de seguridad operativo específico para los agentes de IA?
+**Pregunta 6.** ¿Por qué la inyección indirecta de prompts es especialmente peligrosa en sistemas agénticos?
 
-A. Porque altera físicamente los pesos sinápticos del modelo fundacional durante el entrenamiento.
+A. Porque altera pesos del modelo base en entrenamiento.  
+B. Porque explota la capacidad del agente para leer y asimilar datos externos a través de sus herramientas.  
+C. Porque exige credenciales de administrador.  
+D. Porque aumenta la temperatura del modelo.
 
-B. Porque explota la capacidad autónoma del agente de leer y asimilar información de fuentes externas (ej. documentos web o correos), que contienen comandos ocultos diseñados para subvertir las políticas del sistema.
+**Respuesta correcta: B.**
 
-C. Porque requiere que el atacante posea credenciales de administrador de la plataforma cloud.
+**Pregunta 7.** ¿Qué mecanismo técnico ayuda a cumplir el Art. 12 del AI Act en sistemas agénticos?
 
-D. Porque eleva la temperatura estocástica del modelo, obligándolo a generar salidas deterministas.
+A. Reducir dimensionalidad de embeddings.  
+B. Medir uso de CPU y RAM.  
+C. Telemetría estructurada mediante traces y spans que capturan prompts, acciones y observaciones.  
+D. Validación de esquemas SQL.
 
-**Respuesta correcta: B.** (La inyección indirecta utiliza las propias herramientas de lectura del agente en contra de las políticas de su orquestador).
+**Respuesta correcta: C.**
 
-**Pregunta 7.** De acuerdo con el Reglamento (UE) 2024/1689 (Ley de IA), los sistemas de alto riesgo deben garantizar la trazabilidad de su funcionamiento a lo largo de su ciclo de vida. En el marco de AgentOps, ¿qué mecanismo técnico proporciona la instrumentación adecuada para cumplir este requisito registrando el razonamiento y las llamadas a herramientas?
+**Pregunta 8.** ¿Qué métrica es clave para evaluar decisiones de un agente autónomo?
 
-A. La reducción de la dimensionalidad de los Embeddings.
+A. Complejidad ciclomática del código.  
+B. Trajectory Score, evaluando la calidad y seguridad de los pasos intermedios.  
+C. Hash criptográfico de la imagen Docker.  
+D. Número total de tokens en el vocabulario.
 
-B. La implementación exclusiva de métricas de uso de CPU y RAM del servidor.
-
-C. La telemetría estructurada mediante Trazas (Traces) y Tramos (Spans), capturando el estado del prompt, el pensamiento y las acciones paso a paso.
-
-D. El uso de validadores sintácticos de bases de datos relacionales tradicionales.
-
-**Respuesta correcta: C.** (La observabilidad profunda mediante trazas desglosa el comportamiento de "caja negra" en eventos secuenciales auditables).
-
-**Pregunta 8.** En la evaluación dinámica de agentes autónomos (AgentOps), a diferencia de las métricas puramente lingüísticas empleadas en la evaluación de LLMs estáticos, ¿cuál es un indicador clave para medir la pertinencia de las decisiones tomadas por el agente?
-
-A. La evaluación de la trayectoria (Trajectory Score), que analiza si los pasos y herramientas elegidas fueron lógicos y seguros para alcanzar la meta.
-
-B. El cálculo de la Complejidad Ciclomática del código fuente del orquestador Python.
-
-C. La comprobación del hash criptográfico de la imagen Docker desplegada en Kubernetes.
-
-D. El conteo total del vocabulario del tokenizador (Byte-Pair Encoding).
-
-**Respuesta correcta: A.** (En agentes importa tanto el resultado final como los medios empleados para llegar a él).
+**Respuesta correcta: B.**
 
 ## Normativa o fuentes relacionadas
 
-* **Reglamento (UE) 2024/1689 (Ley de IA):** Art. 12 (obligación de registro automático de acontecimientos o *logging* a lo largo del ciclo de vida para sistemas de alto riesgo) y Art. 14 (Supervisión humana / HITL).
-* **Real Decreto 311/2022 (Esquema Nacional de Seguridad):** Principios básicos de protección, gestión de riesgos, registro de actividad, gestión de incidentes, control de acceso y mínimo privilegio, esenciales para el diseño seguro de herramientas agénticas en el sector público.
-* **OWASP Top 10 for LLM Applications:** Documentación técnica de referencia para la ciberseguridad en IA, detallando amenazas críticas como la inyección de prompts (LLM01), el diseño inseguro de plugins/herramientas (LLM07) y la agencia excesiva (LLM08).
-* **NIST AI RMF 1.0 y NIST AI 600-1 (Generative AI Profile):** Marcos voluntarios de gestión de riesgos de IA, útiles para estructurar el gobierno y la confianza en sistemas generativos y agénticos.
-* **OpenTelemetry — Semantic Conventions for GenAI:** Estándar técnico abierto de facto para la instrumentación de trazas, métricas y logs en aplicaciones de IA generativa y agéntica.
+- **Reglamento (UE) 2024/1689 (AI Act):** Art. 9 (gestión de riesgos), Art. 12 (registro de eventos), Art. 14 (supervisión humana) aplicables a sistemas de alto riesgo en la Administración.
+- **Real Decreto 311/2022 (ENS):** principios básicos y requisitos mínimos de seguridad (procesos integrales, gestión basada en riesgos, registro de actividad, control de acceso, mínimo privilegio).  
+- **OWASP Top 10 for LLM Applications 2025 y OWASP Top 10 for Agentic Applications:** catálogos de riesgos y mitigaciones para aplicaciones LLM y agénticas (Prompt Injection, Sensitive Information Disclosure, Identity & Privilege Abuse, Cascading Failures, Excessive Agency).
+- **NIST AI RMF 1.0 y NIST AI 600‑1 (Generative AI Profile):** marco de gestión de riesgos de IA, con perfil específico para IA generativa y agentes.
+- **OpenTelemetry Semantic Conventions for GenAI/Agentic:** estándar de facto para instrumentación de trazas, spans y métricas en aplicaciones de IA.
 
 ## Dudas o puntos pendientes
 
-* **Estatus normativo de "AgentOps" y ausencia de estándar ISO/IEC:** Es vital recordar que AgentOps, la definición de agente, frameworks como ReAct y los protocolos emergentes MCP y A2A son disciplinas y especificaciones técnicas de la industria en rápida evolución, **no una norma ISO/IEC oficial ni terminología normativamente fijada**. El AI Act regula el riesgo del "Sistema de IA", independientemente de si la industria lo etiqueta comercialmente como "agente", "workflow" o "chatbot".
-* **MCP y A2A:** Deben estudiarse como patrones de integración, asumiendo que su adopción no exime de cumplir las políticas corporativas tradicionales de IAM (Gestión de Identidad y Accesos) y seguridad de red de la Administración.
-* **Inyección de Prompts en el Esquema Nacional de Seguridad:** El ENS no nombra literalmente la inyección de prompts, pero sus controles sobre validación de entradas de datos, sanitización e integridad de las interfaces externas son los fundamentos obligatorios aplicables para mitigar estas vulnerabilidades en la Administración Pública.
+- La terminología “IA agéntica”, “AgentOps”, “ReAct”, “MCP”, “A2A” pertenece a la práctica industrial y no está fijada en normas ISO/IEC; el AI Act regula sistemas de IA en función de su **uso y riesgo**, independientemente de etiquetas comerciales.
+- La integración de agentes en arquitecturas ENS exige aplicar principios de seguridad integral, prevención, detección, respuesta y conservación, aunque el ENS no mencione explícitamente “prompts” o “agentes”; los controles de validación de entrada, registro de actividad y control de acceso son la base técnica para mitigar riesgos agénticos.
