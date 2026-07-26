@@ -16,16 +16,25 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import unicodedata
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-EXCLUDED_PARTS = {"_templates", "sources"}
+EXCLUDED_PARTS = {"_template", "sources"}
 DEFAULT_OUTPUT = Path("apps/studyassistant/data/knowledge_index.json")
+
+
+def slugify(text: str) -> str:
+    """Genera un slug seguro para URLs y anclas."""
+    text = str(text).lower()
+    text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore').decode('ascii')
+    text = re.sub(r'[^a-z0-9]+', '-', text)
+    return text.strip('-')
 
 
 def parse_scalar(value: str) -> Any:
     value = value.strip()
-
     if value == "":
         return ""
     if value in {"null", "Null", "NULL", "~"}:
@@ -36,27 +45,41 @@ def parse_scalar(value: str) -> Any:
         return False
     if (value.startswith('"') and value.endswith('"')) or (value.startswith("'") and value.endswith("'")):
         return value[1:-1]
-
     return value
 
 
-def parse_frontmatter(markdown: str) -> tuple[dict[str, Any], str]:
-    markdown = markdown.lstrip("\ufeff")
-    markdown = markdown.replace("\r\n", "\n").replace("\r", "\n")
+def normalize_array(value: Any) -> list[str]:
+    """Asegura que el valor sea una lista plana de strings limpia."""
+    if not value:
+        return []
+    if isinstance(value, str):
+        return [v.strip() for v in value.split(",") if v.strip()]
+    if isinstance(value, list):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return []
+
+
+def parse_frontmatter(file_path: Path) -> tuple[dict[str, Any], str]:
+    """Lee YAML frontmatter, normaliza arrays y deriva ID si falta."""
+    raw = file_path.read_text(encoding="utf-8")
+    markdown = raw.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
+
+    # Derivamos ID base por defecto
+    default_id = file_path.stem
 
     if not markdown.startswith("---\n"):
-        return {}, markdown
+        return {"id": default_id}, markdown
 
     end = markdown.find("\n---", 4)
     if end == -1:
-        return {}, markdown
+        return {"id": default_id}, markdown
 
-    raw = markdown[4:end].strip("\n")
+    raw_meta = markdown[4:end].strip("\n")
     body = markdown[end + 4 :].lstrip("\n")
     metadata: dict[str, Any] = {}
     current_key: str | None = None
 
-    for line in raw.splitlines():
+    for line in raw_meta.splitlines():
         stripped = line.strip()
         if stripped == "" or stripped.startswith("#"):
             continue
@@ -81,34 +104,32 @@ def parse_frontmatter(markdown: str) -> tuple[dict[str, Any], str]:
             else:
                 metadata[key] = parse_scalar(value)
 
+    # Normalizar arrays específicos según Issue #27
+    for array_field in ["processes", "profiles", "shared_with", "tags"]:
+        metadata[array_field] = normalize_array(metadata.get(array_field))
+
+    # Derivar ID si falta
+    if not metadata.get("id"):
+        metadata["id"] = default_id
+
     return metadata, body
 
 
-def strip_markdown(markdown: str) -> str:
-    text = re.sub(r"```.*?```", " ", markdown, flags=re.S)
-    text = re.sub(r"`([^`]*)`", r"\1", text)
-    text = re.sub(r"!\[[^\]]*\]\([^)]+\)", " ", text)
-    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
-    text = re.sub(r"[*_>#|-]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
-
-
 def extract_headings(body: str) -> list[dict[str, Any]]:
+    """Extrae ##, ###, #### y genera anchors estables tipo slug."""
     headings: list[dict[str, Any]] = []
+    
     for line in body.splitlines():
-        match = re.match(r"^(#{1,6})\s+(.+?)\s*$", line)
+        match = re.match(r"^(#{2,4})\s+(.+?)\s*$", line)
         if match:
-            headings.append({"level": len(match.group(1)), "text": match.group(2).strip()})
+            level = len(match.group(1))
+            text = match.group(2).strip()
+            # Limpiar posible markdown básico del texto para el anchor (ej. negritas)
+            clean_text = re.sub(r'[*_`]', '', text)
+            anchor = slugify(clean_text)
+            headings.append({"level": level, "text": clean_text, "anchor": anchor})
+            
     return headings
-
-
-def first_non_empty_paragraph(body: str, max_length: int = 260) -> str:
-    for paragraph in re.split(r"\n\s*\n", body):
-        cleaned = strip_markdown(paragraph)
-        if cleaned:
-            return cleaned if len(cleaned) <= max_length else cleaned[: max_length - 3].rstrip() + "..."
-    return ""
 
 
 def should_include(path: Path, knowledge_root: Path) -> bool:
@@ -131,46 +152,43 @@ def should_include(path: Path, knowledge_root: Path) -> bool:
 
 
 def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]:
+    """Recorre la base de conocimiento y produce el JSON de metadatos ordenado."""
     notes: list[dict[str, Any]] = []
 
     for path in sorted(knowledge_root.rglob("*.md")):
         if not should_include(path, knowledge_root):
             continue
 
-        raw = path.read_text(encoding="utf-8")
-        metadata, body = parse_frontmatter(raw)
+        metadata, body = parse_frontmatter(path)
 
-        if metadata.get("type") != "apunte":
-            continue
-
-        headings = extract_headings(body)
-        title = metadata.get("title") or (headings[0]["text"] if headings else path.stem.replace("-", " ").title())
-        note_id = metadata.get("id") or path.stem
+        title = metadata.get("title") or path.stem.replace("-", " ").title()
+        note_id = metadata["id"]
 
         notes.append({
             "id": note_id,
             "title": title,
+            "official_topic": metadata.get("official_topic", ""),
+            "slug": slugify(title),
             "path": path.as_posix(),
-            "relative_path": path.relative_to(knowledge_root).as_posix(),
             "processes": metadata.get("processes", []),
             "profiles": metadata.get("profiles", []),
-            "official_profile": metadata.get("official_profile"),
-            "official_topic": metadata.get("official_topic"),
-            "source_ids": metadata.get("source_ids", []),
+            "shared_with": metadata.get("shared_with", []),
             "tags": metadata.get("tags", []),
-            "status": metadata.get("status"),
-            "created_at": metadata.get("created_at"),
-            "last_reviewed": metadata.get("last_reviewed"),
-            "ai_generated": metadata.get("ai_generated"),
-            "ai_sources": metadata.get("ai_sources", []),
-            "needs_human_review": metadata.get("needs_human_review"),
-            "headings": headings,
-            "excerpt": first_non_empty_paragraph(body),
-            "content_text": strip_markdown(body),
+            "status": metadata.get("status", ""),
+            "headings": extract_headings(body)
         })
 
+    # Ordenar por title
+    notes.sort(key=lambda x: x["title"])
+
+    # Generar estructura final recomendada
+    output_data = {
+        "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "notes": notes
+    }
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(notes, ensure_ascii=False, indent=2), encoding="utf-8")
+    output_path.write_text(json.dumps(output_data, ensure_ascii=False, indent=2), encoding="utf-8")
     return notes
 
 
@@ -187,8 +205,8 @@ def main() -> None:
         raise FileNotFoundError(f"No existe la carpeta de conocimiento: {knowledge_root}")
 
     notes = build_index(knowledge_root, output_path)
-    print(f"Índice generado: {output_path}")
-    print(f"Apuntes indexados: {len(notes)}")
+    print(f"Índice generado con éxito en: {output_path}")
+    print(f"Total de apuntes indexados: {len(notes)}")
 
 
 if __name__ == "__main__":
