@@ -31,6 +31,14 @@ if (!empty($note['official_topic'])) {
     }
 }
 
+$renderedContent = '';
+if ($markdown !== null) {
+    $renderedContent = sa_render_markdown($markdown);
+    $renderedContent = add_heading_anchors($renderedContent);
+}
+
+$headings = $note['headings'] ?? [];
+
 $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
 ?>
@@ -40,6 +48,26 @@ require __DIR__ . '/includes/header.php';
     <p><a class="button-secondary" href="index.php">Volver al listado</a></p>
 <?php else: ?>
     <div class="note-layout">
+        
+        <div class="mobile-only">
+            <?php if (!empty($headings)): ?>
+                <details class="note-toc-details">
+                    <summary>Índice del documento</summary>
+                    <nav class="note-toc">
+                        <ul>
+                            <?php foreach ($headings as $h): ?>
+                                <?php if ($h['level'] >= 2 && $h['level'] <= 4): ?>
+                                    <li class="toc-level-<?= $h['level'] ?>">
+                                        <a href="#<?= htmlspecialchars($h['anchor']) ?>"><?= sa_safe_text($h['text']) ?></a>
+                                    </li>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        </ul>
+                    </nav>
+                </details>
+            <?php endif; ?>
+        </div>
+
         <aside class="note-sidebar">
             <a class="button-secondary" href="index.php">← Volver</a>
 
@@ -56,53 +84,66 @@ require __DIR__ . '/includes/header.php';
                 </p>
             <?php endif; ?>
 
-            <h3>Metadatos</h3>
-
-            <dl>
-                <dt>ID</dt>
-                <dd><code><?php echo sa_safe_text($note['id']); ?></code></dd>
-
-                <?php if (!empty($note['official_topic'])): ?>
-                    <dt>Tema oficial</dt>
-                    <dd><?php echo sa_safe_text($note['official_topic']); ?></dd>
-                <?php endif; ?>
-
-                <?php if (!empty($note['status'])): ?>
-                    <dt>Estado</dt>
-                    <dd><?php echo sa_safe_text($note['status']); ?></dd>
-                <?php endif; ?>
-
-                <?php if (!empty($note['processes'])): ?>
-                    <dt>Procesos</dt>
-                    <dd>
-                        <?php foreach ($note['processes'] as $process): ?>
-                            <div><?php echo sa_safe_text($process); ?></div>
-                        <?php endforeach; ?>
-                    </dd>
-                <?php endif; ?>
-
-                <?php if (!empty($note['tags'])): ?>
-                    <dt>Etiquetas</dt>
-                    <dd>
-                        <div class="tags">
-                            <?php foreach ($note['tags'] as $tag): ?>
-                                <a class="tag" href="index.php?tag=<?php echo urlencode($tag); ?>">
-                                    <?php echo sa_safe_text($tag); ?>
-                                </a>
+            <?php if (!empty($headings)): ?>
+                <details class="note-toc-container desktop-only" open>
+                    <summary class="toc-desktop-summary">Índice</summary>
+                    <nav class="note-toc">
+                        <ul>
+                            <?php foreach ($headings as $h): ?>
+                                <?php if ($h['level'] >= 2 && $h['level'] <= 4): ?>
+                                    <li class="toc-level-<?= $h['level'] ?>">
+                                        <a href="#<?= htmlspecialchars($h['anchor']) ?>"><?= sa_safe_text($h['text']) ?></a>
+                                    </li>
+                                <?php endif; ?>
                             <?php endforeach; ?>
-                        </div>
-                    </dd>
-                <?php endif; ?>
+                        </ul>
+                    </nav>
+                </details>
+            <?php endif; ?>
 
-                <?php if (!empty($note['path'])): ?>
-                    <dt>Fichero</dt>
-                    <dd><code><?php echo sa_safe_text($note['path']); ?></code></dd>
-                <?php endif; ?>
-            </dl>
+            <div class="note-meta-container" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <h3 style="margin-top: 0;">Metadatos</h3>
+                <dl>
+                    <dt>ID</dt>
+                    <dd><code><?php echo sa_safe_text($note['id']); ?></code></dd>
+
+                    <?php if (!empty($note['official_topic'])): ?>
+                        <dt>Tema oficial</dt>
+                        <dd><?php echo sa_safe_text($note['official_topic']); ?></dd>
+                    <?php endif; ?>
+
+                    <?php if (!empty($note['status'])): ?>
+                        <dt>Estado</dt>
+                        <dd><?php echo sa_safe_text($note['status']); ?></dd>
+                    <?php endif; ?>
+
+                    <?php if (!empty($note['processes'])): ?>
+                        <dt>Procesos</dt>
+                        <dd>
+                            <?php foreach ($note['processes'] as $process): ?>
+                                <div><?php echo sa_safe_text($process); ?></div>
+                            <?php endforeach; ?>
+                        </dd>
+                    <?php endif; ?>
+
+                    <?php if (!empty($note['tags'])): ?>
+                        <dt>Etiquetas</dt>
+                        <dd>
+                            <div class="tags">
+                                <?php foreach ($note['tags'] as $tag): ?>
+                                    <a class="tag" href="index.php?tag=<?php echo urlencode($tag); ?>">
+                                        <?php echo sa_safe_text($tag); ?>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </dd>
+                    <?php endif; ?>
+                </dl>
+            </div>
         </aside>
 
         <article class="note-content">
-            <?php echo sa_render_markdown($markdown); ?>
+            <?php echo $renderedContent; ?>
         </article>
     </div>
 <?php endif; ?>
