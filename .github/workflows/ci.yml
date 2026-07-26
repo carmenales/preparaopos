@@ -57,3 +57,22 @@ jobs:
       - name: Stop Docker stack
         if: always()
         run: docker compose down -v
+
+  python-tests:
+    name: Python scripts tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Run Python unit tests
+        run: python -m unittest discover tests/
+
+      - name: Verify Knowledge Index build
+        run: python scripts/build_knowledge_index.py
