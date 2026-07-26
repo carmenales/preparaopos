@@ -26,7 +26,11 @@ function sa_load_index() {
     $raw = file_get_contents($indexPath);
     $data = json_decode($raw, true);
 
-    return is_array($data) ? $data : [];
+    if (isset($data['notes']) && is_array($data['notes'])) {
+        return $data['notes'];
+    }
+
+    return [];
 }
 
 function sa_find_note_by_id($notes, $id) {
