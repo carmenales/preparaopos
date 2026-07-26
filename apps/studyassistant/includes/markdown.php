@@ -65,6 +65,7 @@ function sa_inline_markdown($text) {
 
 function sa_slugify_heading($text) {
     $text = trim((string)$text);
+    $text = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
     $text = preg_replace('/[^\p{L}\p{N}]+/u', '-', $text);
     $text = trim($text, '-');
 
@@ -509,4 +510,16 @@ function sa_render_markdown($markdown) {
     $flushParagraph();
 
     return $html;
+}
+
+function add_heading_anchors(string $html): string {
+    return preg_replace_callback('/(<h([2-4]) id="([^"]+)">)(.*?)(<\/h\2>)/i', function($matches) {
+        $tagOpen = $matches[1];
+        $id = $matches[3];
+        $content = $matches[4];
+        $tagClose = $matches[5];
+        $anchorLink = ' <a href="#' . $id . '" class="heading-anchor" aria-hidden="true" title="Enlace directo">#</a>';
+        
+        return $tagOpen . $content . $anchorLink . $tagClose;
+    }, $html);
 }
