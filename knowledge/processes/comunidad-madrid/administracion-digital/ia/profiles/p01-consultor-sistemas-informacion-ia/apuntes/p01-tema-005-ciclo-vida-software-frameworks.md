@@ -35,212 +35,462 @@ needs_human_review: true
 
 ## Encaje en la convocatoria
 
-Este tema corresponde al **Tema 5 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), específico para el perfil **P01 (IA aplicada al ciclo de vida del software)** de la Agencia para la Administración Digital de la Comunidad de Madrid. El perfil P02 tiene un Tema 5 diferente.
+Este tema corresponde al **Tema 5 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), específico para el perfil **P01 – IA aplicada al ciclo de vida del software** de la Agencia para la Administración Digital de la Comunidad de Madrid. El perfil P02 tiene un Tema 5 diferente.
 
-El epígrafe exige conocimientos técnicos profundos sobre cinco bloques: **fases del ciclo de vida del software**, **modelo tradicional y modelo agile**, **pruebas del software**, **integración y despliegue continuo (CI/CD)** y **frameworks del stack de Java (3 capas y microservicios)**. 
+El epígrafe exige conocimientos técnicos profundos en cinco bloques: **fases del ciclo de vida del software**, **modelos tradicionales y agile**, **pruebas del software**, **integración y despliegue continuo (CI/CD)** y **frameworks del stack Java (arquitectura en capas y microservicios)**, conectando con preguntas de examen sobre Scrum, CI/CD, DevOps, Spring, JPA/Hibernate, BDD y métricas de pruebas.
 
 ## Ideas clave
 
-- **Ciclo de Vida (SDLC):** Abarca desde la concepción hasta la retirada del producto. La norma de referencia para los procesos del ciclo de vida es la **ISO/IEC/IEEE 12207**.
-- **Mantenimiento (ISO/IEC 14764):** Se divide normativamente en cuatro tipos: Correctivo, Adaptativo, Perfectivo y Preventivo.
-- **Modelos de Ciclo de Vida:** **Cascada** es secuencial; **Espiral** (Boehm) se centra cíclicamente en el análisis de riesgos; **Agile** es iterativo e incremental.
-- **Agile vs. Scrum:** *Agile* es un marco filosófico (4 valores, 12 principios del Manifiesto de 2001). *Scrum* es un framework empírico concreto.
-- **Pruebas (Verificación vs. Validación):** Verificación responde a "¿Estamos construyendo el producto correctamente?" (cumple especificaciones técnicas). Validación responde a "¿Estamos construyendo el producto correcto?" (resuelve la necesidad de negocio del usuario).
-- **CI/CD:** En la *Entrega Continua (Continuous Delivery)* el software está listo para producción pero requiere aprobación manual. En el *Despliegue Continuo (Continuous Deployment)*, la promoción a producción es 100% automática tras superar los tests.
-- **Stack Java (3 Capas):** Se organiza lógicamente en Presentación, Negocio y Datos. **Spring MVC** utiliza el patrón *Front Controller* a través de su `DispatcherServlet`. **JPA** es la especificación; **Hibernate** es la implementación.
-- **Microservicios Cloud-Native:** Mientras Spring Boot lidera la creación de *Fat-JARs*, nuevos frameworks como **Quarkus** y **Micronaut** compiten mediante compilación *Ahead-Of-Time (AOT)* y **GraalVM** para reducir drásticamente el consumo de memoria y tiempo de arranque en contenedores.
+- **Ciclo de Vida (SDLC):** Abarca desde la concepción hasta la retirada del producto; la norma matriz de procesos es **ISO/IEC/IEEE 12207**, que organiza procesos de ciclo de vida en primarios, de apoyo y organizacionales.
+- **Mantenimiento (ISO/IEC 14764):** Se clasifica normativamente en cuatro tipos: **correctivo, adaptativo, perfectivo y preventivo**, y las preguntas de examen suelen centrar la atención en la distinción entre adaptativo y correctivo.
+- **Modelos de ciclo de vida:** **Cascada** es secuencial y rígido; el **Modelo en V** vincula fases de desarrollo con niveles de prueba; la **Espiral de Boehm** enfatiza el **análisis iterativo de riesgos**; los modelos **ágiles** son iterativos e incrementales.
+- **Agile vs Scrum:** Agile es el marco filosófico (Manifiesto ágil de 2001 con 4 valores y 12 principios); Scrum es un framework empírico concreto definido por la **Guía Scrum 2020**, con roles, artefactos y eventos bien delimitados.
+- **Pruebas (Verificación vs Validación):** Verificación responde a “¿Estamos construyendo el producto correctamente?”; validación responde a “¿Estamos construyendo el producto correcto?”, siguiendo terminología **ISTQB**.
+- **CI/CD:** La **Integración Continua (CI)** detecta pronto defectos de integración; en **Continuous Delivery** el paso a producción requiere aprobación humana; en **Continuous Deployment** la promoción a producción es 100 % automática tras superar los tests.
+- **Stack Java (3 capas):** Separación en presentación, negocio y datos; **Spring MVC** utiliza el patrón **Front Controller** mediante el `DispatcherServlet`; **JPA** es la especificación estándar y **Hibernate** su implementación más extendida.
+- **Microservicios cloud‑native:** Spring Boot facilita *fat‑JARs* autoejecutables; frameworks como **Quarkus** y **Micronaut**, combinados con **GraalVM**, usan compilación **Ahead‑Of‑Time (AOT)** y binarios nativos para reducir memoria y tiempos de arranque en contenedores.
 
 ## Desarrollo
 
 ### 1. Fases del ciclo de vida del software
 
-El **SDLC (Software Development Life Cycle)** es el marco que define las tareas en cada fase de construcción y mantenimiento de un producto de software. La referencia internacional estándar es la **ISO/IEC/IEEE 12207** (y sus revisiones), que divide el ciclo en procesos primarios, de apoyo y organizacionales.
+El **Software Development Life Cycle (SDLC)** describe el conjunto de procesos para producir, mantener y retirar software, basándose en normas como **ISO/IEC/IEEE 12207**. A nivel proyecto, suele representarse en fases:
 
-Fases técnicas y secuenciales clásicas (a nivel de proyecto):
+1. **Ingeniería de requisitos:**
+   - Elicitación, análisis, especificación y validación de requisitos.
+   - Produce un documento de requisitos (SRS), históricamente regido por IEEE 830 y hoy por ISO/IEC/IEEE 29148.
+2. **Análisis y diseño:**
+   - Diseño arquitectónico (alto nivel): componentes, interfaces, despliegue lógico.
+   - Diseño detallado (bajo nivel): algoritmos, clases, estructuras de datos.
+3. **Construcción (implementación):** Codificación y configuración del software siguiendo estándares de calidad y seguridad.
+4. **Verificación y pruebas:** Asegurar que el producto cumple requisitos funcionales y no funcionales (rendimiento, seguridad, usabilidad).
+5. **Aceptación y puesta en servicio:** Validación por el usuario y transición a producción.
+6. **Operación y mantenimiento:** Explotación continua y evolución del sistema.
+7. **Retirada (disposal):** Fin de vida útil, migración de datos, desmantelamiento y eliminación segura.
 
-1. **Ingeniería de Requisitos:** Elicitación, análisis, especificación y validación. Produce el Documento de Especificación de Requisitos (SRS, clásicamente regido por IEEE 830, sustituido por ISO/IEC/IEEE 29148).
-2. **Análisis y Diseño:**
-   * **Diseño Arquitectónico (Alto Nivel):** Definición de componentes, interfaces, persistencia y despliegue lógico.
-   * **Diseño Detallado (Bajo Nivel):** Algoritmos, diagramas de clases, estructuras de datos.
-3. **Construcción (Implementación):** Codificación y configuración del software siguiendo estándares y prácticas seguras.
-4. **Verificación y Pruebas:** Comprobación sistemática de la calidad (QA) frente a los requisitos funcionales y no funcionales.
-5. **Aceptación y Puesta en Servicio (Despliegue):** Transición del entorno de desarrollo/preproducción a producción y validación por el usuario.
-6. **Operación y Mantenimiento:** Garantizar el funcionamiento continuo y evolución.
-7. **Retirada (Disposal):** Fin de vida útil, migración de datos y eliminación segura del sistema.
+#### 1.1. Tipos de mantenimiento (ISO/IEC 14764)
 
-#### 1.1. Tipos de Mantenimiento (ISO/IEC 14764)
-Clasificación normativa, recurrente en exámenes:
-* **Correctivo:** Corrección de fallos y defectos descubiertos en el software en producción.
-* **Adaptativo:** Modificación de un producto para mantener su uso ante un cambio en su entorno operativo (ej. nueva versión del S.O. o cambio de gestor de base de datos).
-* **Perfectivo:** Mejora del rendimiento, mantenibilidad o adición de nuevas funcionalidades (evolución a petición del usuario).
-* **Preventivo:** Modificación proactiva para detectar y corregir fallos latentes antes de que se conviertan en fallos operativos reales.
+Clasificación normativa recurrente en oposición:
 
-#### 1.2. Requisitos de Ciclo de Vida Seguro (ENS - RD 311/2022)
-El **Esquema Nacional de Seguridad** obliga (medida *mp.sw.1*) a que el ciclo de vida del software en el sector público integre seguridad desde el diseño, mínimo privilegio, separación estricta entre entornos de desarrollo y producción, y la no utilización de datos reales en pruebas sin anonimización.
+- **Correctivo:** modificación para corregir errores detectados en el software en producción (fallos observados).
+- **Adaptativo:** cambios para mantener la operatividad del software ante variaciones del entorno (nuevo sistema operativo, nueva BBDD) sin modificar la funcionalidad objetivo.
+- **Perfectivo:** mejoras de rendimiento, mantenibilidad o ampliación funcional a petición del usuario.
+- **Preventivo:** acciones proactivas para detectar y corregir defectos latentes antes de que se conviertan en fallos operativos.
 
-### 2. Modelo tradicional y modelo agile
+El examen P01 destaca el mantenimiento **adaptativo** cuando el ejemplo se refiere explícitamente a cambios en el entorno (como actualización del sistema operativo o cambio de gestor de BBDD).
 
-#### 2.1. Modelos Tradicionales (Predictivos)
-* **Cascada (*Waterfall*):** Modelo secuencial estricto. Cada fase debe completarse y documentarse formalmente antes de comenzar la siguiente. Alta rigidez ante cambios de requisitos tardíos.
-* **Modelo en V:** Variante de la cascada que asocia explícitamente cada fase de desarrollo con su correspondiente nivel de pruebas (Ej. Requisitos de usuario $\leftrightarrow$ Pruebas de aceptación; Diseño arquitectónico $\leftrightarrow$ Pruebas de integración). Su objetivo es planificar las pruebas desde el inicio.
-* **Espiral (Boehm):** Modelo evolutivo en ciclos. **Diferenciador clave para test:** Es el único modelo clásico centrado explícitamente en el **análisis iterativo de riesgos** en cada vuelta de la espiral.
+#### 1.2. Ciclo de vida seguro según ENS
 
-#### 2.2. Modelo Agile (Adaptativo)
-Basado en el **Manifiesto Ágil (2001)**. Se rige por 4 valores fundamentales (trampa típica de examen: Agile prefiere el primer elemento, pero no elimina el segundo):
-1. **Individuos e interacciones** sobre procesos y herramientas.
-2. **Software funcionando** sobre documentación exhaustiva.
-3. **Colaboración con el cliente** sobre negociación contractual.
-4. **Respuesta ante el cambio** sobre seguir un plan.
+El **Esquema Nacional de Seguridad (RD 311/2022)** establece que el ciclo de vida del software debe integrar seguridad desde el diseño, separación entre entornos, uso de datos de prueba y mínimo privilegio en la Administración. La medida **mp.sw.1** se refiere a requisitos de desarrollo de aplicaciones seguras, y el ENS subraya que la seguridad es un **proceso integral** que abarca elementos humanos, técnicos, organizativos y jurídicos.
 
-#### 2.3. Scrum (Guía 2020)
-Es un *framework* empírico (basado en transparencia, inspección y adaptación) para abordar problemas complejos.
-* **El Scrum Team (Roles):** No hay jerarquías.
-  * **Product Owner:** Único responsable de maximizar el valor del producto y de gestionar/priorizar el *Product Backlog*.
-  * **Scrum Master:** Líder servicial. Asegura la comprensión de Scrum y elimina impedimentos organizacionales.
-  * **Developers:** Personas comprometidas con la creación del Incremento. *(Nota de test: El concepto "Development Team" desapareció en la guía de 2020).*
-* **Artefactos y Compromisos:**
-  * **Product Backlog** (Compromiso: *Product Goal*).
-  * **Sprint Backlog** (Compromiso: *Sprint Goal*).
-  * **Incremento** (Compromiso: *Definition of Done*).
-* **Eventos:** *Sprint* (contenedor de máximo 1 mes), *Sprint Planning*, *Daily Scrum* (15 minutos, para inspeccionar el progreso hacia el Sprint Goal, exclusivo para Developers), *Sprint Review* (inspección del incremento con stakeholders) y *Sprint Retrospective* (inspección del equipo y sus procesos).
+### 2. Modelos de ciclo de vida: tradicionales y ágiles
+
+#### 2.1. Modelos tradicionales (predictivos)
+
+- **Cascada (Waterfall):** fases secuenciales, cada una debe completarse y documentarse antes de pasar a la siguiente; poca tolerancia a cambios tardíos.
+- **Modelo en V:** relaciona cada fase de desarrollo con su nivel de prueba correspondiente (requisitos ↔ pruebas de aceptación; diseño ↔ pruebas de integración), para planificar las pruebas desde el inicio.
+- **Espiral de Boehm:** modelo evolutivo que integra prototipado y análisis de riesgos en cada iteración; su rasgo distintivo en examen es el **foco explícito y continuo en la gestión de riesgos**.
+
+#### 2.2. Modelo ágil
+
+El **Manifiesto Ágil (2001)** define 4 valores:
+
+1. Individuos e interacciones sobre procesos y herramientas.
+2. Software funcionando sobre documentación exhaustiva.
+3. Colaboración con el cliente sobre negociación contractual.
+4. Respuesta ante el cambio sobre seguir un plan.
+
+Los principios ágiles fomentan entregas frecuentes, adaptación continua y colaboración estrecha con el cliente; Agile es un paraguas que incluye frameworks como Scrum, Kanban, XP, etc.
+
+#### 2.3. Scrum (Guía Scrum 2020)
+
+Scrum es un framework empírico basado en transparencia, inspección y adaptación.
+
+- **Roles del Scrum Team:**
+  - **Product Owner:** responsable de maximizar el valor del producto y gestionar/priorizar el Product Backlog; es el único con autoridad sobre el Backlog.
+  - **Scrum Master:** líder servicial que asegura que Scrum se entiende y aplica correctamente, eliminando impedimentos.
+  - **Developers:** miembros comprometidos con crear el Incremento; el término “Development Team” desaparece en la Guía 2020.
+- **Artefactos y compromisos:**
+  - **Product Backlog** – compromiso: Product Goal.
+  - **Sprint Backlog** – compromiso: Sprint Goal.
+  - **Incremento** – compromiso: Definition of Done.
+- **Eventos:**
+  - **Sprint:** contenedor de máximo 1 mes.
+  - **Sprint Planning, Daily Scrum (15 min, inspectar progreso hacia el Sprint Goal, solo Developers), Sprint Review, Sprint Retrospective.**
+
+Los exámenes preguntan también por el **Burndown Chart**: una tendencia ascendente continuada indica incremento del trabajo pendiente, por reestimaciones o incorporación de nuevas tareas.
 
 #### 2.4. Kanban
-Marco basado en la gestión visual del flujo de valor continuo. A diferencia de Scrum, no prescribe Sprints de duración fija ni roles específicos, pero exige **limitar el trabajo en progreso (WIP - *Work In Progress*)** para evitar cuellos de botella.
+
+Kanban gestiona flujo continuo mediante un tablero visual (columnas como “Por hacer”, “En progreso”, “Hecho”), sin Sprints ni roles prescriptivos. Su práctica central es **limitar el trabajo en progreso (WIP)** para evitar cuellos de botella y favorecer un flujo estable.
 
 ### 3. Pruebas del software
 
-Las definiciones técnicas estándar emanan del glosario **ISTQB** (*International Software Testing Qualifications Board*).
-* **Error:** Acción humana equivocada (ej. el analista malinterpreta una norma).
-* **Defecto / Bug:** Imperfección en el código fruto de un error humano.
-* **Fallo:** Manifestación física u observable del defecto durante la ejecución del software.
+La terminología estándar se basa en el glosario **ISTQB Foundation**.
 
-#### 3.1. Niveles de Prueba
-1. **Unitarias / De componente:** Verifican unidades pequeñas de código (métodos/clases) de forma aislada. Típicamente automatizadas por los desarrolladores (ej. JUnit).
-2. **Pruebas de Integración:** Comprueban la interfaz y comunicación entre componentes internos (ej. Servicio y Repositorio) o con sistemas externos.
-3. **Pruebas de Sistema:** Validan el comportamiento end-to-end del sistema completo integrado, evaluando requisitos funcionales y no funcionales (rendimiento, seguridad, etc.).
-4. **Pruebas de Aceptación (UAT):** Verifican que el sistema cumple con las necesidades del cliente/negocio. Suelen ejecutarse por el usuario final antes de dar por buena la entrega.
+- **Error:** acción humana equivocada (ej. analista interpreta mal una norma).
+- **Defecto (bug):** imperfección en el artefacto de software debida a un error.
+- **Fallo:** manifestación de un defecto durante la ejecución.
 
-#### 3.2. Técnicas de Diseño de Pruebas
-* **Caja Blanca (Estructurales):** Se diseñan conociendo el código fuente y la arquitectura interna. Miden la **cobertura** (cobertura de sentencias, cobertura de ramas/decisiones, complejidad ciclomática de McCabe).
-* **Caja Negra (Basadas en especificación):** Diseñadas sin ver el código, centradas puramente en las entradas y las salidas esperadas. *Técnicas típicas:* Partición de equivalencia, análisis de valores límite y tablas de decisión.
+#### 3.1. Niveles de prueba
 
-#### 3.3. Pruebas Dinámicas vs. Estáticas
-* **Estáticas:** Se realizan **sin ejecutar** el código (ej. revisiones por pares, análisis estático de código, herramientas tipo SonarQube o SAST).
-* **Dinámicas:** Requieren la ejecución física del software.
+1. **Unitarias/de componente:** prueban unidades pequeñas de código (métodos, clases) de forma aislada; los desarrolladores las automatizan, típicamente con **JUnit**.
+2. **Integración:** verifican interfaces y comunicación entre componentes internos (Servicio–Repositorio) o con sistemas externos.
+3. **Sistema:** evalúan comportamiento end‑to‑end del sistema completo integrado, incluyendo requisitos funcionales y no funcionales (rendimiento, seguridad).
+4. **Aceptación (UAT):** validan que el sistema satisface las necesidades del usuario/negocio; suelen ser ejecutadas por el cliente antes de la puesta en producción.
 
-### 4. Integración y despliegue continuo (CI/CD)
+#### 3.2. Diseño de pruebas: caja negra y caja blanca
 
-Conjunto de prácticas fundamentales en el paradigma **DevOps/DevSecOps** orientadas a la industrialización del ciclo de vida del software.
+- **Caja negra (basadas en especificación):** diseñadas sin ver el código, centradas en entradas/salidas; técnicas típicas:
+  - Partición de clases de equivalencia.
+  - Análisis de valores límite.
+  - Tablas de decisión.
+- **Caja blanca (estructurales):** diseñadas analizando código y estructura interna; miden:
+  - Cobertura de sentencias.
+  - Cobertura de decisiones/ramas.
+  - Complejidad ciclomática (McCabe).
 
-* **Integración Continua (CI - *Continuous Integration*):** Los desarrolladores suben código frecuentemente a un repositorio central (ej. Git). Cada *commit* dispara una canalización (*pipeline*) automática que compila el código, pasa herramientas de análisis estático (linting, SAST) y ejecuta pruebas unitarias. **Objetivo:** Detectar defectos de integración de inmediato.
-* **Entrega Continua (CD - *Continuous Delivery*):** Extiende la CI automatizando la promoción del artefacto compilado a entornos de preproducción. Garantiza que el código está empaquetado y "listo para desplegar". **Diferencia clave:** Requiere una **aprobación humana (clic manual)** para el paso final a producción.
-* **Despliegue Continuo (CD - *Continuous Deployment*):** Automatización del 100% del pipeline. Si los tests automáticos son exitosos, el cambio pasa a producción **sin ninguna intervención humana**.
+#### 3.3. Pruebas estáticas vs dinámicas
 
-#### 4.1. Estrategias de Despliegue en Producción
-* **Blue/Green Deployment:** Se mantienen dos entornos idénticos. El tráfico se redirige instantáneamente del Blue (producción actual) al Green (nueva versión) a nivel de enrutador/balanceador. Facilita un *rollback* inmediato.
-* **Canary Release:** El nuevo código se despliega a un porcentaje pequeño de usuarios (ej. 5%) para monitorear errores. Si es estable, se amplía progresivamente al 100%. Orientado a la mitigación gradual de riesgos.
+- **Pruebas estáticas:** sin ejecutar el código (revisiones por pares, inspecciones, análisis estático con herramientas SAST/SonarQube).
+- **Pruebas dinámicas:** requieren ejecutar el software para observar comportamientos.
 
-### 5. Frameworks de Java (3 capas y microservicios)
+#### 3.4. Cobertura, JaCoCo y mocking
 
-En la Administración Pública, Java empresarial (**Jakarta EE** y ecosistema **Spring**) constituye la pila tecnológica predominante.
+En Java, herramientas como **JaCoCo** permiten medir:
 
-#### 5.1. Arquitectura de 3 Capas
-Patrón lógico para segregar responsabilidades y reducir el acoplamiento.
-1. **Capa de Presentación:** Gestión de interfaces, controladores REST y validación de sintaxis de entrada. **Patrón MVC:** Separa el Modelo (datos), la Vista (representación) y el Controlador. En Spring MVC, el componente núcleo es el **`DispatcherServlet`** que actúa como *Front Controller* para enrutar todas las peticiones HTTP.
-2. **Capa de Negocio (Business/Service):** Aloja las reglas de dominio, los casos de uso y la gestión de transacciones. No debe depender de la tecnología web ni de la base de datos subyacente.
-3. **Capa de Persistencia / Acceso a Datos:** Realiza operaciones de entrada/salida sobre el almacenamiento. 
-   * **JPA (Jakarta Persistence API):** Es la **especificación** estándar de Java para mapeo objeto-relacional (ORM). 
-   * **Hibernate:** Es la **implementación** técnica más extendida de la especificación JPA.
-   * **Spring Data JPA:** Es una abstracción de alto nivel de Spring que simplifica la creación de repositorios de datos evitando código repetitivo (*boilerplate*).
+- Cobertura de instrucciones.
+- Cobertura de ramas.
+- Complejidad ciclomática.
 
-#### 5.2. Ecosistema Spring y Microservicios
-Un microservicio es una unidad de software autónoma, centrada en un dominio de negocio específico, desplegable independientemente y que se comunica a través de contratos ligeros (HTTP/REST, gRPC, Eventos).
+No miden cobertura de asserts correctos/erróneos como métrica específica, punto que aparece en preguntas.
 
-* **Spring Framework:** Núcleo tecnológico basado en dos principios fundamentales:
-  * **Inversión de Control (IoC):** El framework dirige el flujo y gestiona el ciclo de vida de los objetos (Beans) mediante un contenedor (`ApplicationContext`).
-  * **Inyección de Dependencias (DI):** El contenedor proporciona a un objeto sus dependencias sin que el objeto tenga que instanciarlas directamente, reduciendo el acoplamiento.
-* **Spring Boot:** Subproyecto que aplica la *convención sobre configuración*. Permite crear aplicaciones autónomas empaquetando el servidor web (Tomcat, Jetty o Undertow) directamente en el compilado, generando un ejecutable único (**Fat-JAR**).
-* **Spring Cloud:** Conjunto de librerías para gobernar sistemas distribuidos. Provee patrones como *API Gateway*, *Service Discovery* (Eureka) y resiliencia ante fallos (*Circuit Breaker* mediante Resilience4j).
-* **Jakarta EE y MicroProfile:** Alternativa estándar promovida por Eclipse Foundation. Define especificaciones corporativas (Jakarta REST, CDI, Security). Eclipse MicroProfile optimiza Jakarta EE para arquitecturas de microservicios (Fault Tolerance, Metrics, JWT).
+Para pruebas unitarias aisladas, librerías como **Mockito** permiten simular el comportamiento de dependencias no implementadas (mocks), lo que es clave en preguntas de examen sobre testing en Java.
 
-#### 5.3. Evolución Cloud-Native (AOT Compilation)
-El ecosistema Spring tradicional usa intensivamente la reflexión (*reflection*) y el escaneo de *classpath* en tiempo de ejecución, lo que implica arranques lentos (*cold starts*) y alto consumo de memoria RAM, problemático en arquitecturas contenerizadas/Serverless.
-Para solucionar esto, frameworks modernos como **Quarkus** y **Micronaut** (y más recientemente Spring Boot 3) realizan la inyección de dependencias y configuración en **tiempo de compilación (AOT - Ahead-Of-Time)** y utilizan **GraalVM** para compilar código Java en binarios nativos ligeros y extremadamente rápidos.
+### 4. Integración y despliegue continuo (CI/CD) y prácticas DevOps
 
-## Conceptos que suelen preguntarse
+La cultura **DevOps/DevSecOps** busca integrar desarrollo, operaciones y seguridad, automatizando el ciclo de vida.
 
-| Concepto a evaluar | Realidad técnica y normativa | Distractor típico en examen |
-| :--- | :--- | :--- |
-| **Delivery vs. Deployment (CD)** | Delivery = Paso a producción manual. Deployment = Paso automático. | "Despliegue Continuo siempre requiere confirmación por el Product Owner". |
-| **Verificación vs. Validación** | Verificación = Cumplir requisitos técnicos (construir bien). Validación = Satisfacer necesidad del usuario (construir lo correcto). | "Son sinónimos definidos por el estándar ISTQB". |
-| **Scrum Roles** | Product Owner (Maximiza valor/Backlog), Scrum Master, Developers. | "El Project Manager asigna las tareas diarias a los programadores". |
-| **JPA vs. Hibernate** | JPA = Especificación oficial (API). Hibernate = Implementación de la API. | "Hibernate es una especificación y JPA es su implementación". |
-| **Spring Framework MVC** | Basa su enrutamiento en el patrón *Front Controller* (`DispatcherServlet`). | "Spring MVC mezcla la lógica de negocio directamente en las vistas". |
-| **Mantenimiento Adaptativo** | Se hace para que el software siga funcionando tras un cambio en su entorno (ej. S.O.). | "Consiste en arreglar un error descubierto en producción (eso es Correctivo)". |
-| **Caja Blanca** | Mide cobertura lógica interna (caminos, sentencias, McCabe). | "Se centra en probar casos de uso desde la interfaz gráfica del usuario". |
+#### 4.1. CI, Continuous Delivery y Continuous Deployment
+
+- **Integración Continua (CI):**
+  - Los desarrolladores integran cambios frecuentemente en una rama principal.
+  - Cada commit dispara un pipeline que compila, analiza estáticamente y ejecuta pruebas unitarias.
+- **Continuous Delivery (Entrega continua):**
+  - El artefacto está siempre listo para desplegar; se automatiza hasta preproducción.
+  - El paso final a producción requiere **aprobación manual explícita**.
+- **Continuous Deployment (Despliegue continuo):**
+  - La promoción a producción está automatizada; si los tests pasan, se despliega sin intervención humana.
+
+#### 4.2. Estrategias de despliegue
+
+- **Blue/Green Deployment:** dos entornos idénticos; se redirige tráfico de Blue (versión actual) a Green (nueva versión) mediante el balanceador, facilitando rollback inmediato.
+- **Canary Release:** despliegue progresivo de la nueva versión a un subconjunto de usuarios, aumentando porcentaje si el comportamiento es correcto.
+
+#### 4.3. Imágenes Docker y reconstrucción de capas
+
+En pipelines donde la imagen Docker es muy pesada, la estrategia adecuada es:
+
+- Separar componentes estáticos y pesados en una **imagen base versionada**, publicar en el Container Registry y construir la imagen de aplicación sobre esa base, reconstruyendo solo las capas que cambian.
+
+Esto mejora tiempos de build, mantiene trazabilidad (versión de imagen base) y facilita mantenibilidad.
+
+#### 4.4. Trunk‑based development y métricas DORA
+
+- **Trunk‑based development:** práctica donde los desarrolladores integran de forma frecuente cambios en una única rama principal (trunk), apoyándose en automatización de pruebas para evitar inestabilidad. Minimiza ramas largas y favorece entregas continuas.
+- **Métricas DORA:** conjunto de indicadores de rendimiento DevOps (frecuencia de despliegue, tiempo de entrega de cambios, tasa de fallo en cambios, tiempo de recuperación), recomendadas para medir el retorno del uso de IA y automatización en el ciclo de vida.
+
+### 5. Frameworks Java, arquitectura por capas y microservicios
+
+Java empresarial (Jakarta EE, Spring) sigue siendo dominante en la Administración pública.
+
+#### 5.1. Arquitectura de 3 capas
+
+Patrón lógico para separar responsabilidades:
+
+1. **Presentación:**
+   - Interfaces de usuario (JSF, HTML/JS, REST controllers).
+   - Validación sintáctica de entrada.
+   - En Spring MVC, el `DispatcherServlet` actúa como **Front Controller**, centralizando y enrutando peticiones HTTP al controlador adecuado.
+2. **Negocio (Service):**
+   - Reglas de dominio, casos de uso, orquestación de transacciones.
+   - No debe depender directamente de detalles de presentación o almacenamiento.
+3. **Persistencia/acceso a datos:**
+   - Repositorios y DAOs para operaciones sobre BBDD.
+   - **JPA (Jakarta Persistence API):** especificación estándar de mapeo objeto‑relacional.
+   - **Hibernate:** implementación concreta más extendida de JPA.
+   - **Spring Data JPA:** abstracción que simplifica repositorios, reduciendo código repetitivo.
+
+Examen P01 pregunta explícitamente por la relación correcta entre JPA e Hibernate: JPA es el estándar, Hibernate la implementación.
+
+#### 5.2. Ecosistema Spring y inyección de dependencias
+
+- **Spring Framework:**
+  - **IoC (Inversión de control):** el contenedor (`ApplicationContext`) crea y gestiona beans.
+  - **DI (Inyección de dependencias):** Spring inyecta dependencias en constructores, setters o atributos, reduciendo acoplamiento.
+- Anotaciones clave:
+  - `@Component`, `@Service`, `@Repository`: definen beans manejados por Spring.
+  - `@Bean`: métodos en clases de configuración que registran beans en el contenedor.
+  - `@Autowired`: indica dependencias que Spring debe resolver e inyectar.
+- Configuración típica:
+  - Clases de configuración con métodos `@Bean` para registrar objetos gestionados por Spring, según examenes.
+
+#### 5.3. JSF y OmniFaces
+
+En aplicaciones con **JSF**, librerías como **OmniFaces** facilitan gestión de mensajes, navegación y scopes. El siguiente código:
+
+```java
+Messages.addGlobalInfo("Operación correcta");
+Messages.addGlobalError("Ha ocurrido un error");
+Faces.redirect("home.xhtml");
+Faces.getFlash().put("usuario", usuario);
+```
+
+corresponde a OmniFaces, según preguntas de examen.
+
+#### 5.4. Microservicios y frameworks cloud‑native
+
+Un **microservicio** es una unidad de software centrada en un dominio, desplegable independientemente y que se comunica mediante interfaces ligeras (HTTP/REST, gRPC, eventos).
+
+- **Spring Boot:** empaqueta aplicaciones como *fat‑JARs* con servidor embebido (Tomcat/Jetty), facilitando despliegues en contenedores.
+- **Spring Cloud:** ofrece componentes para API Gateway, Service Discovery (Eureka), configuración distribuida y tolerancia a fallos (por ejemplo, circuit breakers con Resilience4j).
+- **Quarkus, Micronaut y Spring AOT/GraalVM:** frameworks que realizan procesamiento de DI y configuración en tiempo de compilación (AOT), junto con compilación a binarios nativos mediante GraalVM, reduciendo consumo de memoria y tiempos de arranque.
+
+### 6. Otros conceptos técnicos conectados al temario y a preguntas
+
+#### 6.1. Behavior Driven Development (BDD) y Gherkin
+
+BDD describe el comportamiento esperado mediante lenguaje natural estructurado; **Gherkin** usa palabras reservadas:
+
+- `Feature`, `Scenario`, `Given`, `When`, `Then`.
+
+Estas palabras se usan en ficheros de especificación BDD, que luego herramientas como Cucumber ejecutan como pruebas automatizadas.
+
+#### 6.2. WebSocket y APIs bidireccionales
+
+Para comunicación **full‑duplex permanente** entre cliente y servidor (ej. chat en tiempo real) en una API, la tecnología adecuada es **WebSocket**, mientras que REST con polling, HTTP chunked o SSE son patrones de comunicación unidireccional o semiduplex.
+
+### 7. Kubernetes y arquitectura de contenedores
+
+Preguntas del bloque incluyen conceptos de Kubernetes:
+
+- **Sidecar container:** contenedor auxiliar dentro de un Pod que ejecuta tareas complementarias (logging, proxy, sincronización), junto al contenedor principal.
+- **RollingUpdate:** estrategia de actualización gradual de Pods en un Deployment, manteniendo disponibilidad del servicio (crea nuevas réplicas mientras elimina antiguas).
+- **nodeSelector:** especifica en qué nodos se puede ejecutar un Pod mediante coincidencia simple clave‑valor en las labels del nodo.
+
+### 8. Kafka y políticas de limpieza
+
+En Kafka, `cleanup.policy=compact` indica que el log se compacta manteniendo únicamente el **último valor por clave (key)**, eliminando versiones antiguas de la misma clave.
+
+### 9. API Manager y seguridad
+
+Un **API Manager** suele:
+
+- Validar firmas de tokens JWT.
+- Insertar cabeceras adicionales.
+- Realizar token exchange o emitir nuevos tokens.
+
+No debería modificar directamente el contenido del JWT original añadiendo claims nuevos sin emitir un nuevo token; esa afirmación aparece como distractor en examen.
+
+### 10. Arquitectura de datos y Data Fabric
+
+**Data Fabric** se define como un enfoque de arquitectura de datos que proporciona una **capa unificada de acceso e integración de datos distribuidos**, basada en metadatos y automatización, permitiendo consumir datos sin necesidad de centralizarlos físicamente. Se diferencia de Data Warehouse (almacenamiento centralizado), Data Mart (subconjunto orientado a negocio) y Delta Lake (gestión ACID sobre data lakes).
+
+## Conceptos que suelen preguntarse (trampas comunes)
+
+| Concepto                       | Realidad técnica/normativa                                                    | Distractor típico en examen                                        |
+| :----------------------------- | :---------------------------------------------------------------------------- | :------------------------------------------------------------------ |
+| Mantenimiento adaptativo       | Cambios para mantener operatividad tras cambios de entorno (SO, BBDD). | “Corregir errores en producción” (eso es correctivo).    |
+| Delivery vs Deployment         | Delivery: aprobación manual final; Deployment: 100 % automático tras tests. | “Son sinónimos; ambos despliegan automáticamente.”       |
+| Verificación vs validación     | Verificación: producto bien construido; validación: producto correcto para el usuario. | “Son términos intercambiables según ISTQB.”              |
+| Scrum – rol Product Owner      | Único responsable de Product Backlog y maximizar valor.  | “Scrum Master asigna tareas diarias a los programadores.” |
+| Burndown Chart ascendente      | Indica incremento del trabajo pendiente (nuevas tareas/reestimaciones). | “El equipo está completando más trabajo del previsto.”   |
+| Planning Poker discrepante     | Se discuten estimaciones extremas y se repite votación.           | “El Scrum Master decide la estimación final.”            |
+| JPA vs Hibernate               | JPA = especificación; Hibernate = implementación.       | “Hibernate es la especificación y JPA su implementación.” |
+| Spring `@Bean` vs `@Autowired` | `@Bean` registra objetos; `@Autowired` inyecta dependencias.      | “@Autowired crea manualmente el ApplicationContext.”     |
+| JaCoCo métricas                | Instrucciones, ramas, complejidad ciclomática, líneas.           | “Cubre asserts correctos/erróneos como métrica propia.”  |
+| Mockito vs JUnit               | Mockito simula dependencias; JUnit define casos de prueba.       | “JUnit sirve para simular clases no implementadas.”      |
+| WebSocket vs SSE               | WebSocket = full‑duplex; SSE = flujo servidor→cliente.          | “REST con polling es full‑duplex permanente.”            |
+| Sidecar container              | Contenedor auxiliar para logging, proxy, etc.                    | “Sustituye automáticamente al contenedor principal si falla.” |
+| cleanup.policy=compact         | Mantiene último valor por key, eliminando versiones antiguas.    | “Borra mensajes por antigüedad (eso es delete).”         |
+| Data Fabric                    | Capa unificada de acceso/integración sin centralizar físicamente. | “Es un Data Warehouse de nueva generación.”              |
 
 ## Posibles preguntas tipo test
 
-**Pregunta 1.** Según la norma ISO/IEC 14764 sobre mantenimiento de software, la modificación de un producto software después de su entrega para mantener su operatividad funcional cuando se actualiza el sistema operativo subyacente del servidor se denomina:
-A. Mantenimiento correctivo.
-B. Mantenimiento preventivo.
-C. Mantenimiento adaptativo.
-D. Mantenimiento perfectivo.
-**Respuesta correcta: C.** (La adaptación a cambios del entorno operativo, sin cambiar la funcionalidad base, es mantenimiento adaptativo).
+**Pregunta 1.** Según ISO/IEC 14764, la modificación de un producto software para mantener su operatividad cuando se actualiza el sistema operativo del servidor se denomina:
 
-**Pregunta 2.** En el contexto de los procesos de Integración y Despliegue Continuo (CI/CD), ¿cuál es la diferencia técnica fundamental entre *Continuous Delivery* (Entrega Continua) y *Continuous Deployment* (Despliegue Continuo)?
-A. La Entrega Continua despliega automáticamente en producción, mientras que el Despliegue Continuo no.
-B. En el Despliegue Continuo (Deployment) toda la promoción a producción es automática si se superan los tests, mientras que la Entrega Continua (Delivery) requiere una aprobación manual explícita para el paso final a producción.
-C. La Entrega Continua utiliza pipelines de código, mientras que el Despliegue Continuo requiere despliegue mediante USB físico.
-D. No existe diferencia, ambos términos son sinónimos absolutos definidos por la ISO/IEC 12207.
+A. Mantenimiento correctivo.  
+B. Mantenimiento preventivo.  
+C. Mantenimiento adaptativo.  
+D. Mantenimiento perfectivo.  
+
+**Respuesta correcta: C.**
+
+---
+
+**Pregunta 2.** ¿Cuál es la diferencia técnica fundamental entre *Continuous Delivery* y *Continuous Deployment*?
+
+A. Delivery despliega automáticamente en producción; Deployment no.  
+B. En Deployment la promoción a producción es automática si los tests pasan; en Delivery requiere aprobación manual final.  
+C. Delivery usa pipelines; Deployment despliegues manuales.  
+D. Son sinónimos según ISO/IEC 12207.  
+
 **Respuesta correcta: B.**
 
-**Pregunta 3.** Según la Guía Scrum 2020, ¿quién es el único rol responsable y con autoridad para gestionar y priorizar los elementos del Product Backlog con el objetivo de maximizar el valor del producto?
-A. El Scrum Master.
-B. El Equipo de Desarrolladores (Developers) por consenso.
-C. El Product Owner.
-D. El Jefe de Proyecto (Project Manager).
-**Respuesta correcta: C.** (El Product Owner gestiona en exclusiva el Product Backlog).
+---
 
-**Pregunta 4.** En el ámbito del diseño de pruebas de software, aquellas técnicas que derivan sus casos de prueba analizando el código fuente, la estructura interna y buscando métricas como la cobertura de sentencias o caminos, se denominan:
-A. Técnicas de Caja Negra.
-B. Pruebas Exploratorias empíricas.
-C. Técnicas de Partición de Clases de Equivalencia.
-D. Técnicas de Caja Blanca o estructurales.
-**Respuesta correcta: D.** (Las técnicas de Caja Blanca requieren conocimiento y acceso a la estructura interna del código).
+**Pregunta 3.** ¿Quién es el único responsable de gestionar y priorizar el Product Backlog para maximizar el valor del producto en Scrum?
 
-**Pregunta 5.** El patrón de diseño arquitectónico sobre el cual pivota el framework Spring Web MVC para canalizar todas las peticiones HTTP entrantes hacia el componente adecuado mediante el objeto `DispatcherServlet` se denomina:
-A. Data Access Object (DAO).
-B. Object-Relational Mapping (ORM).
-C. Front Controller (Controlador Frontal).
-D. Circuit Breaker.
-**Respuesta correcta: C.** (El Front Controller centraliza el manejo de todas las peticiones de entrada; en Spring esto lo hace el DispatcherServlet).
+A. Scrum Master.  
+B. Developers por consenso.  
+C. Product Owner.  
+D. Project Manager.  
 
-**Pregunta 6.** En el ecosistema Java empresarial, ¿cuál es la relación técnica correcta entre las tecnologías de acceso a base de datos JPA e Hibernate?
-A. JPA es una implementación concreta y propietaria, mientras que Hibernate es el estándar oficial del W3C.
-B. JPA (Jakarta Persistence API) es la especificación estándar para mapeo objeto-relacional (ORM), e Hibernate es la implementación técnica más extendida de dicha especificación.
-C. Son tecnologías opuestas e incompatibles diseñadas para arquitecturas distintas.
-D. JPA se encarga exclusivamente de las bases de datos NoSQL e Hibernate de las bases de datos relacionales SQL.
+**Respuesta correcta: C.**
+
+---
+
+**Pregunta 4.** En un Sprint, un Burndown Chart con tendencia ascendente durante varios días consecutivos indica principalmente:
+
+A. Que el equipo completa más trabajo del previsto.  
+B. Que aumenta el trabajo pendiente por reestimaciones o nuevas tareas.  
+C. Que la velocidad ha aumentado.  
+D. Que el Sprint ha terminado.  
+
 **Respuesta correcta: B.**
 
-**Pregunta 7.** Frente a las limitaciones de consumo de memoria y tiempos de arranque del ecosistema Spring tradicional en arquitecturas Cloud-Native (Serverless/Contenedores), la principal innovación tecnológica que introducen frameworks modernos como Quarkus o Micronaut es:
-A. El uso exclusivo de XML para toda su configuración de Beans.
-B. El procesamiento de la inyección de dependencias en tiempo de compilación (AOT) y la compilación a binarios nativos ligeros mediante GraalVM.
-C. La ejecución obligatoria en servidores pesados como WebSphere o WebLogic.
-D. La eliminación total de la necesidad de acceder a bases de datos.
-**Respuesta correcta: B.** (El procesamiento Ahead-Of-Time reduce el uso de *reflection* en tiempo de ejecución, habilitando arranques casi instantáneos).
+---
+
+**Pregunta 5.** En diseño de pruebas, las técnicas que derivan casos analizando código y estructura interna (cobertura de sentencias, caminos) se llaman:
+
+A. Técnicas de caja negra.  
+B. Pruebas exploratorias.  
+C. Partición de clases de equivalencia.  
+D. Técnicas de caja blanca o estructurales.  
+
+**Respuesta correcta: D.**
+
+---
+
+**Pregunta 6.** ¿Qué patrón de diseño implementa el `DispatcherServlet` de Spring MVC?
+
+A. DAO.  
+B. ORM.  
+C. Front Controller.  
+D. Circuit Breaker.  
+
+**Respuesta correcta: C.**
+
+---
+
+**Pregunta 7.** ¿Cuál es la relación correcta entre JPA e Hibernate?
+
+A. JPA es una versión moderna de Hibernate.  
+B. JPA es una especificación; Hibernate una implementación de esa especificación.  
+C. Son capas de Spring que interactúan entre sí.  
+D. JPA y Hibernate son lo mismo.  
+
+**Respuesta correcta: B.**
+
+---
+
+**Pregunta 8.** Frente a arranques lentos y alto consumo de memoria en entornos container/Serverless, frameworks como Quarkus o Micronaut introducen principalmente:
+
+A. Configuración exclusivamente en XML.  
+B. Inyección de dependencias en tiempo de compilación (AOT) y binarios nativos via GraalVM.  
+C. Requerimiento de servidores pesados como WebSphere.  
+D. Eliminación total de acceso a BBDD.  
+
+**Respuesta correcta: B.**
+
+---
+
+**Pregunta 9.** ¿Qué librería Java permite simular dependencias externas en pruebas unitarias para probar una clase aisladamente?
+
+A. JUnit.  
+B. Mockito.  
+C. Moq.  
+D. unittest.mock.  
+
+**Respuesta correcta: B.**
+
+---
+
+**Pregunta 10.** En Kubernetes, ¿para qué se usa normalmente un contenedor sidecar?
+
+A. Para sustituir al contenedor principal si falla.  
+B. Para desplegar nuevos nodos del clúster.  
+C. Para almacenamiento permanente sin volúmenes.  
+D. Para ejecutar tareas auxiliares junto al contenedor principal (logging, proxy).  
+
+**Respuesta correcta: D.**
+
+---
+
+**Pregunta 11.** En Kafka, ¿qué implica `cleanup.policy=compact`?
+
+A. Borra mensajes mayores que `retention.bytes`.  
+B. Comprime mensajes por antigüedad (`retention.ms`).  
+C. Mantiene solo el último valor por key, eliminando versiones antiguas.  
+D. Borra mensajes por antigüedad (`retention.ms`).  
+
+**Respuesta correcta: C.**
+
+---
+
+**Pregunta 12.** ¿Qué mecanismo es más adecuado para comunicación bidireccional permanente full‑duplex entre cliente y servidor?
+
+A. REST con polling.  
+B. HTTP chunked.  
+C. SSE.  
+D. WebSocket.  
+
+**Respuesta correcta: D.**
+
+---
+
+**Pregunta 13.** ¿En qué contexto se usan las palabras `Feature`, `Scenario`, `Given`, `When`, `Then`?
+
+A. En pruebas de rendimiento con JMeter.  
+B. En definición de pruebas de APIs con Postman.  
+C. En casos de prueba usando el lenguaje Gherkin (BDD).  
+D. En tests unitarios con JUnit.  
+
+**Respuesta correcta: C.**
+
+---
+
+**Pregunta 14.** ¿Cuál es la estrategia adecuada para mejorar tiempos de construcción de una imagen Docker muy pesada manteniendo trazabilidad?
+
+A. Construir siempre la imagen completa desde cero.  
+B. Usar una imagen base etiquetada `latest` sin versionar.  
+C. Separar la parte pesada en una imagen base **versionada**, publicar en el Registry y construir la aplicación sobre esa base.  
+D. Construir la imagen directamente en nodos de Kubernetes.  
+
+**Respuesta correcta: C.**
+
+---
+
+**Pregunta 15.** ¿Qué describe mejor el trunk‑based development?
+
+A. Varias ramas de producción estables para diferentes versiones.  
+B. Integrar cambios directamente en producción sin automatización.  
+C. Integrar cambios frecuentemente en una única rama principal con pruebas automatizadas.  
+D. Trabajar en ramas de larga duración que se integran al final.  
+
+**Respuesta correcta: C.**
 
 ## Normativa o fuentes relacionadas
 
-* **ISO/IEC/IEEE 12207:2017/2026:** *Systems and software engineering — Software life cycle processes.* Norma internacional matriz para el ciclo de vida del software.
-* **ISO/IEC 14764:2006:** *Software Engineering — Software Life Cycle Processes — Maintenance.* Define los 4 tipos de mantenimiento de software.
-* **Guía Scrum 2020** (Ken Schwaber y Jeff Sutherland). Documento oficial y definitivo de las reglas de Scrum.
-* **ISTQB Foundation Level Syllabus (v4.0):** Estándar de la industria en terminología, procesos y niveles de pruebas de software.
-* **Manifiesto por el Desarrollo Ágil de Software (2001):** Sus 4 valores y 12 principios rectores.
-* **Real Decreto 311/2022 (Esquema Nacional de Seguridad):** Obligaciones de desarrollo de aplicaciones seguro (medida *mp.sw.1*), separación de entornos y uso de datos de prueba en la Administración.
-* **Jakarta EE Specifications:** Definiciones formales empresariales (Servlet, JPA/Jakarta Persistence, CDI).
+- **ISO/IEC/IEEE 12207:** *Systems and software engineering — Software life cycle processes.* Norma matriz para procesos de ciclo de vida.
+- **ISO/IEC 14764:** *Software Engineering — Software Life Cycle Processes — Maintenance.* Clasificación de tipos de mantenimiento.
+- **ISTQB Foundation Level Syllabus (v4.0):** Terminología y niveles de pruebas.
+- **Manifiesto Ágil (2001):** Valores y principios ágiles.
+- **Guía Scrum 2020:** Roles, artefactos y eventos de Scrum.
+- **Real Decreto 311/2022 (ENS):** Principios básicos y requisitos mínimos de seguridad, incluyendo seguridad como proceso integral y desarrollo seguro.
+- **Jakarta EE Specifications (Servlet, JPA/Persistence, CDI):** APIs estándar Java empresarial.
 
 ## Dudas o puntos pendientes
 
-* **Mantenimiento Perfectivo vs. Preventivo:** En cierta bibliografía antigua, la refactorización (mejora de código sin añadir funcionalidad) se clasificaba como perfectiva. Normativamente (ISO 14764), si el objetivo es prevenir problemas futuros detectando fallos latentes, es preventivo; el perfectivo se ciñe a nuevas funcionalidades o mejora explícita de rendimiento solicitada. En exámenes tipo test de la Comunidad de Madrid suele predominar el enfoque estricto ISO.
-* **Alcance de la versión de ISO 12207:** La ISO/IEC/IEEE 12207 fue revisada en 2017 y tiene proyecciones recientes, pero la estructura de procesos primarios, de apoyo y organizacionales varía ligeramente según la edición específica consultada. A efectos de oposiciones TIC, los tribunales suelen quedarse en la clasificación clásica (Adquisición, Suministro, Desarrollo, Operación y Mantenimiento como procesos primarios).
+- **Interpretación de mantenimiento perfectivo vs preventivo:** Algunas fuentes consideran refactorización como perfectivo; ISO 14764 la clasifica como preventivo si se orienta a evitar fallos futuros. En oposiciones TIC suele predominar la interpretación estricta ISO.
+- **Alcance de versiones de ISO 12207:** Las ediciones recientes refinan la clasificación de procesos; los tribunales suelen ceñirse a la estructura clásica de procesos primarios (Adquisición, Suministro, Desarrollo, Operación, Mantenimiento), de apoyo y organizacionales.

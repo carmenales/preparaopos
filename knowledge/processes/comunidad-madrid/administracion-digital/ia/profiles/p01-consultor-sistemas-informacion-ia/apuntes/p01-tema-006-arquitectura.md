@@ -34,170 +34,371 @@ needs_human_review: true
 
 ## Encaje en la convocatoria
 
-Este tema corresponde al **Tema 6 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026), específico para el perfil **P01 (IA aplicada al ciclo de vida del software)** de la Agencia para la Administración Digital de la Comunidad de Madrid. 
+Este tema corresponde al **Tema 6 del Anexo 3** de la Resolución 352/2026 (BOCM 11/06/2026) para el perfil **P01 – IA aplicada al ciclo de vida del software** de la Agencia para la Administración Digital de la Comunidad de Madrid.  
 
-El tema abarca cinco grandes bloques de la ingeniería de sistemas moderna: **arquitecturas de integración** (APIs, ESB, Eventos), **microservicios con Kubernetes**, **modelos cloud híbridos**, **arquitectura de datos** (pipelines, calidad, ontologías) e **IA Gateway**. El examen, al ser tipo test con penalización, no busca definiciones divulgativas, sino discriminar fronteras técnicas muy finas: diferencias entre ETL y ELT, componentes específicos del *Control Plane* de Kubernetes, dimensiones de calidad del dato según estándares (ISO 8000 vs. DAMA), y diferencias entre el tráfico que gestiona un API Gateway frente a un IA Gateway.
+El enunciado abarca cinco grandes bloques de ingeniería de sistemas moderna: **arquitecturas de integración** (APIs, ESB, eventos), **microservicios sobre Kubernetes**, **modelos de cloud híbrida**, **arquitectura de datos** (pipelines, calidad, ontologías, data fabric) y **IA Gateway como middleware especializado**, con preguntas tipo test que explotan diferencias finas entre conceptos.
 
 ## Ideas clave
 
-- **Evolución de la integración:** Del modelo SOA clásico basado en **ESB** ("Tuberías inteligentes, extremos tontos", alto acoplamiento) al modelo de **Microservicios y EDA** ("Tuberías tontas, extremos inteligentes", bajo acoplamiento).
-- **Integración Síncrona vs. Asíncrona:** Síncrona (APIs/REST/gRPC) implica acoplamiento temporal y respuesta inmediata. Asíncrona (EDA/Pub-Sub) desacopla productores de consumidores mediante eventos que describen hechos pasados.
-- **Kubernetes (K8s):** Un orquestador de contenedores donde la unidad mínima desplegable es el **Pod** (que puede albergar varios contenedores compartiendo IP y volumen), no el contenedor individual.
-- **Cloud Híbrida vs. Multicloud:** La nube híbrida conecta infraestructura local (*on-premises*) con la nube pública. El modelo *multicloud* implica usar varios proveedores de nube pública simultáneamente (no exigen *on-premises*).
-- **Arquitectura de Datos (ETL vs. ELT):** En **ETL**, la transformación computacional recae sobre un middleware intermedio. En **ELT**, los datos se cargan "crudos" y la transformación aprovecha el cómputo del almacén destino (ej. *Data Warehouse* Cloud).
-- **Calidad del Dato:** Se evalúa a través de marcos internacionales como la familia **ISO 8000** (calidad sintáctica, semántica y pragmática) y marcos de la industria como **DAMA-DMBOK** (exactitud, completitud, unicidad).
-- **Ontologías (Estándares W3C):** Superan a los esquemas de bases de datos añadiendo semántica formal, usando la tripleta **RDF** (Sujeto-Predicado-Objeto) y el lenguaje lógico **OWL**.
-- **IA Gateway:** Middleware especializado. A diferencia del API Gateway (que limita peticiones/IPs), el IA Gateway intercepta prompts, enruta por modelos, protege datos sensibles (DLP) y aplica caché semántico, limitando por **tokens** consumidos.
+- **De ESB/SOA a microservicios y EDA:** Se ha pasado del modelo SOA con **Enterprise Service Bus (ESB)** (“tuberías inteligentes, extremos tontos”) al modelo de **microservicios y Event‑Driven Architecture (EDA)** (“tuberías tontas, extremos inteligentes”).  
+- **Integración síncrona vs asíncrona:** Síncrona (REST, gRPC) implica acoplamiento temporal y respuesta inmediata; asíncrona (Pub/Sub, Kafka) desacopla productores y consumidores mediante eventos que representan hechos ya ocurridos.  
+- **Kubernetes y unidad mínima:** Kubernetes (K8s), promovido por la CNCF, orquesta contenedores donde la unidad mínima desplegable es el **Pod**, que puede contener varios contenedores compartiendo IP y volúmenes, no el contenedor individual.  
+- **Cloud híbrida vs multicloud:** La **nube híbrida** conecta infraestructura local (on‑premises) con la nube pública; el modelo **multicloud** usa varios proveedores de nube pública sin requerir necesariamente infraestructura propia.  
+- **ETL vs ELT y Data Fabric:** En **ETL** la transformación se realiza antes de cargar en destino; en **ELT** se cargan datos en bruto y se transforman aprovechando la capacidad del repositorio Cloud; **Data Fabric** proporciona una capa unificada de acceso e integración de datos distribuidos basada en metadatos y automatización.  
+- **Calidad del dato y ontologías:** La calidad del dato se evalúa con marcos como **ISO 8000‑8** (calidad sintáctica, semántica, pragmática) y **DAMA‑DMBOK** (exactitud, completitud, consistencia, unicidad); las ontologías W3C (RDF, OWL, SPARQL) añaden semántica formal e interoperabilidad.  
+- **IA Gateway vs API Gateway:** El **IA Gateway** gobierna prompts, tokens y modelos (caché semántico, routing, DLP, cuotas de consumo), mientras que un API Gateway tradicional se centra en tráfico HTTP, rate limiting por petición y cabeceras.
 
 ## Desarrollo
 
 ### 1. Arquitectura de integración
 
-#### 1.1. Modelo Síncrono basado en APIs
-La comunicación se basa en el patrón petición-respuesta (*Request-Reply*). El consumidor queda bloqueado a la espera del proveedor, generando **acoplamiento temporal**.
-* **REST (Representational State Transfer):** Arquitectura *stateless* sobre HTTP/1.1 (típicamente) usando verbos (GET, POST, PUT, DELETE) y formatos ligeros como JSON.
-* **gRPC:** Framework de Google basado en **HTTP/2** y **Protocol Buffers (Protobuf)**. Utiliza contratos fuertemente tipados y comunicación binaria, siendo muy superior en rendimiento para la comunicación interna síncrona entre microservicios (tráfico Este-Oeste).
-* **API Gateway:** Patrón de diseño. Punto de entrada único para tráfico externo (Norte-Sur). Ejerce funciones transversales: enrutamiento, terminación TLS, *rate limiting*, autenticación (OAuth2/JWT) y transformación básica.
+#### 1.1. Integración síncrona basada en APIs
 
-#### 1.2. Modelo basado en Bus Empresarial (ESB)
-Propio de las arquitecturas Orientadas a Servicios (SOA). El **Enterprise Service Bus (ESB)** es un middleware pesado que centraliza la mediación, traducción de protocolos (ej. SOAP a REST), transformación (XML a JSON) y la orquestación.
-* **Problema Arquitectónico:** Aglutina demasiada lógica de negocio ("Smart pipes"), convirtiéndose en un cuello de botella, un único punto de fallo (SPOF) organizativo/técnico y generando un alto grado de acoplamiento.
+La integración síncrona sigue el patrón petición‑respuesta (Request/Reply), donde el consumidor queda bloqueado esperando la respuesta del proveedor, generando **acoplamiento temporal**.  
 
-#### 1.3. Modelo de Integración Orientada a Eventos (EDA)
-Comunicación asíncrona mediante mensajes. Un **Productor** emite un evento indicando un cambio de estado (ej. `ExpedienteRegistrado`), y un intermediario (*Broker*) lo distribuye.
-* **Pub/Sub (Publicación/Suscripción):** Los eventos se publican en *topics* (canales). Varios **Consumidores** reaccionan al mismo evento independientemente (ej. Apache Kafka).
-* **Filosofía:** "Dumb pipes, smart endpoints" (Tuberías tontas, extremos inteligentes). El *broker* solo enruta bytes rápido; la lógica recae en los microservicios.
+- **REST (Representational State Transfer):**  
+  Arquitectura sobre HTTP (típicamente HTTP/1.1) que trata recursos identificados por URLs, usando métodos como `GET`, `POST`, `PUT`, `DELETE` y formatos ligeros como JSON; es *stateless* y ampliamente utilizada en integración norte‑sur.  
+- **gRPC:**  
+  Framework de Google sobre **HTTP/2** y **Protocol Buffers (Protobuf)**, con contratos fuertemente tipados y comunicación binaria, muy eficiente para comunicaciones internas entre microservicios (tráfico este‑oeste).  
+- **API Gateway:**  
+  Patrón que define un **punto de entrada único** (reverse proxy) para tráfico externo hacia los servicios internos; gestiona enrutamiento, terminación TLS, autenticación/autorización (OAuth 2.0, JWT), limitación de tasa (rate limiting) y transformación básica de peticiones.  
 
-### 2. Arquitectura de microservicios Kubernetes (K8s)
+En las preguntas de examen se enfatiza que el API Gateway opera en el **plano de red** y HTTP, mientras que el IA Gateway opera en el plano de tokens y prompts.
 
-**Kubernetes** es el estándar *de facto* promovido por la CNCF para la orquestación de contenedores. 
+#### 1.2. Modelo SOA con Bus Empresarial (ESB)
 
-#### 2.1. Arquitectura del Clúster
-* **Control Plane (Plano de Control):** Toma las decisiones globales.
-  * `kube-apiserver`: Interfaz de comunicación (frontend) de K8s.
-  * `etcd`: Almacén de datos clave-valor de alta disponibilidad. Es la única fuente de verdad persistente del clúster.
-  * `kube-scheduler`: Asigna nuevos Pods a los Nodos disponibles.
-  * `kube-controller-manager`: Gestiona los bucles de control (mantiene el estado deseado).
-* **Worker Nodes (Nodos de Trabajo):** Máquinas de cómputo.
-  * `kubelet`: Agente local que asegura que los contenedores del Pod se están ejecutando.
-  * `kube-proxy`: Mantiene las reglas de red para la comunicación.
-  * *Container Runtime*: Motor de ejecución (containerd, CRI-O).
+Las arquitecturas orientadas a servicios (SOA) tradicionales introducen un **Enterprise Service Bus (ESB)** como middleware central.  
 
-#### 2.2. Objetos / Componentes Fundamentales
-* **Pod:** Unidad atómica. Encapsula contenedores que comparten volúmenes y red (localhost).
-* **Deployment:** Objeto declarativo que gestiona *ReplicaSets* para asegurar un número de réplicas corriendo y gestionar actualizaciones sin caída (*Rolling Updates*).
-* **Service:** Provee una abstracción de red estable (IP/DNS estático) para acceder a un conjunto de Pods (que son efímeros).
-* **Ingress:** Gestiona tráfico HTTP/HTTPS externo hacia los Services del clúster. (Su evolución actual es el estándar *Gateway API*).
-* **Service Mesh:** Infraestructura añadida (ej. Istio, Linkerd) que intercepta todo el tráfico interno mediante *sidecars* (proxies en cada Pod) para aportar mTLS, *circuit breaking*, reintentos y observabilidad extrema (tráfico Este-Oeste).
+El ESB se encarga de:
 
-### 3. Modelo de arquitectura híbrida on premises-cloud
+- Mediar entre servicios, transformando mensajes (por ejemplo, de SOAP/XML a REST/JSON).  
+- Orquestar flujos complejos (workflow) y aplicar reglas de negocio centralizadas.  
+- Traducir protocolos y formatos, convirtiéndose en el punto donde se concentran muchas responsabilidades técnicas y funcionales.  
 
-Combina centros de datos propios o corporativos (*On-Premises*) con recursos de nubes públicas, unidos por una red que permite la portabilidad de datos y servicios.
+El problema arquitectónico es que el ESB tiende a convertirse en cuello de botella y único punto de fallo, con “tuberías inteligentes” y extremos relativamente tontos, generando alto acoplamiento entre servicios.
 
-* **Conectividad:** * *VPN IPsec* (barata, sobre internet público, mayor latencia) vs. *Enlaces dedicados privados* como Azure ExpressRoute o AWS Direct Connect (sin tocar internet público, baja latencia, integraciones ENS Alto).
-* **Casos de Uso Comunes:**
-  * **Soberanía y Compliance:** Datos altamente sensibles se procesan *On-Prem* (cumpliendo niveles altos del ENS), mientras los frontends y recursos escalables residen en la nube.
-  * **Cloud Bursting (Desbordamiento):** La aplicación base vive localmente, pero en picos estacionales de demanda levanta recursos en la nube pública.
-* **Workload Placement (Ubicación de Cargas):** Criterios de decisión que incluyen latencia de red, coste de transferencia (Egress), legalidad del dato y grado de madurez tecnológica.
+#### 1.3. Arquitectura orientada a eventos (EDA) y Pub/Sub
 
-### 4. Arquitectura de datos: pipelines, calidad y ontologías
+La **Event‑Driven Architecture (EDA)** usa comunicación asíncrona basada en eventos que describen cambios de estado ya producidos (por ejemplo, `ExpedienteRegistrado`).  
 
-#### 4.1. Pipelines de Datos (ETL vs. ELT)
-* **ETL (Extract, Transform, Load):** Extracción desde fuentes, transformación en un motor centralizado en memoria, y carga al destino. Histórico de los *Data Warehouses* clásicos.
-* **ELT (Extract, Load, Transform):** Los datos en bruto (*Raw*) se extraen y se vuelcan directamente en el destino escalable cloud (ej. un *Data Lake* o *Lakehouse*). Las transformaciones se ejecutan después utilizando la inmensa capacidad de cómputo del propio repositorio destino.
+- **Productores (Producers):** Emisión de eventos a un broker sin conocer quién los consumirá.  
+- **Brokers (ej. Apache Kafka):** Canales de publicación/suscripción (topics) donde varios consumidores pueden reaccionar al mismo evento de forma independiente.  
+- **Consumidores (Consumers):** Microservicios que suscriben a topics y ejecutan su lógica de negocio en reacción a eventos.  
 
-#### 4.2. Calidad del Dato
-Se audita bajo dos prismas complementarios preguntables en oposición:
-* **Prisma DAMA-DMBOK:** Mide exactitud (*Accuracy*), completitud (sin campos vacíos clave), consistencia (datos coherentes entre sistemas) y unicidad.
-* **Prisma Normativo ISO 8000-8:** * *Calidad Sintáctica:* Cumple el formato/esquema.
-  * *Calidad Semántica:* El valor representa el significado correcto.
-  * *Calidad Pragmática:* El dato es adecuado para el uso de negocio concreto de su consumidor.
+La filosofía **“Dumb pipes, smart endpoints”** indica que las tuberías (broker, bus de mensajes) deben ser simples y rápidas, mientras que la lógica inteligente reside en los endpoints (microservicios).  
 
-#### 4.3. Ontologías (Web Semántica)
-A diferencia de los esquemas relacionales, las ontologías son representaciones formales que definen conceptos, relaciones y lógica deductiva para la interoperabilidad de máquinas. Usan el *stack* del **W3C**:
-* **RDF (Resource Description Framework):** Estructura los datos en grafos mediante la tripleta base **Sujeto - Predicado - Objeto**.
-* **OWL (Web Ontology Language):** Añade axiomas y reglas lógicas (clases equivalentes, disjuntas, transitividad) que permiten a motores semánticos deducir conocimiento no explícito.
-* **SPARQL:** El lenguaje de consulta estandarizado para consultar grafos de conocimiento RDF.
+En esta transición desde ESB a EDA se busca menor acoplamiento, mayor escalabilidad y evitar que el bus central aglutine lógica de negocio.
+
+### 2. Arquitectura de microservicios sobre Kubernetes (K8s)
+
+**Kubernetes (K8s)** es el orquestador estándar de contenedores respaldado por la **Cloud Native Computing Foundation (CNCF)**.
+
+#### 2.1. Arquitectura del clúster
+
+Se distingue entre **Control Plane** (plano de control) y **Worker Nodes** (nodos de trabajo).  
+
+- **Control Plane:**
+  - `kube-apiserver`: Servicio frontal que expone la API de Kubernetes y todas las operaciones de gestión del clúster.
+  - `etcd`: Base de datos distribuida clave‑valor de alta disponibilidad que almacena el estado deseado y real del clúster; es la **única fuente de verdad persistente**.
+  - `kube-scheduler`: Asigna Pods nuevos a nodos disponibles según recursos y afinidades.
+  - `kube-controller-manager`: Ejecuta bucles de control (controllers) que aseguran que el estado actual converge al estado deseado.
+- **Worker Nodes:**
+  - `kubelet`: Agente local que garantiza que los contenedores de los Pods asignados al nodo se ejecutan como se declara.
+  - `kube-proxy`: Gestiona reglas de red y balanceo de carga a nivel de servicios.
+  - Runtime de contenedores (containerd, CRI‑O), responsable de lanzar y gestionar contenedores.
+
+Una pregunta típica de examen identifica `etcd` como el componente del Control Plane encargado de almacenar el estado del clúster.
+
+#### 2.2. Objetos fundamentales de Kubernetes
+
+- **Pod:**  
+  Unidad mínima desplegable; agrupa uno o varios contenedores que comparten **IP, espacio de nombres de red y volúmenes**, lo que permite patrones como el **sidecar container** (logging, proxy, sincronización).  
+- **Deployment:**  
+  Recurso declarativo que gestiona **ReplicaSets** para mantener un número fijo de Pods y aplicar actualizaciones mediante estrategias como `RollingUpdate`, que actualiza Pods progresivamente manteniendo disponibilidad del servicio en aplicaciones stateless.  
+- **Service:**  
+  Abstracción de red estable (IP y nombre DNS) que expone un conjunto de Pods dinámicos (por ejemplo, `ClusterIP`, `NodePort`, `LoadBalancer`).  
+- **Ingress / Gateway API:**  
+  Recurso que controla el tráfico HTTP/HTTPS entrante hacia servicios internos (nivel L7), gestionando rutas, TLS y reglas de entrada; su evolución moderna es **Gateway API**.  
+- **Service Mesh (Istio, Linkerd):**  
+  Capa adicional que inyecta proxies sidecar en cada Pod para aplicar mTLS, circuit breakers, reintentos y observabilidad detallada del tráfico este‑oeste.
+
+#### 2.3. Asignación de nodos y sidecar containers
+
+- **nodeSelector:**  
+  Mecanismo sencillo de scheduling que vincula Pods a nodos con etiquetas concretas mediante coincidencias de clave‑valor, sin expresiones avanzadas; se pregunta explícitamente en exámenes como “coincidencia simple clave‑valor”.  
+- **Sidecar containers:**  
+  Se usan para tareas auxiliares junto al contenedor principal, como logging, proxy de red, métricas o sincronización de ficheros dentro del mismo Pod, no para sustituir al contenedor principal si falla.
+
+### 3. Arquitectura híbrida on‑premises / cloud y Landing Zone
+
+La **arquitectura híbrida** combina centros de datos propios (*on‑premises*) con recursos de nubes públicas (IaaS, PaaS, SaaS), conectados por redes seguras para garantizar soberanía de datos y cumplimiento normativo.
+
+#### 3.1. Conectividad y ENS
+
+Los modelos habituales de conexión son:
+
+- **VPN IPsec sobre Internet público:**  
+  Menores costes, más latencia y exposición a internet (mitigada mediante cifrado y medidas ENS).  
+- **Enlaces dedicados privados (ExpressRoute, Direct Connect):**  
+  Conexión punto a punto con baja latencia y no exposición directa a internet, adecuados para sistemas clasificados como ENS Medio/Alto.
+
+El **Esquema Nacional de Seguridad (RD 311/2022)** exige principios básicos como seguridad como proceso integral, existencia de líneas de defensa y diferenciación de responsabilidades, aplicables tanto a infraestructura on‑prem como cloud.
+
+#### 3.2. Hub‑and‑Spoke y Landing Zone
+
+Los proveedores cloud suelen recomendar un modelo **Hub‑and‑Spoke** para redes híbridas.
+
+- **Hub:**  
+  VNET/VPC central que concentra conectividad con on‑premises y políticas comunes de seguridad, routing y monitorización.  
+- **Spokes:**  
+  Redes “satélite” donde residen cargas de trabajo individuales, conectadas al hub.  
+
+La **Landing Zone** es la implementación inicial del entorno cloud donde se definen:
+
+- La **conectividad centralizada con on‑premises desde el hub**, aplicando políticas de red y seguridad comunes a todos los spokes.  
+- La estructura de suscripciones/proyectos, cuentas, dominios, y estándares de identidad, logging y cumplimiento.  
+
+En las preguntas tipo test se destaca que la Landing Zone no es el punto de entrada de datos (eso suele corresponder al **data landing zone** dentro del hub de datos), sino la arquitectura base que centraliza la conectividad y las políticas.
+
+#### 3.3. Workload placement y cloud bursting
+
+La decisión de dónde ubicar cada carga de trabajo (workload placement) se basa en:
+
+- Latencia requerida, coste de transferencia (egress), requisitos de soberanía y clasificación ENS (Bajo/Medio/Alto).  
+- Madurez de la organización para operar servicios cloud y on‑prem de forma integrada.  
+
+**Cloud bursting** describe escenarios en los que sistemas on‑prem escalan temporalmente hacia la nube pública para absorber picos de demanda, manteniendo la base de operación local.
+
+### 4. Arquitectura de datos: pipelines, calidad, ontologías y Data Fabric
+
+#### 4.1. Pipelines de datos: ETL vs ELT
+
+Los pipelines de datos conectan fuentes operacionales con repositorios analíticos (data warehouses, data lakes, lakehouses).
+
+- **ETL (Extract, Transform, Load):**  
+  Se extraen datos desde fuentes, se transforman en un motor intermedio (middleware, servidor ETL) y se cargan ya transformados en el almacén destino; tradicionalmente usado en data warehouses locales.  
+- **ELT (Extract, Load, Transform):**  
+  Se extraen datos en bruto, se cargan directamente en el repositorio escalable cloud (data lake/lakehouse) y la transformación se ejecuta posteriormente aprovechando la capacidad de cómputo del propio destino.  
+
+Una pregunta típica describe un caso en el que la Administración usa BigQuery/Snowflake para hacer limpieza y transformación sobre datos “raw”; la respuesta correcta es que se trata de **ELT**, porque la T ocurre en el sistema destino.
+
+#### 4.2. Calidad del dato: DAMA y ISO 8000
+
+Se evalúa la calidad bajo dos perspectivas complementarias:
+
+- **DAMA‑DMBOK (industria):**  
+  Dimensiones como exactitud (datos correctos), completitud (ausencia de campos clave vacíos), consistencia (coherencia entre sistemas) y unicidad (no duplicidad).  
+- **ISO 8000‑8 (normativa):**  
+  - **Calidad sintáctica:** el dato cumple formato y esquema (tipos, longitudes, patrones).  
+  - **Calidad semántica:** el dato representa el significado correcto según diccionarios de metadatos y estándares sectoriales.  
+  - **Calidad pragmática:** el dato es adecuado para el uso de negocio concreto (por ejemplo, resolución suficiente para la decisión).  
+
+Las preguntas de examen tienden a pedir que se identifique la **calidad semántica** como la que evalúa la corrección del significado técnico del dato.
+
+#### 4.3. Ontologías y Web Semántica (W3C)
+
+Para dotar de semántica formal e interoperabilidad entre sistemas se utilizan estándares de la Web Semántica del **W3C**:
+
+- **RDF (Resource Description Framework):**  
+  Modelo basado en grafos que representa conocimiento mediante tripletas **Sujeto–Predicado–Objeto**, constituyendo la estructura fundamental de datos semánticos.  
+- **OWL (Web Ontology Language):**  
+  Lenguaje para definir ontologías con clases, propiedades, axiomas (equivalencias, disjointness, transitividad) y reglas lógicas que permiten razonamiento automático.  
+- **SPARQL:**  
+  Lenguaje de consulta estandarizado para grafos RDF, similar al papel de SQL sobre bases relacionales.  
+
+Una cuestión frecuente pregunta qué estándar utiliza tripletas Sujeto‑Predicado‑Objeto: la respuesta correcta es **RDF**.
+
+#### 4.4. Data Warehouse, Data Mart, Delta Lake y Data Fabric
+
+- **Data Warehouse:**  
+  Almacén centralizado de datos estructurados integrados para análisis empresarial.  
+- **Data Mart:**  
+  Subconjunto temático del Data Warehouse, orientado a un área de negocio específica.  
+- **Delta Lake / Lakehouse:**  
+  Capa de gestión transaccional (ACID) sobre data lakes, permitiendo versiones, esquema evolutivo y consultas eficientes.  
+- **Data Fabric:**  
+  Enfoque arquitectónico que proporciona una **capa unificada de acceso e integración de datos distribuidos**, basada en metadatos y automatización, permitiendo consumir datos sin necesidad de centralizarlos físicamente.  
+
+La pregunta de oposición que define Data Fabric se centra precisamente en esta capacidad de integración lógica sin centralización física de datos.
 
 ### 5. Arquitectura middleware: IA Gateway
 
-El **AI Gateway** es una nueva capa *middleware* diseñada para intermediar entre las aplicaciones corporativas (y agentes) y los Modelos de Lenguaje Grandes (LLMs).
+El **IA Gateway** (AI Gateway) es un componente middleware emergente que intermedia entre aplicaciones corporativas (incluyendo agentes) y modelos de lenguaje (LLMs) y otros servicios de IA.
 
-* **Diferencia de paradigma:** Mientras el API Gateway gestiona peticiones IP/HTTP, el IA Gateway gestiona y audita **tokens**, *prompts* e inferencias.
-* **Capacidades fundamentales (Foco de Test):**
-  * **Caché Semántico (*Semantic Caching*):** No exige coincidencias de texto exacto como un caché HTTP. Transforma la consulta en un vector (*embedding*) y, si la distancia matemática con una consulta previa es muy corta (ej. "¿Cómo solicitar beca?" vs. "¿Pasos para beca?"), devuelve la respuesta en caché sin pagar inferencia al LLM.
-  * **Model Routing / Fallback:** Enruta *prompts* al modelo más barato/rápido según su complejidad. Si falla el proveedor primario, conmuta de forma transparente al proveedor de contingencia (*Fallback*).
-  * **DLP (Data Loss Prevention) y Anonimización:** Intercepta *prompts* y enmascara PII (DNI, tarjetas sanitarias) antes de abandonar la red local hacia el proveedor LLM.
-  * **Limitación por Coste/Token:** Aplica *rate limiting* y cuotas de presupuesto (FinOps) no por llamadas de red, sino midiendo el tamaño real (tokens) consumido por cada unidad de negocio.
-* **Aclaración Arquitectónica:** El IA Gateway no hace "RAG" (no indexa documentos PDF ni enriquece contexto por defecto), simplemente gobierna la política de acceso y telemetría de las inferencias.
+#### 5.1. Diferencias con API Gateway
 
-## Conceptos que suelen preguntarse
+A diferencia del **API Gateway** clásico centrado en tráfico HTTP/IP (peticiones, cabeceras, direcciones IP), el IA Gateway opera en el plano de **prompts, tokens e inferencias**.  
 
-| Concepto a distinguir | Qué es realmente | Trampa habitual en exámenes |
-| :--- | :--- | :--- |
-| **ESB vs EDA** | ESB centraliza lógica ("Smart pipes"); EDA desacopla productores/consumidores ("Dumb pipes"). | "ESB y Event-Driven son el mismo patrón asíncrono." |
-| **Pod vs Contenedor** | El Pod es la unidad mínima en K8s. Puede contener varios contenedores compartiendo IP y volumen. | "En Kubernetes, la unidad atómica de asignación es el Contenedor." |
-| **etcd en Kubernetes** | Base de datos clave-valor distribuida. Es la única fuente de estado del *Control Plane*. | "`etcd` es el nodo donde se ejecuta el código del usuario." |
-| **Híbrida vs Multicloud** | Híbrida: Infraestructura propia (On-Premises) + Cloud. Multicloud: Uso de múltiples Clouds públicos. | "Multicloud requiere siempre poseer un CPD físico propio." |
-| **ETL vs ELT** | Diferencia en el orden computacional: ELT transforma *después* de volcar en el sistema destino. | "ELT transforma los datos antes de guardarlos por motivos de seguridad." |
-| **RDF y OWL** | Stack semántico W3C. RDF usa tripletas (Sujeto-Predicado-Objeto). OWL aporta capacidad deductiva formal. | "RDF es el lenguaje oficial para bases de datos relacionales SQL." |
-| **IA Gateway** | Proxy especializado en el plano de control (Tokens, DLP en prompts, caché semántico). | "El IA Gateway es el encargado de almacenar documentos indexados para RAG." |
+Funciones típicas:
+
+- **Model routing y fallback:**  
+  Enrutamiento inteligente de solicitudes hacia diferentes modelos según criterios de coste, latencia y complejidad; posibilidad de fall‑back automático a otros proveedores si falla el primario.  
+- **Guardrails y políticas:**  
+  Implementación de controles técnicos sobre prompts y respuestas (por ejemplo, filtros de contenido, límites de longitud, restricciones de uso) antes/depués de llamar al modelo.  
+- **Control de consumo:**  
+  Limitación de uso en función de **tokens consumidos y número de llamadas**, aplicando políticas de FinOps y cuotas por unidad organizativa.  
+
+En preguntas se indica que IA Gateway permite routing de modelos, guardrails y control de consumo, pero no orquesta por sí mismo todas las comunicaciones agent‑to‑agent (eso entra más en funciones de orquestador o plataforma de agentes).
+
+#### 5.2. Caché semántico y protección de datos (DLP)
+
+Una característica diferenciadora es la **caché semántica (semantic caching)**:
+
+- El IA Gateway genera embeddings de los prompts y guarda respuestas asociadas; si una nueva pregunta es semánticamente muy similar (distancia vectorial baja), puede devolver la respuesta cacheada sin invocar de nuevo al modelo, reduciendo costes y latencia.  
+- No se basa en coincidencias exactas de texto como una caché HTTP tradicional, sino en similitud semántica.  
+
+En cuanto a protección de datos:
+
+- Implementa funciones de **Data Loss Prevention (DLP)** y anonimización, enmascarando PII (DNI, números de tarjeta sanitaria, etc.) antes de que los prompts salgan del perímetro corporativo hacia servicios externos de IA.  
+
+Es importante distinguir que el IA Gateway **no es un motor RAG** por sí mismo (no indexa documentos ni realiza retrieval sobre bases vectoriales), sino un proxy de gobierno para el consumo de modelos.
+
+### 6. Kafka y política de particiones
+
+En el contexto de EDA, **Apache Kafka** aparece como broker de eventos de referencia.
+
+- **cleanup.policy=compact:**  
+  Indica que Kafka realizará compactación de log manteniendo solo el **último valor por clave (key)** y eliminando versiones anteriores de la misma clave, útil para topics de tipo “tabla de estado”.  
+- **Redistribución de mensajes al aumentar particiones:**  
+  Añadir nuevas particiones a un topic existente (pasar de 5 a 6) **no redistribuye automáticamente** los mensajes ya escritos; la operación estándar solo afecta a nuevos mensajes, salvo que se haga una reasignación manual específica (reassign partitions), algo que suele presentarse en examen como “no posible de forma automática”.
+
+## Conceptos que suelen preguntarse (trampas típicas)
+
+| Concepto a distinguir        | Qué es realmente                                                                                                         | Trampa habitual en exámenes                                                        |
+| :--------------------------- | :------------------------------------------------------------------------------------------------------------------------ | :--------------------------------------------------------------------------------- |
+| ESB vs EDA                  | ESB centraliza lógica y transformación (smart pipes); EDA usa brokers simples y extremos inteligentes desacoplados. | “ESB y EDA son el mismo patrón de integración asíncrona.”               |
+| Pod vs contenedor           | El Pod es la unidad mínima en K8s, puede contener varios contenedores que comparten IP y volúmenes.      | “La unidad atómica en K8s es el contenedor.”                             |
+| `etcd` en Kubernetes        | Base clave‑valor distribuida que guarda el estado del clúster (Control Plane).                         | “`etcd` es donde se ejecuta el código de usuario.”                      |
+| Híbrida vs multicloud       | Híbrida = on‑prem + cloud; multicloud = varias clouds públicas, sin requerir CPD propio.               | “Multicloud requiere necesariamente infraestructura on‑prem.”           |
+| ETL vs ELT                  | Diferencia en dónde se hace la transformación: ETL antes de cargar; ELT después, en el destino.        | “ELT transforma los datos antes de guardarlos por seguridad.”           |
+| Calidad semántica (ISO 8000)| Evalúa si el dato codifica correctamente su significado técnico según metadatos.                        | “Se refiere al formato del dato” (eso es sintáctica).                   |
+| RDF vs otros formatos       | RDF representa conocimiento en tripletas Sujeto‑Predicado‑Objeto.                                      | “JSON‑LD o OpenAPI usan tripletas RDF.”                                  |
+| IA Gateway                  | Proxy IA que implementa caché semántico, routing de modelos, DLP y control por tokens.                | “El IA Gateway es el motor RAG que almacena documentos.”                |
+| Sidecar container           | Contenedor auxiliar para logging, proxy, métricas, etc., en el mismo Pod.                               | “Sustituye al contenedor principal cuando falla.”                       |
+| RollingUpdate               | Actualiza Pods progresivamente manteniendo disponibilidad.                                            | “Elimina todos los Pods a la vez y luego crea los nuevos.”              |
+| nodeSelector                | Coincidencia simple clave‑valor para elegir nodos.                                                               | “Admite expresiones complejas tipo In, Exists” (eso es node affinity).  |
+| Data Fabric                 | Capa unificada de acceso e integración de datos distribuidos sin centralización física.                          | “Es un nuevo tipo de Data Warehouse centralizado.”                      |
 
 ## Posibles preguntas tipo test
 
-**Pregunta 1.** Según la arquitectura de Kubernetes, ¿qué componente del plano de control (*Control Plane*) funciona como almacén de datos clave-valor de alta disponibilidad responsable de guardar el estado deseado y real de todo el clúster?
-A. El `kube-proxy`.
-B. El `kubelet`.
-C. El `etcd`.
-D. El `kube-scheduler`.
-**Respuesta correcta: C.** (`etcd` es la única fuente de verdad persistente del *Control Plane*).
+**Pregunta 1.** Según la arquitectura de Kubernetes, ¿qué componente del plano de control actúa como almacén clave‑valor de alta disponibilidad responsable de guardar el estado del clúster?
 
-**Pregunta 2.** Al evolucionar una arquitectura de integración desde un Enterprise Service Bus (ESB) corporativo tradicional hacia una arquitectura orientada a eventos (EDA) con brokers de mensajería (ej. Kafka), se busca un cambio de paradigma basado en:
-A. Transicionar hacia "tuberías tontas y extremos inteligentes" (*Dumb pipes, smart endpoints*), eliminando el cuello de botella central de la lógica de transformación.
-B. Consolidar el ESB como *Service Mesh* en todos los contenedores de Kubernetes.
-C. Abandonar el patrón asíncrono e implementar gRPC de forma obligatoria.
-D. Requerir que el productor del evento conozca siempre la identidad y protocolo exacto de todos sus consumidores.
-**Respuesta correcta: A.** (La orquestación centralizada del ESB da paso a la coreografía distribuida de los eventos).
+A. `kube-proxy`.  
+B. `kubelet`.  
+C. `etcd`.  
+D. `kube-scheduler`.  
 
-**Pregunta 3.** Si la Agencia de Administración Digital decide utilizar la potencia de procesamiento analítico masivo de un repositorio de datos Cloud (ej. BigQuery/Snowflake) para realizar allí mismo la limpieza y transformación de los datos que llegan "en crudo" desde los sistemas legados, está implementando una arquitectura de *pipeline*:
-A. ETL (Extract, Transform, Load).
-B. ELT (Extract, Load, Transform).
-C. Pub/Sub con enrutamiento de modelos.
-D. Cacheo semántico.
-**Respuesta correcta: B.** (En ELT, los datos se cargan sin transformar (Load) y la T (Transform) ocurre dentro del almacén destino).
+**Respuesta correcta: C.** (`etcd` es la única fuente de verdad persistente del estado del clúster).
 
-**Pregunta 4.** Dentro del marco normativo internacional ISO 8000 para la calidad del dato, ¿qué dimensión evalúa si un dato codifica correctamente su significado técnico esperado, apoyándose habitualmente en diccionarios de metadatos o estándares sectoriales?
-A. Calidad Pragmática.
-B. Calidad Sintáctica.
-C. Calidad Semántica.
-D. Calidad de Ocultación (DLP).
-**Respuesta correcta: C.** (Sintáctica = Formato, Semántica = Significado/Metadata, Pragmática = Adecuación al uso del negocio).
+---
 
-**Pregunta 5.** Para implementar la interoperabilidad de la Web Semántica y construir Ontologías, el W3C ha estandarizado un formato subyacente que representa todo el conocimiento en forma de tripletas lógicas (Sujeto, Predicado, Objeto). ¿A qué estándar corresponde?
-A. JSON-LD.
-B. gRPC.
-C. RDF (Resource Description Framework).
-D. OpenAPI.
-**Respuesta correcta: C.**
+**Pregunta 2.** Al evolucionar desde un ESB corporativo hacia una arquitectura orientada a eventos con brokers como Kafka, el cambio de paradigma se basa en:
 
-**Pregunta 6.** Se implementa un **IA Gateway** como componente de arquitectura *middleware* para el consumo corporativo de Modelos Fundacionales. ¿Qué característica fundamental lo distingue de un API Gateway tradicional (como un proxy inverso estándar)?
-A. Que el IA Gateway almacena bases de datos relacionales en su interior para resolver consultas SQL directamente.
-B. Que implementa Caché Semántico usando vectores matemáticos (*embeddings*) para devolver respuestas cacheadas a preguntas similares aunque estén redactadas de manera diferente.
-C. Que limita el tráfico de red midiendo el número de paquetes UDP en lugar de peticiones HTTP.
-D. Que realiza entrenamientos *Fine-Tuning* automáticos en tiempo real.
-**Respuesta correcta: B.** (La interceptación y análisis semántico del tráfico/prompts es la función *core* de un AI Gateway frente al API Gateway clásico).
+A. Consolidar el ESB como Service Mesh en todos los contenedores de Kubernetes.  
+B. Transicionar hacia “tuberías tontas y extremos inteligentes”, eliminando el cuello de botella central de la lógica de transformación.  
+C. Abandonar el patrón asíncrono e implementar gRPC obligatorio.  
+D. Requerir que el productor conozca siempre la identidad de todos los consumidores.  
+
+**Respuesta correcta: B.** (La EDA disocia la lógica del bus central y la reparte entre microservicios).
+
+---
+
+**Pregunta 3.** Si la Administración decide cargar datos “en crudo” en BigQuery o Snowflake y realizar allí mismo la transformación aprovechando su capacidad de cómputo, está aplicando un pipeline:
+
+A. ETL (Extract, Transform, Load).  
+B. ELT (Extract, Load, Transform).  
+C. Pub/Sub orientado a eventos.  
+D. Caché semántico.  
+
+**Respuesta correcta: B.** (En ELT, los datos se cargan sin transformar y se procesan posteriormente en el destino).
+
+---
+
+**Pregunta 4.** Dentro del marco ISO 8000, ¿qué dimensión de calidad evalúa si un dato codifica correctamente su significado técnico esperado?
+
+A. Calidad pragmática.  
+B. Calidad sintáctica.  
+C. Calidad semántica.  
+D. Calidad de ocultación (DLP).  
+
+**Respuesta correcta: C.** (Sintáctica = formato, semántica = significado, pragmática = adecuación al uso).
+
+---
+
+**Pregunta 5.** Para la Web Semántica, ¿qué estándar W3C representa conocimiento en forma de tripletas (Sujeto, Predicado, Objeto)?
+
+A. JSON‑LD.  
+B. gRPC.  
+C. RDF (Resource Description Framework).  
+D. OpenAPI.  
+
+**Respuesta correcta: C.** (RDF es la base del modelo de grafos semánticos).
+
+---
+
+**Pregunta 6.** Se despliega un IA Gateway para gobernar el uso corporativo de LLMs. ¿Qué característica fundamental lo distingue de un API Gateway tradicional?
+
+A. El IA Gateway almacena bases de datos relacionales para ejecutar SQL.  
+B. Implementa caché semántico usando embeddings para responder a preguntas similares aunque se formulen diferente.  
+C. Limita tráfico midiendo paquetes UDP en lugar de peticiones HTTP.  
+D. Realiza fine‑tuning automático en tiempo real.  
+
+**Respuesta correcta: B.** (Su función núcleo es gobernar prompts y tokens con capacidades semánticas).
+
+---
+
+**Pregunta 7.** En Kubernetes, ¿para qué se usa típicamente un contenedor sidecar dentro de un Pod?
+
+A. Para sustituir al contenedor principal cuando falla.  
+B. Para desplegar automáticamente nuevos nodos del clúster.  
+C. Para almacenamiento permanente sin volúmenes.  
+D. Para ejecutar tareas auxiliares (logging, proxy, sincronización de ficheros) junto al contenedor principal.  
+
+**Respuesta correcta: D.** (El patrón sidecar añade funcionalidad de apoyo dentro del mismo Pod).
+
+---
+
+**Pregunta 8.** En Apache Kafka, ¿qué implica la configuración `cleanup.policy=compact` en un topic?
+
+A. Borrar mensajes mayores que `retention.bytes`.  
+B. Comprimir mensajes por antigüedad (`retention.ms`).  
+C. Mantener solo el último valor por clave, eliminando versiones anteriores de esa clave.  
+D. Borrar mensajes antiguos según `retention.ms`.  
+
+**Respuesta correcta: C.** (La compactación conserva la última versión de cada key).
+
+---
+
+**Pregunta 9.** ¿Qué descripción refleja correctamente el concepto **Data Fabric** en arquitectura de datos?
+
+A. Nuevo tipo de Data Warehouse centralizado.  
+B. Enfoque que proporciona una capa unificada de acceso e integración de datos distribuidos, basada en metadatos y automatización, sin necesidad de centralizarlos físicamente.  
+C. Sistema de ficheros distribuido de baja latencia.  
+D. Subconjunto temático del Data Warehouse.  
+
+**Respuesta correcta: B.** (Data Fabric se centra en integración lógica distribuida).
+
+---
+
+**Pregunta 10.** En un modelo Hub‑and‑Spoke para arquitectura híbrida on‑premises/cloud, ¿qué papel desempeña la Landing Zone?
+
+A. Permitir que los spokes se comuniquen directamente entre sí evitando el hub.  
+B. Centralizar la conectividad con on‑premises en el hub y aplicar políticas de red y seguridad comunes a todos los spokes.  
+C. Ser el punto de entrada de datos raw dentro del hub.  
+D. Actuar como data lake para historificación de logs.  
+
+**Respuesta correcta: B.** (La Landing Zone define la arquitectura base y la conectividad híbrida común).
 
 ## Normativa o fuentes relacionadas
 
-* **ISO 8000 Series (Data Quality):** Especialmente ISO 8000-8 (*Concepts and measuring*), definiendo calidad sintáctica, semántica y pragmática.
-* **CNCF (Cloud Native Computing Foundation):** Estándares de arquitectura *Cloud Native* y Kubernetes. Documentación oficial de componentes (`etcd`, Nodos, Control Plane).
-* **W3C (World Wide Web Consortium):** Estándares de Web Semántica: **RDF** (Resource Description Framework), **OWL** (Web Ontology Language), y **SPARQL**.
-* **DAMA-DMBOK:** Base de conocimientos de gestión de datos, referencia fundamental para las dimensiones de calidad del dato (Exactitud, Completitud, Consistencia, Unicidad).
-* **Real Decreto 311/2022 (Esquema Nacional de Seguridad):** Relevante para las arquitecturas Híbridas (interconexiones seguras y segregación de recursos).
-* **IETF / W3C (Protocolos base):** Documentación sobre REST, HTTP/1.1 vs HTTP/2, y OpenAPI.
+- **ISO 8000‑8:** *Data quality – Part 8: Concepts and measuring*, para dimensiones de calidad sintáctica, semántica y pragmática.  
+- **DAMA‑DMBOK:** Referencia industrial en gestión de datos y calidad (exactitud, completitud, consistencia, unicidad).  
+- **CNCF – Kubernetes documentation:** Descripción oficial de Control Plane, etcd, Pods, Deployments, Services y Service Mesh.  
+- **W3C – RDF, OWL, SPARQL:** Estándares de la Web Semántica y ontologías.  
+- **Real Decreto 311/2022 (ENS):** Principios básicos y requisitos mínimos de seguridad aplicables a arquitecturas híbridas y cloud.
 
 ## Dudas o puntos pendientes
 
-* **IA Gateway (Falta de estándar normativo puro):** A fecha de publicación de la convocatoria, el término "IA Gateway" no está sujeto a una norma ISO/IETF estricta, sino que es un patrón arquitectónico de infraestructura emergente (adoptado por Kong, Cloudflare, Azure, etc.). Las preguntas de test sobre este concepto se orientarán al paradigma de negocio (Caché Semántico, Control de Coste por Tokens, *Fallback* de LLMs).
-* **ETL frente a ELT:** Aunque ELT es la tendencia actual por el auge del Data Warehousing moderno, en bases de datos locales o limitadas, el paradigma clásico ETL sigue siendo válido para no sobrecargar el repositorio destino. Deben diferenciarse con base en **dónde** ocurre el cómputo de la transformación de los datos.
-* **K8s Ingress vs. Gateway API:** Históricamente el objeto `Ingress` se usaba en Kubernetes para la entrada de tráfico Norte-Sur. Actualmente la CNCF promueve `Gateway API` como su evolución lógica y estandarizada; en preguntas genéricas de oposición, a menudo ambos términos aparecen como correctos funcionalmente para la entrada del tráfico L7.
+- **IA Gateway como patrón emergente:** No existe todavía una norma ISO específica para IA Gateways; se trata de un patrón de mercado (Cloudflare, Kong, Azure AI Gateway) centrado en gobierno de consumo de modelos, prompts y tokens, más que en integración de datos.  
+- **ETL vs ELT en contextos legacy:** Aunque ELT domina en plataformas cloud, en entornos locales con capacidad de cómputo limitada en destino, ETL sigue siendo válido; la clave en examen es diferenciar **“dónde ocurre la transformación”**.  
+- **Gateway API vs Ingress en Kubernetes:** Gateway API es el estándar moderno para tráfico L7; muchas referencias y exámenes siguen mencionando Ingress como recurso clásico, pero conceptualmente ambos cubren entrada de tráfico HTTP/HTTPS al clúster.

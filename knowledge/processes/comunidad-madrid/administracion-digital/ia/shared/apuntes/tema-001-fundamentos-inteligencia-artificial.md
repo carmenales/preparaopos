@@ -86,6 +86,50 @@ Subconjunto de ML basado en Redes Neuronales Artificiales (ANN) con múltiples c
 * **Característica técnica diferencial:** Realiza *Feature Learning* (aprendizaje de representaciones). El algoritmo descubre y extrae automáticamente las características relevantes (bordes en una imagen, sintaxis en un texto) sin intervención humana explícita. Esto genera alta precisión técnica, pero crea el problema de la **"Caja Negra" (opacidad)**, dificultando la auditabilidad y el cumplimiento del derecho a la explicabilidad de las decisiones automatizadas.
 * **Ejemplos:** CNN (Redes Convolucionales para imágenes), RNN (Redes Recurrentes), Transformers (base de los LLMs modernos).
 
+### 1.4. Métricas básicas de evaluación (Accuracy, Perplexity, Overfitting)
+
+#### 1.4.1. Accuracy y conjuntos de entrenamiento/validación
+
+La Accuracy (exactitud) mide el porcentaje de predicciones correctas sobre el total de ejemplos evaluados, y es la métrica más utilizada para tareas de clasificación.
+
+En un ciclo de entrenamiento estándar se distinguen:
+
+- Conjunto de entrenamiento (Training set): se usa para ajustar los parámetros del modelo (minimizar la función de pérdida).
+- Conjunto de validación (Validation set): se usa para evaluar la capacidad de generalización del modelo durante el entrenamiento, sin intervenir en el ajuste directo de parámetros.
+
+Un patrón típico de sobreajuste (overfitting) es:
+
+- Aumento significativo de Accuracy en entrenamiento.
+- Aumento muy pequeño o nulo de Accuracy en validación.
+
+Lo que indica que el modelo memoriza el training set pero apenas mejora en datos nuevos.
+
+#### 1.4.2. Perplexity en modelos de lenguaje
+
+La Perplexity es una métrica clásica de evaluación en modelos de lenguaje (LM y LLM), definida como la exponencial de la pérdida de entropía cruzada.
+
+Intuitivamente:
+
+- Menor Perplexity ⇒ mejor capacidad predictiva del modelo, porque el modelo está menos confundido ante la secuencia de tokens.
+- Mayor Perplexity ⇒ peor rendimiento, indicando que el modelo comete más errores de predicción.
+
+Un caso típico:
+
+- Perplexity aumenta respecto al modelo base.
+- Accuracy de entrenamiento aumenta más que la de validación.
+
+Se interpreta como indicios de sobreajuste.
+
+### 1.5. Técnicas básicas de prompting en modelos de lenguaje
+
+Las técnicas de prompting son estrategias para construir la entrada textual que se presentará a un modelo de lenguaje, sin modificar sus pesos internos.
+
+#### 1.5.1. Zero-shot, Few-shot y Chain-of-Thought
+
+- Zero-shot prompting: se formula directamente la instrucción sin aportar ejemplos previos.
+- Few-shot prompting: se incluyen varios ejemplos de entrada‑salida correctamente etiquetados antes de la nueva consulta.
+- Chain-of-Thought (CoT): se solicita explícitamente al modelo que genere el razonamiento paso a paso antes de dar la respuesta final.
+
 ### 2. Modelos supervisados, no supervisados y otros paradigmas
 
 La norma **ISO/IEC 22989:2022** reconoce formalmente cuatro paradigmas de aprendizaje, que presentan diferentes perfiles de riesgo y estrategias de gobierno.
@@ -138,6 +182,51 @@ La forma en que se limpia el texto afecta a los sesgos y a la precisión del mod
 * **Embeddings:** Representación vectorial densa (ej. array de 768 números) en un espacio continuo, donde palabras con semántica similar están físicamente cerca. *Riesgo de Gobierno:* Los embeddings entrenados en corpus históricos de internet capturan y codifican matemáticamente sesgos sociales discriminatorios, requiriendo auditoría específica.
 * **Transformers:** Arquitectura basada en **Autoatención (Self-Attention)**. Procesa el texto en paralelo evaluando la importancia de todas las palabras de una frase respecto a las demás simultáneamente. Es la base técnica de la IA Generativa textual.
 
+### 3.3. Embeddings estáticos vs embeddings contextualizados
+
+Los embeddings son vectores densos que representan tokens o palabras en un espacio continuo donde la proximidad refleja similitud semántica.
+
+Se distinguen dos grandes familias:
+
+- Embeddings estáticos (Word2Vec, GloVe):
+  - Cada palabra tiene un único vector fijo, independientemente de la frase o contexto en que aparece.
+- Embeddings contextualizados (BERT, ELMo):
+  - El vector de una palabra cambia dependiendo de las demás palabras que la rodean en la oración.
+
+### 3.4. Arquitecturas Transformers y traducción automática
+
+Los Transformers se basan en mecanismos de autoatención y se implementan en distintas arquitecturas según la tarea.
+
+- Encoder-only:
+  - El encoder procesa la secuencia de entrada y genera representaciones contextualizadas.
+- Decoder-only:
+  - El decoder genera secuencias de salida token a token de manera autoregresiva.
+- Encoder-decoder:
+  - El encoder codifica la secuencia de entrada y el decoder genera la secuencia de salida; esta arquitectura se concibió originalmente para traducción automática.
+
+### 3.5. Fundamentos de RAG: accuracy vs faithfulness
+
+Los sistemas RAG (Retrieval-Augmented Generation) combinan un módulo de recuperación de documentos con un modelo generativo que redacta la respuesta apoyándose en esos documentos.
+
+En su evaluación se distinguen:
+
+- Accuracy: grado en que las afirmaciones de la respuesta son factual y globalmente correctas.
+- Faithfulness: grado en que la respuesta se apoya exclusivamente en la evidencia presente en los documentos recuperados.
+
+Ejemplo:
+
+- Documento recuperado: “La AEPD fue creada en 1993”.
+- Respuesta: “La AEPD fue creada en 1993 y es la autoridad nacional de protección de datos de España”.
+
+Ambas afirmaciones son correctas, pero la segunda no está en el documento; la respuesta tiene alta accuracy y menor faithfulness.
+
+### 3.6. Métrica Mean Reciprocal Rank (MRR)
+
+En la evaluación del recuperador dentro de un sistema RAG, una métrica fundamental es la Mean Reciprocal Rank (MRR).
+
+- Para cada consulta se localiza la posición rank del primer resultado relevante en la lista ordenada.
+- MRR se calcula como la media de las inversas de esos ranks: cuanto más alto aparezca el primer resultado relevante (rank pequeño), mayor es el MRR.
+
 ### 4. Conceptos de MLOps y Operación
 
 **MLOps** es la extensión de las prácticas DevOps aplicadas a los sistemas de aprendizaje automático. Desde una perspectiva de ciclo de vida del software, es la disciplina que gestiona el código, los datos y el modelo; desde una perspectiva de Gobierno de IA, es el **marco de infraestructura y procesos que hace posible la trazabilidad, la auditoría y el cumplimiento normativo** de un sistema en producción.
@@ -168,6 +257,34 @@ Los modelos ML se degradan de forma silente aunque el código no falle (errores 
 * **Fuga de datos (Data Leakage):** Variables futuras, que no existirán en producción en el momento de inferir, se colaron accidentalmente en la fase de entrenamiento inflando la métrica de éxito (*Accuracy*).
 * **Registro de eventos (Logging):** Según el **Art. 12 del Reglamento (UE) 2024/1689**, los sistemas de IA de alto riesgo deben disponer obligatoriamente de un registro automático de eventos ("logs") para garantizar la trazabilidad de su funcionamiento a lo largo de todo el ciclo de vida. MLOps provee los mecanismos técnicos para cumplir esta exigencia legal.
 * **Alcance de los algoritmos clásicos en la Ley de IA:** Aunque técnicamente un algoritmo de regresión logística o un árbol de decisión simple pertenecen al Machine Learning clásico, estos sistemas simples también quedan subsumidos bajo la definición legal de "Sistema de IA" del AI Act si cumplen el criterio de inferencia. El reglamento europeo adopta una visión tecnológicamente neutra.
+
+### 4.5. LLMOps como caso particular de MLOps
+
+LLMOps es la aplicación de los principios MLOps a modelos de lenguaje de gran tamaño (LLMs).
+
+- Gestiona el ciclo de vida de modelos fundacionales y adaptados (fine‑tuning, LoRA/QLoRA).
+- Incorpora métricas específicas como perplexity, tasas de alucinación y calidad de generación.
+- Versiona prompts, datos de conversación y configuraciones de inferencia, manteniendo la trazabilidad de cambios.
+
+### 4.6. Infraestructura como Código (IaC) en MLOps
+
+La Infraestructura como Código (IaC) es la práctica de definir y aprovisionar recursos de infraestructura mediante archivos de configuración declarativos y versionables.
+
+En MLOps y LLMOps permite:
+
+- Reproducir el entorno de entrenamiento (clusters, GPUs, redes, almacenamiento) de forma auditable.
+- Definir de manera trazable las dependencias de infraestructura de los pipelines de entrenamiento, evaluación e inferencia.
+
+### 4.7. Observabilidad distribuida con OpenTelemetry: traces y spans
+
+Un estándar de facto para observabilidad distribuida es OpenTelemetry, que introduce dos conceptos clave.
+
+- Trace:
+  - Representa una ejecución end‑to‑end de una operación (por ejemplo, una petición completa a un agente de IA).
+  - Agrupa un conjunto de spans que describen las distintas etapas de esa ejecución.
+- Span:
+  - Unidad de trabajo dentro de un trace (llamada a un servicio, paso de pipeline).
+  - Cada span tiene su propio span_id, pero todos los spans de la misma ejecución comparten el mismo trace_id y pueden establecer relaciones padre‑hijo entre ellos.
 
 ## Conceptos que suelen preguntarse (Trampas comunes)
 
