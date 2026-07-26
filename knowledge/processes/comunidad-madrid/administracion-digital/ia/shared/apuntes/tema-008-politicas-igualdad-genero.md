@@ -33,146 +33,290 @@ needs_human_review: true
 
 ## Encaje en la convocatoria
 
-El **Tema 8. Políticas de Igualdad de Género** pertenece al bloque transversal técnico-jurídico del Anexo 3 de la Resolución 352/2026 (BOCM 11/06/2026) para los cuerpos TIC de la Comunidad de Madrid (A2/Grupo IV de la Agencia para la Administración Digital). 
+El **Tema 8. Políticas de Igualdad de Género** está en el bloque transversal jurídico del Anexo 3 de la Resolución 352/2026 (BOCM 11/06/2026) para los cuerpos TIC de la Comunidad de Madrid (A2 / Madrid Digital).   
 
-El epígrafe oficial remite expresamente a la **Ley Orgánica 3/2007, de 22 de marzo, para la Igualdad efectiva de mujeres y hombres**. Al ser una prueba tipo test con penalización, las preguntas exigen el conocimiento literal de la norma. El tribunal busca que el opositor distinga conceptos jurídicos finos (discriminación directa frente a indirecta, acoso sexual frente a acoso por razón de sexo) y conozca porcentajes y excepciones legales. 
+El epígrafe remite de forma explícita a la **Ley Orgánica 3/2007, de 22 de marzo, para la igualdad efectiva de mujeres y hombres**, por lo que el examen tipo test se apoya en su literalidad y conceptos finos (discriminación directa/indirecta, acoso, presencia equilibrada, carga de la prueba, planes de igualdad, empleo público, contratación).
 
-Para un perfil TIC, resulta de especial relevancia el **artículo 28** (Sociedad de la Información), que impone obligaciones de igualdad en el diseño y ejecución de programas tecnológicos públicos.
+Para perfiles TIC, además de la parte general, son especialmente relevantes:  
+- Art. 28 **Sociedad de la Información**.  
+- Capítulo de **contratos del sector público** (art. 33 LO 3/2007).  
+- Título V **Empleo público** (arts. 51 y ss.).
 
-## Ideas clave
+## Ideas clave para el test
 
-- **Igualdad formal vs. efectiva:** La Ley 3/2007 no se limita a la igualdad ante la ley (art. 14 CE), sino que busca la igualdad real y efectiva, obligando a los poderes públicos a remover obstáculos (art. 9.2 CE).
-- **Discriminación indirecta ("aparentemente neutro"):** Concepto trampa clásico. Una norma que parece igual para todos pero perjudica a un sexo es discriminación indirecta, salvo que tenga justificación objetiva.
-- **Transversalidad (*Mainstreaming*):** El principio de igualdad no es una política aislada; informa el ordenamiento jurídico y debe integrarse en la formulación, ejecución y evaluación de todas las políticas públicas.
-- **Composición equilibrada:** Según la Disposición Adicional 1ª, las personas de cada sexo no deben superar el **60 %** ni ser menos del **40 %**. Nunca es el 50%-50% estricto normativamente.
-- **Inversión de la carga de la prueba (Art. 13):** En litigios por discriminación, el demandado debe probar que su actuación fue lícita. **Excepción estricta:** nunca aplica en la jurisdicción penal (por el principio de presunción de inocencia).
-- **Maternidad:** Todo trato desfavorable a las mujeres relacionado con el embarazo o la maternidad constituye **discriminación directa**.
-- **Planes de Igualdad en empresas:** Son obligatorios para empresas de **50 o más personas trabajadoras** (el RDL 6/2019 modificó el umbral original de 250).
+- La LO 3/2007 busca la **igualdad real y efectiva**, no sólo la igualdad formal del art. 14 CE; desarrolla el mandato del art. 9.2 CE (remover obstáculos).  
+- La **discriminación indirecta** se basa siempre en una disposición o práctica “aparentemente neutra” que perjudica de manera particular a un sexo.  
+- La **composición equilibrada** se define por la regla 40/60: ningún sexo puede superar el 60 % ni ser inferior al 40 % (no es paridad 50/50).  
+- Todo trato desfavorable por **embarazo o maternidad** es siempre **discriminación directa** por razón de sexo.  
+- La **orden de discriminar** (directa o indirectamente) se considera en todo caso discriminatoria.  
+- La **carga de la prueba** se invierte en procedimientos por discriminación, salvo en la jurisdicción penal.  
+- Los **planes de igualdad** son obligatorios para empresas de **50 o más personas trabajadoras** (tras la reforma del RDL 6/2019).  
+- El art. 28 obliga a integrar la igualdad en programas públicos de Sociedad de la Información y a garantizar **lenguaje y contenidos no sexistas** en proyectos TIC sufragados con dinero público.  
+- En empleo público: presencia equilibrada en órganos de selección y **informes de impacto de género** en convocatorias, salvo casos de urgencia.
 
-## Desarrollo
+---
 
-### 1. Objeto y Fundamento Constitucional
+## 1. Objeto y fundamento constitucional
 
-La **Ley Orgánica 3/2007** es una norma estatal y transversal. Su objeto (Art. 1) es hacer efectivo el derecho de igualdad de trato y de oportunidades entre mujeres y hombres, en particular mediante la eliminación de la discriminación de la mujer.
+La LO 3/2007 tiene por objeto hacer efectivo el derecho de igualdad de trato y de oportunidades entre mujeres y hombres, en particular mediante la eliminación de la discriminación de la mujer en todos los ámbitos (político, civil, laboral, económico, social y cultural).  
 
-Se fundamenta en dos pilares constitucionales:
-- **Art. 14 CE:** Prohibición de discriminación por razón de sexo (Igualdad formal).
-- **Art. 9.2 CE:** Obligación de los poderes públicos de promover las condiciones para que la igualdad sea real y efectiva, y remover los obstáculos que la impidan (Igualdad efectiva o material).
+Se apoya en dos pilares constitucionales:  
+- **Art. 14 CE:** igualdad formal y prohibición de discriminación por razón de sexo.  
+- **Art. 9.2 CE:** obligación de los poderes públicos de promover condiciones de igualdad real y efectiva y de remover obstáculos.
 
-Es un **principio informador del ordenamiento jurídico** (Art. 4), por lo que debe integrarse en la interpretación y aplicación de cualquier norma.
+La igualdad de trato y oportunidades es un **principio informador del ordenamiento jurídico**, que debe integrarse en la interpretación y aplicación de todas las normas.
 
-### 2. Conceptos fundamentales y tipos de discriminación (Arts. 6 a 11)
+---
 
-Distinguir la literalidad de estos conceptos es clave para el examen:
+## 2. Igualdad de trato y discriminación (arts. 3, 5, 6, 8, 9, 11)
 
-* **Discriminación Directa (Art. 6.1):** Situación en que se encuentra una persona que sea, haya sido o pudiera ser tratada, en atención a su sexo, de manera **menos favorable** que otra en situación comparable.
-* **Discriminación Indirecta (Art. 6.2):** Situación en que una disposición, criterio o práctica **aparentemente neutros** pone a personas de un sexo en desventaja particular con respecto a personas del otro.
-  * *Causa de justificación:* Puede eximirse si dicha práctica responde a una finalidad legítima y los medios son necesarios y adecuados.
-* **Discriminación por embarazo o maternidad (Art. 8):** Constituye siempre **discriminación directa** por razón de sexo todo trato desfavorable a las mujeres relacionado con estas causas biológicas.
-* **Indemnidad frente a represalias (Art. 9):** Se considera discriminación por razón de sexo cualquier trato adverso derivado de la presentación de una queja, denuncia o recurso para exigir el cumplimiento del principio de igualdad.
-* **Acciones Positivas (Art. 11):** Medidas específicas a favor de las mujeres para corregir desigualdades patentes de hecho. *Límites normativos:* Deben ser razonables, proporcionadas al objetivo y temporales (mientras subsista la desigualdad).
+### 2.1. Principio de igualdad de trato
 
-### 3. El Acoso (Art. 7)
+El principio de igualdad supone la ausencia de toda discriminación, directa o indirecta, por razón de sexo, especialmente las derivadas de maternidad, obligaciones familiares y estado civil.  
 
-El tribunal suele cruzar la definición de estos dos conceptos:
+En el acceso y condiciones de trabajo (empleo privado y público) se garantiza la igualdad en acceso, formación, promoción, condiciones retributivas y de despido, y participación en organizaciones profesionales.
 
-* **Acoso Sexual (Art. 7.1):** Cualquier comportamiento, verbal o físico, **de naturaleza sexual** que tenga el propósito o produzca el efecto de atentar contra la dignidad de una persona, creando un entorno intimidatorio, degradante u ofensivo.
-* **Acoso por razón de sexo (Art. 7.2):** Cualquier comportamiento realizado **en función del sexo** de una persona, con igual propósito o efecto de atentar contra su dignidad. *(Ejemplo: Hostigar o aislar a una trabajadora en un sector masculinizado por el hecho de ser mujer, sin que exista connotación sexual).*
+### 2.2. Discriminación directa e indirecta (art. 6)
 
-Ambos se consideran **en todo caso discriminatorios**. Los actos jurídicos o cláusulas que los amparen serán **nulos y sin efecto** (Art. 10).
+Conceptos básicos que el tribunal suele cruzar en varias preguntas:
 
-### 4. Transversalidad y Sociedad de la Información (Perfiles TIC)
+- **Discriminación directa:** situación en que una persona es, ha sido o podría ser tratada en atención a su sexo de manera menos favorable que otra en situación comparable.  
+- **Discriminación indirecta:** disposición, criterio o práctica **aparentemente neutros** que colocan a personas de un sexo en desventaja particular respecto de las del otro sexo; puede justificarse sólo si persigue una finalidad legítima y usa medios adecuados y necesarios.
 
-El **principio de transversalidad** (Art. 15) exige que las Administraciones públicas integren la igualdad de trato y oportunidades de forma activa en la adopción y ejecución de sus disposiciones normativas, en las políticas públicas y en todos sus presupuestos.
+La ley establece que **toda orden de discriminar**, de forma directa o indirecta y por razón de sexo, se considera discriminatoria.
 
-**Sociedad de la Información (Art. 28):** Precepto de alta probabilidad de examen para cuerpos de sistemas de información:
-1. Todos los programas públicos de desarrollo de la Sociedad de la Información incorporarán la igualdad en su **diseño y ejecución**.
-2. El Gobierno promoverá la plena incorporación de las mujeres a la Sociedad de la Información mediante programas específicos de **acceso y formación en TIC**, atendiendo a colectivos en riesgo de exclusión social y ámbito rural.
-3. En proyectos sufragados total o parcialmente con fondos públicos, se garantizará que **el lenguaje y los contenidos no sean sexistas**.
+### 2.3. Embarazo, maternidad y represalias (arts. 8 y 9)
 
-### 5. Planes de Igualdad en Empresas (Arts. 45-47)
+- Todo trato desfavorable a mujeres por embarazo o maternidad se considera siempre **discriminación directa** por razón de sexo (no indirecta).  
+- Se considera discriminación por razón de sexo cualquier trato adverso vinculado a la presentación de quejas, reclamaciones, recursos o acciones judiciales para exigir el cumplimiento del principio de igualdad (protección frente a represalias).
 
-Un Plan de Igualdad es un conjunto ordenado de medidas, adoptadas después de realizar un **diagnóstico de situación** (que incluye selección, clasificación, promoción, condiciones de trabajo, auditoría salarial y prevención del acoso), tendentes a alcanzar en la empresa la igualdad de trato y oportunidades.
+### 2.4. Acciones positivas (art. 11)
 
-* **Obligatoriedad:** Para empresas de **50 o más personas trabajadoras** (umbral modificado por el RDL 6/2019). También cuando lo obligue el convenio colectivo o cuando la autoridad laboral lo imponga en un procedimiento sancionador.
-* **Registro:** Los planes deben inscribirse obligatoriamente en el Registro de Planes de Igualdad de las Empresas.
+Las **acciones positivas** son medidas específicas a favor de las mujeres destinadas a corregir desigualdades de hecho patentes.  
 
-### 6. Empleo Público (Título V)
+Límites: deben ser razonables, proporcionadas al objetivo y tener carácter temporal, aplicándose solo mientras exista la desigualdad que pretenden corregir.
 
-En las Administraciones Públicas, el principio de igualdad implica remover obstáculos, facilitar la conciliación, promover la presencia equilibrada en órganos de selección y eliminar la discriminación retributiva.
+---
 
-* **Informe de impacto de género (Art. 55):** La aprobación de convocatorias de pruebas selectivas para el acceso al empleo público deberá acompañarse de un informe de impacto de género, **salvo en casos de urgencia** (y sin perjuicio de la prohibición de discriminación).
-* **Órganos de selección (Art. 53):** Los tribunales y órganos de selección del personal de la AGE y sus organismos públicos responderán al principio de presencia equilibrada, *salvo por razones fundadas y objetivas, debidamente motivadas*.
-* **Unidades de Igualdad (Art. 77):** Órganos directivos que **en todos los Ministerios** asumen funciones de asesoramiento, fomento del conocimiento y recopilación de información estadística sobre igualdad.
+## 3. El acoso: sexual y por razón de sexo (art. 7)
 
-### 7. Tutela Judicial y Carga de la Prueba (Arts. 12 y 13)
+El art. 7 define dos figuras distintas:
 
-* **Legitimación:** En litigios sobre acoso sexual y acoso por razón de sexo, **la persona acosada es la única legitimada** para litigar. En el resto de casos (civil, social, contencioso), cualquier persona física o jurídica con interés legítimo.
-* **Inversión de la carga de la prueba (Art. 13):** Cuando existan alegaciones fundadas de discriminación, corresponderá a la persona demandada probar la ausencia de la misma y la proporcionalidad de sus medidas.
-  * **Excepción de test:** Esta regla **no se aplicará a los procesos penales**.
+- **Acoso sexual:** comportamientos verbales o físicos de naturaleza sexual que tienen como propósito o efecto atentar contra la dignidad y crear un entorno intimidatorio, hostil, degradante u ofensivo.  
+- **Acoso por razón de sexo:** comportamientos realizados en función del sexo de una persona que tienen igual propósito o efecto, aunque no tengan contenido sexual (por ejemplo, hostigar a una trabajadora por ser mujer en un entorno masculinizado).
+
+Ambos tipos de acoso se consideran siempre discriminatorios; los actos o cláusulas que los amparen son nulos y sin efecto.
+
+**Detalle importante:** la ley exige “propósito **o** efecto”; no es necesario demostrar intención explícita si el efecto objetivo vulnera la dignidad y crea un entorno hostil.
+
+---
+
+## 4. Presencia equilibrada y transversalidad en políticas públicas
+
+### 4.1. Composición equilibrada 40/60 (DA 1ª)
+
+La **Disposición Adicional Primera** define “presencia o composición equilibrada” como aquella situación en que, en el conjunto considerado, las personas de cada sexo **no superan el 60 % ni son menos del 40 %**.  
+
+No se exige paridad estricta 50/50; el margen 40–60 permite aplicar el principio en órganos colegiados, listas, tribunales y otros ámbitos donde la división exacta no es posible.
+
+Este principio se proyecta en:  
+- Nombramientos en órganos directivos de la Administración General del Estado.  
+- Órganos de selección y comisiones de valoración en empleo público.  
+- Consejos de administración de sociedades mercantiles públicas y otras estructuras de decisión.
+
+### 4.2. Transversalidad de la igualdad (art. 14 y 15)
+
+La LO 3/2007 establece la igualdad como criterio general de actuación de los poderes públicos: deben integrar el principio de igualdad de trato y oportunidades en todas las políticas económicas, laborales, sociales, culturales, etc.  
+
+El **principio de transversalidad** exige incorporar la perspectiva de género en la elaboración de normas, políticas y presupuestos, evaluando su impacto sobre mujeres y hombres.
+
+---
+
+## 5. Sociedad de la Información y TIC (art. 28)
+
+El **artículo 28** es especialmente relevante para perfiles TIC:
+
+1. Todos los programas públicos de desarrollo de la **Sociedad de la Información** deben integrar el principio de igualdad de oportunidades en su diseño y ejecución.  
+2. El Gobierno debe impulsar la incorporación plena de las mujeres a la Sociedad de la Información mediante programas de acceso y formación en tecnologías, con atención particular a colectivos en riesgo de exclusión y ámbito rural.  
+3. Se promoverán contenidos creados por mujeres en el ámbito digital.  
+4. En proyectos TIC sufragados total o parcialmente con dinero público debe garantizarse que el **lenguaje y contenidos no sean sexistas**.
+
+Para la oposición, es típico que pregunten por este último punto (lenguaje y contenidos no sexistas) y por la obligación de integrar igualdad en el diseño de programas TIC.
+
+---
+
+## 6. Contratos del sector público y igualdad (art. 33 LO 3/2007)
+
+La ley establece disposiciones específicas sobre **contratos de las Administraciones Públicas**:
+
+- Las Administraciones, a través de sus órganos de contratación, **pueden establecer condiciones especiales** en los contratos para promover la igualdad entre mujeres y hombres en el mercado de trabajo, conforme a la legislación de contratos del sector público.  
+- Estas condiciones se incorporan en los pliegos y pueden referirse, entre otros, a medidas de igualdad en la plantilla, prevención del acoso y conciliación.
+
+En preguntas de examen se cruza este artículo con el principio general de igualdad: las condiciones especiales de igualdad en contratos son potestativas pero orientadas a eliminar desigualdades y deben respetar la normativa de contratación pública.
+
+---
+
+## 7. Planes de igualdad en empresas (arts. 45–47)
+
+Los **planes de igualdad** son instrumentos que agrupan medidas para alcanzar la igualdad de trato y oportunidades en la empresa, tras realizar un diagnóstico de situación (selección, clasificación, promoción, condiciones de trabajo, auditoría salarial, prevención del acoso).
+
+Puntos clave para el test:
+
+- Son obligatorios para empresas de **50 o más personas trabajadoras**, tras la modificación introducida por el **Real Decreto‑ley 6/2019** (antes el umbral era de 250 trabajadores).  
+- También son obligatorios cuando lo exige el convenio colectivo o cuando la autoridad laboral lo impone en procedimientos sancionadores.  
+- Deben inscribirse en el **Registro de Planes de Igualdad de las Empresas**.  
+- Las empresas deben promover condiciones de trabajo que eviten el acoso y establecer procedimientos de prevención y canalización de denuncias.
+
+---
+
+## 8. Igualdad en el empleo público (Título V)
+
+El Título V de la LO 3/2007 regula el principio de igualdad en el empleo público y criterios de actuación de las Administraciones.
+
+### 8.1. Criterios de actuación (art. 51)
+
+Las Administraciones públicas deben:
+
+- Remover obstáculos que mantengan cualquier tipo de discriminación.  
+- Facilitar la **conciliación de vida personal, familiar y laboral** sin menoscabo de la promoción profesional.  
+- Fomentar formación en igualdad durante el acceso y la carrera profesional.  
+- Promover la **presencia equilibrada** en órganos de selección y valoración.  
+- Proteger frente al acoso sexual y por razón de sexo.  
+- Eliminar discriminación retributiva directa o indirecta por razón de sexo.  
+- Evaluar periódicamente la efectividad del principio de igualdad.
+
+### 8.2. Órganos de selección e informes de impacto de género
+
+Dos preceptos muy preguntables:
+
+- **Órganos de selección (art. 53):** tribunales y órganos de selección deben ajustarse al principio de composición equilibrada, salvo razones fundadas y objetivas, debidamente motivadas (con referencia a la horquilla 40–60).  
+- **Convocatorias e impacto de género (art. 55):** las convocatorias de pruebas selectivas deben ir acompañadas de un **informe de impacto de género**, **salvo en casos de urgencia**, sin perjuicio de la prohibición de discriminación.
+
+Además, se prevé la existencia de **Unidades de Igualdad** (art. 77) en todos los ministerios, con funciones de asesoramiento, impulso de estudios y recopilación de datos sobre igualdad en la Administración.
+
+---
+
+## 9. Tutela judicial y carga de la prueba (arts. 12–13)
+
+La ley regula la tutela judicial frente a discriminación por razón de sexo:
+
+- En casos de acoso sexual o acoso por razón de sexo, la persona acosada está especialmente protegida; las acciones pueden articularse en la jurisdicción social, civil o contencioso‑administrativa, según el contexto.  
+- **Inversión de la carga de la prueba (art. 13):** cuando existan indicios razonables de discriminación, corresponde a la parte demandada probar la ausencia de discriminación y la proporcionalidad de sus decisiones.
+
+Regla clave para el examen:  
+- La inversión de la carga de la prueba **no se aplica a la jurisdicción penal**, para preservar el principio de presunción de inocencia del art. 24 CE.
+
+---
 
 ## Conceptos que suelen preguntarse
 
-| Concepto | Clave literal de la norma | Distractor típico |
-| :--- | :--- | :--- |
-| **"Aparentemente neutro"** | Siempre define la Discriminación **Indirecta**. | "Es discriminación directa encubierta". |
-| **Embarazo / Maternidad** | Es Discriminación **Directa** por razón de sexo. | "Es discriminación indirecta o acción positiva". |
-| **Acoso Sexual vs. por razón de sexo** | El primero requiere "naturaleza sexual". El segundo se realiza "en función del sexo". | "Ambos exigen un requerimiento sexual explícito". |
-| **Presencia Equilibrada** | Mínimo **40 %**, Máximo **60 %**. | "Consiste en la paridad exacta del 50/50". |
-| **Carga de la Prueba** | Se invierte, **salvo en lo Penal**. | "Se invierte en todas las jurisdicciones sin excepción". |
-| **Planes de Igualdad** | Obligatorios a partir de **50** trabajadores. | "Obligatorios a partir de 250 trabajadores" (Umbral obsoleto de la ley original). |
+| Concepto                        | Clave literal/interpretativa                               | Distractor típico                                                 |
+| :------------------------------ | :---------------------------------------------------------- | :---------------------------------------------------------------- |
+| **“Aparentemente neutro”**     | Siempre define la **discriminación indirecta** (art. 6.2).  | “Es discriminación directa encubierta.”        |
+| **Embarazo / maternidad**      | Tratamiento desfavorable = **discriminación directa**.      | “Es discriminación indirecta o acción positiva.” |
+| **Acoso sexual vs. por sexo**  | Sexual: naturaleza sexual; por sexo: en función del sexo.   | “Ambos exigen requerimiento sexual explícito.” |
+| **Presencia equilibrada**      | Horquilla 40–60 (ningún sexo >60 %, ninguno <40 %).         | “Paridad exacta 50/50.”               |
+| **Carga de la prueba**         | Se invierte en litigios por discriminación, salvo en Penal. | “Se invierte en todas las jurisdicciones sin excepción.” |
+| **Planes de igualdad**         | Obligatorios desde 50 trabajadores (tras RDL 6/2019).        | “Obligatorios sólo a partir de 250 trabajadores.” |
+| **Contratos e igualdad**       | Condiciones especiales para promover igualdad (art. 33).    | “Los contratos no pueden incluir cláusulas de igualdad.” |
+| **Art. 28 Sociedad Info.**     | Lenguaje y contenidos no sexistas, igualdad en diseño TIC.  | “Obliga a contratar igual número de hombres y mujeres.” |
+
+---
 
 ## Posibles preguntas tipo test
 
-**Pregunta 1.** Según la Ley Orgánica 3/2007, de 22 de marzo, ¿cómo se define la situación en que una disposición, criterio o práctica aparentemente neutros pone a personas de un sexo en desventaja particular con respecto a personas del otro?
-A. Discriminación directa.
-B. Discriminación indirecta.
-C. Acoso por razón de sexo.
-D. Acción positiva.
-**Respuesta correcta: B.** (Literalidad del art. 6.2. La clave reside en la "apariencia de neutralidad" que oculta un impacto perjudicial en un género).
+**Pregunta 1.** Según la LO 3/2007, ¿cómo se denomina la situación en la que una disposición, criterio o práctica aparentemente neutros coloca a personas de un sexo en desventaja particular respecto del otro, salvo que exista una justificación objetiva y razonable?
 
-**Pregunta 2.** En virtud del artículo 7 de la Ley Orgánica 3/2007, cualquier comportamiento realizado en función del sexo de una persona, con el propósito o el efecto de atentar contra su dignidad y de crear un entorno intimidatorio, degradante u ofensivo, constituye:
-A. Acoso sexual.
-B. Acoso por razón de sexo.
-C. Discriminación por maternidad.
-D. Vulneración del principio de indemnidad.
-**Respuesta correcta: B.** (A diferencia del acoso sexual, que exige comportamientos "de naturaleza sexual", el acoso por razón de sexo se realiza "en función del sexo", sin requerir connotación libidinosa).
+A. Discriminación directa.  
+B. Discriminación indirecta.  
+C. Acoso por razón de sexo.  
+D. Acción positiva.  
 
-**Pregunta 3.** De acuerdo con la Disposición Adicional Primera de la Ley Orgánica 3/2007, ¿qué porcentajes definen la presencia o composición equilibrada en el nombramiento de órganos e instituciones colegiadas?
-A. Las personas de cada sexo deben representar exactamente el 50% de la composición.
-B. Las mujeres deben representar al menos el 50%, sin límite superior.
-C. Las personas de cada sexo no deben superar el sesenta por ciento ni ser menos del cuarenta por ciento.
-D. Las personas de cada sexo no deben superar el setenta por ciento ni ser menos del treinta por ciento.
-**Respuesta correcta: C.** (La presencia equilibrada se fija normativamente en la franja 40-60).
+**Respuesta correcta: B.** (Corresponde a la definición de discriminación indirecta del art. 6.2; la clave está en la aparente neutralidad y la desventaja particular).
 
-**Pregunta 4.** Según las previsiones de la Ley Orgánica 3/2007 sobre garantías jurídicas y carga de la prueba, ¿en qué jurisdicción NO se aplica la inversión de la carga de la prueba en procedimientos sobre discriminación por razón de sexo?
-A. En la jurisdicción civil.
-B. En la jurisdicción social.
-C. En la jurisdicción contencioso-administrativa.
-D. En la jurisdicción penal.
-**Respuesta correcta: D.** (El art. 13 excluye expresamente a la jurisdicción penal para salvaguardar el derecho fundamental a la presunción de inocencia, art. 24 CE).
+---
 
-**Pregunta 5.** De acuerdo con el artículo 28 de la LO 3/2007, en relación con la Sociedad de la Información, los proyectos en este ámbito sufragados total o parcialmente con dinero público deben garantizar:
-A. Que su ejecución recaiga al 100% en equipos paritarios.
-B. Que el lenguaje y los contenidos no sean sexistas.
-C. Que se diseñen exclusivamente algoritmos de código abierto.
-D. La contratación obligatoria del mismo número de hombres y mujeres ingenieros.
-**Respuesta correcta: B.** (Garantizar que el lenguaje y contenidos no sean sexistas es un mandato literal del art. 28.3).
+**Pregunta 2.** En la LO 3/2007, cualquier comportamiento realizado en función del sexo de una persona, que atenta contra su dignidad y crea un entorno intimidatorio, degradante u ofensivo, sin necesidad de contenido sexual, se considera:
 
-**Pregunta 6.** En relación con el acceso al empleo público, las convocatorias de pruebas selectivas deberán ir acompañadas de un informe de impacto de género:
-A. En todos los casos sin excepción.
-B. Salvo en casos de urgencia, y sin perjuicio de la prohibición de discriminación por razón de sexo.
-C. Solo para las convocatorias de cuerpos directivos (A1 y A2).
-D. Únicamente si el tribunal calificador no cuenta con presencia equilibrada.
-**Respuesta correcta: B.** (La salvedad por casos de urgencia está recogida expresamente en el artículo 55).
+A. Acoso sexual.  
+B. Acoso por razón de sexo.  
+C. Discriminación por maternidad.  
+D. Vulneración del principio de indemnidad.  
 
-## Normativa o fuentes relacionadas
+**Respuesta correcta: B.** (El acoso por razón de sexo se define por el vínculo con el sexo de la persona, no por la naturaleza sexual de la conducta).
 
-* **Ley Orgánica 3/2007, de 22 de marzo**, para la igualdad efectiva de mujeres y hombres. (Fuente troncal y de literalidad de examen).
-* **Constitución Española de 1978:** Art. 9.2 (Obligación de promover condiciones e igualdad efectiva) y Art. 14 (Principio de igualdad formal y no discriminación).
-* **Real Decreto-ley 6/2019, de 1 de marzo**, de medidas urgentes para garantía de la igualdad de trato y de oportunidades en el empleo y la ocupación. Relevante por la modificación del umbral obligatorio de los planes de igualdad de 250 a 50 trabajadores.
+---
 
-## Dudas o puntos pendientes
+**Pregunta 3.** De acuerdo con la Disposición Adicional Primera de la LO 3/2007, ¿qué porcentajes definen la presencia equilibrada en la composición de órganos colegiados?
 
-* **Dolo vs. Efecto en el acoso:** Es importante notar en el estudio que la definición de acoso (art. 7) incluye la disyuntiva "con el propósito **O** el efecto". Esto significa que no se requiere intencionalidad maliciosa directa por parte del sujeto activo; si el *efecto objetivo* de la conducta vulnera la dignidad y crea un entorno hostil, se tipifica como acoso legalmente.
-* **Umbral de planes de igualdad:** Si bien la redacción original de la LO 3/2007 establecía la obligatoriedad de los planes de igualdad para empresas de más de 250 trabajadores, este artículo fue modificado por el RDL 6/2019. En un test actualizado a 2026, la cifra normativamente correcta en vigor es **50 personas trabajadoras**.
+A. Cada sexo debe representar exactamente el 50 % de la composición.  
+B. Las mujeres deben representar al menos el 50 %, sin límite superior.  
+C. Ningún sexo debe superar el 60 % ni ser inferior al 40 %.  
+D. Ningún sexo debe superar el 70 % ni ser inferior al 30 %.  
+
+**Respuesta correcta: C.** (La presencia equilibrada se fija normativamente en la franja 40–60).
+
+---
+
+**Pregunta 4.** En relación con la carga de la prueba en procedimientos sobre discriminación por razón de sexo, ¿en qué jurisdicción NO se aplica la inversión de la carga de la prueba prevista en el art. 13 LO 3/2007?
+
+A. Jurisdicción civil.  
+B. Jurisdicción social.  
+C. Jurisdicción contencioso‑administrativa.  
+D. Jurisdicción penal.  
+
+**Respuesta correcta: D.** (La ley excluye expresamente los procesos penales para preservar la presunción de inocencia).
+
+---
+
+**Pregunta 5.** Según el art. 28 LO 3/2007, en los proyectos del ámbito de las tecnologías de la información sufragados total o parcialmente con dinero público debe garantizarse:
+
+A. Que todos los equipos sean paritarios (50 % hombres, 50 % mujeres).  
+B. Que el lenguaje y los contenidos no sean sexistas.  
+C. Que se usen exclusivamente algoritmos de código abierto.  
+D. La contratación obligatoria del mismo número de hombres y mujeres ingenieros.  
+
+**Respuesta correcta: B.** (Es un mandato literal del art. 28.4 para proyectos TIC sufragados con dinero público).
+
+---
+
+**Pregunta 6.** En relación con las convocatorias de pruebas selectivas de acceso al empleo público, la LO 3/2007 establece que:
+
+A. Deben ir siempre acompañadas de un informe de impacto de género, sin excepción.  
+B. Deben ir acompañadas de un informe de impacto de género, salvo en casos de urgencia, sin perjuicio de la prohibición de discriminación.  
+C. Solo requieren informe de impacto de género cuando el cuerpo al que se accede sea de nivel A1.  
+D. Solo requieren informe de impacto de género si el tribunal carece de presencia equilibrada.  
+
+**Respuesta correcta: B.** (La salvedad por casos de urgencia está recogida en el art. 55 LO 3/2007).
+
+---
+
+**Pregunta 7.** Según la LO 3/2007 y su actualización mediante RDL 6/2019, los planes de igualdad son obligatorios en las empresas privadas cuando:
+
+A. Tienen más de 10 personas trabajadoras.  
+B. Tienen más de 50 personas trabajadoras.  
+C. Tienen más de 250 personas trabajadoras.  
+D. Tienen cualquier número de trabajadores pero factura superior a cierto umbral.  
+
+**Respuesta correcta: B.** (El umbral actual en vigor es 50 personas trabajadoras, frente a las 250 del texto original).
+
+---
+
+**Pregunta 8.** En cuanto a los contratos del sector público, la LO 3/2007 dispone que las Administraciones pueden:
+
+A. Establecer condiciones especiales en los contratos para promover la igualdad entre mujeres y hombres, conforme a la legislación de contratos del sector público.  
+B. Reservar contratos sólo a empresas con mayoría absoluta de mujeres en plantilla.  
+C. Obligar a que todos los licitadores presenten planes de igualdad, con independencia de su tamaño.  
+D. Exigir en todo caso paridad estricta en la composición del consejo de administración de las empresas licitadoras.  
+
+**Respuesta correcta: A.** (El art. 33 LO 3/2007 habilita la inclusión de condiciones especiales orientadas a promover la igualdad en la contratación pública).
+
+---
+
+## Normativa y fuentes relacionadas
+
+- **Ley Orgánica 3/2007, de 22 de marzo**, para la igualdad efectiva de mujeres y hombres (texto consolidado).  
+- **Constitución Española de 1978:** arts. 9.2 (igualdad material) y 14 (igualdad formal y no discriminación).  
+- **Real Decreto‑ley 6/2019**, de 1 de marzo, de medidas urgentes para garantía de la igualdad de trato y de oportunidades en el empleo y la ocupación (modifica el umbral de los planes de igualdad).  
+- **Guías ministeriales sobre LO 3/2007**, especialmente capítulos de contratos, subvenciones y empleo público.  
+- Doctrina y jurisprudencia sobre **presencia equilibrada 40–60** en órganos colegiados (por ejemplo, STS sobre colegios notariales).
