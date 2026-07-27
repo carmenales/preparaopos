@@ -449,6 +449,7 @@ tr:nth-child(even) td {
     background: #1d4ed8;
 }
 
+/* --- ÍNDICE DE NAVEGACIÓN ANIDADO (TOC) --- */
 .note-toc-container {
     margin-top: 24px;
     padding-top: 20px;
@@ -469,97 +470,80 @@ tr:nth-child(even) td {
     color: #111827;
 }
 
-.note-toc {
-    margin-top: 12px;
-}
-
-.note-toc ul {
+.nested-toc-list {
     list-style: none;
-    padding: 0;
-    margin: 0;
+    padding-left: 16px; /* Indentación para subtítulos */
+    margin: 4px 0;
 }
 
-.note-toc li {
+/* El primer nivel no tiene indentación */
+.note-toc > .nested-toc-list {
+    padding-left: 0;
+}
+
+.toc-item {
     margin-bottom: 8px;
 }
 
-.note-toc a {
+.toc-summary {
+    display: flex;
+    align-items: flex-start;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+/* Ocultar flecha nativa del navegador */
+.toc-summary::-webkit-details-marker {
+    display: none;
+}
+
+/* Flecha personalizada */
+.toc-summary::before {
+    content: '▼';
+    display: inline-block;
+    font-size: 0.65em;
+    margin-right: 8px;
+    margin-top: 6px;
+    color: #9ca3af;
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Rotar flecha si está cerrado */
+.toc-details:not([open]) > .toc-summary::before {
+    transform: rotate(-90deg);
+}
+
+.toc-link-wrapper {
+    display: flex;
+    align-items: flex-start;
+}
+
+/* Espaciador para alinear elementos que no tienen hijos (no tienen flecha) */
+.toc-link-wrapper::before {
+    content: '';
+    display: inline-block;
+    width: 15px;
+    margin-right: 8px;
+}
+
+.toc-item a {
     color: #4b5563;
     text-decoration: none;
     font-size: 14.5px;
-    display: block;
     line-height: 1.4;
+    display: inline-block;
+    flex: 1;
 }
 
-.note-toc a:hover {
+.toc-item a:hover {
     color: #2457c5;
     text-decoration: underline;
 }
 
-.toc-level-2 { margin-left: 0; font-weight: 600; color: #111827; }
-.toc-level-3 { margin-left: 16px; }
-.toc-level-4 { margin-left: 32px; font-size: 13.5px; }
-
-/* Enlaces Ancla en los Encabezados */
-.heading-anchor {
-    color: #9ca3af;
-    margin-left: 8px;
-    opacity: 0;
-    text-decoration: none;
-    transition: opacity 0.2s;
-    font-weight: normal;
-}
-
-.note-content h2:hover .heading-anchor,
-.note-content h3:hover .heading-anchor,
-.note-content h4:hover .heading-anchor {
-    opacity: 1;
-}
-
-.desktop-only { display: block; }
-.mobile-only { display: none; }
-
-@media (max-width: 900px) {
-    .desktop-only { display: none; }
-    .mobile-only { display: block; }
-}
-
-/* Estilo para el título colapsable en escritorio */
-.toc-desktop-summary {
-    display: block; /* Elimina el comportamiento por defecto para controlar la flecha */
-    font-size: 1.3rem;
-    font-weight: 700;
-    cursor: pointer;
+/* Negrita para el nivel principal H2 */
+.toc-item.level-2 > .toc-summary > a,
+.toc-item.level-2 > .toc-link-wrapper > a {
+    font-weight: 600;
     color: #111827;
-    outline: none;
-    padding-bottom: 6px;
-    user-select: none; /* Evita que el texto se resalte en azul al hacer doble clic */
-}
-
-.toc-desktop-summary:hover {
-    color: #2457c5;
-}
-
-/* Ocultar la flecha por defecto del navegador (Safari/Chrome/Firefox) */
-.toc-desktop-summary::-webkit-details-marker {
-    display: none;
-}
-
-/* Flecha personalizada para mejor UX */
-.toc-desktop-summary::before {
-    content: '▼ ';
-    display: inline-block;
-    font-size: 0.8em;
-    margin-right: 8px;
-    transition: transform 0.2s ease-in-out;
-}
-
-/* Rotar la flecha cuando el índice está cerrado */
-details.note-toc-container:not([open]) .toc-desktop-summary::before {
-    transform: rotate(-90deg);
-}
-
-/* Forzar ocultación del contenido cuando está cerrado (Fallback de seguridad) */
-details.note-toc-container:not([open]) nav.note-toc {
-    display: none !important;
 }
