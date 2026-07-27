@@ -104,8 +104,7 @@ def parse_frontmatter(file_path: Path) -> tuple[dict[str, Any], str]:
             else:
                 metadata[key] = parse_scalar(value)
 
-    # Normalizar arrays específicos según Issue #27
-    for array_field in ["processes", "profiles", "shared_with", "tags"]:
+    for array_field in ["processes", "profiles", "shared_with", "tags", "topics"]:
         metadata[array_field] = normalize_array(metadata.get(array_field))
 
     # Derivar ID si falta
@@ -124,7 +123,6 @@ def extract_headings(body: str) -> list[dict[str, Any]]:
         if match:
             level = len(match.group(1))
             text = match.group(2).strip()
-            # Limpiar posible markdown básico del texto para el anchor (ej. negritas)
             clean_text = re.sub(r'[*_`]', '', text)
             anchor = slugify(clean_text)
             headings.append({"level": level, "text": clean_text, "anchor": anchor})
@@ -164,6 +162,14 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
         title = metadata.get("title") or path.stem.replace("-", " ").title()
         note_id = metadata["id"]
 
+        # Reconstruir el objeto 'practice' a partir de las claves aplanadas por el parser simple
+        practice_obj = {}
+        if metadata.get("topics"):
+            practice_obj = {
+                "mode": metadata.get("mode", "thematic"),
+                "topics": metadata.get("topics")
+            }
+
         notes.append({
             "id": note_id,
             "title": title,
@@ -174,6 +180,7 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
             "profiles": metadata.get("profiles", []),
             "shared_with": metadata.get("shared_with", []),
             "tags": metadata.get("tags", []),
+            "practice": practice_obj,
             "status": metadata.get("status", ""),
             "headings": extract_headings(body)
         })
