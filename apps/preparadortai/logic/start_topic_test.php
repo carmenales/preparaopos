@@ -2,8 +2,8 @@
 require_once __DIR__ . '/../includes/config.php';
 require_once __DIR__ . '/../includes/question_search.php';
 
-function topic_test_redirect_error($message, $queries = []) {
-    $params = ['error' => $message];
+function topic_test_redirect_error($message, $queries = [], $extraParams = []) {
+    $params = array_merge(['error' => $message], $extraParams);
 
     if (!empty($queries)) {
         $params['topics'] = $queries;
@@ -39,7 +39,7 @@ function topic_test_insert_session($link, $sessionId, $queries, $correctionMode,
         throw new RuntimeException('No se ha podido preparar el registro de la sesión.');
     }
 
-    mysqli_stmt_bind_param($stmt, 'sssisss', $sessionId, $title, $correctionMode, $totalQuestions, $sourceApp, $sourceNote);
+    mysqli_stmt_bind_param($stmt, 'sssiss', $sessionId, $title, $correctionMode, $totalQuestions, $sourceApp, $sourceNote);
 
     if (!mysqli_stmt_execute($stmt)) {
         $error = mysqli_stmt_error($stmt);
@@ -123,37 +123,76 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && empty($topics)) {
 $queries = topic_search_normalize_queries($topics, $_POST['q'] ?? '');
 $correctionMode = ($_POST['correccion'] ?? '') === 'final' ? 'final' : 'inmediata';
 $rawIds = $_POST['question_ids'] ?? [];
+$selectionMode = $_POST['selection_mode'] ?? 'selected';
+$category = trim((string)($_POST['categoria'] ?? ''));
+$block = trim((string)($_POST['bloque'] ?? ''));
+$topic = trim((string)($_POST['tema'] ?? ''));
 
 $sourceApp = $_POST['source_app'] ?? null;
-if ($sourceApp === '') $sourceApp = null;
+if ($sourceApp === '') {
+    $sourceApp = null;
+}
 
 $sourceNote = $_POST['source_note'] ?? null;
-if ($sourceNote === '') $sourceNote = null;
+if ($sourceNote === '') {
+    $sourceNote = null;
+}
+
+$redirectParams = [
+    'categoria' => $category,
+    'bloque' => $block,
+    'tema' => $topic,
+];
 
 if (!is_array($rawIds)) {
-    topic_test_redirect_error('La selección de preguntas no es válida.', $queries);
+    topic_test_redirect_error('La selección de preguntas no es válida.', $queries, $redirectParams);
 }
 
 $ids = [];
 
-foreach ($rawIds as $rawId) {
-    $value = filter_var($rawId, FILTER_VALIDATE_INT, [
-        'options' => ['min_range' => 1],
-    ]);
+if ($selectionMode === 'all_results') {
+    try {
+        $rows = topic_search_questions($link, [
+            'topics' => $queries,
+            'categoria' => $category,
+            'bloque' => $block,
+            'tema' => $topic,
+        ], 500);
+    } catch (RuntimeException $exception) {
+        topic_test_redirect_error($exception->getMessage(), $queries, $redirectParams);
+    }
 
-    if ($value !== false) {
-        $ids[(int)$value] = (int)$value;
+    foreach ($rows as $row) {
+        $questionId = (int)($row['id'] ?? 0);
+
+        if ($questionId > 0) {
+            $ids[$questionId] = $questionId;
+        }
+    }
+
+    if (empty($ids)) {
+        topic_test_redirect_error('No hay preguntas disponibles con la búsqueda actual.', $queries, $redirectParams);
+    }
+} else {
+    foreach ($rawIds as $rawId) {
+        $value = filter_var($rawId, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+
+        if ($value !== false) {
+            $ids[(int)$value] = (int)$value;
+        }
+    }
+
+    if (empty($ids)) {
+        topic_test_redirect_error('Selecciona al menos una pregunta.', $queries, $redirectParams);
     }
 }
 
 $ids = array_values($ids);
 
-if (empty($ids)) {
-    topic_test_redirect_error('Selecciona al menos una pregunta.', $queries);
-}
-
 if (count($ids) > 500) {
-    topic_test_redirect_error('La selección supera el máximo permitido.', $queries);
+    topic_test_redirect_error('La selección supera el máximo permitido.', $queries, $redirectParams);
 }
 
 $idSql = implode(',', array_map('intval', $ids));
@@ -170,7 +209,7 @@ if ($result) {
 $ids = array_values(array_intersect($ids, array_values($existing)));
 
 if (empty($ids)) {
-    topic_test_redirect_error('Las preguntas seleccionadas ya no están disponibles.', $queries);
+    topic_test_redirect_error('Las preguntas seleccionadas ya no están disponibles.', $queries, $redirectParams);
 }
 
 $maxQuestions = filter_var($_POST['max_questions'] ?? count($ids), FILTER_VALIDATE_INT, [
@@ -195,13 +234,13 @@ try {
         $queries,
         $correctionMode,
         $ids,
-        $sourceApp, 
-        $sourceNote 
+        $sourceApp,
+        $sourceNote
     );
     mysqli_commit($link);
 } catch (Throwable $exception) {
     mysqli_rollback($link);
-    topic_test_redirect_error($exception->getMessage(), $queries);
+    topic_test_redirect_error($exception->getMessage(), $queries, $redirectParams);
 }
 
 $params = [

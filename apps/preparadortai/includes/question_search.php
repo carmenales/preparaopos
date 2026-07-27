@@ -40,7 +40,8 @@ function topic_search_normalize_queries($rawQueries, $legacyQuery = '', $maxQuer
     $queries = [];
 
     foreach ($rawQueries as $rawQuery) {
-        $query = topic_search_limit_text($rawQuery);
+        $query = preg_replace('/\s+/u', ' ', topic_search_limit_text($rawQuery));
+        $query = trim((string)$query);
 
         if ($query === '') {
             continue;
@@ -61,7 +62,8 @@ function topic_search_normalize_queries($rawQueries, $legacyQuery = '', $maxQuer
 }
 
 function topic_search_normalize_terms($query, $maxTerms = 8) {
-    $query = topic_search_limit_text($query);
+    $query = preg_replace('/\s+/u', ' ', topic_search_limit_text($query));
+    $query = trim((string)$query);
 
     if ($query === '') {
         return [];
@@ -130,7 +132,7 @@ function topic_search_categories($link) {
     return $categories;
 }
 
-function topic_search_questions($link, $filters, $limit = 500) {
+function topic_search_build_filters(array $filters): array {
     $queries = topic_search_normalize_queries(
         $filters['topics'] ?? [],
         $filters['q'] ?? ''
@@ -189,29 +191,42 @@ function topic_search_questions($link, $filters, $limit = 500) {
         $queryGroups[] = '(' . implode(' AND ', $termClauses) . ')';
     }
 
-    $whereSql = empty($where) ? '' : 'WHERE ' . implode(' AND ', $where);
-    $havingSql = empty($queryGroups) ? '' : 'HAVING (' . implode(' OR ', $queryGroups) . ')';
+    return [
+        'queries' => $queries,
+        'where_sql' => empty($where) ? '' : 'WHERE ' . implode(' AND ', $where),
+        'having_sql' => empty($queryGroups) ? '' : 'HAVING (' . implode(' OR ', $queryGroups) . ')',
+        'types' => $types,
+        'params' => $params,
+    ];
+}
+
+function topic_search_questions($link, $filters, $limit = 500) {
+    $built = topic_search_build_filters($filters);
     $limit = max(1, min((int)$limit, 500));
 
     $sql = "
         SELECT
             p.id,
             p.pregunta,
+            p.respuesta,
+            p.justif,
             p.categoria,
             p.bloque,
             p.tema
         FROM ptype p
         LEFT JOIN incorrectas i
             ON i.id_pregunta = p.id
-        $whereSql
+        {$built['where_sql']}
         GROUP BY
             p.id,
             p.pregunta,
+            p.respuesta,
+            p.justif,
             p.categoria,
             p.bloque,
             p.tema
-        $havingSql
-        ORDER BY p.categoria ASC, p.id DESC
+        {$built['having_sql']}
+        ORDER BY p.categoria ASC, p.bloque ASC, p.tema ASC, p.id DESC
         LIMIT $limit
     ";
 
@@ -221,7 +236,8 @@ function topic_search_questions($link, $filters, $limit = 500) {
         throw new RuntimeException('No se ha podido preparar la búsqueda temática.');
     }
 
-    topic_search_bind_params($stmt, $types, $params);
+    $params = $built['params'];
+    topic_search_bind_params($stmt, $built['types'], $params);
 
     if (!mysqli_stmt_execute($stmt)) {
         $error = mysqli_stmt_error($stmt);
@@ -239,4 +255,43 @@ function topic_search_questions($link, $filters, $limit = 500) {
     mysqli_stmt_close($stmt);
 
     return $rows;
+}
+
+function topic_search_count_questions($link, $filters): int
+{
+    $built = topic_search_build_filters($filters);
+
+    $sql = "
+        SELECT COUNT(*) AS total
+        FROM (
+            SELECT p.id
+            FROM ptype p
+            LEFT JOIN incorrectas i
+                ON i.id_pregunta = p.id
+            {$built['where_sql']}
+            GROUP BY p.id
+            {$built['having_sql']}
+        ) results
+    ";
+
+    $stmt = mysqli_prepare($link, $sql);
+
+    if (!$stmt) {
+        throw new RuntimeException('No se ha podido preparar el conteo de la búsqueda.');
+    }
+
+    $params = $built['params'];
+    topic_search_bind_params($stmt, $built['types'], $params);
+
+    if (!mysqli_stmt_execute($stmt)) {
+        $error = mysqli_stmt_error($stmt);
+        mysqli_stmt_close($stmt);
+        throw new RuntimeException('No se ha podido ejecutar el conteo de la búsqueda: ' . $error);
+    }
+
+    $result = mysqli_stmt_get_result($stmt);
+    $row = mysqli_fetch_assoc($result);
+    mysqli_stmt_close($stmt);
+
+    return (int)($row['total'] ?? 0);
 }
