@@ -21,6 +21,16 @@ if (!$note) {
     }
 }
 
+$topicQueries = [];
+
+if (!empty($note['official_topic'])) {
+    if (preg_match('/Tema\s+\d+\.\s*(.+)$/i', $note['official_topic'], $matches)) {
+        $topicQueries[] = trim($matches[1]);
+    } else {
+        $topicQueries[] = trim($note['official_topic']);
+    }
+}
+
 $renderedContent = '';
 if ($markdown !== null) {
     $renderedContent = sa_render_markdown($markdown);
@@ -28,6 +38,62 @@ if ($markdown !== null) {
 }
 
 $headings = $note['headings'] ?? [];
+
+// --- LÓGICA DE TOC ANIDADO ---
+function build_nested_toc(array $headings) {
+    $tree = [];
+    $stack = [];
+    foreach ($headings as $h) {
+        if ($h['level'] < 2 || $h['level'] > 4) continue;
+        $node = ['heading' => $h, 'children' => []];
+        
+        while (!empty($stack) && $stack[count($stack)-1]['heading']['level'] >= $h['level']) {
+            array_pop($stack);
+        }
+        
+        if (empty($stack)) {
+            $tree[] = &$node;
+        } else {
+            $stack[count($stack)-1]['children'][] = &$node;
+        }
+        
+        $stack[] = &$node;
+        unset($node);
+    }
+    return $tree;
+}
+
+function render_nested_toc(array $tree) {
+    if (empty($tree)) return '';
+    $html = '<ul class="nested-toc-list">';
+    foreach ($tree as $node) {
+        $h = $node['heading'];
+        $children = $node['children'];
+        $html .= '<li class="toc-item level-' . $h['level'] . '">';
+        
+        if (!empty($children)) {
+            $html .= '<details open class="toc-details">';
+            $html .= '<summary class="toc-summary">';
+            // El stopPropagation evita que al pulsar el enlace se cierre la carpeta
+            $html .= '<a href="#' . htmlspecialchars($h['anchor']) . '" onclick="event.stopPropagation()">' . sa_safe_text($h['text']) . '</a>';
+            $html .= '</summary>';
+            $html .= render_nested_toc($children);
+            $html .= '</details>';
+        } else {
+            $html .= '<div class="toc-link-wrapper">';
+            $html .= '<a href="#' . htmlspecialchars($h['anchor']) . '">' . sa_safe_text($h['text']) . '</a>';
+            $html .= '</div>';
+        }
+        
+        $html .= '</li>';
+    }
+    $html .= '</ul>';
+    return $html;
+}
+
+$nestedTocTree = build_nested_toc($headings);
+$nestedTocHtml = render_nested_toc($nestedTocTree);
+// ---------------------------------
 
 $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
@@ -37,27 +103,21 @@ require __DIR__ . '/includes/header.php';
     <div class="alert"><?php echo sa_safe_text($error); ?></div>
     <p><a class="button-secondary" href="index.php">Volver al listado</a></p>
 <?php else: ?>
-    <div class="note-layout">
-        
-        <div class="mobile-only">
-            <?php if (!empty($headings)): ?>
-                <details class="note-toc-details">
-                    <summary>Índice del documento</summary>
-                    <nav class="note-toc">
-                        <ul>
-                            <?php foreach ($headings as $h): ?>
-                                <?php if ($h['level'] >= 2 && $h['level'] <= 4): ?>
-                                    <li class="toc-level-<?= $h['level'] ?>">
-                                        <a href="#<?= htmlspecialchars($h['anchor']) ?>"><?= sa_safe_text($h['text']) ?></a>
-                                    </li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </ul>
-                    </nav>
-                </details>
-            <?php endif; ?>
-        </div>
 
+    <!-- CORRECCIÓN: El bloque móvil va FUERA y ENCIMA de la cuadrícula principal -->
+    <div class="mobile-only">
+        <?php if (!empty($nestedTocTree)): ?>
+            <details class="note-toc-details">
+                <summary>Índice del documento</summary>
+                <nav class="note-toc">
+                    <?php echo $nestedTocHtml; ?>
+                </nav>
+            </details>
+        <?php endif; ?>
+    </div>
+
+    <!-- Contenedor Grid estricto de 2 columnas -->
+    <div class="note-layout">
         <aside class="note-sidebar">
             <a class="button-secondary" href="index.php">← Volver</a>
 
@@ -81,21 +141,13 @@ require __DIR__ . '/includes/header.php';
                 </div>
             <?php endif; ?>
 
-            <?php if (!empty($headings)): ?>
-                <details class="note-toc-container desktop-only" open>
-                    <summary class="toc-desktop-summary">Índice</summary>
+            <?php if (!empty($nestedTocTree)): ?>
+                <div class="note-toc-container desktop-only">
+                    <h3 style="margin-top: 0; margin-bottom: 12px;">Índice</h3>
                     <nav class="note-toc">
-                        <ul>
-                            <?php foreach ($headings as $h): ?>
-                                <?php if ($h['level'] >= 2 && $h['level'] <= 4): ?>
-                                    <li class="toc-level-<?= $h['level'] ?>">
-                                        <a href="#<?= htmlspecialchars($h['anchor']) ?>"><?= sa_safe_text($h['text']) ?></a>
-                                    </li>
-                                <?php endif; ?>
-                            <?php endforeach; ?>
-                        </ul>
+                        <?php echo $nestedTocHtml; ?>
                     </nav>
-                </details>
+                </div>
             <?php endif; ?>
 
             <div class="note-meta-container" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">

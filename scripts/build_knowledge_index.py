@@ -162,7 +162,6 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
         title = metadata.get("title") or path.stem.replace("-", " ").title()
         note_id = metadata["id"]
 
-        # Reconstruir el objeto 'practice' a partir de las claves aplanadas por el parser simple
         practice_obj = {}
         if metadata.get("topics"):
             practice_obj = {
@@ -185,10 +184,8 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
             "headings": extract_headings(body)
         })
 
-    # Ordenar por title
     notes.sort(key=lambda x: x["title"])
 
-    # Generar estructura final recomendada
     output_data = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "notes": notes
