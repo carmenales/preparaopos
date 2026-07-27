@@ -13,7 +13,7 @@ function topic_test_redirect_error($message, $queries = []) {
     exit;
 }
 
-function topic_test_insert_session($link, $sessionId, $queries, $correctionMode, $questionIds) {
+function topic_test_insert_session($link, $sessionId, $queries, $correctionMode, $questionIds, $sourceApp = null, $sourceNote = null) {
     $title = empty($queries)
         ? 'Práctica temática'
         : 'Práctica temática: ' . implode(' + ', $queries);
@@ -28,9 +28,9 @@ function topic_test_insert_session($link, $sessionId, $queries, $correctionMode,
 
     $sql = "
         INSERT INTO test_sessions
-            (id, mode, title, correction_mode, total_questions)
+            (id, mode, title, correction_mode, total_questions, source_app, source_note)
         VALUES
-            (?, 'tematico', ?, ?, ?)
+            (?, 'tematico', ?, ?, ?, ?, ?)
     ";
 
     $stmt = mysqli_prepare($link, $sql);
@@ -39,7 +39,7 @@ function topic_test_insert_session($link, $sessionId, $queries, $correctionMode,
         throw new RuntimeException('No se ha podido preparar el registro de la sesión.');
     }
 
-    mysqli_stmt_bind_param($stmt, 'sssi', $sessionId, $title, $correctionMode, $totalQuestions);
+    mysqli_stmt_bind_param($stmt, 'sssisss', $sessionId, $title, $correctionMode, $totalQuestions, $sourceApp, $sourceNote);
 
     if (!mysqli_stmt_execute($stmt)) {
         $error = mysqli_stmt_error($stmt);
@@ -124,6 +124,12 @@ $queries = topic_search_normalize_queries($topics, $_POST['q'] ?? '');
 $correctionMode = ($_POST['correccion'] ?? '') === 'final' ? 'final' : 'inmediata';
 $rawIds = $_POST['question_ids'] ?? [];
 
+$sourceApp = $_POST['source_app'] ?? null;
+if ($sourceApp === '') $sourceApp = null;
+
+$sourceNote = $_POST['source_note'] ?? null;
+if ($sourceNote === '') $sourceNote = null;
+
 if (!is_array($rawIds)) {
     topic_test_redirect_error('La selección de preguntas no es válida.', $queries);
 }
@@ -188,7 +194,9 @@ try {
         $testSessionId,
         $queries,
         $correctionMode,
-        $ids
+        $ids,
+        $sourceApp, 
+        $sourceNote 
     );
     mysqli_commit($link);
 } catch (Throwable $exception) {

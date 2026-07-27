@@ -10,6 +10,8 @@ $category = trim((string)($_GET['categoria'] ?? ''));
 $block = trim((string)($_GET['bloque'] ?? ''));
 $topic = trim((string)($_GET['tema'] ?? ''));
 $error = trim((string)($_GET['error'] ?? ''));
+$sourceApp = trim((string)($_GET['source'] ?? ''));
+$sourceNote = trim((string)($_GET['note'] ?? ''));
 $autoSearch = isset($_GET['autosearch']);
 
 $filters = [
@@ -75,6 +77,15 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 <?php if ($searchError !== null): ?>
     <div class="alert alert-danger shadow-sm border-0">
         <?php echo topic_search_safe_text($searchError); ?>
+    </div>
+<?php endif; ?>
+
+<?php if ($sourceApp === 'studyassistant'): ?>
+    <div class="alert alert-info shadow-sm border-0 mb-4">
+        <i class="fa-solid fa-graduation-cap"></i> Práctica iniciada desde <strong>Study Assistant</strong>.
+        <?php if ($sourceNote !== ''): ?>
+            <br><small>Apunte de origen: <code><?php echo topic_search_safe_text($sourceNote); ?></code></small>
+        <?php endif; ?>
     </div>
 <?php endif; ?>
 
@@ -164,6 +175,9 @@ $defaultQuestionCount = min(20, max(1, count($results)));
         <?php foreach ($queries as $query): ?>
             <input type="hidden" name="topics[]" value="<?php echo topic_search_safe_text($query); ?>">
         <?php endforeach; ?>
+
+        <input type="hidden" name="source_app" value="<?php echo topic_search_safe_text($sourceApp); ?>">
+        <input type="hidden" name="source_note" value="<?php echo topic_search_safe_text($sourceNote); ?>">
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
