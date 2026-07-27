@@ -1,22 +1,27 @@
 <?php
 
-function sa_project_base_path() {
+function sa_project_base_path()
+{
     return realpath(__DIR__ . '/../../..');
 }
 
-function sa_app_base_path() {
+function sa_app_base_path()
+{
     return realpath(__DIR__ . '/..');
 }
 
-function sa_index_path() {
+function sa_index_path()
+{
     return sa_app_base_path() . '/data/knowledge_index.json';
 }
 
-function sa_safe_text($value) {
+function sa_safe_text($value)
+{
     return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-function sa_load_index() {
+function sa_load_index()
+{
     $indexPath = sa_index_path();
 
     if (!is_file($indexPath)) {
@@ -33,7 +38,8 @@ function sa_load_index() {
     return [];
 }
 
-function sa_find_note_by_id($notes, $id) {
+function sa_find_note_by_id(array $notes, $id)
+{
     foreach ($notes as $note) {
         if ((string)($note['id'] ?? '') === (string)$id) {
             return $note;
@@ -43,29 +49,31 @@ function sa_find_note_by_id($notes, $id) {
     return null;
 }
 
-function sa_note_absolute_path($note) {
+function sa_note_absolute_path(array $note)
+{
     $projectBasePath = sa_project_base_path();
-    $path = $note['path'] ?? '';
+    $path = $note['path'] ?? null;
 
-    if ($projectBasePath === false || $path === '') {
+    if ($projectBasePath === false || !$path) {
         return null;
     }
 
     $absolutePath = realpath($projectBasePath . '/' . $path);
-    $knowledgeBasePath  = realpath($projectBasePath . '/knowledge');
+    $knowledgeBasePath = realpath($projectBasePath . '/knowledge');
 
-    if ($absolutePath === false || $knowledgeBasePath  === false) {
+    if ($absolutePath === false || $knowledgeBasePath === false) {
         return null;
     }
 
-    if (strpos($absolutePath, $knowledgeBasePath ) !== 0) {
+    if (strpos($absolutePath, $knowledgeBasePath) !== 0) {
         return null;
     }
 
     return $absolutePath;
 }
 
-function sa_contains_text($haystack, $needle) {
+function sa_contains_text($haystack, $needle)
+{
     if ($needle === '') {
         return true;
     }
@@ -82,7 +90,8 @@ function sa_contains_text($haystack, $needle) {
     return stripos((string)$haystack, (string)$needle) !== false;
 }
 
-function sa_filter_notes($notes, $query, $tag, $process, $status) {
+function sa_filter_notes(array $notes, $query, $tag, $process, $status)
+{
     $query = trim((string)$query);
     $tag = trim((string)$tag);
     $process = trim((string)$process);
@@ -120,7 +129,8 @@ function sa_filter_notes($notes, $query, $tag, $process, $status) {
     }));
 }
 
-function sa_collect_unique($notes, $key) {
+function sa_collect_unique(array $notes, string $key)
+{
     $values = [];
 
     foreach ($notes as $note) {
@@ -142,7 +152,8 @@ function sa_collect_unique($notes, $key) {
     return array_values($values);
 }
 
-function sa_collect_statuses($notes) {
+function sa_collect_statuses(array $notes)
+{
     $values = [];
 
     foreach ($notes as $note) {
@@ -158,6 +169,44 @@ function sa_collect_statuses($notes) {
     return array_values($values);
 }
 
-function sa_selected_attr($current, $value) {
+function sa_selected_attr($current, $value)
+{
     return (string)$current === (string)$value ? 'selected' : '';
+}
+
+function sa_normalize_practice_topics(array $note): array
+{
+    $practiceTopics = [];
+
+    if (!empty($note['practice']['topics']) && is_array($note['practice']['topics'])) {
+        foreach ($note['practice']['topics'] as $topic) {
+            $topic = trim((string)$topic);
+            if ($topic !== '') {
+                $practiceTopics[] = $topic;
+            }
+        }
+    }
+
+    if (empty($practiceTopics) && !empty($note['tags']) && is_array($note['tags'])) {
+        foreach ($note['tags'] as $tag) {
+            $tag = trim((string)$tag);
+            if ($tag !== '') {
+                $practiceTopics[] = $tag;
+            }
+        }
+    }
+
+    if (empty($practiceTopics) && !empty($note['official_topic'])) {
+        if (preg_match('/Tema\s+([0-9]+)/i', (string)$note['official_topic'], $matches)) {
+            $practiceTopics[] = trim($matches[1]);
+        } else {
+            $practiceTopics[] = trim((string)$note['official_topic']);
+        }
+    }
+
+    $practiceTopics = array_values(array_unique(array_filter($practiceTopics, static function ($topic) {
+        return trim((string)$topic) !== '';
+    })));
+
+    return $practiceTopics;
 }
