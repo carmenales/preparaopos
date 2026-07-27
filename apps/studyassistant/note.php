@@ -21,16 +21,6 @@ if (!$note) {
     }
 }
 
-$topicQueries = [];
-
-if (!empty($note['official_topic'])) {
-    if (preg_match('/Tema\s+\d+\.\s*(.+)$/i', $note['official_topic'], $matches)) {
-        $topicQueries[] = trim($matches[1]);
-    } else {
-        $topicQueries[] = trim($note['official_topic']);
-    }
-}
-
 $renderedContent = '';
 if ($markdown !== null) {
     $renderedContent = sa_render_markdown($markdown);
@@ -71,17 +61,24 @@ require __DIR__ . '/includes/header.php';
         <aside class="note-sidebar">
             <a class="button-secondary" href="index.php">← Volver</a>
 
-            <?php if (!empty($topicQueries)): ?>
-                <p style="margin:1rem 0;">
+            <?php if (!empty($note['practice']['topics'])): ?>
+                <div class="note-actions" style="margin: 1.2rem 0;">
                     <a
                         class="button-primary"
-                        href="<?= get_tai_url('practica_tematica.php?' . http_build_query([
-                            'topics' => $topicQueries,
-                            'autosearch' => 1
-                        ])); ?>">
-                        📝 Practicar este tema
+                        style="width: 100%; text-align: center; display: block;"
+                        href="<?= htmlspecialchars(build_preparadortai_topic_practice_url(
+                            $note['practice']['topics'],
+                            [
+                                'source' => 'studyassistant',
+                                'note' => $note['id'] ?? '',
+                                'processes' => $note['processes'] ?? [],
+                                'profiles' => $note['profiles'] ?? [],
+                            ]
+                        )) ?>"
+                    >
+                        📝 Ponerme a prueba
                     </a>
-                </p>
+                </div>
             <?php endif; ?>
 
             <?php if (!empty($headings)): ?>
