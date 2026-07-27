@@ -5,14 +5,9 @@ require_once __DIR__ . '/../shared/helpers/url.php';
 
 $notes = sa_load_index();
 $id = isset($_GET['id']) ? trim($_GET['id']) : '';
-
 $note = sa_find_note_by_id($notes, $id);
 $markdown = null;
 $error = null;
-$renderedContent = '';
-$headings = [];
-$practiceTopics = [];
-$practiceUrl = null;
 
 if (!$note) {
     $error = 'No se ha encontrado el apunte solicitado.';
@@ -23,28 +18,22 @@ if (!$note) {
         $error = 'No se ha podido abrir el fichero Markdown asociado.';
     } else {
         $markdown = file_get_contents($absolutePath);
-        $renderedContent = sa_render_markdown($markdown);
-        $renderedContent = add_heading_anchors($renderedContent);
-        $headings = $note['headings'] ?? [];
-        $practiceTopics = sa_normalize_practice_topics($note);
-
-        if (!empty($practiceTopics)) {
-            $practiceUrl = build_preparadortai_topic_practice_url(
-                $practiceTopics,
-                [
-                    'source' => 'studyassistant',
-                    'note' => $note['id'] ?? '',
-                    'processes' => $note['processes'] ?? [],
-                    'profiles' => $note['profiles'] ?? [],
-                    'autosearch' => 1,
-                ]
-            );
-        }
     }
 }
 
-function build_nested_toc(array $headings)
-{
+$renderedContent = '';
+if ($markdown !== null) {
+    $renderedContent = sa_render_markdown($markdown);
+    $renderedContent = add_heading_anchors($renderedContent);
+}
+
+$headings = $note['headings'] ?? [];
+
+// Temas sugeridos para práctica (a partir de practice.topics, tags y official_topic)
+$practiceTopics = sa_normalize_practice_topics($note);
+
+// --- LÓGICA DE TOC ANIDADO ---
+function build_nested_toc(array $headings) {
     $tree = [];
     $stack = [];
 
@@ -72,8 +61,7 @@ function build_nested_toc(array $headings)
     return $tree;
 }
 
-function render_nested_toc(array $tree)
-{
+function render_nested_toc(array $tree) {
     if (empty($tree)) {
         return '';
     }
@@ -83,13 +71,13 @@ function render_nested_toc(array $tree)
     foreach ($tree as $node) {
         $h = $node['heading'];
         $children = $node['children'];
-
         $html .= '<li class="toc-item level-' . (int)$h['level'] . '">';
 
         if (!empty($children)) {
             $html .= '<details open class="toc-details">';
             $html .= '<summary class="toc-summary">';
-            $html .= '<a href="#' . htmlspecialchars($h['anchor'], ENT_QUOTES, 'UTF-8') . '" onclick="event.stopPropagation();">' . sa_safe_text($h['text']) . '</a>';
+            // El stopPropagation evita que al pulsar el enlace se cierre la carpeta
+            $html .= '<a href="#' . htmlspecialchars($h['anchor'], ENT_QUOTES, 'UTF-8') . '" onclick="event.stopPropagation()">' . sa_safe_text($h['text']) . '</a>';
             $html .= '</summary>';
             $html .= render_nested_toc($children);
             $html .= '</details>';
@@ -109,6 +97,7 @@ function render_nested_toc(array $tree)
 
 $nestedTocTree = build_nested_toc($headings);
 $nestedTocHtml = render_nested_toc($nestedTocTree);
+// ---------------------------------
 
 $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
@@ -119,6 +108,7 @@ require __DIR__ . '/includes/header.php';
     <p><a class="button-secondary" href="index.php">Volver al listado</a></p>
 <?php else: ?>
 
+    <!-- Bloque móvil: índice encima de la cuadrícula principal -->
     <div class="mobile-only">
         <?php if (!empty($nestedTocTree)): ?>
             <details class="note-toc-details">
@@ -130,19 +120,53 @@ require __DIR__ . '/includes/header.php';
         <?php endif; ?>
     </div>
 
+    <!-- Contenedor Grid estricto de 2 columnas -->
     <div class="note-layout">
         <aside class="note-sidebar">
-            <a class="button-secondary" href="index.php">Volver al listado</a>
+            <a class="button-secondary" href="index.php">← Volver</a>
 
-            <?php if ($practiceUrl !== null): ?>
-                <div class="note-actions" style="margin: 1.2rem 0;">
-                    <a
-                        class="button-primary"
-                        style="width: 100%; text-align: center; display: block;"
-                        href="<?php echo htmlspecialchars($practiceUrl, ENT_QUOTES, 'UTF-8'); ?>"
-                    >
-                        Ponerme a prueba
-                    </a>
+            <?php if (!empty($practiceTopics)): ?>
+                <div class="note-practice-box" style="margin-top: 1.5rem;">
+                    <h3 style="margin-top: 0; margin-bottom: 12px;">Temas para práctica</h3>
+
+                    <form method="get" action="../preparadortai/practica_tematica.php">
+                        <input type="hidden" name="source" value="studyassistant">
+                        <input type="hidden" name="note" value="<?php echo sa_safe_text($note['id'] ?? ''); ?>">
+                        <input type="hidden" name="autosearch" value="1">
+
+                        <div class="practice-tags">
+                            <?php foreach ($practiceTopics as $topic): ?>
+                                <label class="practice-tag">
+                                    <input type="checkbox" name="topics[]" value="<?php echo sa_safe_text($topic); ?>" checked>
+                                    <span><?php echo sa_safe_text($topic); ?></span>
+                                </label>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <div style="margin-top: 12px;">
+                            <label for="practice-extra-topic" class="sr-only">Añadir tema</label>
+                            <input
+                                id="practice-extra-topic"
+                                type="text"
+                                class="practice-extra-input"
+                                placeholder="Añadir otro tema"
+                                maxlength="100"
+                            >
+                            <button type="button" class="button-secondary" id="add-practice-topic" style="margin-top: 8px;">
+                                Añadir tema
+                            </button>
+                        </div>
+
+                        <div class="note-actions" style="margin: 1.2rem 0;">
+                            <button
+                                type="submit"
+                                class="button-primary"
+                                style="width: 100%; text-align: center; display: block;"
+                            >
+                                📝 Ponerme a prueba
+                            </button>
+                        </div>
+                    </form>
                 </div>
             <?php endif; ?>
 
@@ -157,7 +181,6 @@ require __DIR__ . '/includes/header.php';
 
             <div class="note-meta-container" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
                 <h3 style="margin-top: 0;">Metadatos</h3>
-
                 <dl>
                     <dt>ID</dt>
                     <dd><code><?php echo sa_safe_text($note['id'] ?? ''); ?></code></dd>
@@ -181,15 +204,6 @@ require __DIR__ . '/includes/header.php';
                         </dd>
                     <?php endif; ?>
 
-                    <?php if (!empty($note['profiles'])): ?>
-                        <dt>Perfiles</dt>
-                        <dd>
-                            <?php foreach ($note['profiles'] as $profile): ?>
-                                <div><?php echo sa_safe_text($profile); ?></div>
-                            <?php endforeach; ?>
-                        </dd>
-                    <?php endif; ?>
-
                     <?php if (!empty($note['tags'])): ?>
                         <dt>Etiquetas</dt>
                         <dd>
@@ -202,15 +216,6 @@ require __DIR__ . '/includes/header.php';
                             </div>
                         </dd>
                     <?php endif; ?>
-
-                    <?php if (!empty($practiceTopics)): ?>
-                        <dt>Práctica</dt>
-                        <dd>
-                            <?php foreach ($practiceTopics as $practiceTopic): ?>
-                                <div><?php echo sa_safe_text($practiceTopic); ?></div>
-                            <?php endforeach; ?>
-                        </dd>
-                    <?php endif; ?>
                 </dl>
             </div>
         </aside>
@@ -219,7 +224,42 @@ require __DIR__ . '/includes/header.php';
             <?php echo $renderedContent; ?>
         </article>
     </div>
-
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const input = document.getElementById('practice-extra-topic');
+    const button = document.getElementById('add-practice-topic');
+    const form = button ? button.closest('form') : null;
+    const box = form ? form.querySelector('.practice-tags') : null;
+
+    if (!input || !button || !form || !box) return;
+
+    button.addEventListener('click', function () {
+        const value = input.value.trim();
+        if (!value) return;
+
+        const exists = Array.from(box.querySelectorAll('input[type="checkbox"]')).some(function (cb) {
+            return cb.value.toLowerCase() === value.toLowerCase();
+        });
+
+        if (exists) {
+            input.value = '';
+            return;
+        }
+
+        const label = document.createElement('label');
+        label.className = 'practice-tag';
+        label.innerHTML = '<input type="checkbox" name="topics[]" value="' +
+            value.replace(/"/g, '&quot;') +
+            '" checked><span>' +
+            value.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
+            '</span>';
+
+        box.appendChild(label);
+        input.value = '';
+    });
+});
+</script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>

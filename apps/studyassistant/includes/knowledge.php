@@ -187,11 +187,11 @@ function sa_normalize_practice_topics(array $note): array
         }
     }
 
-    if (empty($practiceTopics) && !empty($note['practice_topics']) && is_array($note['practice_topics'])) {
-        foreach ($note['practice_topics'] as $topic) {
-            $topic = trim((string)$topic);
-            if ($topic !== '') {
-                $practiceTopics[] = $topic;
+    if (empty($practiceTopics) && !empty($note['tags']) && is_array($note['tags'])) {
+        foreach ($note['tags'] as $tag) {
+            $tag = trim((string)$tag);
+            if ($tag !== '') {
+                $practiceTopics[] = $tag;
             }
         }
     }
