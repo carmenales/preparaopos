@@ -21,6 +21,16 @@ if (!$note) {
     }
 }
 
+$topicQueries = [];
+
+if (!empty($note['official_topic'])) {
+    if (preg_match('/Tema\s+\d+\.\s*(.+)$/i', $note['official_topic'], $matches)) {
+        $topicQueries[] = trim($matches[1]);
+    } else {
+        $topicQueries[] = trim($note['official_topic']);
+    }
+}
+
 $renderedContent = '';
 if ($markdown !== null) {
     $renderedContent = sa_render_markdown($markdown);
@@ -29,7 +39,7 @@ if ($markdown !== null) {
 
 $headings = $note['headings'] ?? [];
 
-// Temas sugeridos para práctica (a partir de practice.topics, tags y official_topic)
+// Temas sugeridos para práctica (practice.topics, tags, official_topic)
 $practiceTopics = sa_normalize_practice_topics($note);
 
 // --- LÓGICA DE TOC ANIDADO ---
@@ -38,7 +48,7 @@ function build_nested_toc(array $headings) {
     $stack = [];
 
     foreach ($headings as $h) {
-        if (($h['level'] ?? 0) < 2 || ($h['level'] ?? 0) > 4) {
+        if ($h['level'] < 2 || $h['level'] > 4) {
             continue;
         }
 
@@ -97,8 +107,6 @@ function render_nested_toc(array $tree) {
 
 $nestedTocTree = build_nested_toc($headings);
 $nestedTocHtml = render_nested_toc($nestedTocTree);
-// ---------------------------------
-
 $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
 ?>
@@ -126,47 +134,21 @@ require __DIR__ . '/includes/header.php';
             <a class="button-secondary" href="index.php">← Volver</a>
 
             <?php if (!empty($practiceTopics)): ?>
-                <div class="note-practice-box" style="margin-top: 1.5rem;">
-                    <h3 style="margin-top: 0; margin-bottom: 12px;">Temas para práctica</h3>
-
-                    <form method="get" action="../preparadortai/practica_tematica.php">
-                        <input type="hidden" name="source" value="studyassistant">
-                        <input type="hidden" name="note" value="<?php echo sa_safe_text($note['id'] ?? ''); ?>">
-                        <input type="hidden" name="autosearch" value="1">
-
-                        <div class="practice-tags">
-                            <?php foreach ($practiceTopics as $topic): ?>
-                                <label class="practice-tag">
-                                    <input type="checkbox" name="topics[]" value="<?php echo sa_safe_text($topic); ?>" checked>
-                                    <span><?php echo sa_safe_text($topic); ?></span>
-                                </label>
-                            <?php endforeach; ?>
-                        </div>
-
-                        <div style="margin-top: 12px;">
-                            <label for="practice-extra-topic" class="sr-only">Añadir tema</label>
-                            <input
-                                id="practice-extra-topic"
-                                type="text"
-                                class="practice-extra-input"
-                                placeholder="Añadir otro tema"
-                                maxlength="100"
-                            >
-                            <button type="button" class="button-secondary" id="add-practice-topic" style="margin-top: 8px;">
-                                Añadir tema
-                            </button>
-                        </div>
-
-                        <div class="note-actions" style="margin: 1.2rem 0;">
-                            <button
-                                type="submit"
-                                class="button-primary"
-                                style="width: 100%; text-align: center; display: block;"
-                            >
-                                📝 Ponerme a prueba
-                            </button>
-                        </div>
-                    </form>
+                <div class="note-actions" style="margin: 1.2rem 0;">
+                    <a
+                        class="button-primary"
+                        style="width: 100%; text-align: center; display: block;"
+                        href="<?= htmlspecialchars(build_preparadortai_topic_practice_url(
+                            $practiceTopics,
+                            [
+                                'source' => 'studyassistant',
+                                'note' => $note['id'] ?? '',
+                                // en el futuro puedes volver a añadir 'processes' y 'profiles' si quieres rastreo más fino
+                            ]
+                        )) ?>"
+                    >
+                        📝 Ponerme a prueba
+                    </a>
                 </div>
             <?php endif; ?>
 
@@ -183,7 +165,7 @@ require __DIR__ . '/includes/header.php';
                 <h3 style="margin-top: 0;">Metadatos</h3>
                 <dl>
                     <dt>ID</dt>
-                    <dd><code><?php echo sa_safe_text($note['id'] ?? ''); ?></code></dd>
+                    <dd><code><?php echo sa_safe_text($note['id']); ?></code></dd>
 
                     <?php if (!empty($note['official_topic'])): ?>
                         <dt>Tema oficial</dt>
@@ -225,41 +207,5 @@ require __DIR__ . '/includes/header.php';
         </article>
     </div>
 <?php endif; ?>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const input = document.getElementById('practice-extra-topic');
-    const button = document.getElementById('add-practice-topic');
-    const form = button ? button.closest('form') : null;
-    const box = form ? form.querySelector('.practice-tags') : null;
-
-    if (!input || !button || !form || !box) return;
-
-    button.addEventListener('click', function () {
-        const value = input.value.trim();
-        if (!value) return;
-
-        const exists = Array.from(box.querySelectorAll('input[type="checkbox"]')).some(function (cb) {
-            return cb.value.toLowerCase() === value.toLowerCase();
-        });
-
-        if (exists) {
-            input.value = '';
-            return;
-        }
-
-        const label = document.createElement('label');
-        label.className = 'practice-tag';
-        label.innerHTML = '<input type="checkbox" name="topics[]" value="' +
-            value.replace(/"/g, '&quot;') +
-            '" checked><span>' +
-            value.replace(/</g, '&lt;').replace(/>/g, '&gt;') +
-            '</span>';
-
-        box.appendChild(label);
-        input.value = '';
-    });
-});
-</script>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
