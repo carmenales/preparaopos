@@ -27,18 +27,27 @@ $hasFilters =
     $category !== '' ||
     $block !== '' ||
     $topic !== '';
+
 $categories = topic_search_categories($link);
 $results = [];
 $searchError = null;
+$totalResults = 0;
 
 if ($hasFilters) {
     try {
-        $results = topic_search_questions($link, [
+        $totalResults = topic_search_count_questions($link, [
             'topics' => $queries,
             'categoria' => $category,
             'bloque' => $block,
             'tema' => $topic,
         ]);
+
+        $results = topic_search_questions($link, [
+            'topics' => $queries,
+            'categoria' => $category,
+            'bloque' => $block,
+            'tema' => $topic,
+        ], 200);
     } catch (RuntimeException $exception) {
         $searchError = $exception->getMessage();
     }
@@ -158,6 +167,24 @@ $defaultQuestionCount = min(20, max(1, count($results)));
                     </div>
                 </div>
             </div>
+
+            <template id="topic-query-template">
+                <div class="input-group topic-query-row">
+                    <span class="input-group-text">Tema</span>
+                    <input
+                        type="text"
+                        name="topics[]"
+                        class="form-control"
+                        value=""
+                        placeholder='Ej. tcp ip o "modelo OSI"'
+                        maxlength="200"
+                    >
+                    <button type="button" class="btn btn-outline-danger remove-topic-query" title="Quitar temática" aria-label="Quitar temática">
+                        <i class="fa-solid fa-xmark"></i>
+                        <span class="d-none d-md-inline ms-1">Quitar</span>
+                    </button>
+                </div>
+            </template>
         </form>
     </div>
 </div>
@@ -178,6 +205,9 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 
         <input type="hidden" name="source_app" value="<?php echo topic_search_safe_text($sourceApp); ?>">
         <input type="hidden" name="source_note" value="<?php echo topic_search_safe_text($sourceNote); ?>">
+        <input type="hidden" name="categoria" value="<?php echo topic_search_safe_text($category); ?>">
+        <input type="hidden" name="bloque" value="<?php echo topic_search_safe_text($block); ?>">
+        <input type="hidden" name="tema" value="<?php echo topic_search_safe_text($topic); ?>">
 
         <div class="card border-0 shadow-sm mb-3">
             <div class="card-body">
@@ -200,14 +230,54 @@ $defaultQuestionCount = min(20, max(1, count($results)));
                 </div>
 
                 <div class="row g-3 align-items-end">
-                    <div class="col-lg-4">
+                    <div class="col-lg-3">
                         <div class="fw-bold">
-                            <?php echo count($results); ?> preguntas encontradas
+                            <?php echo (int)$totalResults; ?> preguntas encontradas
                         </div>
-                        <div class="text-secondary small">Selecciona las que quieras incluir en la práctica.</div>
+
+                        <?php if ($totalResults > count($results)): ?>
+                            <div class="text-secondary small">
+                                Mostrando las primeras <?php echo count($results); ?> para revisión.
+                            </div>
+                        <?php else: ?>
+                            <div class="text-secondary small">
+                                Selecciona las que quieras incluir en la práctica.
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                     <div class="col-lg-3">
+                        <label class="form-label small fw-bold d-block">Modo de generación</label>
+
+                        <div class="form-check">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="selection_mode"
+                                id="selection_mode_selected"
+                                value="selected"
+                                checked
+                            >
+                            <label class="form-check-label" for="selection_mode_selected">
+                                Solo seleccionadas
+                            </label>
+                        </div>
+
+                        <div class="form-check">
+                            <input
+                                class="form-check-input"
+                                type="radio"
+                                name="selection_mode"
+                                id="selection_mode_all"
+                                value="all_results"
+                            >
+                            <label class="form-check-label" for="selection_mode_all">
+                                Todas las encontradas
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2">
                         <label for="max_questions" class="form-label small fw-bold">Número máximo</label>
                         <input
                             type="number"
@@ -221,7 +291,7 @@ $defaultQuestionCount = min(20, max(1, count($results)));
                         >
                     </div>
 
-                    <div class="col-lg-3">
+                    <div class="col-lg-2">
                         <label for="correccion" class="form-label small fw-bold">Corrección</label>
                         <select id="correccion" name="correccion" class="form-select">
                             <option value="inmediata">Al responder</option>
@@ -272,13 +342,25 @@ $defaultQuestionCount = min(20, max(1, count($results)));
                                     <?php if ($row['tema'] !== null && $row['tema'] !== ''): ?>
                                         <span class="badge bg-light text-dark border">Tema <?php echo (int)$row['tema']; ?></span>
                                     <?php endif; ?>
-
-                                    <span class="badge bg-secondary">#<?php echo (int)$row['id']; ?></span>
                                 </div>
 
-                                <div class="text-dark">
-                                    <?php echo topic_search_safe_text(topic_search_truncate($row['pregunta'])); ?>
+                                <div class="fw-semibold mb-2">
+                                    <?php echo topic_search_safe_text($row['pregunta']); ?>
                                 </div>
+
+                                <?php if (!empty($row['respuesta'])): ?>
+                                    <div class="small text-secondary mb-1">
+                                        <strong>Respuesta:</strong>
+                                        <?php echo topic_search_safe_text(topic_search_truncate($row['respuesta'], 200)); ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <?php if (!empty($row['justif'])): ?>
+                                    <div class="small text-secondary">
+                                        <strong>Justificación:</strong>
+                                        <?php echo topic_search_safe_text(topic_search_truncate($row['justif'], 220)); ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </label>
@@ -288,34 +370,16 @@ $defaultQuestionCount = min(20, max(1, count($results)));
     </form>
 <?php endif; ?>
 
-<template id="topic-query-template">
-    <div class="input-group topic-query-row">
-        <span class="input-group-text">Tema</span>
-        <input
-            type="text"
-            name="topics[]"
-            class="form-control"
-            value=""
-            placeholder='Ej. oracle backup'
-            maxlength="200"
-        >
-        <button type="button" class="btn btn-outline-danger remove-topic-query" title="Quitar temática" aria-label="Quitar temática">
-            <i class="fa-solid fa-xmark"></i>
-            <span class="d-none d-md-inline ms-1">Quitar</span>
-        </button>
-    </div>
-</template>
-
 <script>
-(function () {
+(() => {
+    const searchForm = document.getElementById('topic-search-form');
+    const form = document.getElementById('topic-test-form');
     const queryList = document.getElementById('topic-query-list');
-    const addQueryButton = document.getElementById('add-topic-query');
     const queryTemplate = document.getElementById('topic-query-template');
+    const addQueryButton = document.getElementById('add-topic-query');
+    const activeTopicChips = Array.from(document.querySelectorAll('.active-topic-chip'));
     const selectAll = document.getElementById('select-all');
     const checkboxes = Array.from(document.querySelectorAll('.topic-question-checkbox'));
-    const form = document.getElementById('topic-test-form');
-    const searchForm = document.getElementById('topic-search-form');
-    const activeTopicChips = Array.from(document.querySelectorAll('.active-topic-chip'));
     const maxQuestions = document.getElementById('max_questions');
     const maxTopicQueries = 6;
 
@@ -365,7 +429,6 @@ $defaultQuestionCount = min(20, max(1, count($results)));
         renumberQueryRows();
     }
 
-    // Delegación de eventos: funciona también con las filas añadidas dinámicamente.
     if (queryList) {
         queryList.addEventListener('click', function (event) {
             const removeButton = event.target.closest('.remove-topic-query');
@@ -434,7 +497,7 @@ $defaultQuestionCount = min(20, max(1, count($results)));
         const selected = selectedCount();
         selectAll.checked = selected === checkboxes.length && checkboxes.length > 0;
         selectAll.indeterminate = selected > 0 && selected < checkboxes.length;
-        maxQuestions.max = Math.max(1, Math.min(100, selected));
+        maxQuestions.max = Math.max(1, Math.min(100, selected || checkboxes.length || 1));
 
         if (selected > 0 && parseInt(maxQuestions.value, 10) > selected) {
             maxQuestions.value = Math.min(20, selected);
@@ -456,6 +519,12 @@ $defaultQuestionCount = min(20, max(1, count($results)));
 
     if (form) {
         form.addEventListener('submit', function (event) {
+            const modeAll = document.getElementById('selection_mode_all');
+
+            if (modeAll && modeAll.checked) {
+                return;
+            }
+
             if (selectedCount() === 0) {
                 event.preventDefault();
                 window.alert('Selecciona al menos una pregunta.');

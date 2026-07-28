@@ -50,6 +50,18 @@ jobs:
       - name: Check static asset served by Apache
         run: curl --fail --silent --show-error http://localhost:8080/assets/css/style.css > /dev/null
 
+      - name: Check StudyAssistant index
+        run: curl --fail --silent --show-error http://localhost:8090/ > /dev/null
+
+      - name: Check StudyAssistant note page
+        run: |
+          # Usa un ID real del índice; si no lo conoces, comprueba solo que la ruta responde 200 sin parámetros
+          curl --fail --silent --show-error "http://localhost:8090/note.php?id=1" || \
+          curl --fail --silent --show-error "http://localhost:8090/note.php" > /dev/null
+
+      - name: Check thematic practice page
+        run: curl --fail --silent --show-error "http://localhost:8080/practica_tematica.php?autosearch=1&topics[]=arquitectura" > /dev/null
+
       - name: Show logs on failure
         if: failure()
         run: docker compose logs
