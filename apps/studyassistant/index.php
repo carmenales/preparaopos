@@ -80,6 +80,22 @@ require __DIR__ . '/includes/header.php';
     <strong><?php echo count($filteredNotes); ?></strong> apuntes mostrados de <?php echo count($notes); ?> indexados.
 </div>
 
+<section class="semantic-search">
+    <h2>Búsqueda semántica</h2>
+    <p class="meta">Busca por significado dentro del contenido de los apuntes, no solo por título o etiquetas.</p>
+
+    <div class="field field-wide">
+        <label for="semantic-q">Pregunta o concepto</label>
+        <input id="semantic-q" type="search" placeholder="ej. diferencia entre autenticación y autorización">
+        <button id="semantic-search-btn" type="button">Buscar</button>
+    </div>
+
+    <div id="semantic-search-status" class="semantic-search-status" hidden></div>
+    <ul id="semantic-search-results" class="semantic-results"></ul>
+</section>
+
+<script src="assets/semantic-search.js"></script>
+
 <section class="note-grid">
     <?php foreach ($filteredNotes as $note): ?>
         <article class="note-card">
