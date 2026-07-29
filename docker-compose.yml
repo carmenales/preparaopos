@@ -34,6 +34,19 @@ services:
       - ./apps/shared:/workspace/apps/shared:ro
     command: php -S 0.0.0.0:8080 -t /workspace/apps/studyassistant
 
+  embeddings:
+    build:
+      context: .
+      dockerfile: infra/docker/embeddings/Dockerfile
+    container_name: preparaopos-embeddings
+    ports:
+      - "8091:8000"
+    volumes:
+      - ./services/embeddings:/workspace/services/embeddings:ro
+      - ./scripts:/workspace/scripts:ro
+      - ./knowledge:/workspace/knowledge:ro
+      - ./apps/studyassistant/data:/workspace/apps/studyassistant/data
+
   db:
     image: mariadb:10.4
     container_name: preparaopos-preparadortai-db

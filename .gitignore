@@ -41,7 +41,8 @@ Thumbs.db
 vendor/
 node_modules/
 tmp/
-temp/apps/studyassistant/data/knowledge_index.json
+apps/studyassistant/data/semantic_chunks.json
+apps/studyassistant/data/semantic_embeddings.npy
 imports/**/generated/
 
 # Cache / build artifacts

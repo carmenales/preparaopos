@@ -173,6 +173,73 @@ button,
     margin-bottom: 16px;
 }
 
+.semantic-search {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.semantic-search h2 {
+    margin: 0 0 4px;
+    font-size: 18px;
+}
+
+.semantic-search .field-wide {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    margin-top: 12px;
+}
+
+.semantic-search .field-wide input {
+    flex: 1;
+}
+
+.semantic-search-status {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.semantic-search-status.is-error {
+    color: #b91c1c;
+}
+
+.semantic-results {
+    list-style: none;
+    margin: 16px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.semantic-result-item {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.semantic-result-title {
+    font-weight: 700;
+    display: block;
+}
+
+.semantic-result-score {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.semantic-result-preview {
+    margin: 8px 0 0;
+    color: #374151;
+    font-size: 14px;
+}
+
 .note-layout {
     display: grid;
     grid-template-columns: 300px minmax(0, 1fr);
