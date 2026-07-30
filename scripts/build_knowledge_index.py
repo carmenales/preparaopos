@@ -130,6 +130,43 @@ def extract_headings(body: str) -> list[dict[str, Any]]:
     return headings
 
 
+def strip_markdown_to_text(body: str) -> str:
+    """Convierte Markdown a texto plano aproximado: fuera bloques de código,
+    enlaces (se queda con el texto visible), énfasis, marcas de heading/lista
+    y tablas. No es un parser completo, es suficiente para excerpt y
+    búsqueda por substring."""
+    text = body
+
+    text = re.sub(r"```.*?```", " ", text, flags=re.DOTALL)
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    text = re.sub(r"^#{1,6}\s*", "", text, flags=re.MULTILINE)
+    text = re.sub(r"[*_~]{1,3}", "", text)
+    text = re.sub(r"^\s*[-*+>]\s+", "", text, flags=re.MULTILINE)
+    text = text.replace("|", " ")
+    text = re.sub(r"\s+", " ", text).strip()
+
+    return text
+
+
+def build_excerpt(plain_text: str, max_chars: int = 220) -> str:
+    if len(plain_text) <= max_chars:
+        return plain_text
+
+    excerpt = plain_text[:max_chars]
+    cut = excerpt.rfind(" ")
+    if cut > max_chars // 2:
+        excerpt = excerpt[:cut]
+
+    return excerpt + "…"
+
+
+# Tope defensivo: content_text se carga entero en memoria en cada petición
+# PHP (sa_load_index -> sa_filter_notes).
+CONTENT_TEXT_MAX_CHARS = 4000
+
+
 def should_include(path: Path, knowledge_root: Path) -> bool:
     if path.suffix.lower() != ".md":
         return False
@@ -169,6 +206,8 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
                 "topics": metadata.get("topics")
             }
 
+        plain_text = strip_markdown_to_text(body)
+
         notes.append({
             "id": note_id,
             "title": title,
@@ -181,7 +220,9 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
             "tags": metadata.get("tags", []),
             "practice": practice_obj,
             "status": metadata.get("status", ""),
-            "headings": extract_headings(body)
+            "headings": extract_headings(body),
+            "excerpt": build_excerpt(plain_text),
+            "content_text": plain_text[:CONTENT_TEXT_MAX_CHARS],
         })
 
     notes.sort(key=lambda x: x["title"])
