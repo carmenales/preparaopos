@@ -49,6 +49,16 @@ function sa_restore_math_placeholders($html, $mathBlocks) {
     return $html;
 }
 
+function sa_render_context(?string $noteId = null, bool $set = false): ?string {
+    static $currentNoteId = null;
+
+    if ($set) {
+        $currentNoteId = $noteId;
+    }
+
+    return $currentNoteId;
+}
+
 function sa_inline_markdown($text) {
     $mathBlocks = [];
     $text = sa_extract_inline_math((string)$text, $mathBlocks);
@@ -58,6 +68,21 @@ function sa_inline_markdown($text) {
     $html = preg_replace('/`([^`]+)`/', '<code>$1</code>', $html);
     $html = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $html);
     $html = preg_replace('/\*([^*]+)\*/', '<em>$1</em>', $html);
+
+    $noteId = sa_render_context();
+    $html = preg_replace_callback('/!\[([^\]]*)\]\(([^)]+)\)/', function ($matches) use ($noteId) {
+        $alt = $matches[1];
+        $path = $matches[2];
+
+        if ($noteId !== null && !preg_match('#^https?://#i', $path)) {
+            $src = 'asset.php?note=' . urlencode($noteId) . '&path=' . urlencode($path);
+        } else {
+            $src = $path;
+        }
+
+        return '<img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '" loading="lazy">';
+    }, $html);
+
     $html = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $html);
 
     return sa_restore_math_placeholders($html, $mathBlocks);
@@ -378,7 +403,9 @@ function sa_render_math_block($formula) {
     return '<div class="math-block">\\[' . htmlspecialchars($formula, ENT_NOQUOTES, 'UTF-8') . '\\]</div>';
 }
 
-function sa_render_markdown($markdown) {
+function sa_render_markdown($markdown, ?string $noteId = null) {
+    sa_render_context($noteId, true);
+
     $markdown = sa_strip_frontmatter($markdown);
     $lines = preg_split('/\n/', $markdown);
 
