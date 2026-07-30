@@ -115,20 +115,6 @@ require __DIR__ . '/includes/header.php';
     <div class="alert"><?php echo sa_safe_text($error); ?></div>
     <p><a class="button-secondary" href="index.php">Volver al listado</a></p>
 <?php else: ?>
-
-    <!-- Bloque móvil: índice encima de la cuadrícula principal -->
-    <div class="mobile-only">
-        <?php if (!empty($nestedTocTree)): ?>
-            <details class="note-toc-details">
-                <summary>Índice del documento</summary>
-                <nav class="note-toc">
-                    <?php echo $nestedTocHtml; ?>
-                </nav>
-            </details>
-        <?php endif; ?>
-    </div>
-
-    <!-- Contenedor Grid estricto de 2 columnas -->
     <div class="note-layout">
         <aside class="note-sidebar">
             <a class="button-secondary" href="index.php">← Volver</a>
@@ -143,7 +129,6 @@ require __DIR__ . '/includes/header.php';
                             [
                                 'source' => 'studyassistant',
                                 'note' => $note['id'] ?? '',
-                                // en el futuro puedes volver a añadir 'processes' y 'profiles' si quieres rastreo más fino
                             ]
                         )) ?>"
                     >
@@ -153,7 +138,7 @@ require __DIR__ . '/includes/header.php';
             <?php endif; ?>
 
             <?php if (!empty($nestedTocTree)): ?>
-                <div class="note-toc-container desktop-only">
+                <div class="note-toc-container">
                     <h3 style="margin-top: 0; margin-bottom: 12px;">Índice</h3>
                     <nav class="note-toc">
                         <?php echo $nestedTocHtml; ?>
