@@ -116,18 +116,6 @@ require __DIR__ . '/includes/header.php';
     <p><a class="button-secondary" href="index.php">Volver al listado</a></p>
 <?php else: ?>
 
-    <!-- Bloque móvil: índice encima de la cuadrícula principal -->
-    <div class="mobile-only">
-        <?php if (!empty($nestedTocTree)): ?>
-            <details class="note-toc-details">
-                <summary>Índice del documento</summary>
-                <nav class="note-toc">
-                    <?php echo $nestedTocHtml; ?>
-                </nav>
-            </details>
-        <?php endif; ?>
-    </div>
-
     <!-- Contenedor Grid estricto de 2 columnas -->
     <div class="note-layout">
         <aside class="note-sidebar">
