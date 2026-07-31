@@ -2,20 +2,16 @@
 """
 Extrae texto e imágenes de PDFs a Markdown usando PyMuPDF.
 
-Objetivos:
-- Evitar el marcador artificial "## Página N".
-- Detectar cabeceras/pies repetidos por posición y frecuencia.
-- Procesar texto línea a línea para no fusionar headings con párrafos.
-- Inferir headings por tamaño de fuente a nivel de línea.
-- Descartar páginas de índice/TOC en bruto.
-- Exportar imágenes incrustadas en PNG cuando sea posible.
+Incluye soporte básico para tablas detectadas por layout cuando la librería lo
+permite. Las tablas simples se exportan como Markdown; los casos complejos se
+mantienen como texto lineal para no perder contenido.
 """
 
 from __future__ import annotations
 
 import argparse
 import re
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -29,6 +25,12 @@ class LineText:
     text: str
     bbox: tuple[float, float, float, float]
     font_size: float
+
+
+@dataclass(frozen=True)
+class TableRegion:
+    bbox: tuple[float, float, float, float]
+    markdown: str
 
 
 def _sanitize_filename(name: str) -> str:
@@ -96,6 +98,60 @@ def _extract_lines(page: fitz.Page) -> list[LineText]:
             lines.append(LineText(page.number + 1, text, bbox, font_size))
 
     return lines
+
+
+def _extract_tables(page: fitz.Page) -> list[TableRegion]:
+    tables: list[TableRegion] = []
+    try:
+        finder = page.find_tables()
+    except Exception:
+        return tables
+
+    for table in getattr(finder, "tables", []) or []:
+        try:
+            matrix = table.extract()
+        except Exception:
+            matrix = []
+
+        if not matrix:
+            try:
+                matrix = table.to_list()
+            except Exception:
+                matrix = []
+
+        rows = []
+        for row in matrix:
+            clean_row = [_normalize_text(str(cell)) for cell in row]
+            clean_row = [cell for cell in clean_row if cell]
+            if clean_row:
+                rows.append(clean_row)
+
+        if not rows:
+            continue
+
+        max_cols = max(len(r) for r in rows)
+        if max_cols < 2:
+            continue
+
+        normalized_rows = [r + [""] * (max_cols - len(r)) for r in rows]
+        header = normalized_rows[0]
+        body = normalized_rows[1:] if len(normalized_rows) > 1 else []
+
+        md_lines = []
+        md_lines.append("| " + " | ".join(header) + " |")
+        md_lines.append("| " + " | ".join(["---"] * len(header)) + " |")
+        for row in body:
+            md_lines.append("| " + " | ".join(row) + " |")
+
+        bbox = getattr(table, "bbox", None)
+        if bbox:
+            bbox_tuple = tuple(float(v) for v in bbox)
+        else:
+            bbox_tuple = (0.0, 0.0, 0.0, 0.0)
+
+        tables.append(TableRegion(bbox=bbox_tuple, markdown="\n".join(md_lines)))
+
+    return tables
 
 
 def _collect_repeated_header_footer_signatures(doc: fitz.Document) -> set[str]:
@@ -171,6 +227,26 @@ def _extract_images_from_page(page: fitz.Page, page_number: int, images_dir: Pat
     return markdown_lines
 
 
+def _remove_table_regions(lines: list[LineText], tables: list[TableRegion]) -> list[LineText]:
+    if not tables:
+        return lines
+
+    filtered: list[LineText] = []
+    for line in lines:
+        x0, y0, x1, y1 = line.bbox
+        center_x = (x0 + x1) / 2
+        center_y = (y0 + y1) / 2
+        inside_table = False
+        for table in tables:
+            tx0, ty0, tx1, ty1 = table.bbox
+            if tx0 <= center_x <= tx1 and ty0 <= center_y <= ty1:
+                inside_table = True
+                break
+        if not inside_table:
+            filtered.append(line)
+    return filtered
+
+
 def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bool = True) -> None:
     if not input_pdf.exists():
         raise FileNotFoundError(f"No existe el PDF: {input_pdf}")
@@ -183,11 +259,15 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
     repeated_headers_footers = _collect_repeated_header_footer_signatures(doc)
 
     page_lines_map: dict[int, list[LineText]] = {}
+    page_tables_map: dict[int, list[TableRegion]] = {}
     body_sizes: list[float] = []
 
     for page in doc:
         lines = _extract_lines(page)
+        tables = _extract_tables(page)
+        lines = _remove_table_regions(lines, tables)
         page_lines_map[page.number + 1] = lines
+        page_tables_map[page.number + 1] = tables
         for line in lines:
             if line.font_size > 0:
                 body_sizes.append(line.font_size)
@@ -209,6 +289,7 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
     for page_number in range(1, len(doc) + 1):
         page = doc[page_number - 1]
         lines = page_lines_map.get(page_number, [])
+        tables = page_tables_map.get(page_number, [])
 
         visible_lines = []
         for line in lines:
@@ -217,38 +298,43 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
                 continue
             visible_lines.append(line)
 
-        if not visible_lines:
+        if not visible_lines and not tables:
             continue
 
         visible_texts = [line.text for line in visible_lines]
-        if _looks_like_toc_page(visible_texts):
+        if visible_texts and _looks_like_toc_page(visible_texts):
             continue
 
-        for i, line in enumerate(visible_lines):
-            heading_level = _infer_heading_level(line.font_size, body_size)
-            text = line.text
+        if visible_lines:
+            for i, line in enumerate(visible_lines):
+                heading_level = _infer_heading_level(line.font_size, body_size)
+                text = line.text
 
-            if heading_level and len(text) <= 180:
-                prev_line = visible_lines[i - 1].text if i > 0 else ""
-                next_line = visible_lines[i + 1].text if i + 1 < len(visible_lines) else ""
-                if prev_line and len(prev_line) < 120 and not prev_line.endswith((".", ":", ";")):
-                    pass
-                elif next_line and len(next_line) > 120 and not re.match(r"^\d+(\.\d+)*\s", text):
-                    pass
-                else:
-                    output_lines.append(f"{'#' * heading_level} {text}")
-                    output_lines.append("")
-                    continue
+                if heading_level and len(text) <= 180:
+                    prev_line = visible_lines[i - 1].text if i > 0 else ""
+                    next_line = visible_lines[i + 1].text if i + 1 < len(visible_lines) else ""
+                    if prev_line and len(prev_line) < 120 and not prev_line.endswith((".", ":", ";")):
+                        pass
+                    elif next_line and len(next_line) > 120 and not re.match(r"^\d+(\.\d+)*\s", text):
+                        pass
+                    else:
+                        output_lines.append(f"{'#' * heading_level} {text}")
+                        output_lines.append("")
+                        continue
 
-            output_lines.append(text)
+                output_lines.append(text)
 
-        output_lines.append("")
+            output_lines.append("")
+
+        for table in tables:
+            output_lines.append(table.markdown)
+            output_lines.append("")
 
         if extract_images:
             image_lines = _extract_images_from_page(page, page_number, images_dir, images_dir_relative)
             if image_lines:
                 output_lines.extend(image_lines)
-                total_images += sum(1 for line in image_lines if line.startswith("![]") or line.startswith("!["))
+                total_images += sum(1 for line in image_lines if line.startswith("!["))
 
     output_md.write_text("\n".join(output_lines).rstrip() + "\n", encoding="utf-8")
 
