@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
-"""
-Refina Markdown extraído para acercarlo más a una nota curada.
+"""Refina Markdown extraído de forma conservadora.
 
-Entrada típica:
-- Markdown bruto o normalizado generado por extract_pdf_text.py / normalize_markdown.py
-
-Salida:
-- Markdown más limpio, con menos falsos encabezados, mejores párrafos y
-  tablas simples de siglas convertidas a Markdown.
-
-Este script no inventa contenido ni resume.
+Reglas:
+- elimina ruido de OCR repetido o marcadores de página,
+- normaliza viñetas raras a '- ',
+- une líneas partidas por salto de renglón,
+- añade una línea en blanco antes de listas cuando el párrafo anterior termina en ':',
+- no inventa títulos ni reestructura el documento.
 """
 
 from __future__ import annotations
@@ -18,12 +15,16 @@ import argparse
 import re
 from pathlib import Path
 
-HEADER_CANDIDATE_RE = re.compile(r"^#{2,6}\s+(.+)$")
-LONG_SENTENCE_RE = re.compile(r"[.!?;:]\s")
-SECTION_RE = re.compile(r"^\d+(\.\d+)*\s+[A-ZÁÉÍÓÚÑ].+$")
-SIGLAS_INTRO_RE = re.compile(r"^\s*Las siglas empleadas en este documento son las siguientes\s*:??\s*$", re.IGNORECASE)
-PAGE_HEADER_RE = re.compile(r"^#{1,6}\s*Página\s+\d+\s*$", re.IGNORECASE)
-NOISE_HEADER_RE = re.compile(r"^#{1,6}\s*(Centro de Estudios TIC|CentrodeEstudiosTIC|Centro de Estudios|Cuerpo de Gestión de Sistemas e Informática de la Administración del Estado)\b", re.IGNORECASE)
+PAGE_MARKER_RE = re.compile(r"^\s*#{1,6}\s*Página\s+\d+\s*$", re.IGNORECASE)
+NOISE_RE = re.compile(
+    r"^\s*#{1,6}\s*(Centro de Estudios TIC|CentrodeEstudiosTIC|Centro de Estudios|Cuerpo de Gestión de Sistemas e Informática de la Administración del Estado|Página\s+\d+)\b",
+    re.IGNORECASE,
+)
+BULLET_RE = re.compile(r"^\s*[●•◦▪▫‣*]\s*(.+?)\s*$")
+HEADING_RE = re.compile(r"^\s*(#{1,6}\s+)?(\d+(?:\.\d+)*\.?\s+.+|[IVXLCDM]+(?:\.[IVXLCDM]+)*\.?\s+.+)$")
+ENUM_START_RE = re.compile(r"^\s*(?:[a-zA-ZÁÉÍÓÚÜÑ]\.|[a-zA-ZÁÉÍÓÚÜÑ]\)|\d+\.|\d+\))\s+")
+PUNCT_END = (".", ":", ";", "?", "!", "…")
+CLOSE_END = ("),", ")]", "}", "»", "”", ")", "]")
 
 
 def read_text(path: Path) -> str:
@@ -35,173 +36,148 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def normalize_spaces(text: str) -> str:
+def normalize_text(text: str) -> str:
     text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = text.replace("\u00ad", "")
     text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\n{3,}", "\n\n", text)
-    return text.strip() + "\n"
+    return text.strip("\n") + "\n"
 
 
-def title_score(text: str) -> int:
-    s = text.strip()
-    if not s:
-        return -100
-    score = 0
-    if len(s) <= 90:
-        score += 2
-    elif len(s) <= 140:
-        score += 1
-    else:
-        score -= 3
-    if SECTION_RE.match(s):
-        score += 3
-    if s.isupper():
-        score += 1
-    if LONG_SENTENCE_RE.search(s):
-        score -= 4
-    if len(s.split()) > 14:
-        score -= 2
-    if re.search(r"\b(en este|como|que|para|cuando|si bien|además|por tanto)\b", s, re.IGNORECASE):
-        score -= 2
-    return score
-
-
-def is_probable_heading(line: str) -> bool:
+def is_noise(line: str) -> bool:
     s = line.strip()
     if not s:
         return False
-    if PAGE_HEADER_RE.match(s):
-        return False
-    if NOISE_HEADER_RE.match(s):
-        return False
-    if s.startswith(">"):
-        return False
-    if s.startswith("|"):
-        return False
-    if SIGLAS_INTRO_RE.match(s):
-        return False
-    return title_score(s) >= 2
+    if PAGE_MARKER_RE.match(s):
+        return True
+    if NOISE_RE.match(s):
+        return True
+    if s.lower() in {"mostrar menos", "mostrar más"}:
+        return True
+    return False
 
 
-def collapse_broken_paragraphs(lines: list[str]) -> list[str]:
+def is_heading(line: str) -> bool:
+    s = line.strip()
+    return s.startswith("#") or bool(HEADING_RE.match(s))
+
+
+def normalize_bullet(line: str) -> str:
+    m = BULLET_RE.match(line)
+    if m:
+        return f"- {m.group(1).strip()}"
+    s = line.strip()
+    if s.startswith("-"):
+        return "- " + s[1:].strip()
+    return line.rstrip()
+
+
+def should_join(prev: str, curr: str) -> bool:
+    p = prev.rstrip()
+    c = curr.lstrip()
+    if not p or not c:
+        return False
+    if is_heading(c) or BULLET_RE.match(c) or c.startswith("-") or c.startswith("|") or c.startswith(">"):
+        return False
+    if p.endswith(PUNCT_END) or p.endswith(CLOSE_END):
+        return False
+    if p.endswith("-"):
+        return True
+    if p[-1].islower() or p[-1].isdigit() or p[-1] in (")", "]", "}", "º", "ª"):
+        return True
+    if c[0].islower() or c[0].isdigit():
+        return True
+    if re.search(r"[a-záéíóúñü]$", p) and re.search(r"^[A-ZÁÉÍÓÚÑÜ]", c):
+        return True
+    return False
+
+
+def join_wrapped_lines(lines: list[str]) -> list[str]:
     out: list[str] = []
     buffer: list[str] = []
 
     def flush_buffer() -> None:
+        nonlocal buffer
         if not buffer:
             return
-        paragraph = " ".join(part.strip() for part in buffer if part.strip())
+        paragraph = " ".join(x.strip() for x in buffer if x.strip())
         paragraph = re.sub(r"\s+", " ", paragraph).strip()
         if paragraph:
             out.append(paragraph)
-        buffer.clear()
+        buffer = []
 
     for raw in lines:
         line = raw.rstrip()
-        stripped = line.strip()
+        s = line.strip()
 
-        if not stripped:
+        if not s:
             flush_buffer()
             if out and out[-1] != "":
                 out.append("")
             continue
 
-        if stripped.startswith("#") or stripped.startswith("-") or stripped.startswith(">") or stripped.startswith("|"):
+        if is_noise(line):
+            continue
+
+        if is_heading(line):
+            flush_buffer()
+            if out and out[-1] != "":
+                out.append("")
+            out.append(line.strip())
+            continue
+
+        if BULLET_RE.match(line) or s.startswith("-"):
+            flush_buffer()
+            out.append(normalize_bullet(line))
+            continue
+
+        if s.startswith("|") or s.startswith(">"):
             flush_buffer()
             out.append(line)
             continue
 
-        if is_probable_heading(stripped):
-            flush_buffer()
-            out.append(f"### {stripped.lstrip('# ').strip()}")
+        if not buffer:
+            buffer.append(s)
             continue
 
-        buffer.append(stripped)
+        if should_join(buffer[-1], s):
+            buffer.append(s)
+        else:
+            flush_buffer()
+            buffer.append(s)
 
     flush_buffer()
     return out
 
 
-def convert_sigla_block(lines: list[str]) -> list[str]:
+def add_blank_line_before_lists(lines: list[str]) -> list[str]:
     out: list[str] = []
-    i = 0
-
-    while i < len(lines):
-        line = lines[i].rstrip()
-        stripped = line.strip()
-
-        if SIGLAS_INTRO_RE.match(stripped):
-            out.append("## Siglas")
-            out.append("")
-            i += 1
-
-            entries: list[tuple[str, str]] = []
-            current_sigla: str | None = None
-
-            while i < len(lines):
-                s = lines[i].strip()
-                if not s:
-                    i += 1
-                    continue
-                if s.startswith("#"):
-                    break
-                if re.match(r"^[A-ZÁÉÍÓÚÜÑ0-9]{2,15}[a-z]?$", s) and len(s) <= 16:
-                    current_sigla = s
-                    i += 1
-                    continue
-                if current_sigla is not None:
-                    entries.append((current_sigla, s))
-                    current_sigla = None
-                i += 1
-
-            if entries:
-                out.append("| Sigla | Significado |")
-                out.append("| --- | --- |")
-                for sigla, meaning in entries:
-                    out.append(f"| {sigla} | {meaning} |")
-                out.append("")
-            continue
-
-        out.append(line)
-        i += 1
-
-    return out
-
-
-def remove_repeated_noise(lines: list[str]) -> list[str]:
-    out: list[str] = []
-    prev = None
     for line in lines:
         s = line.strip()
-        if s and prev == s:
-            continue
+        if s.startswith("-") and out:
+            prev = out[-1].strip()
+            if prev and prev.endswith(":") and prev != "":
+                if out[-1] != "":
+                    out.append("")
         out.append(line)
-        if s:
-            prev = s
     return out
 
 
 def refine_markdown(text: str) -> str:
-    text = normalize_spaces(text)
+    text = normalize_text(text)
     lines = text.splitlines()
-    lines = [line for line in lines if not PAGE_HEADER_RE.match(line.strip())]
-    lines = [line for line in lines if not NOISE_HEADER_RE.match(line.strip())]
-    lines = convert_sigla_block(lines)
-    lines = collapse_broken_paragraphs(lines)
-    lines = remove_repeated_noise(lines)
-    return normalize_spaces("\n".join(lines))
+    lines = join_wrapped_lines(lines)
+    lines = add_blank_line_before_lists(lines)
+    result = "\n".join(lines)
+    result = re.sub(r"\n{3,}", "\n\n", result)
+    return result.strip() + "\n"
 
 
 def process_file(input_path: Path, output_path: Path) -> None:
     write_text(output_path, refine_markdown(read_text(input_path)))
 
 
-def iter_md_files(root: Path) -> list[Path]:
-    return sorted(p for p in root.rglob("*.md") if p.is_file())
-
-
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Refina Markdown extraído para aproximarlo a una nota curada.")
+    parser = argparse.ArgumentParser(description="Refina Markdown extraído de forma conservadora.")
     parser.add_argument("input", help="Archivo .md o carpeta de entrada")
     parser.add_argument("output", help="Archivo .md o carpeta de salida")
     parser.add_argument("--overwrite", action="store_true", help="Sobrescribir archivos existentes")
@@ -222,12 +198,12 @@ def main() -> None:
     if not input_path.exists() or not input_path.is_dir():
         raise FileNotFoundError(f"No existe la carpeta de entrada: {input_path}")
 
-    files = iter_md_files(input_path)
-    if not files:
+    md_files = sorted(p for p in input_path.rglob("*.md") if p.is_file())
+    if not md_files:
         print(f"No se han encontrado .md en {input_path}")
         return
 
-    for source in files:
+    for source in md_files:
         rel = source.relative_to(input_path)
         target = output_path / rel
         if target.exists() and not args.overwrite:
