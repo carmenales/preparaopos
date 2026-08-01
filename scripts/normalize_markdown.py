@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Normaliza Markdown extraído de PDFs/PPTX para que quede más legible antes de la revisión manual.
+Normaliza Markdown extraído de PDFs/PPTX con reglas conservadoras.
 
-Hace tareas seguras y reversibles:
-- elimina residuos típicos de extracción (páginas, cabeceras obvias, marcadores vacíos)
-- compacta espacios y líneas en blanco
-- reconstruye listas de siglas en tablas Markdown de 2 columnas
-- convierte bloques muy repetitivos de texto en párrafos más legibles
+Objetivo:
+- limpiar ruido obvio,
+- compactar espacios,
+- eliminar páginas/títulos de página,
+- convertir bloques de siglas muy claros en tabla,
+- deduplicar líneas repetidas.
 
-No resume ni inventa contenido.
+No intenta reconstruir párrafos ni reordenar contenido.
 """
 
 from __future__ import annotations
@@ -20,8 +21,10 @@ from pathlib import Path
 
 SIGLAS_INTRO_RE = re.compile(r"^\s*Las siglas empleadas en este documento son las siguientes\s*:??\s*$", re.IGNORECASE)
 PAGE_MARKER_RE = re.compile(r"^\s*#{1,6}\s*Página\s+\d+\s*$", re.IGNORECASE)
-SIMPLE_HEADER_RE = re.compile(r"^\s*#{2,6}\s*(Centro de Estudios TIC|CentrodeEstudiosTIC|Centro de Estudios|Página\s+\d+)\b", re.IGNORECASE)
-TOC_LINE_RE = re.compile(r"^\s*(\d+(\.\d+)*)\s+(.+?)\s+\d+\s*$")
+SIMPLE_HEADER_RE = re.compile(
+    r"^\s*#{1,6}\s*(Centro de Estudios TIC|CentrodeEstudiosTIC|Centro de Estudios|Cuerpo de Gestión de Sistemas e Informática de la Administración del Estado|Página\s+\d+)\b",
+    re.IGNORECASE,
+)
 SIGLA_RE = re.compile(r"^[A-ZÁÉÍÓÚÜÑ0-9]{2,15}[a-z]?$")
 
 
@@ -68,19 +71,7 @@ def remove_obvious_extraction_noise(text: str) -> str:
 
 def looks_like_sigla_definition_row(line: str) -> bool:
     s = line.strip()
-    if not s:
-        return False
-    if len(s) > 40:
-        return False
-    if " " in s:
-        return False
-    return bool(SIGLA_RE.match(s))
-
-
-def maybe_clean_signatures(sigla: str) -> str:
-    sigla = sigla.strip()
-    sigla = re.sub(r"\s+", "", sigla)
-    return sigla
+    return bool(s and len(s) <= 20 and " " not in s and SIGLA_RE.match(s))
 
 
 def convert_acronym_blocks_to_table(text: str) -> str:
@@ -98,41 +89,30 @@ def convert_acronym_blocks_to_table(text: str) -> str:
             i += 1
 
             entries: list[tuple[str, str]] = []
-            pending_sigla: str | None = None
-
             while i < len(lines):
                 current = lines[i].strip()
                 if not current:
-                    if pending_sigla is not None:
-                        pending_sigla = pending_sigla
                     i += 1
                     continue
-
                 if current.startswith("#"):
                     break
+                if current.startswith("|"):
+                    break
+                if not looks_like_sigla_definition_row(current):
+                    break
 
-                if looks_like_sigla_definition_row(current):
-                    pending_sigla = maybe_clean_signatures(current)
+                sigla = current
+                i += 1
+                if i >= len(lines):
+                    entries.append((sigla, ""))
+                    break
+
+                definition = lines[i].strip()
+                if definition and not looks_like_sigla_definition_row(definition) and not definition.startswith("#"):
+                    entries.append((sigla, definition))
                     i += 1
-                    if i < len(lines):
-                        definition = lines[i].strip()
-                        if definition and not looks_like_sigla_definition_row(definition) and not definition.startswith("#"):
-                            entries.append((pending_sigla, definition))
-                            pending_sigla = None
-                            i += 1
-                            continue
-                    if pending_sigla is not None:
-                        entries.append((pending_sigla, ""))
-                        pending_sigla = None
-                    continue
-
-                if pending_sigla is not None:
-                    entries.append((pending_sigla, current))
-                    pending_sigla = None
-                    i += 1
-                    continue
-
-                break
+                else:
+                    entries.append((sigla, ""))
 
             if entries:
                 out.append("| Sigla | Significado |")
@@ -149,49 +129,11 @@ def convert_acronym_blocks_to_table(text: str) -> str:
     return "\n".join(out)
 
 
-def collapse_broken_paragraphs(text: str) -> str:
-    lines = text.splitlines()
-    out: list[str] = []
-    buffer: list[str] = []
-
-    def flush_buffer() -> None:
-        if not buffer:
-            return
-        paragraph = " ".join(part.strip() for part in buffer if part.strip())
-        paragraph = re.sub(r"\s+", " ", paragraph).strip()
-        if paragraph:
-            out.append(paragraph)
-        buffer.clear()
-
-    for raw in lines:
-        line = raw.rstrip()
-        stripped = line.strip()
-
-        if not stripped:
-            flush_buffer()
-            out.append("")
-            continue
-
-        if stripped.startswith("#") or stripped.startswith("|") or stripped.startswith("-") or stripped.startswith(">"):
-            flush_buffer()
-            out.append(line)
-            continue
-
-        if TOC_LINE_RE.match(stripped):
-            flush_buffer()
-            out.append(line)
-            continue
-
-        buffer.append(stripped)
-
-    flush_buffer()
-    return "\n".join(out)
-
-
 def dedupe_repeated_lines(text: str) -> str:
     lines = text.splitlines()
     out: list[str] = []
     prev = None
+
     for line in lines:
         stripped = line.strip()
         if stripped and prev is not None and stripped == prev:
@@ -199,6 +141,7 @@ def dedupe_repeated_lines(text: str) -> str:
         out.append(line)
         if stripped:
             prev = stripped
+
     return "\n".join(out)
 
 
@@ -206,7 +149,6 @@ def normalize_markdown(content: str) -> str:
     content = normalize_whitespace(content)
     content = remove_obvious_extraction_noise(content)
     content = convert_acronym_blocks_to_table(content)
-    content = collapse_broken_paragraphs(content)
     content = dedupe_repeated_lines(content)
     content = normalize_whitespace(content)
     return content
