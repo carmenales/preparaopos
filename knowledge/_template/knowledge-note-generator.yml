@@ -1,34 +1,81 @@
-# Configuración por defecto para generate_knowledge_notes.py
+# Configuración para generate_knowledge_notes.py
+#
+# - defaults: valores globales por defecto.
+# - profiles: apuntes ligados a un perfil/proceso/fuente concreto.
+# - shared: apuntes compartidos entre varios procesos o sin proceso específico.
 
 defaults:
   origin: academia
-  academy: ""
-  process: age
   status: borrador
-  title: ""
-  official_topic: ""
-  tags: []
-  source_ids: []
-  ai_sources: []
   ai_generated: false
   ai_cleaned: true
   needs_human_review: true
   template: knowledge/_template/apunte.md
+  tags: []
+  source_ids: []
+  ai_sources: []
 
 profiles:
-  age:
+  age/a1-sti-preparatic:
     process: age
-    origin: academia
-    status: borrador
-    ai_cleaned: true
-    needs_human_review: true
-    academy: ""
-    tags: []
-  community:
-    process: community
+    profile: a1-sti
+    source: preparatic
+    academy: preparatic
+    tags:
+      - age
+      - a1-sti
+      - preparatic
+
+  age/a2-gsi-cetic:
+    process: age
+    profile: a2-gsi
+    source: cetic
+    academy: cetic
+    tags:
+      - age
+      - a2-gsi
+      - cetic
+
+  age/a2-gsi-forjaTIC:
+    process: age
+    profile: a2-gsi
+    source: forjaTIC
+    academy: forjaTIC
+    tags:
+      - age
+      - a2-gsi
+      - forjaTIC
+
+  age/c1-tai-preparadortai:
+    process: age
+    profile: c1-tai
+    source: preparadortai
+    academy: preparadortai
+    tags:
+      - age
+      - c1-tai
+      - preparadortai
+
+shared:
+  legal/normativa-general:
+    process: common
+    profile: shared
+    source: boe
+    academy: boe
     origin: community
-    status: borrador
-    ai_cleaned: true
-    needs_human_review: true
-    academy: ""
-    tags: []
+    tags:
+      - shared
+      - normativa
+      - boe
+
+  legal/normativa-age:
+    process: age
+    profile: shared
+    source: boe
+    academy: boe
+    origin: community
+    tags:
+      - age
+      - shared
+      - normativa
+      - boe

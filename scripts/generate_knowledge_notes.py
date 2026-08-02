@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 """Genera apuntes Markdown consumibles a partir de ficheros fuente o Markdown previo.
 
-Casos de uso:
-- aplicar una plantilla de frontmatter a apuntes ya preparados,
-- inferir metadatos mínimos por ruta,
-- generar salidas por lotes manteniendo estructura de carpetas.
-
 Diseño conservador:
 - no reescribe el cuerpo salvo insertar el texto fuente bajo la plantilla,
 - no intenta normalizar ni refinar Markdown,
@@ -38,6 +33,9 @@ class NoteMetadata:
     type: str
     status: str
     processes: list[str]
+    profile: str
+    source: str
+    shared_with: list[str]
     official_topic: str
     source_ids: list[str]
     tags: list[str]
@@ -99,15 +97,17 @@ def default_title_from_path(source_path: Path) -> str:
     return title or source_path.stem
 
 
-def infer_process(relative_parts: tuple[str, ...], fallback: str) -> str:
-    if relative_parts:
-        return relative_parts[0]
-    return fallback
+def infer_process_profile(relative_parts: tuple[str, ...], fallback_process: str, fallback_profile: str) -> tuple[str, str]:
+    if len(relative_parts) >= 2:
+        return relative_parts[0], relative_parts[1]
+    if len(relative_parts) == 1:
+        return relative_parts[0], fallback_profile
+    return fallback_process, fallback_profile
 
 
 def infer_academy(relative_parts: tuple[str, ...]) -> str:
-    if len(relative_parts) >= 2:
-        return relative_parts[1]
+    if len(relative_parts) >= 3:
+        return relative_parts[2]
     return ""
 
 
@@ -140,11 +140,18 @@ def bool_from_value(value, default: bool) -> bool:
     return default
 
 
-def merge_config(config: dict, profile: str | None, cli: dict) -> dict:
+def merge_config(config: dict, profile_key: str | None, shared_key: str | None, cli: dict) -> dict:
     defaults = (config.get("defaults") or {}).copy()
-    profiles = config.get("profiles") or {}
-    if profile:
-        defaults.update(profiles.get(profile, {}))
+    if profile_key:
+        profiles = config.get("profiles") or {}
+        if profile_key not in profiles:
+            raise KeyError(f"No existe el profile_key en el YAML: {profile_key}")
+        defaults.update(profiles[profile_key])
+    if shared_key:
+        shared = config.get("shared") or {}
+        if shared_key not in shared:
+            raise KeyError(f"No existe el shared_key en el YAML: {shared_key}")
+        defaults.update(shared[shared_key])
 
     merged = defaults
     for key, value in cli.items():
@@ -161,18 +168,30 @@ def build_metadata(
     relative = source_path.relative_to(input_root)
     parts = relative.parts[:-1] if source_path.is_file() and source_path.suffix.lower() in SUPPORTED_EXTENSIONS else relative.parts
     title = settings.get("title") or default_title_from_path(source_path)
-    process_value = settings.get("process") or infer_process(parts, "age")
-    academy_value = settings.get("academy") or infer_academy(parts)
+    fallback_process = settings.get("process") or "age"
+    fallback_profile = settings.get("profile") or ""
+    inferred_process, inferred_profile = infer_process_profile(parts, fallback_process, fallback_profile)
+    process_value = settings.get("process") or inferred_process
+    profile_value = settings.get("profile") or inferred_profile
+    source_value = settings.get("source") or ""
+    academy_value = settings.get("academy") or source_value or infer_academy(parts)
     official_topic_value = infer_official_topic(source_path, settings.get("official_topic"))
+    tags = settings.get("tags") or []
+    if not tags:
+        tags = [t for t in [process_value, profile_value, source_value] if t]
+    shared_with = settings.get("shared_with") or []
     return NoteMetadata(
         id=slugify(source_path.stem),
         title=title,
         type="apunte",
         status=settings.get("status") or "borrador",
-        processes=[process_value],
+        processes=[process_value] if process_value and process_value != "common" else [],
+        profile=profile_value,
+        source=source_value,
+        shared_with=shared_with,
         official_topic=official_topic_value,
         source_ids=settings.get("source_ids") or [],
-        tags=settings.get("tags") or [],
+        tags=tags,
         created_at=date.today().isoformat(),
         last_reviewed=None,
         origin=settings.get("origin") or "academia",
@@ -212,6 +231,14 @@ def render_frontmatter(template_lines: list[str], metadata: NoteMetadata) -> lis
         elif key == "processes":
             output.append("processes:")
             output.extend([f'  - "{item}"' for item in metadata.processes])
+        elif key == "profile":
+            output.append(f'profile: {render_scalar(metadata.profile)}')
+        elif key == "source":
+            output.append(f'source: {render_scalar(metadata.source)}')
+        elif key == "shared_with":
+            output.append("shared_with: []" if not metadata.shared_with else "shared_with:")
+            if metadata.shared_with:
+                output.extend([f'  - "{item}"' for item in metadata.shared_with])
         elif key == "official_topic":
             output.append(f'official_topic: {render_scalar(metadata.official_topic)}')
         elif key == "source_ids":
@@ -282,10 +309,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("output_root", help="Carpeta raíz de salida")
     parser.add_argument("--config", default=str(CONFIG_DEFAULT), help="Ruta del fichero YAML de configuración.")
     parser.add_argument("--template", default=None, help="Ruta de la plantilla de apunte.")
-    parser.add_argument("--profile", default=None, help="Perfil de configuración a aplicar.")
+    parser.add_argument("--profile-key", default=None, help="Clave de perfil del YAML, por ejemplo age/a2-gsi-cetic.")
+    parser.add_argument("--shared-key", default=None, help="Clave compartida del YAML, por ejemplo legal/normativa-general.")
     parser.add_argument("--origin", default=None, choices=["academia", "community", "ai-generated"], help="Procedencia del apunte.")
     parser.add_argument("--academy", default=None, help="Academia o fuente de procedencia.")
     parser.add_argument("--process", default=None, help="Proceso destino, por ejemplo age.")
+    parser.add_argument("--profile", default=None, help="Perfil de oposición, por ejemplo a2-gsi.")
+    parser.add_argument("--source", default=None, help="Fuente concreta, por ejemplo cetic o preparatic.")
+    parser.add_argument("--shared-with", default=None, help="Lista de perfiles con los que se comparte, separada por comas.")
     parser.add_argument("--official-topic", default=None, help="Tema oficial o identificador equivalente.")
     parser.add_argument("--status", default=None, help="Estado del apunte.")
     parser.add_argument("--title", default=None, help="Título explícito del apunte.")
@@ -324,6 +355,9 @@ def main() -> None:
         "origin": args.origin,
         "academy": args.academy,
         "process": args.process,
+        "profile": args.profile,
+        "source": args.source,
+        "shared_with": parse_list_arg(args.shared_with),
         "official_topic": args.official_topic,
         "status": args.status,
         "title": args.title,
@@ -334,7 +368,8 @@ def main() -> None:
         "ai_cleaned": args.ai_cleaned,
         "needs_human_review": args.needs_human_review,
     }
-    merged_settings = merge_config(config, args.profile, cli_settings)
+
+    merged_settings = merge_config(config, args.profile_key, args.shared_key, cli_settings)
 
     input_root = input_path if input_path.is_dir() else input_path.parent
     for source in inputs:
