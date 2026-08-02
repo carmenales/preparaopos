@@ -1,0 +1,34 @@
+# Configuración por defecto para generate_knowledge_notes.py
+
+defaults:
+  origin: academia
+  academy: ""
+  process: age
+  status: borrador
+  title: ""
+  official_topic: ""
+  tags: []
+  source_ids: []
+  ai_sources: []
+  ai_generated: false
+  ai_cleaned: true
+  needs_human_review: true
+  template: knowledge/_template/apunte.md
+
+profiles:
+  age:
+    process: age
+    origin: academia
+    status: borrador
+    ai_cleaned: true
+    needs_human_review: true
+    academy: ""
+    tags: []
+  community:
+    process: community
+    origin: community
+    status: borrador
+    ai_cleaned: true
+    needs_human_review: true
+    academy: ""
+    tags: []

@@ -21,7 +21,13 @@ from datetime import date
 from pathlib import Path
 from typing import Iterable
 
+try:
+    import yaml
+except ImportError:  # pragma: no cover
+    yaml = None
+
 TEMPLATE_DEFAULT = Path("knowledge/_template/apunte.md")
+CONFIG_DEFAULT = Path("knowledge-note-generator.yml")
 SUPPORTED_EXTENSIONS = {".md", ".txt"}
 
 
@@ -71,8 +77,13 @@ def split_frontmatter(text: str) -> tuple[list[str], str]:
     return parts[1].splitlines(), parts[2].lstrip("\n")
 
 
-def parse_scalar(value: str) -> str:
-    return value.strip().strip('"').strip("'")
+def load_yaml_config(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    if yaml is None:
+        raise RuntimeError("PyYAML no está instalado. Instálalo o elimina el uso de config YAML.")
+    data = yaml.safe_load(read_text(path))
+    return data or {}
 
 
 def load_template(path: Path) -> list[str]:
@@ -115,45 +126,61 @@ def parse_list_arg(value: str | None) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def bool_from_value(value, default: bool) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "1", "yes", "y", "si", "sí"}:
+            return True
+        if lowered in {"false", "0", "no", "n"}:
+            return False
+    return default
+
+
+def merge_config(config: dict, profile: str | None, cli: dict) -> dict:
+    defaults = (config.get("defaults") or {}).copy()
+    profiles = config.get("profiles") or {}
+    if profile:
+        defaults.update(profiles.get(profile, {}))
+
+    merged = defaults
+    for key, value in cli.items():
+        if value is not None:
+            merged[key] = value
+    return merged
+
+
 def build_metadata(
     source_path: Path,
     input_root: Path,
-    title: str | None,
-    process: str | None,
-    academy: str | None,
-    official_topic: str | None,
-    origin: str,
-    status: str,
-    ai_generated: bool,
-    ai_cleaned: bool,
-    needs_human_review: bool,
-    tags: list[str],
-    source_ids: list[str],
-    ai_sources: list[str],
+    settings: dict,
 ) -> NoteMetadata:
     relative = source_path.relative_to(input_root)
     parts = relative.parts[:-1] if source_path.is_file() and source_path.suffix.lower() in SUPPORTED_EXTENSIONS else relative.parts
-    note_title = title or default_title_from_path(source_path)
-    process_value = process or infer_process(parts, "age")
-    academy_value = academy or infer_academy(parts)
-    official_topic_value = infer_official_topic(source_path, official_topic)
+    title = settings.get("title") or default_title_from_path(source_path)
+    process_value = settings.get("process") or infer_process(parts, "age")
+    academy_value = settings.get("academy") or infer_academy(parts)
+    official_topic_value = infer_official_topic(source_path, settings.get("official_topic"))
     return NoteMetadata(
         id=slugify(source_path.stem),
-        title=note_title,
+        title=title,
         type="apunte",
-        status=status,
+        status=settings.get("status") or "borrador",
         processes=[process_value],
         official_topic=official_topic_value,
-        source_ids=source_ids,
-        tags=tags,
+        source_ids=settings.get("source_ids") or [],
+        tags=settings.get("tags") or [],
         created_at=date.today().isoformat(),
         last_reviewed=None,
-        origin=origin,
+        origin=settings.get("origin") or "academia",
         academy=academy_value,
-        ai_generated=ai_generated,
-        ai_cleaned=ai_cleaned,
-        ai_sources=ai_sources,
-        needs_human_review=needs_human_review,
+        ai_generated=bool_from_value(settings.get("ai_generated"), False),
+        ai_cleaned=bool_from_value(settings.get("ai_cleaned"), True),
+        ai_sources=settings.get("ai_sources") or [],
+        needs_human_review=bool_from_value(settings.get("needs_human_review"), True),
     )
 
 
@@ -184,11 +211,13 @@ def render_frontmatter(template_lines: list[str], metadata: NoteMetadata) -> lis
             output.append(f'status: "{metadata.status}"')
         elif key == "processes":
             output.append("processes:")
-            output.extend(render_list(metadata.processes)[1:])
+            output.extend([f'  - "{item}"' for item in metadata.processes])
         elif key == "official_topic":
             output.append(f'official_topic: {render_scalar(metadata.official_topic)}')
         elif key == "source_ids":
-            output.append("source_ids: []")
+            output.append("source_ids: []" if not metadata.source_ids else "source_ids:")
+            if metadata.source_ids:
+                output.extend([f'  - "{src}"' for src in metadata.source_ids])
         elif key == "tags":
             output.append("tags: []" if not metadata.tags else "tags:")
             if metadata.tags:
@@ -234,36 +263,10 @@ def process_file(
     input_root: Path,
     output_root: Path,
     template_path: Path,
-    origin: str,
-    status: str,
-    process: str | None,
-    academy: str | None,
-    official_topic: str | None,
-    ai_generated: bool,
-    ai_cleaned: bool,
-    needs_human_review: bool,
-    tags: list[str],
-    source_ids: list[str],
-    ai_sources: list[str],
-    title: str | None,
+    settings: dict,
     overwrite: bool,
 ) -> Path:
-    metadata = build_metadata(
-        source_path=source_path,
-        input_root=input_root,
-        title=title,
-        process=process,
-        academy=academy,
-        official_topic=official_topic,
-        origin=origin,
-        status=status,
-        ai_generated=ai_generated,
-        ai_cleaned=ai_cleaned,
-        needs_human_review=needs_human_review,
-        tags=tags,
-        source_ids=source_ids,
-        ai_sources=ai_sources,
-    )
+    metadata = build_metadata(source_path=source_path, input_root=input_root, settings=settings)
     relative = source_path.relative_to(input_root).with_suffix(".md")
     output_path = output_root / relative
     if output_path.exists() and not overwrite:
@@ -277,21 +280,21 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Genera apuntes Markdown consumibles con frontmatter.")
     parser.add_argument("input_path", help="Archivo o carpeta de entrada")
     parser.add_argument("output_root", help="Carpeta raíz de salida")
-    parser.add_argument("--template", default=str(TEMPLATE_DEFAULT), help="Ruta de la plantilla de apunte.")
-    parser.add_argument("--origin", default="academia", choices=["academia", "community", "ai-generated"], help="Procedencia del apunte.")
+    parser.add_argument("--config", default=str(CONFIG_DEFAULT), help="Ruta del fichero YAML de configuración.")
+    parser.add_argument("--template", default=None, help="Ruta de la plantilla de apunte.")
+    parser.add_argument("--profile", default=None, help="Perfil de configuración a aplicar.")
+    parser.add_argument("--origin", default=None, choices=["academia", "community", "ai-generated"], help="Procedencia del apunte.")
     parser.add_argument("--academy", default=None, help="Academia o fuente de procedencia.")
     parser.add_argument("--process", default=None, help="Proceso destino, por ejemplo age.")
     parser.add_argument("--official-topic", default=None, help="Tema oficial o identificador equivalente.")
-    parser.add_argument("--status", default="borrador", help="Estado del apunte.")
+    parser.add_argument("--status", default=None, help="Estado del apunte.")
     parser.add_argument("--title", default=None, help="Título explícito del apunte.")
-    parser.add_argument("--tags", default="", help="Lista de tags separada por comas.")
-    parser.add_argument("--source-ids", default="", help="IDs de fuentes separadas por comas.")
-    parser.add_argument("--ai-sources", default="", help="Fuentes IA separadas por comas.")
-    parser.add_argument("--ai-generated", action="store_true", help="Marca el apunte como generado por IA.")
-    parser.add_argument("--ai-cleaned", action="store_true", default=True, help="Marca el apunte como limpiado con IA.")
-    parser.add_argument("--not-ai-cleaned", dest="ai_cleaned", action="store_false", help="Marca el apunte como no limpiado con IA.")
-    parser.add_argument("--needs-human-review", action="store_true", default=True, help="Marca el apunte como pendiente de revisión humana.")
-    parser.add_argument("--no-human-review", dest="needs_human_review", action="store_false", help="Marca el apunte como revisado.")
+    parser.add_argument("--tags", default=None, help="Lista de tags separada por comas.")
+    parser.add_argument("--source-ids", default=None, help="IDs de fuentes separadas por comas.")
+    parser.add_argument("--ai-sources", default=None, help="Fuentes IA separadas por comas.")
+    parser.add_argument("--ai-generated", default=None, help="Marca el apunte como generado por IA.")
+    parser.add_argument("--ai-cleaned", default=None, help="Marca el apunte como limpiado con IA.")
+    parser.add_argument("--needs-human-review", default=None, help="Marca el apunte como pendiente de revisión humana.")
     parser.add_argument("--overwrite", action="store_true", help="Sobrescribe si el destino ya existe.")
     return parser.parse_args()
 
@@ -300,10 +303,15 @@ def main() -> None:
     args = parse_args()
     input_path = Path(args.input_path)
     output_root = Path(args.output_root)
-    template_path = Path(args.template)
+    config_path = Path(args.config)
 
     if not input_path.exists():
         raise FileNotFoundError(f"No existe la ruta de entrada: {input_path}")
+    if not config_path.exists():
+        raise FileNotFoundError(f"No existe el fichero de configuración: {config_path}")
+
+    config = load_yaml_config(config_path)
+    template_path = Path(args.template or ((config.get("defaults") or {}).get("template") or TEMPLATE_DEFAULT))
     if not template_path.exists():
         raise FileNotFoundError(f"No existe la plantilla: {template_path}")
 
@@ -312,29 +320,30 @@ def main() -> None:
         print("No se han encontrado ficheros compatibles.")
         return
 
-    input_root = input_path if input_path.is_dir() else input_path.parent
-    tags = parse_list_arg(args.tags)
-    source_ids = parse_list_arg(args.source_ids)
-    ai_sources = parse_list_arg(args.ai_sources)
+    cli_settings = {
+        "origin": args.origin,
+        "academy": args.academy,
+        "process": args.process,
+        "official_topic": args.official_topic,
+        "status": args.status,
+        "title": args.title,
+        "tags": parse_list_arg(args.tags),
+        "source_ids": parse_list_arg(args.source_ids),
+        "ai_sources": parse_list_arg(args.ai_sources),
+        "ai_generated": args.ai_generated,
+        "ai_cleaned": args.ai_cleaned,
+        "needs_human_review": args.needs_human_review,
+    }
+    merged_settings = merge_config(config, args.profile, cli_settings)
 
+    input_root = input_path if input_path.is_dir() else input_path.parent
     for source in inputs:
         out = process_file(
             source_path=source,
             input_root=input_root,
             output_root=output_root,
             template_path=template_path,
-            origin=args.origin,
-            status=args.status,
-            process=args.process,
-            academy=args.academy,
-            official_topic=args.official_topic,
-            ai_generated=args.ai_generated,
-            ai_cleaned=args.ai_cleaned,
-            needs_human_review=args.needs_human_review,
-            tags=tags,
-            source_ids=source_ids,
-            ai_sources=ai_sources,
-            title=args.title,
+            settings=merged_settings,
             overwrite=args.overwrite,
         )
         print(f"[ok] {source} -> {out}")
