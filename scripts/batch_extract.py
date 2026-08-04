@@ -18,7 +18,6 @@ import shutil
 import sys
 
 from extract_pdf_text import extract_pdf_to_markdown
-from extract_pptx_text import extract_pptx_to_markdown
 from normalize_markdown import normalize_markdown
 from refine_markdown_note import refine_markdown
 
@@ -60,8 +59,6 @@ def extract_stage(source_path: Path, output_md: Path, extract_images: bool) -> N
     ensure_dir(output_md.parent)
     if source_path.suffix.lower() == ".pdf":
         extract_pdf_to_markdown(source_path, output_md, extract_images=extract_images)
-    else:
-        extract_pptx_to_markdown(source_path, output_md, extract_images=extract_images)
 
 
 def normalize_stage(input_md: Path, output_md: Path) -> None:
