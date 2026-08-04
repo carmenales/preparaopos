@@ -239,7 +239,7 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
         "> Texto extraído automáticamente desde PDF. Puede contener errores de formato.",
         "",
         f"- Archivo origen: `{input_pdf.as_posix()}`",
-        f"- Número de páginas: {len(reader.pages)}",
+        f"- Número de páginas: {len(doc)}",
         "",
     ]
 
