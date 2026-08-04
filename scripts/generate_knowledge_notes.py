@@ -1,10 +1,5 @@
-#!/usr/bin/env python3
-"""Genera apuntes Markdown consumibles a partir de ficheros fuente o Markdown previo.
-
-Diseño conservador:
-- no reescribe el cuerpo salvo insertar el texto fuente bajo la plantilla,
-- no intenta normalizar ni refinar Markdown,
-- deja los metadatos explícitos para que StudyAssistant y el indexador los consuman.
+"""
+Genera apuntes Markdown consumibles a partir de ficheros fuente o Markdown previo.
 """
 
 from __future__ import annotations
@@ -21,7 +16,7 @@ try:
 except ImportError:  # pragma: no cover
     yaml = None
 
-TEMPLATE_DEFAULT = Path("knowledge/_template/apunte.md")
+TEMPLATE_DEFAULT = Path("knowledge/_template/apunte-fuente-privada.md")
 CONFIG_DEFAULT = Path("knowledge-note-generator.yml")
 SUPPORTED_EXTENSIONS = {".md", ".txt"}
 
@@ -41,8 +36,6 @@ class NoteMetadata:
     tags: list[str]
     created_at: str
     last_reviewed: str | None
-    origin: str
-    academy: str
     ai_generated: bool
     ai_cleaned: bool
     ai_sources: list[str]
@@ -84,11 +77,21 @@ def load_yaml_config(path: Path) -> dict:
     return data or {}
 
 
-def load_template(path: Path) -> list[str]:
+def load_template_keys(path: Path) -> list[str]:
     frontmatter_lines, _ = split_frontmatter(read_text(path))
     if not frontmatter_lines:
         raise ValueError(f"La plantilla {path} no contiene frontmatter YAML válido.")
-    return frontmatter_lines
+    if yaml is None:
+        raise RuntimeError("PyYAML no está instalado. Instálalo para poder leer plantillas.")
+
+    frontmatter_text = "\n".join(frontmatter_lines)
+    parsed = yaml.safe_load(frontmatter_text) or {}
+    return list(parsed.keys())
+
+
+def build_process_path(process_value: str, profile_value: str) -> str:
+    parts = [part for part in [process_value, profile_value] if part and part != "shared"]
+    return "/".join(parts)
 
 
 def default_title_from_path(source_path: Path) -> str:
@@ -103,13 +106,6 @@ def infer_process_profile(relative_parts: tuple[str, ...], fallback_process: str
     if len(relative_parts) == 1:
         return relative_parts[0], fallback_profile
     return fallback_process, fallback_profile
-
-
-def infer_academy(relative_parts: tuple[str, ...]) -> str:
-    if len(relative_parts) >= 3:
-        return relative_parts[2]
-    return ""
-
 
 def infer_official_topic(source_path: Path, explicit_topic: str | None) -> str:
     if explicit_topic is not None:
@@ -173,19 +169,17 @@ def build_metadata(
     inferred_process, inferred_profile = infer_process_profile(parts, fallback_process, fallback_profile)
     process_value = settings.get("process") or inferred_process
     profile_value = settings.get("profile") or inferred_profile
+    processes_path = build_process_path(process_value, profile_value)
     source_value = settings.get("source") or ""
-    academy_value = settings.get("academy") or source_value or infer_academy(parts)
     official_topic_value = infer_official_topic(source_path, settings.get("official_topic"))
     tags = settings.get("tags") or []
-    if not tags:
-        tags = [t for t in [process_value, profile_value, source_value] if t]
     shared_with = settings.get("shared_with") or []
     return NoteMetadata(
         id=slugify(source_path.stem),
         title=title,
         type="apunte",
         status=settings.get("status") or "borrador",
-        processes=[process_value] if process_value and process_value != "common" else [],
+        processes=[processes_path] if processes_path else [],
         profile=profile_value,
         source=source_value,
         shared_with=shared_with,
@@ -194,8 +188,6 @@ def build_metadata(
         tags=tags,
         created_at=date.today().isoformat(),
         last_reviewed=None,
-        origin=settings.get("origin") or "academia",
-        academy=academy_value,
         ai_generated=bool_from_value(settings.get("ai_generated"), False),
         ai_cleaned=bool_from_value(settings.get("ai_cleaned"), True),
         ai_sources=settings.get("ai_sources") or [],
@@ -216,10 +208,9 @@ def render_list(values: Iterable[str]) -> list[str]:
     return ["", *[f'  - "{item}"' for item in values]]
 
 
-def render_frontmatter(template_lines: list[str], metadata: NoteMetadata) -> list[str]:
+def render_frontmatter(template_keys: list[str], metadata: NoteMetadata) -> list[str]:
     output: list[str] = []
-    for line in template_lines:
-        key = line.split(":", 1)[0].strip()
+    for key in template_keys:
         if key == "id":
             output.append(f'id: "{metadata.id}"')
         elif key == "title":
@@ -229,7 +220,7 @@ def render_frontmatter(template_lines: list[str], metadata: NoteMetadata) -> lis
         elif key == "status":
             output.append(f'status: "{metadata.status}"')
         elif key == "processes":
-            output.append("processes:")
+            output.append("processes: []" if not metadata.processes else "processes:")
             output.extend([f'  - "{item}"' for item in metadata.processes])
         elif key == "profile":
             output.append(f'profile: {render_scalar(metadata.profile)}')
@@ -253,10 +244,6 @@ def render_frontmatter(template_lines: list[str], metadata: NoteMetadata) -> lis
             output.append(f'created_at: "{metadata.created_at}"')
         elif key == "last_reviewed":
             output.append("last_reviewed: null")
-        elif key == "origin":
-            output.append(f'origin: "{metadata.origin}"')
-        elif key == "academy":
-            output.append(f'academy: "{metadata.academy}"')
         elif key == "ai_generated":
             output.append(f'ai_generated: {str(metadata.ai_generated).lower()}')
         elif key == "ai_cleaned":
@@ -268,13 +255,14 @@ def render_frontmatter(template_lines: list[str], metadata: NoteMetadata) -> lis
         elif key == "needs_human_review":
             output.append(f'needs_human_review: {str(metadata.needs_human_review).lower()}')
         else:
-            output.append(line)
+            print(f"[aviso] La plantilla tiene la clave '{key}', que este script no sabe rellenar. Se deja a null.")
+            output.append(f"{key}: null")
     return output
 
 
 def build_note(template_path: Path, metadata: NoteMetadata, body: str) -> str:
-    template_lines = load_template(template_path)
-    rendered_frontmatter = render_frontmatter(template_lines, metadata)
+    template_keys = load_template_keys(template_path)
+    rendered_frontmatter = render_frontmatter(template_keys, metadata)
     body = body.lstrip("\n")
     return "---\n" + "\n".join(rendered_frontmatter) + "\n---\n\n" + f"# {metadata.title}\n\n" + body.rstrip() + "\n"
 
@@ -311,8 +299,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--template", default=None, help="Ruta de la plantilla de apunte.")
     parser.add_argument("--profile-key", default=None, help="Clave de perfil del YAML, por ejemplo age/a2-gsi-cetic.")
     parser.add_argument("--shared-key", default=None, help="Clave compartida del YAML, por ejemplo legal/normativa-general.")
-    parser.add_argument("--origin", default=None, choices=["academia", "community", "ai-generated"], help="Procedencia del apunte.")
-    parser.add_argument("--academy", default=None, help="Academia o fuente de procedencia.")
     parser.add_argument("--process", default=None, help="Proceso destino, por ejemplo age.")
     parser.add_argument("--profile", default=None, help="Perfil de oposición, por ejemplo a2-gsi.")
     parser.add_argument("--source", default=None, help="Fuente concreta, por ejemplo cetic o preparatic.")
@@ -352,11 +338,9 @@ def main() -> None:
         return
 
     cli_settings = {
-        "origin": args.origin,
-        "academy": args.academy,
+        "source": args.source,
         "process": args.process,
         "profile": args.profile,
-        "source": args.source,
         "shared_with": parse_list_arg(args.shared_with),
         "official_topic": args.official_topic,
         "status": args.status,

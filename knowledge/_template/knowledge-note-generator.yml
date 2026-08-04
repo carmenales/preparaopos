@@ -5,77 +5,43 @@
 # - shared: apuntes compartidos entre varios procesos o sin proceso específico.
 
 defaults:
-  origin: academia
-  status: borrador
-  ai_generated: false
-  ai_cleaned: true
-  needs_human_review: true
-  template: knowledge/_template/apunte.md
+  template: knowledge/_template/apunte-fuente-privada.md
   tags: []
   source_ids: []
   ai_sources: []
+  ai_generated: false
+  ai_cleaned: true
+  status: borrador
+  needs_human_review: true
 
 profiles:
   age/a1-sti-preparatic:
     process: age
     profile: a1-sti
     source: preparatic
-    academy: preparatic
-    tags:
-      - age
-      - a1-sti
-      - preparatic
 
   age/a2-gsi-cetic:
     process: age
     profile: a2-gsi
     source: cetic
-    academy: cetic
-    tags:
-      - age
-      - a2-gsi
-      - cetic
 
   age/a2-gsi-forjaTIC:
     process: age
     profile: a2-gsi
     source: forjaTIC
-    academy: forjaTIC
-    tags:
-      - age
-      - a2-gsi
-      - forjaTIC
 
   age/c1-tai-preparadortai:
     process: age
     profile: c1-tai
     source: preparadortai
-    academy: preparadortai
-    tags:
-      - age
-      - c1-tai
-      - preparadortai
 
 shared:
   legal/normativa-general:
     process: common
     profile: shared
     source: boe
-    academy: boe
-    origin: community
-    tags:
-      - shared
-      - normativa
-      - boe
 
   legal/normativa-age:
     process: age
     profile: shared
     source: boe
-    academy: boe
-    origin: community
-    tags:
-      - age
-      - shared
-      - normativa
-      - boe

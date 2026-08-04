@@ -3,6 +3,7 @@ id: ""
 title: ""
 type: "apunte"
 status: "borrador"
+source: ""
 processes:
   - "age/a2-gsi"
 official_topic: ""
@@ -10,8 +11,6 @@ source_ids: []
 tags: []
 created_at: null
 last_reviewed: null
-origin: "academia"
-academy: ""
 ai_generated: false
 ai_cleaned: true
 ai_sources: []
