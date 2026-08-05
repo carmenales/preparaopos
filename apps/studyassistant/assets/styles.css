@@ -614,3 +614,12 @@ tr:nth-child(even) td {
     font-weight: 600;
     color: #111827;
 }
+
+.process-group {
+    margin-bottom: 2rem;
+}
+
+.process-group__title {
+    margin: 0 0 1rem;
+    font-size: 1.25rem;
+}

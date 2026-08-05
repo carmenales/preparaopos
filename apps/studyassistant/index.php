@@ -96,39 +96,65 @@ require __DIR__ . '/includes/header.php';
 
 <script src="assets/semantic-search.js"></script>
 
-<section class="note-grid">
-    <?php foreach ($filteredNotes as $note): ?>
-        <article class="note-card">
-            <div class="note-card-header">
-                <h2>
-                    <a href="note.php?id=<?php echo urlencode($note['id']); ?>">
-                        <?php echo sa_safe_text($note['title']); ?>
-                    </a>
-                </h2>
-                <?php if (!empty($note['status'])): ?>
-                    <span class="badge"><?php echo sa_safe_text($note['status']); ?></span>
-                <?php endif; ?>
-            </div>
+<?php
+$notesByProcess = [];
 
-            <?php if (!empty($note['official_topic'])): ?>
-                <p class="meta"><?php echo sa_safe_text($note['official_topic']); ?></p>
-            <?php endif; ?>
+foreach ($filteredNotes as $note) {
+    $processKey = 'Sin proceso';
 
-            <?php if (!empty($note['excerpt'])): ?>
-                <p><?php echo sa_safe_text($note['excerpt']); ?></p>
-            <?php endif; ?>
+    if (!empty($note['processes']) && is_array($note['processes'])) {
+        $processKey = (string)$note['processes'][0];
+    }
 
-            <?php if (!empty($note['tags'])): ?>
-                <div class="tags">
-                    <?php foreach ($note['tags'] as $noteTag): ?>
-                        <a class="tag" href="index.php?tag=<?php echo urlencode($noteTag); ?>">
-                            <?php echo sa_safe_text($noteTag); ?>
-                        </a>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
-        </article>
-    <?php endforeach; ?>
-</section>
+    if (!isset($notesByProcess[$processKey])) {
+        $notesByProcess[$processKey] = [];
+    }
+
+    $notesByProcess[$processKey][] = $note;
+}
+?>
+
+<?php foreach ($notesByProcess as $processKey => $notesInProcess): ?>
+    <section class="process-group">
+        <h2 class="process-group__title">
+            <?php echo sa_safe_text($processKey); ?>
+        </h2>
+
+        <section class="note-grid">
+            <?php foreach ($notesInProcess as $note): ?>
+                <article class="note-card">
+                    <div class="note-card-header">
+                        <h3>
+                            <a href="note.php?id=<?php echo urlencode($note['id']); ?>">
+                                <?php echo sa_safe_text($note['title']); ?>
+                            </a>
+                        </h3>
+                        <?php if (!empty($note['status'])): ?>
+                            <span class="badge"><?php echo sa_safe_text($note['status']); ?></span>
+                        <?php endif; ?>
+                    </div>
+
+                    <?php if (!empty($note['official_topic'])): ?>
+                        <p class="meta"><?php echo sa_safe_text($note['official_topic']); ?></p>
+                    <?php endif; ?>
+
+                    <?php if (!empty($note['excerpt'])): ?>
+                        <p><?php echo sa_safe_text($note['excerpt']); ?></p>
+                    <?php endif; ?>
+
+                    <?php if (!empty($note['tags'])): ?>
+                        <div class="tags">
+                            <?php foreach ($note['tags'] as $noteTag): ?>
+                                <a class="tag" href="index.php?tag=<?php echo urlencode($noteTag); ?>">
+                                    <?php echo sa_safe_text($noteTag); ?>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </article>
+            <?php endforeach; ?>
+        </section>
+    </section>
+<?php endforeach; ?>
 
 <?php require __DIR__ . '/includes/footer.php'; ?>
