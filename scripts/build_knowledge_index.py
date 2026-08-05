@@ -216,6 +216,7 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
             "path": path.as_posix(),
             "processes": metadata.get("processes", []),
             "profiles": metadata.get("profiles", []),
+            "origin": metadata.get("origin", ""),
             "shared_with": metadata.get("shared_with", []),
             "tags": metadata.get("tags", []),
             "practice": practice_obj,
