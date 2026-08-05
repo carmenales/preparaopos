@@ -1,0 +1,47 @@
+# Configuración para generate_knowledge_notes.py
+#
+# - defaults: valores globales por defecto.
+# - profiles: apuntes ligados a un perfil/proceso/fuente concreto.
+# - shared: apuntes compartidos entre varios procesos o sin proceso específico.
+
+defaults:
+  template: knowledge/_template/apunte-fuente-privada.md
+  tags: []
+  source_ids: []
+  ai_sources: []
+  ai_generated: false
+  ai_cleaned: true
+  status: borrador
+  needs_human_review: true
+
+profiles:
+  age/a1-sti-preparatic:
+    process: age
+    profile: a1-sti
+    source: preparatic
+
+  age/a2-gsi-cetic:
+    process: age
+    profile: a2-gsi
+    source: cetic
+
+  age/a2-gsi-forjaTIC:
+    process: age
+    profile: a2-gsi
+    source: forjaTIC
+
+  age/c1-tai-preparadortai:
+    process: age
+    profile: c1-tai
+    source: preparadortai
+
+shared:
+  legal/normativa-general:
+    process: common
+    profile: shared
+    source: boe
+
+  legal/normativa-age:
+    process: age
+    profile: shared
+    source: boe

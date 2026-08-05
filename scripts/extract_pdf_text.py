@@ -2,16 +2,18 @@
 """
 Extrae texto e imágenes de PDFs a Markdown usando PyMuPDF.
 
-Incluye soporte básico para tablas detectadas por layout cuando la librería lo
-permite. Las tablas simples se exportan como Markdown; los casos complejos se
-mantienen como texto lineal para no perder contenido.
+Características:
+- Detecta cabeceras/pies repetidos por posición y frecuencia.
+- Descarta páginas tipo índice/TOC en bruto.
+- Convierte imágenes incrustadas a PNG/JPG estándar cuando es posible.
+- Genera un Markdown más limpio, con headings inferidos por tamaño de fuente.
 """
 
 from __future__ import annotations
 
 import argparse
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -20,17 +22,11 @@ import fitz  # PyMuPDF
 
 
 @dataclass(frozen=True)
-class LineText:
+class TextBlock:
     page_number: int
     text: str
     bbox: tuple[float, float, float, float]
     font_size: float
-
-
-@dataclass(frozen=True)
-class TableRegion:
-    bbox: tuple[float, float, float, float]
-    markdown: str
 
 
 def _sanitize_filename(name: str) -> str:
@@ -41,135 +37,105 @@ def _sanitize_filename(name: str) -> str:
 def _normalize_text(text: str) -> str:
     text = text.replace("\u00ad", "")
     text = re.sub(r"[ \t]+", " ", text)
-    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r" *\n *", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    text = re.sub(r"(?<=\w)-\n(?=\w)", "", text)
+    text = re.sub(r"(?<=\w)\n(?=\w)", " ", text)
+    text = re.sub(r"\s{2,}", " ", text)
     return text.strip()
 
 
-def _line_signature(text: str) -> str:
-    text = _normalize_text(text).lower()
-    text = re.sub(r"\b\d+\b", "#", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
-
-
-def _looks_like_toc_page(lines: list[str]) -> bool:
-    if len(lines) < 8:
+def _looks_like_toc_page(text: str) -> bool:
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    if len(lines) < 6:
         return False
-
     toc_like = 0
-    for line in lines[:30]:
-        if re.match(r"^\s*(\d+(\.\d+)*)\s+.+?\s+\d+\s*$", line):
+    for line in lines[:25]:
+        if re.search(r"\b\d+\s*$", line) and len(line) < 120:
             toc_like += 1
-        elif re.search(r"\.\.\.\.+\s*\d+\s*$", line):
+        elif re.search(r"\.\.\.\.\.|\.{3,}", line):
             toc_like += 1
-        elif re.match(r"^\s*\d+(\.\d+)*\.?\s*[A-ZÁÉÍÓÚÑ].+\s+\d+\s*$", line):
+        elif re.match(r"^\d+(\.\d+)*\.?\s+", line):
             toc_like += 1
+    return toc_like >= max(4, len(lines[:25]) // 2)
 
-    return toc_like >= 5
+
+def _page_block_signature(block: dict[str, Any]) -> tuple[str, int]:
+    lines = []
+    for line in block.get("lines", []):
+        spans = line.get("spans", [])
+        line_text = "".join(span.get("text", "") for span in spans)
+        line_text = _normalize_text(line_text)
+        if line_text:
+            lines.append(line_text)
+    text = " ".join(lines)
+    text = re.sub(r"\b\d+\b", "#", text)
+    text = re.sub(r"\s+", " ", text).strip().lower()
+    return text, len(lines)
 
 
-def _extract_lines(page: fitz.Page) -> list[LineText]:
+def _is_header_footer_candidate(block: dict[str, Any], page_height: float) -> bool:
+    bbox = block.get("bbox", [0, 0, 0, 0])
+    y0 = float(bbox[1])
+    y1 = float(bbox[3])
+    top_band = page_height * 0.12
+    bottom_band = page_height * 0.88
+    return y1 <= top_band or y0 >= bottom_band
+
+
+def _extract_blocks(page: fitz.Page) -> list[TextBlock]:
     data = page.get_text("dict")
-    lines: list[LineText] = []
+    blocks: list[TextBlock] = []
+    page_height = float(page.rect.height)
 
     for block in data.get("blocks", []):
         if block.get("type", 0) != 0:
             continue
 
+        text_parts = []
+        font_sizes = []
         for line in block.get("lines", []):
-            spans = line.get("spans", [])
-            parts = []
-            sizes = []
-            for span in spans:
+            line_parts = []
+            for span in line.get("spans", []):
                 span_text = span.get("text", "")
                 if span_text:
-                    parts.append(span_text)
+                    line_parts.append(span_text)
                     try:
-                        sizes.append(float(span.get("size", 0.0)))
+                        font_sizes.append(float(span.get("size", 0.0)))
                     except Exception:
                         pass
+            if line_parts:
+                text_parts.append("".join(line_parts))
 
-            text = _normalize_text("".join(parts))
-            if not text:
-                continue
-
-            bbox = tuple(float(v) for v in line.get("bbox", (0, 0, 0, 0)))
-            font_size = max(sizes) if sizes else 0.0
-            lines.append(LineText(page.number + 1, text, bbox, font_size))
-
-    return lines
-
-
-def _extract_tables(page: fitz.Page) -> list[TableRegion]:
-    tables: list[TableRegion] = []
-    try:
-        finder = page.find_tables()
-    except Exception:
-        return tables
-
-    for table in getattr(finder, "tables", []) or []:
-        try:
-            matrix = table.extract()
-        except Exception:
-            matrix = []
-
-        if not matrix:
-            try:
-                matrix = table.to_list()
-            except Exception:
-                matrix = []
-
-        rows = []
-        for row in matrix:
-            clean_row = [_normalize_text(str(cell)) for cell in row]
-            clean_row = [cell for cell in clean_row if cell]
-            if clean_row:
-                rows.append(clean_row)
-
-        if not rows:
+        text = _normalize_text("\n".join(text_parts))
+        if not text:
             continue
 
-        max_cols = max(len(r) for r in rows)
-        if max_cols < 2:
-            continue
+        bbox = tuple(float(v) for v in block.get("bbox", (0, 0, 0, 0)))
+        font_size = max(font_sizes) if font_sizes else 0.0
+        blocks.append(TextBlock(page.number + 1, text, bbox, font_size))
 
-        normalized_rows = [r + [""] * (max_cols - len(r)) for r in rows]
-        header = normalized_rows[0]
-        body = normalized_rows[1:] if len(normalized_rows) > 1 else []
-
-        md_lines = []
-        md_lines.append("| " + " | ".join(header) + " |")
-        md_lines.append("| " + " | ".join(["---"] * len(header)) + " |")
-        for row in body:
-            md_lines.append("| " + " | ".join(row) + " |")
-
-        bbox = getattr(table, "bbox", None)
-        if bbox:
-            bbox_tuple = tuple(float(v) for v in bbox)
-        else:
-            bbox_tuple = (0.0, 0.0, 0.0, 0.0)
-
-        tables.append(TableRegion(bbox=bbox_tuple, markdown="\n".join(md_lines)))
-
-    return tables
+    return blocks
 
 
-def _collect_repeated_header_footer_signatures(doc: fitz.Document) -> set[str]:
-    counter: Counter[str] = Counter()
-    total_pages = len(doc)
+def _collect_repeated_header_footer_blocks(doc: fitz.Document) -> set[tuple[str, int]]:
+    signature_counter: Counter[tuple[str, int]] = Counter()
+    signatures_by_page: dict[int, list[tuple[str, int]]] = defaultdict(list)
 
     for page in doc:
-        page_h = float(page.rect.height)
-        page_lines = _extract_lines(page)
-        for line in page_lines:
-            y0, y1 = float(line.bbox[1]), float(line.bbox[3])
-            if y1 <= page_h * 0.12 or y0 >= page_h * 0.88:
-                sig = _line_signature(line.text)
-                if sig:
-                    counter[sig] += 1
+        page_height = float(page.rect.height)
+        for block in page.get_text("dict").get("blocks", []):
+            if block.get("type", 0) != 0:
+                continue
+            if not _is_header_footer_candidate(block, page_height):
+                continue
+            sig = _page_block_signature(block)
+            if sig[0]:
+                signature_counter[sig] += 1
+                signatures_by_page[page.number].append(sig)
 
-    threshold = max(3, int(total_pages * 0.6))
-    return {sig for sig, count in counter.items() if count >= threshold}
+    threshold = max(3, int(len(doc) * 0.6))
+    return {sig for sig, count in signature_counter.items() if count >= threshold}
 
 
 def _infer_heading_level(font_size: float, body_size: float) -> int:
@@ -202,6 +168,8 @@ def _extract_images_from_page(page: fitz.Page, page_number: int, images_dir: Pat
         seen_xrefs.add(xref)
 
         try:
+            base = page.parent.extract_image(xref)
+            ext = (base.get("ext") or "png").lower()
             pix = fitz.Pixmap(page.parent, xref)
             filename = _sanitize_filename(f"pagina-{page_number}-img-{img_index}.png")
             images_dir.mkdir(parents=True, exist_ok=True)
@@ -215,8 +183,7 @@ def _extract_images_from_page(page: fitz.Page, page_number: int, images_dir: Pat
                 image_bytes = base.get("image", b"")
                 if not image_bytes:
                     continue
-                ext = (base.get("ext") or "bin").lower()
-                filename = _sanitize_filename(f"pagina-{page_number}-img-{img_index}.{ext}")
+                filename = _sanitize_filename(f"pagina-{page_number}-img-{img_index}.{base.get('ext', 'bin')}")
                 images_dir.mkdir(parents=True, exist_ok=True)
                 (images_dir / filename).write_bytes(image_bytes)
                 markdown_lines.append(f"![Imagen de la página {page_number}]({images_dir_relative}/{filename})")
@@ -225,26 +192,6 @@ def _extract_images_from_page(page: fitz.Page, page_number: int, images_dir: Pat
                 continue
 
     return markdown_lines
-
-
-def _remove_table_regions(lines: list[LineText], tables: list[TableRegion]) -> list[LineText]:
-    if not tables:
-        return lines
-
-    filtered: list[LineText] = []
-    for line in lines:
-        x0, y0, x1, y1 = line.bbox
-        center_x = (x0 + x1) / 2
-        center_y = (y0 + y1) / 2
-        inside_table = False
-        for table in tables:
-            tx0, ty0, tx1, ty1 = table.bbox
-            if tx0 <= center_x <= tx1 and ty0 <= center_y <= ty1:
-                inside_table = True
-                break
-        if not inside_table:
-            filtered.append(line)
-    return filtered
 
 
 def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bool = True) -> None:
@@ -256,28 +203,40 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
     images_dir_relative = f"{output_md.stem}/images"
 
     doc = fitz.open(str(input_pdf))
-    repeated_headers_footers = _collect_repeated_header_footer_signatures(doc)
+    repeated_headers_footers = _collect_repeated_header_footer_blocks(doc)
 
-    page_lines_map: dict[int, list[LineText]] = {}
-    page_tables_map: dict[int, list[TableRegion]] = {}
-    body_sizes: list[float] = []
+    all_blocks: list[TextBlock] = []
+    page_texts: dict[int, str] = {}
 
     for page in doc:
-        lines = _extract_lines(page)
-        tables = _extract_tables(page)
-        lines = _remove_table_regions(lines, tables)
-        page_lines_map[page.number + 1] = lines
-        page_tables_map[page.number + 1] = tables
-        for line in lines:
-            if line.font_size > 0:
-                body_sizes.append(line.font_size)
+        blocks = _extract_blocks(page)
+        body_candidates = [b.font_size for b in blocks if b.font_size > 0]
+        body_size = sorted(body_candidates)[len(body_candidates) // 2] if body_candidates else 0.0
 
-    body_size = sorted(body_sizes)[len(body_sizes) // 2] if body_sizes else 0.0
+        page_lines: list[str] = []
+        for block in blocks:
+            sig_text = re.sub(r"\b\d+\b", "#", block.text).lower()
+            if (sig_text, len(block.text.splitlines())) in repeated_headers_footers:
+                continue
 
-    output_lines = [
-        f"# Texto extraído: {input_pdf.name}",
-        "",
-        "> Texto extraído automáticamente desde PDF. Puede contener errores de formato, pero se han eliminado cabeceras/pies repetidos y páginas de índice cuando han podido detectarse.",
+            if _looks_like_toc_page(block.text):
+                continue
+
+            heading_level = _infer_heading_level(block.font_size, body_size)
+            text = block.text
+            if heading_level == 2:
+                page_lines.append(f"## {text}")
+            elif heading_level == 3:
+                page_lines.append(f"### {text}")
+            elif heading_level == 4:
+                page_lines.append(f"#### {text}")
+            else:
+                page_lines.append(text)
+
+        page_texts[page.number + 1] = _normalize_text("\n\n".join(page_lines))
+
+    lines = [
+        "> Texto extraído automáticamente desde PDF. Puede contener errores de formato.",
         "",
         f"- Archivo origen: `{input_pdf.as_posix()}`",
         f"- Número de páginas: {len(doc)}",
@@ -285,58 +244,20 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
     ]
 
     total_images = 0
-
     for page_number in range(1, len(doc) + 1):
-        page = doc[page_number - 1]
-        lines = page_lines_map.get(page_number, [])
-        tables = page_tables_map.get(page_number, [])
-
-        visible_lines = []
-        for line in lines:
-            sig = _line_signature(line.text)
-            if sig in repeated_headers_footers:
-                continue
-            visible_lines.append(line)
-
-        if not visible_lines and not tables:
-            continue
-
-        visible_texts = [line.text for line in visible_lines]
-        if visible_texts and _looks_like_toc_page(visible_texts):
-            continue
-
-        if visible_lines:
-            for i, line in enumerate(visible_lines):
-                heading_level = _infer_heading_level(line.font_size, body_size)
-                text = line.text
-
-                if heading_level and len(text) <= 180:
-                    prev_line = visible_lines[i - 1].text if i > 0 else ""
-                    next_line = visible_lines[i + 1].text if i + 1 < len(visible_lines) else ""
-                    if prev_line and len(prev_line) < 120 and not prev_line.endswith((".", ":", ";")):
-                        pass
-                    elif next_line and len(next_line) > 120 and not re.match(r"^\d+(\.\d+)*\s", text):
-                        pass
-                    else:
-                        output_lines.append(f"{'#' * heading_level} {text}")
-                        output_lines.append("")
-                        continue
-
-                output_lines.append(text)
-
-            output_lines.append("")
-
-        for table in tables:
-            output_lines.append(table.markdown)
-            output_lines.append("")
-
+        page_text = page_texts.get(page_number, "")
+        if page_text:
+            lines.append(f"## Página {page_number}")
+            lines.append("")
+            lines.append(page_text)
+            lines.append("")
         if extract_images:
+            page = doc[page_number - 1]
             image_lines = _extract_images_from_page(page, page_number, images_dir, images_dir_relative)
-            if image_lines:
-                output_lines.extend(image_lines)
-                total_images += sum(1 for line in image_lines if line.startswith("!["))
+            total_images += sum(1 for line in image_lines if line.startswith("![]") or line.startswith("![") )
+            lines.extend(image_lines)
 
-    output_md.write_text("\n".join(output_lines).rstrip() + "\n", encoding="utf-8")
+    output_md.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
     if total_images:
         print(f"Extraídas {total_images} imágenes en: {images_dir}")

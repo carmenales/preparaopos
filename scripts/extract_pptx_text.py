@@ -1,16 +1,5 @@
 """
 Extrae texto e imágenes de una presentación PPTX a Markdown.
-
-Por qué un script aparte de extract_pdf_text.py: leer un PPTX convertido
-a PDF (o su texto con herramientas de PDF) desordena el contenido, porque
-cada cuadro de texto de la diapositiva es un objeto independiente sin
-orden de lectura garantizado en el PDF resultante. Leyendo el .pptx
-nativo con python-pptx se respeta el orden real de los shapes de cada
-diapositiva.
-
-Misma convención de salida que extract_pdf_text.py:
-    <output_md>
-    <output_md sin extensión>/images/diapositiva-N-img-M.<ext>
 """
 
 import re
@@ -52,8 +41,6 @@ def extract_pptx_to_markdown(input_pptx: Path, output_md: Path, extract_images: 
     presentation = Presentation(str(input_pptx))
 
     lines = [
-        f"# Texto extraído: {input_pptx.name}",
-        "",
         "> Texto extraído automáticamente desde una presentación PPTX. "
         "El orden de los cuadros de texto dentro de cada diapositiva puede no "
         "coincidir exactamente con el orden visual — revisa antes de dar por buena la estructura.",
