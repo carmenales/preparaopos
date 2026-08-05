@@ -1,6 +1,10 @@
 # Environment files
 .env
 .env.*
+.envs/
+venv/
+.venv/
+*.venv
 
 # Database dumps / local data
 *.sql
