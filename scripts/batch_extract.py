@@ -19,9 +19,9 @@ import sys
 
 from extract_pdf_text import extract_pdf_to_markdown
 from normalize_markdown import normalize_markdown
-from refine_markdown_note import refine_markdown
+from refine_markdown_llm import refine_markdown_document
 
-SUPPORTED_EXTENSIONS = {".pdf", ".pptx"}
+SUPPORTED_EXTENSIONS = {".pdf"}
 STAGE_EXTRACT = "extract"
 STAGE_NORMALIZE = "normalize"
 STAGE_REFINE = "refine"
@@ -55,10 +55,24 @@ def build_stage_paths(base_output: Path, relative_source: Path) -> tuple[Path, P
     return extracted, normalized, refined
 
 
-def extract_stage(source_path: Path, output_md: Path, extract_images: bool) -> None:
+def extract_stage(
+    source_path: Path,
+    output_md: Path,
+    extract_images: bool,
+) -> None:
     ensure_dir(output_md.parent)
-    if source_path.suffix.lower() == ".pdf":
-        extract_pdf_to_markdown(source_path, output_md, extract_images=extract_images)
+
+    if source_path.suffix.lower() != ".pdf":
+        raise ValueError(
+            f"Formato no soportado: {source_path.suffix}. "
+            "Este pipeline solo procesa PDF."
+        )
+
+    extract_pdf_to_markdown(
+        source_path,
+        output_md,
+        extract_images=extract_images,
+    )
 
 
 def normalize_stage(input_md: Path, output_md: Path) -> None:
@@ -67,10 +81,29 @@ def normalize_stage(input_md: Path, output_md: Path) -> None:
     write_text(output_md, normalize_markdown(content))
 
 
-def refine_stage(input_md: Path, output_md: Path) -> None:
+def refine_stage(
+    input_md: Path,
+    output_md: Path,
+    ollama_url: str,
+    model: str,
+    max_tokens: int,
+    temperature: float,
+    max_chunk_chars: int,
+) -> None:
     ensure_dir(output_md.parent)
+
     content = read_text(input_md)
-    write_text(output_md, refine_markdown(content))
+
+    refined_content = refine_markdown_document(
+        markdown=content,
+        ollama_url=ollama_url,
+        model=model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        max_chunk_chars=max_chunk_chars,
+    )
+
+    write_text(output_md, refined_content)
 
 
 def cleanup_intermediate_files(extracted: Path | None, normalized: Path | None, keep_intermediate: bool, stage: str) -> None:
@@ -110,9 +143,18 @@ def process_file(
     force: bool,
     extract_images: bool,
     keep_intermediate: bool,
+    ollama_url: str,
+    model: str,
+    max_tokens: int,
+    temperature: float,
+    max_chunk_chars: int,
 ) -> tuple[bool, str]:
     relative_path = source_path.relative_to(input_dir)
-    extracted_md, normalized_md, refined_md = build_stage_paths(output_dir, relative_path)
+
+    extracted_md, normalized_md, refined_md = build_stage_paths(
+        output_dir,
+        relative_path,
+    )
 
     final_target = {
         STAGE_EXTRACT: extracted_md,
@@ -124,19 +166,46 @@ def process_file(
         return False, f"[omitido, ya existe] {relative_path}"
 
     try:
+        extract_stage(
+            source_path=source_path,
+            output_md=extracted_md,
+            extract_images=extract_images,
+        )
+
         if stage == STAGE_EXTRACT:
-            extract_stage(source_path, extracted_md, extract_images)
-        elif stage == STAGE_NORMALIZE:
-            extract_stage(source_path, extracted_md, extract_images)
-            normalize_stage(extracted_md, normalized_md)
-            cleanup_intermediate_files(extracted_md, normalized_md, keep_intermediate, stage)
-        elif stage == STAGE_REFINE:
-            extract_stage(source_path, extracted_md, extract_images)
-            normalize_stage(extracted_md, normalized_md)
-            refine_stage(normalized_md, refined_md)
-            cleanup_intermediate_files(extracted_md, normalized_md, keep_intermediate, stage)
-        else:
-            raise ValueError(f"Modo no soportado: {stage}")
+            return True, f"[ok] {relative_path}"
+
+        normalize_stage(
+            input_md=extracted_md,
+            output_md=normalized_md,
+        )
+
+        if stage == STAGE_NORMALIZE:
+            cleanup_intermediate_files(
+                extracted=extracted_md,
+                normalized=normalized_md,
+                keep_intermediate=keep_intermediate,
+                stage=stage,
+            )
+            return True, f"[ok] {relative_path}"
+
+        refine_stage(
+            input_md=normalized_md,
+            output_md=refined_md,
+            ollama_url=ollama_url,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            max_chunk_chars=max_chunk_chars,
+        )
+
+        cleanup_intermediate_files(
+            extracted=extracted_md,
+            normalized=normalized_md,
+            keep_intermediate=keep_intermediate,
+            stage=stage,
+        )
+
     except Exception as error:
         return False, f"[error] {relative_path}: {error}"
 
@@ -150,6 +219,11 @@ def batch_extract(
     extract_images: bool,
     force: bool,
     keep_intermediate: bool,
+    ollama_url: str,
+    model: str,
+    max_tokens: int,
+    temperature: float,
+    max_chunk_chars: int,
 ) -> int:
     if not input_dir.exists() or not input_dir.is_dir():
         raise FileNotFoundError(f"No existe la carpeta de entrada: {input_dir}")
@@ -158,7 +232,7 @@ def batch_extract(
 
     source_files = find_source_files(input_dir)
     if not source_files:
-        print(f"No se ha encontrado ningún .pdf/.pptx en {input_dir}")
+        print(f"No se ha encontrado ningún PDF en {input_dir}")
         return 0
 
     print(f"Encontrados {len(source_files)} ficheros para procesar.")
@@ -179,6 +253,11 @@ def batch_extract(
             force=force,
             extract_images=extract_images,
             keep_intermediate=keep_intermediate,
+            ollama_url=ollama_url,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            max_chunk_chars=max_chunk_chars,
         )
         print(f"  {message}")
         if ok:
@@ -211,6 +290,38 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Conservar los .md intermedios de 01_extracted y 02_normalized.",
     )
+    parser.add_argument(
+        "--ollama-url",
+        default="http://localhost:11434",
+        help="URL base de Ollama.",
+    )
+
+    parser.add_argument(
+        "--model",
+        default="llama3.1:latest",
+        help="Modelo de Ollama para el refinado.",
+    )
+
+    parser.add_argument(
+        "--max-tokens",
+        type=int,
+        default=512,
+        help="Máximo de tokens generados por bloque.",
+    )
+
+    parser.add_argument(
+        "--temperature",
+        type=float,
+        default=0.0,
+        help="Temperatura del modelo.",
+    )
+
+    parser.add_argument(
+        "--max-chunk-chars",
+        type=int,
+        default=2000,
+        help="Tamaño máximo de cada bloque enviado a Ollama.",
+    )
     return parser.parse_args()
 
 
@@ -224,6 +335,11 @@ def main() -> None:
             extract_images=not args.no_images,
             force=args.force,
             keep_intermediate=args.keep_intermediate,
+            ollama_url=args.ollama_url,
+            model=args.model,
+            max_tokens=args.max_tokens,
+            temperature=args.temperature,
+            max_chunk_chars=args.max_chunk_chars,
         )
     except Exception as error:
         print(f"ERROR FATAL: {error}", file=sys.stderr)

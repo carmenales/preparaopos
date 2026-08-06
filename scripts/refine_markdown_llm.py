@@ -74,6 +74,35 @@ def split_by_size(markdown: str, max_chars: int = MAX_CHUNK_CHARS) -> list[str]:
 
     return chunks
 
+
+def split_markdown(markdown: str, max_chunk_chars: int) -> list[str]:
+    page_chunks = split_by_pages(markdown)
+
+    if len(page_chunks) <= 1:
+        source_chunks = page_chunks or [markdown]
+    else:
+        source_chunks = page_chunks
+
+    chunks: list[str] = []
+
+    for page_chunk in source_chunks:
+        if len(page_chunk) <= max_chunk_chars:
+            chunks.append(page_chunk)
+        else:
+            chunks.extend(
+                split_by_size(
+                    page_chunk,
+                    max_chars=max_chunk_chars,
+                )
+            )
+
+    return [
+        chunk.strip() + "\n"
+        for chunk in chunks
+        if chunk.strip()
+    ]
+
+
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
@@ -137,9 +166,6 @@ def call_ollama(
     max_tokens: int,
     temperature: float,
 ) -> str:
-    """
-    Llama a Ollama /api/generate y devuelve la respuesta como texto Markdown.
-    """
     prompt = build_prompt(markdown_text)
 
     payload = {
@@ -148,20 +174,26 @@ def call_ollama(
         "stream": False,
         "options": {
             "temperature": temperature,
-            "num_predict": min(max_tokens, 512),
+            "num_predict": max_tokens,
         },
     }
 
     url = base_url.rstrip("/") + "/api/generate"
-    resp = requests.post(url, json=payload, timeout=(10, 300))
-    resp.raise_for_status()
-    data = resp.json()
 
-    refined = (data.get("response") or "").strip()
-    if not refined:
-        raise RuntimeError("La respuesta de Ollama está vacía.")
+    response = requests.post(
+        url,
+        json=payload,
+        timeout=(10, 600),
+    )
+    response.raise_for_status()
 
-    return refined
+    data = response.json()
+    result = (data.get("response") or "").strip()
+
+    if not result:
+        raise RuntimeError("Ollama ha devuelto una respuesta vacía.")
+
+    return result
 
 
 def refine_markdown_with_llm(
@@ -172,6 +204,39 @@ def refine_markdown_with_llm(
     temperature: float,
 ) -> str:
     return call_ollama(text, base_url, model, max_tokens, temperature)
+
+def refine_markdown_document(
+    markdown: str,
+    ollama_url: str,
+    model: str,
+    max_tokens: int,
+    temperature: float,
+    max_chunk_chars: int = 2000,
+) -> str:
+    chunks = split_markdown(markdown, max_chunk_chars)
+
+    if not chunks:
+        return markdown
+
+    refined_chunks: list[str] = []
+
+    for index, chunk in enumerate(chunks, start=1):
+        print(
+            f"  Refinando bloque {index}/{len(chunks)} "
+            f"({len(chunk)} caracteres)..."
+        )
+
+        refined = call_ollama(
+            markdown_text=chunk,
+            base_url=ollama_url,
+            model=model,
+            max_tokens=max_tokens,
+            temperature=temperature,
+        )
+
+        refined_chunks.append(refined.strip())
+
+    return "\n\n".join(refined_chunks).strip() + "\n"
 
 
 def process_file(
