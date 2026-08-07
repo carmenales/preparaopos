@@ -52,3 +52,4 @@ imports/**/generated/
 # Cache / build artifacts
 cache/
 __pycache__/
+.llm_cache/
