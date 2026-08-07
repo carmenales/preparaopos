@@ -14,16 +14,34 @@ import argparse, re
 import textwrap
 from pathlib import Path
 from typing import Optional
-
 import requests
+import hashlib
 
 MAX_CHUNK_CHARS = 2000
 DEFAULT_OLLAMA_URL = "http://localhost:11434"
 DEFAULT_MODEL = "llama3.1:latest"
 DEFAULT_MAX_TOKENS = 4096
 DEFAULT_TEMPERATURE = 0.0
+CACHE_DIR = Path(".llm_cache")
+CACHE_DIR.mkdir(exist_ok=True)
 PAGE_HEADING_RE = re.compile(r"^## Página \d+\s*$", re.MULTILINE)
 
+def cache_path(chunk: str) -> Path:
+    digest = hashlib.sha256(chunk.encode("utf8")).hexdigest()
+    return CACHE_DIR / f"{digest}.md"
+
+
+def load_cache(chunk: str) -> Optional[str]:
+    path = cache_path(chunk)
+
+    if path.exists():
+        return path.read_text("utf8")
+
+    return None
+
+
+def save_cache(chunk: str, refined: str) -> None:
+    cache_path(chunk).write_text(refined, encoding="utf8")
 
 def split_by_pages(markdown: str) -> list[str]:
     lines = markdown.splitlines()
@@ -116,26 +134,29 @@ def build_prompt(markdown_text: str) -> str:
     """
     Prompt en español, centrado en edición de apuntes TIC.
     """
-    instructions = textwrap.dedent(
-        """
-        Eres un asistente experto en edición de apuntes Markdown extraídos de PDF
-        para oposiciones TIC.
+    instructions = textwrap.dedent("""
+    Eres un editor de Markdown.
 
-        Objetivo:
+    Devuelve exactamente el mismo contenido.
 
-        - Corregir cortes de línea y párrafos partidos.
-        - Mantener la estructura de títulos y subtítulos existente.
-        - Mantener todo el contenido técnico y legal, sin inventar nada.
-        - No resumir ni simplificar; la longitud debe ser similar a la original.
-        - Mantener listas y tablas en formato Markdown.
-        - Eliminar solo ruido obvio de OCR (cabeceras repetidas, "Página X", basura visual).
-        - No introducir cambios de estilo grandes ni añadir secciones nuevas.
-        - No cambiar el idioma del contenido.
+    No reformules.
+    No resumas.
+    No expliques.
+    No cambies el orden.
 
-        Devuelve exclusivamente el Markdown refinado, sin comentarios adicionales
-        ni explicaciones.
-        """
-    ).strip()
+    Únicamente:
+
+    - une líneas partidas
+    - une párrafos partidos
+    - corrige listas Markdown
+    - corrige tablas Markdown
+    - elimina cabeceras repetidas
+    - elimina pies repetidos
+
+    No añadas contenido.
+    No elimines contenido técnico.
+    Devuelve solo Markdown.
+    """).strip()
 
     return (
         instructions
@@ -226,6 +247,13 @@ def refine_markdown_document(
             f"({len(chunk)} caracteres)..."
         )
 
+        cached = load_cache(chunk)
+
+        if cached is not None:
+            print(f"  Cache bloque {index}/{len(chunks)}")
+            refined_chunks.append(cached.strip())
+            continue
+
         refined = call_ollama(
             markdown_text=chunk,
             base_url=ollama_url,
@@ -233,6 +261,8 @@ def refine_markdown_document(
             max_tokens=max_tokens,
             temperature=temperature,
         )
+
+        save_cache(chunk, refined)
 
         refined_chunks.append(refined.strip())
 
@@ -247,46 +277,18 @@ def process_file(
     max_tokens: int,
     temperature: float,
 ) -> None:
+
     original = read_text(input_path)
 
-    page_chunks = split_by_pages(original)
+    refined = refine_markdown_document(
+        markdown=original,
+        ollama_url=base_url,
+        model=model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        max_chunk_chars=MAX_CHUNK_CHARS,
+    )
 
-    if len(page_chunks) <= 1:
-        single = page_chunks[0] if page_chunks else original
-        if len(single) > 2000:
-            chunks = split_by_size(single, max_chars=2000)
-        else:
-            chunks = [single]
-    else:
-        chunks = []
-        for page_chunk in page_chunks:
-            if len(page_chunk) > MAX_CHUNK_CHARS:
-                chunks.extend(split_by_size(page_chunk, max_chars=2000))
-            else:
-                chunks.append(page_chunk)
-
-    if not chunks:
-        write_text(output_path, original)
-        return
-
-    refined_chunks: list[str] = []
-
-    for idx, chunk in enumerate(chunks, start=1):
-        try:
-            refined_chunk = refine_markdown_with_llm(
-                chunk,
-                base_url=base_url,
-                model=model,
-                max_tokens=max_tokens,
-                temperature=temperature,
-            )
-            refined_chunks.append(refined_chunk.strip() + "\n")
-            print(f"[ok] bloque {idx} ({input_path.name}, {len(chunk)} chars)")
-        except Exception as exc:
-            print(f"[error] bloque {idx} ({input_path.name}, {len(chunk)} chars): {exc}")
-            refined_chunks.append(chunk.strip() + "\n")
-
-    refined = "\n\n".join(refined_chunks).rstrip() + "\n"
     write_text(output_path, refined)
 
 
@@ -368,7 +370,7 @@ def main() -> None:
 
         try:
             process_file(
-                input_path,
+                source,
                 target,
                 base_url=args.ollama_url,
                 model=args.model,

@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import re
 from pathlib import Path
+import string
 
 
 SIGLAS_INTRO_RE = re.compile(r"^\s*Las siglas empleadas en este documento son las siguientes\s*:??\s*$", re.IGNORECASE)
@@ -26,6 +27,93 @@ SIMPLE_HEADER_RE = re.compile(
     re.IGNORECASE,
 )
 SIGLA_RE = re.compile(r"^[A-ZÁÉÍÓÚÜÑ0-9]{2,15}[a-z]?$")
+
+
+_HEADING_RE = re.compile(r"^(#{1,6}\s+|\d+(\.\d+)*\.?\s)")
+_LIST_RE = re.compile(r"^(\s*[-*+]\s+|\s*\d+\.\s+)")
+_TABLE_RE = re.compile(r"^\|.*\|$")
+
+
+def _is_joinable(a: str, b: str) -> bool:
+    a = a.rstrip()
+    b = b.lstrip()
+
+    if not a or not b:
+        return False
+
+    if _HEADING_RE.match(a) or _HEADING_RE.match(b):
+        return False
+
+    if _LIST_RE.match(a) or _LIST_RE.match(b):
+        return False
+
+    if _TABLE_RE.match(a) or _TABLE_RE.match(b):
+        return False
+
+    if a.endswith((":", ";", ".", "?", "!", "|")):
+        return False
+
+    if b.startswith(("#", "-", "*", "|", ">")):
+        return False
+
+    c = b[0]
+
+    return c.islower() or c in "áéíóúüñ(«\""
+
+
+def join_broken_paragraphs(text: str) -> str:
+    lines = text.splitlines()
+
+    out = []
+    i = 0
+
+    while i < len(lines):
+        current = lines[i].rstrip()
+
+        if not current.strip():
+            out.append("")
+            i += 1
+            continue
+
+        while i + 1 < len(lines):
+            nxt = lines[i + 1].strip()
+
+            if not _is_joinable(current, nxt):
+                break
+
+            current += " " + nxt
+            i += 1
+
+        out.append(current)
+        i += 1
+
+    return "\n".join(out)
+
+
+def fix_broken_lists(text: str) -> str:
+    lines = text.splitlines()
+
+    out = []
+
+    i = 0
+
+    while i < len(lines):
+        line = lines[i].rstrip()
+
+        if line.strip() in {"-", "*", "•"} and i + 1 < len(lines):
+            out.append("- " + lines[i + 1].strip())
+            i += 2
+            continue
+
+        if line.strip().startswith("•"):
+            out.append("- " + line.strip()[1:].strip())
+            i += 1
+            continue
+
+        out.append(line)
+        i += 1
+
+    return "\n".join(out)
 
 
 def read_text(path: Path) -> str:
@@ -148,6 +236,8 @@ def dedupe_repeated_lines(text: str) -> str:
 def normalize_markdown(content: str) -> str:
     content = normalize_whitespace(content)
     content = remove_obvious_extraction_noise(content)
+    content = join_broken_paragraphs(content)
+    content = fix_broken_lists(content)
     content = convert_acronym_blocks_to_table(content)
     content = dedupe_repeated_lines(content)
     content = normalize_whitespace(content)
