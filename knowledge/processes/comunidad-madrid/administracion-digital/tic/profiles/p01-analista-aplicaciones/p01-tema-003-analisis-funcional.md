@@ -138,6 +138,18 @@ Y 12 principios, entre los que destacan (muy preguntados): satisfacer al cliente
 ### 2.1. Scrum
 Es un marco de trabajo iterativo e incremental para proyectos en entornos complejos.
 
+#### 2.1.1. Modificaciones clave de la Guía Scrum (Edición 2020) y Compromisos
+Para asegurar la máxima precisión en preguntas tipo test de la AGE, es fundamental conocer las actualizaciones de la **Scrum Guide 2020**:
+*   **De "3 Roles" a "Un único Scrum Team con Responsabilidades":** Se elimina la división rígida de roles. Ahora existe un único *Scrum Team* (10 o menos personas) enfocado en un mismo objetivo, compuesto por 3 responsabilidades (*Accountabilities*):
+    *   **Product Owner:** Único responsable de maximizar el valor del producto y de la gestión efectiva del *Product Backlog*.
+    *   **Scrum Master:** Responsable de la efectividad del *Scrum Team* y de adoptar Scrum según la Guía.
+    *   **Developers:** Profesionales comprometidos a crear cualquier aspecto de un *Incremento* utilizable. Pasan de ser definidos como "autoorganizados" a **autogestionados** (deciden *quién*, *qué*, *cuándo* y *cómo* se realiza el trabajo).
+*   **Los 3 Compromisos (*Commitments*) asociados a cada Artefacto:**
+    *   Para el **Product Backlog** $\rightarrow$ **Product Goal** (Objetivo del Producto, la meta a largo plazo).
+    *   Para el **Sprint Backlog** $ightarrow$ **Sprint Goal** (Objetivo del Sprint, la meta concreta de la iteración).
+    *   Para el **Incremento** $ightarrow$ **Definition of Done** (Definición de Terminado, el criterio de calidad).
+
+
 **Base normativa:** Scrum se define formalmente en la **Scrum Guide** (Ken Schwaber y Jeff Sutherland), documento de referencia oficial y gratuito, actualizado por última vez en 2020. Scrum se define allí como un **marco de trabajo ligero** (no una metodología, no un proceso ni una técnica) que ayuda a las personas, equipos y organizaciones a generar valor a través de soluciones adaptativas a problemas complejos.
 
 Scrum se fundamenta en el **empirismo** (el conocimiento procede de la experiencia y de tomar decisiones basadas en lo observado) y en la teoría de control de procesos **Lean**, apoyándose en **3 pilares**: **Transparencia, Inspección y Adaptación**.
@@ -253,7 +265,19 @@ Este ciclo se conoce popularmente como **Red-Green-Refactor** (rojo: la prueba f
 ### 3.2. BDD (Behavior Driven Development - Desarrollo Orientado al Comportamiento)
 Evolución del TDD que fomenta la colaboración entre desarrolladores, probadores y clientes. Se usan lenguajes naturales estructurados (como Gherkin: `Dado que... Cuando... Entonces...`) para definir el comportamiento del sistema de forma que el cliente lo entienda fácilmente.
 
-BDD nació de la mano de Dan North como refinamiento de TDD, trasladando el foco desde "probar unidades de código" hacia "describir comportamientos de negocio". Herramientas típicas asociadas: **Cucumber**, **SpecFlow**, **JBehave**. La estructura Gherkin (`Given / When / Then`) permite que los criterios de aceptación de una historia de usuario se conviertan directamente en pruebas automatizables, cerrando el círculo entre requisitos ágiles (historias de usuario) y pruebas funcionales.
+BDD nació de la mano de Dan North como refinamiento de TDD, trasladando el foco desde "probar unidades de código" hacia "describir comportamientos de negocio". Herramientas típicas asociadas: **Cucumber**, **SpecFlow**, **JBehave**.
+
+
+#### 3.3. Pirámide de Pruebas y Especificación mediante Gherkin
+*   **Pirámide de Pruebas (Mike Cohn):**
+    *   **Base (Mayor volumen, ejecuciones rápidas y de bajo coste):** Pruebas Unitarias.
+    *   **Capa Intermedia (Volumen medio):** Pruebas de Servicio / Integración (APIs, componentes).
+    *   **Cúspide (Menor volumen, ejecuciones lentas y de alto coste):** Pruebas de Interfaz de Usuario (UI) / Pruebas de Aceptación End-to-End.
+*   **Estructura Formal de Gherkin (BDD / DSL):**
+    *   `Dado que` (Given): Define el contexto previo o precondición del sistema.
+    *   `Cuando` (When): Especifica la acción o evento desencadenante ejecutado por el usuario.
+    *   `Entonces` (Then): Establece el resultado o postcondición esperada observable.
+ La estructura Gherkin (`Given / When / Then`) permite que los criterios de aceptación de una historia de usuario se conviertan directamente en pruebas automatizables, cerrando el círculo entre requisitos ágiles (historias de usuario) y pruebas funcionales.
 
 **ATDD (Acceptance Test Driven Development):** enfoque hermano de TDD y BDD donde los criterios de aceptación se escriben de forma colaborativa (cliente, desarrollador, tester) *antes* de codificar, y se convierten directamente en las pruebas de aceptación del sistema.
 
@@ -276,7 +300,16 @@ CMMI es un modelo para evaluar la madurez de los procesos de desarrollo de softw
 
 **Áreas de proceso (Process Areas) relacionadas directamente con el análisis funcional (CMMI-DEV):**
 *   **Requirements Management (REQM)** — Gestión de Requisitos: área de **Nivel de madurez 2**. Su propósito es gestionar los requisitos del proyecto y sus productos, e identificar inconsistencias entre esos requisitos y los planes/productos de trabajo del proyecto.
-*   **Requirements Development (RD)** — Desarrollo de Requisitos: área de **Nivel de madurez 3**. Su propósito es **elicitar, analizar y establecer** los requisitos de cliente, producto y componentes de producto, mediante tres metas específicas: 1) Desarrollar los Requisitos del Cliente, 2) Desarrollar los Requisitos del Producto, y 3) Analizar y Validar los Requisitos.
+*   **Requirements Development (RD)** — Desarrollo de Requisitos: área de **Nivel de madurez 3**.
+
+#### 4.1. Representaciones de CMMI y Áreas de Proceso para Análisis de Requisitos
+Es habitual que en el examen tipo test de la AGE pregunten sobre la distinción entre las dos representaciones de CMMI:
+*   **Representación por Etapas (*Staged*):** Mide la madurez global de la **organización**. Se evalúa en **5 Niveles de Madurez** (1. Inicial, 2. Gestionado, 3. Definido, 4. Gestionado Cuantitativamente, 5. En Optimización).
+*   **Representación Continua (*Continuous*):** Mide la capacidad de un **Área de Proceso individual**. Se evalúa en **Niveles de Capacidad** (0. Incompleto, 1. Realizado, 2. Gestionado, 3. Definido).
+*   **Desglose de Áreas de Proceso (CMMI-DEV v1.3):**
+    *   **Requirements Management (REQM - Gestión de Requisitos):** Situada en el **Nivel de Madurez 2 (Gestionado)**. Se centra en gestionar los cambios, mantener la trazabilidad e identificar inconsistencias entre los requisitos y los planes del proyecto.
+    *   **Requirements Development (RD - Desarrollo de Requisitos):** Situada en el **Nivel de Madurez 3 (Definido)**. Se centra en elicitar, analizar, definir y validar los requisitos de cliente, producto y componentes.
+ Su propósito es **elicitar, analizar y establecer** los requisitos de cliente, producto y componentes de producto, mediante tres metas específicas: 1) Desarrollar los Requisitos del Cliente, 2) Desarrollar los Requisitos del Producto, y 3) Analizar y Validar los Requisitos.
 *   *(Nota: en CMMI v2.0, ambas áreas se han unificado conceptualmente en la práctica **Requirements Development and Management — RDM**.)*
 
 **Relación CMMI ↔ Ágil:** aunque tradicionalmente se percibían como incompatibles (CMMI = documentación exhaustiva vs. Ágil = documentación mínima), el propio SEI reconoce que se pueden combinar: los niveles de madurez CMMI valoran *qué* procesos deben existir y ser medibles, no *cómo* se ejecutan; Scrum o XP pueden ser el "cómo" que satisface las metas de REQM/RD exigidas por CMMI (enfoque conocido como "Agile + CMMI" o, en investigación académica, propuestas como "xScrum").
