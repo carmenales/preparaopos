@@ -10,6 +10,7 @@ profiles:
 official_profile: "P01 - Analista de Aplicaciones"
 official_topic: "Tema 6. Gestión de calidad en los sistemas y servicios TIC"
 source_ids:
+  - "A2_Bloque_IV.pdf"
 tags:
   - "calidad"
   - "efqm"
@@ -30,97 +31,193 @@ needs_human_review: true
 
 ## 1. Conceptos Clave de Calidad en TIC
 
-La calidad en el desarrollo y servicio TIC no es que el software sea "bonito", sino que **cumpla exactamente con los requisitos** especificados y que sea **apto para el uso** del cliente.
+La calidad en el desarrollo y servicio TIC no es que el software sea "bonito", sino que **cumpla exactamente con los requisitos** especificados y que sea **apto para el uso** del cliente. En el contexto del diseño y análisis de sistemas de información, la calidad abarca tanto los procesos de construcción como el producto final y los niveles de servicio entregados (SLA).
 
-**Patrón Lógico - Aseguramiento vs Control:** En los test siempre intentan confundir estos dos términos. Grábate esta diferencia:
-*   **Aseguramiento de la Calidad (QA - Quality Assurance):** Orientado al **proceso**. Es *preventivo*. Define cómo se van a hacer las cosas para evitar errores. En Métrica v3 existe una interfaz específica para esto (Interfaz CAL), donde el Grupo de Aseguramiento de la Calidad elabora el plan y verifica que los productos intermedios cumplen las normas [cite: 4].
-*   **Control de Calidad (QC - Quality Control):** Orientado al **producto**. Es *reactivo*. Son las pruebas reales que se hacen sobre el software ya construido para detectar fallos antes de entregarlo.
 
-La familia de normas **ISO 9000** es el marco internacional de referencia sobre gestión de la calidad, y conviene diferenciar bien sus miembros porque es una trampa clásica de examen:
-*   **ISO 9000:** Sistemas de gestión de la calidad — Fundamentos y vocabulario. Define los conceptos y los siete principios de gestión de la calidad.
-*   **ISO 9001:** Sistemas de gestión de la calidad — Requisitos. Es la única de la familia que es **certificable**.
-*   **ISO 9004:** Sistemas de gestión de la calidad — Directrices para la mejora continua del desempeño. Orientada a la gestión del éxito sostenido, no es certificable.
-*   **ISO 19011:** Directrices para la auditoría de sistemas de gestión (calidad y medioambiente).
 
-La norma ISO 9000:2015 establece **7 principios de gestión de la calidad** que son la base lógica de toda la ISO 9001 (hasta la versión 2008 eran 8; se redujeron a 7 tras fusionar "enfoque de sistema" dentro de "enfoque a procesos"):
-1.  **Enfoque al cliente:** cumplir y superar sus expectativas.
-2.  **Liderazgo:** la alta dirección crea las condiciones para que la calidad prospere.
-3.  **Compromiso de las personas:** personal competente, facultado e implicado en todos los niveles.
-4.  **Enfoque a procesos:** gestionar las actividades como procesos interrelacionados que funcionan como un sistema coherente.
-5.  **Mejora:** búsqueda constante de un mejor desempeño.
-6.  **Toma de decisiones basada en la evidencia:** decidir a partir del análisis de datos y hechos, no de la intuición.
-7.  **Gestión de las relaciones:** administrar los vínculos con proveedores y aliados para lograr un desempeño sostenido.
+### 1.1. Aseguramiento vs. Control de Calidad
 
----
+En las pruebas tipo test de la AGE es un clásico la trampa de intercambiar las definiciones de **QA** y **QC**:
 
-## 2. El Modelo EFQM (Excelencia)
+ 		[ GESTIÓN DE LA CALIDAD ]
+                             │
+     +───────────────────────┴───────────────────────+
+     │                                               │
+[ QA: Aseguramiento ]                           [ QC: Control ]
 
-El modelo EFQM (European Foundation for Quality Management) no es una norma de obligado cumplimiento, sino un **marco de autoevaluación** para alcanzar la "Excelencia" organizativa.
+Orientado al PROCESO                          - Orientado al PRODUCTO
 
-**Patrón Lógico de EFQM - La regla Causa/Efecto:**
-El modelo EFQM clásico (versión 2013, la más citada en manuales de oposición) se divide estrictamente en dos bloques que suman 9 criterios. Si te preguntan por un criterio, solo tienes que pensar: ¿es la herramienta (causa) o es lo que consigo (efecto)?
-1.  **Agentes Facilitadores (Lo que la organización HACE):** Son 5 criterios. Liderazgo, Personas, Estrategia, Alianzas y Recursos, Procesos.
-2.  **Resultados (Lo que la organización LOGRA):** Son 4 criterios. Resultados en los Clientes, Resultados en las Personas, Resultados en la Sociedad, Resultados Clave del negocio.
+Carácter PREVENTIVO                           - Carácter REACTIVO
 
-**La lógica RADAR (o REDER en español):** EFQM evalúa a las organizaciones usando esta matriz:
-*   **R**esultados (Qué queremos lograr).
-*   **E**nfoque (Approach - Cómo lo vamos a hacer).
-*   **D**espliegue (Deploy - Ponerlo en práctica).
-*   **E**valuación y **R**evisión (Assess & Refine - Medir y mejorar).
+Métrica v3: Interfaz CAL                      - Pruebas, Detección de fallos
 
-Desde enero de 2020 existe una **nueva versión del Modelo EFQM (EFQM Model 2020)** que sustituye a la de 2013 en las evaluaciones oficiales (desde el 1 de abril de 2021 solo se evalúa con esta versión), y que en el examen puede aparecer como actualización del modelo clásico. Sus cambios más relevantes:
-*   Ya **no habla de "Excelencia"** sino de "organizaciones sobresalientes", y elimina la referencia expresa a 9 criterios agrupados en Agentes/Resultados.
-*   Pasa a estructurarse en **7 criterios**, organizados según la lógica **Dirección → Ejecución → Resultados**: 1) Propósito, Visión y Estrategia; 2) Cultura de la Organización y Liderazgo; 3) Implicar a los Grupos de Interés; 4) Crear Valor Sostenible; 5) Impulsar el Rendimiento y la Transformación; 6) Percepción de los Grupos de Interés; 7) Rendimiento Estratégico y Operativo.
-*   Ya no existe un criterio específico llamado "Personas": el factor humano queda transversal a lo largo de todo el modelo (especialmente en el criterio 2).
-*   La matriz de puntuación pasa a llamarse simplemente REDER (ya no se publican las tablas de puntuación en el folleto público, sino en la plataforma digital de evaluación).
-*   Los criterios de Resultados pasan de 500 a 400 puntos sobre 1000, dando mayor peso relativo a Dirección y Ejecución.
 
-Para el examen, lo más seguro es dominar el **modelo clásico de 9 criterios y RADAR** (es el que suele aparecer en el temario oficial de oposiciones), pero conviene saber que existe esta actualización de 2020 por si se pregunta de forma explícita por la versión vigente.
+*   **Aseguramiento de la Calidad (QA - Quality Assurance):** Orientado al **proceso**. Es *preventivo*. Define cómo se van a hacer las cosas para evitar errores desde la fase de diseño. En Métrica v3 existe una interfaz específica para esto (**Interfaz CAL - Calidad**), donde el Grupo de Aseguramiento de la Calidad elabora el Plan de Calidad y verifica que los productos intermedios cumplen las normas antes de pasar de fase.
+*   **Control de Calidad (QC - Quality Control):** Orientado al **producto**. Es *reactivo*. Son las pruebas reales (unitarias, de integración, de sistema, de regresión) que se ejecutan sobre el software ya construido para detectar y corregir fallos antes de entregarlo al entorno de producción.
 
----
 
-## 3. ISO 9001 (Gestión de la Calidad)
 
-A diferencia de EFQM, la norma ISO 9001 sí es **certificable**. Es el estándar internacional para los Sistemas de Gestión de Calidad (SGC).
+### 1.2. La Familia de Normas ISO 9000
 
-**Patrón Lógico - El Ciclo de Deming (PDCA):**
-Toda la ISO 9001 se basa en el ciclo de mejora continua o ciclo PDCA. En el test, asocia cada fase con su acción directa:
-1.  **Plan (Planificar):** Establecer los objetivos y los procesos necesarios (ej. planificar cómo atender las incidencias de los usuarios).
-2.  **Do (Hacer):** Implementar los procesos (ej. poner a los técnicos a atender llamadas según el plan).
-3.  **Check (Verificar):** Medir y monitorizar los procesos contra los objetivos (ej. sacar un informe de cuánto tardamos en resolver las incidencias).
-4.  **Act (Actuar):** Tomar acciones para mejorar el rendimiento continuamente (ej. si tardamos mucho, comprar una herramienta mejor o dar más formación).
+La familia de normas **ISO 9000** es el marco internacional de referencia sobre gestión de la calidad. Es imprescindible memorizar la función de cada miembro para evitar trampas en las preguntas tipo test:
 
-La versión vigente de la norma es **ISO 9001:2015**, y su estructura de 10 capítulos sigue el llamado **"Anexo SL"**, la plantilla común de alto nivel que comparten todas las normas de sistemas de gestión ISO (también ISO 14001 de medio ambiente o ISO 27001 de seguridad), lo que facilita implantar sistemas integrados de gestión. Los capítulos con requisitos exigibles y su correspondencia con el ciclo PDCA son:
-*   **4. Contexto de la organización** y **5. Liderazgo** → fase **Plan**, junto con el cap. 6.
-*   **6. Planificación** → fase **Plan**: objetivos de calidad y gestión de riesgos.
-*   **7. Apoyo** y **8. Operación** → fase **Do**: recursos, competencias, procesos operativos.
-*   **9. Evaluación del desempeño** → fase **Check**: auditoría interna, revisión por la dirección, satisfacción del cliente.
-*   **10. Mejora** → fase **Act**: no conformidades, acciones correctivas, mejora continua.
+*   **ISO 9000:** *Sistemas de gestión de la calidad — Fundamentos y vocabulario*. Define el marco conceptual, los términos técnicos y los siete principios de gestión de la calidad. **No es certificable**.
+*   **ISO 9001:** *Sistemas de gestión de la calidad — Requisitos*. Establece los requisitos mínimos que debe cumplir un Sistema de Gestión de la Calidad (SGC). Es la **única de la familia que es certificable** por entidades externas de auditoría.
+*   **ISO 9004:** *Sistemas de gestión de la calidad — Directrices para la mejora continua del desempeño*. Orientada a la gestión para el éxito sostenido de una organización. Proporciona una orientación más amplia que la ISO 9001 pero **no es certificable**.
+*   **ISO 19011:** *Directrices para la auditoría de los sistemas de gestión*. Aplica tanto a auditorías de calidad (ISO 9001) como de medio ambiente (ISO 14001) o seguridad.
 
-Un concepto que suele preguntarse junto al ciclo PDCA es el **enfoque basado en riesgos** (*risk-based thinking*), introducido de forma explícita en la versión 2015: la organización debe planificar acciones para abordar los riesgos y oportunidades que puedan afectar a la conformidad de sus productos/servicios, sustituyendo en parte al antiguo requisito de "acciones preventivas" de versiones anteriores (2008).
 
----
 
-## 4. Ejemplo Real (Sin analogías)
+### 1.3. Los 7 Principios de Gestión de la Calidad (ISO 9000:2015)
 
-Imagina el **Centro de Atención a Usuarios (CAU)** de tu ministerio:
-*   **ISO 9001:** El CAU redacta un manual estricto sobre cómo se debe registrar un ticket, en qué tiempos debe resolverse y cómo se mide si se ha cumplido. Si viene un auditor externo y ve que todos los técnicos siguen el manual a rajatabla y que miden sus tiempos (Ciclo PDCA), el CAU **consigue el certificado ISO 9001**.
-*   **EFQM:** El director del CAU quiere ir más allá de cumplir un manual; quiere la *excelencia*. Pasa cuestionarios anónimos a los técnicos para ver si están motivados (Agente: Personas), evalúa si los ministerios están contentos con el trato (Resultado en Clientes) e introduce mejoras basadas en la matriz RADAR. No recibe un "certificado" por cumplir mínimos, sino un **Sello de Excelencia (ej. +400 puntos EFQM)**.
+La versión ISO 9000:2015 consolidó **7 principios de gestión de la calidad** (reduciendo los 8 principios de la versión de 2008 al integrar el antiguo "enfoque de sistema" dentro del "enfoque a procesos"):
 
----
+1.  **Enfoque al cliente:** El foco principal es cumplir los requisitos del cliente y esforzarse en exceder sus expectativas.
+2.  **Liderazgo:** La alta dirección establece la unidad de propósito y la dirección, creando las condiciones para que las personas se impliquen en el logro de los objetivos de calidad.
+3.  **Compromiso de las personas:** El personal competente, empoderado e implicado en todos los niveles de la organización es esencial para aumentar la capacidad de crear valor.
+4.  **Enfoque a procesos:** Los resultados coherentes y previsibles se alcanzan de manera más eficaz y eficiente cuando las actividades se entienden y gestionan como procesos interrelacionados que funcionan como un sistema coherente.
+5.  **Mejora:** Las organizaciones con éxito tienen un enfoque continuo hacia la mejora (basado en el ciclo PDCA / Deming).
+6.  **Toma de decisiones basada en la evidencia:** Las decisiones basadas en el análisis y la evaluación de datos y hechos reales reducen la incertidumbre y producen mejores resultados.
+7.  **Gestión de las relaciones:** Para un éxito sostenido, la organización gestiona sus relaciones con las partes interesadas pertinentes, tales como los proveedores y aliados tecnológicos.
 
-## 5. Repaso
 
-| Concepto | Palabra Chivata en el Test |
-| :--- | :--- |
-| **Aseguramiento de Calidad (QA)** | "Prevención", "Procesos", "Plan de calidad", "Métrica v3 interfaz CAL". |
-| **Control de Calidad (QC)** | "Detección", "Producto", "Pruebas", "Inspección". |
-| **ISO 9000** | "Fundamentos y vocabulario", "No certificable", "7 principios". |
-| **ISO 9001** | "Certificable", "Sistema de Gestión de Calidad (SGC)", "Mejora continua", "Requisitos". |
-| **ISO 9004** | "Mejora continua del desempeño", "Éxito sostenido", "No certificable". |
+
+## 2. El Modelo EFQM (Excelencia Organizativa)
+
+El **Modelo EFQM** (*European Foundation for Quality Management*) no es una norma ISO de obligado cumplimiento ni certificable legalmente, sino un **marco de autoevaluación** voluntario diseñado para guiar a las organizaciones hacia la excelencia y la sostenibilidad. En España, su difusión y concesión de Sellos de Excelencia la gestiona el **Club Excelencia en Gestión**.
+
+
+
+### 2.1. Modelo EFQM Clásico (Versión 2013 - 9 Criterios)
+
+Esta versión es la más preguntada tradicionalmente en las oposiciones de la Administración General del Estado. Se basa en una estricta **relación de Causa y Efecto** sumando un total de **9 criterios** que acumulan **1.000 puntos**:
+
+[ AGENTES FACILITADORES (500 pts) ]         ───►         [ RESULTADOS (500 pts) ]
+(Lo que la organización HACE - CAUSA)                    (Lo que LOGRA - EFECTO)
+
+Liderazgo (100)                                       6. Resultados en los Clientes (150)
+
+Estrategia (100)                                      7. Resultados en las Personas (100)
+
+Personas (100)                                        8. Resultados en la Sociedad (100)
+
+Alianzas y Recursos (100)                             9. Resultados Clave (150)
+
+Procesos, Productos y Servicios (100)
+
+**Matriz de Evaluación RADAR (REDER en español):**
+Es la herramienta de puntuación que evalúa a la organización en el modelo clásico:
+*   **R**esultados (*Results*): Determinar lo que se quiere lograr.
+*   **E**nfoque (*Approach*): Planificar lo que se va a hacer para lograrlo.
+*   **D**espliegue (*Deploy*): Aplicar el enfoque de manera estructurada.
+*   **E**valuación y **R**evisión (*Assess and Refine*): Analizar, medir y aprender de los resultados para introducir mejoras.
+
+
+
+### 2.2. Modelo EFQM Actualizado (Edición 2020)
+
+Desde el año 2020, la EFQM renovó el modelo para adaptarlo a la transformación digital y la disrupción del mercado. En las oposiciones puede aparecer como actualización del modelo clásico:
+
+DIRECCIÓN (200 pts)    ───►    EJECUCIÓN (400 pts)    ───►    RESULTADOS (400 pts)
+¿Por qué existe?              ¿Cómo actúa?                  ¿Qué ha conseguido?
+Criterios 1 y 2               Criterios 3, 4 y 5            Criterios 6 y 7
+
+**Estructura de 7 Criterios del Modelo 2020:**
+1.  **Propósito, Visión y Estrategia** (Dirección - 100 pts).
+2.  **Cultura de la Organización y Liderazgo** (Dirección - 100 pts).
+3.  **Implicar a los Grupos de Interés** (Ejecución - 100 pts).
+4.  **Crear Valor Sostenible** (Ejecución - 100 pts).
+5.  **Impulsar el Rendimiento y la Transformación** (Ejecución - 200 pts).
+6.  **Percepción de los Grupos de Interés** (Resultados - 200 pts).
+7.  **Rendimiento Estratégico y Operativo** (Resultados - 200 pts).
+
+**Diferencias Clave para el Test (Modelo 2013 vs 2020):**
+*   **Terminología:** Se abandona el concepto estricto de "Excelencia" en favor de "organizaciones sobresalientes y sostenibles".
+*   **Nº de Criterios:** Pasa de **9 criterios** (5 Agentes / 4 Resultados) a **7 criterios** (Dirección / Ejecución / Resultados).
+*   **Transversalidad del Factor Humano:** El criterio aislado "Personas" desaparece como bloque independiente y se vuelve transversal a toda la organización (especialmente dentro del criterio 2).
+*   **Puntuación:** Los Resultados bajan su peso relativo global de 500 a **400 puntos**, ganando peso la fase de Ejecución (400 pts) y Dirección (200 pts).
+
+
+
+## 3. ISO 9001:2015 (Sistemas de Gestión de la Calidad)
+
+La norma **ISO 9001:2015** es el estándar internacional certificable que establece los requisitos formales para un Sistema de Gestión de la Calidad (SGC).
+
+
+
+### 3.1. Estructura de Alto Nivel (Anexo SL)
+
+La versión 2015 adopta la plantilla común **Anexo SL**, que consta de 10 capítulos. Esto permite integrar fácilmente la ISO 9001 con otras normas como la ISO 27001 (Seguridad) o la ISO 14001 (Medio Ambiente):
+
+1.  Objeto y campo de aplicación.
+2.  Referencias normativas.
+3.  Términos y definiciones.
+4.  **Contexto de la organización** (Requisito exigible).
+5.  **Liderazgo** (Requisito exigible).
+6.  **Planificación** (Requisito exigible - Gestión de riesgos).
+7.  **Apoyo** (Requisito exigible - Recursos, competencias, información documentada).
+8.  **Operación** (Requisito exigible - Procesos operativos, diseño y desarrollo).
+9.  **Evaluación del desempeño** (Requisito exigible - Auditorías internas, revisión por la dirección).
+10. **Mejora** (Requisito exigible - No conformidades y acciones correctivas).
+
+
+
+### 3.2. Mapeo del Ciclo PDCA (Deming) en ISO 9001:2015
+
+Toda la sistemática de la norma ISO 9001 se articula sobre el **Ciclo de Mejora Continua de Deming (PDCA)**:
+
+                  ┌──────────────────────────┐
+                  │   1. PLAN (Planificar)   │
+                  │  Capítulos 4, 5, 6 y 7   │
+                  └────────────┬─────────────┘
+                               │
+                               ▼
+┌──────────────────────────┐           ┌──────────────────────────┐
+│    4. ACT (Actuar)       │           │     2. DO (Hacer)        │
+│       Capítulo 10        │           │        Capítulo 8        │
+└────────────▲─────────────┘           └────────────┬─────────────┘
+│                                      │
+└─────────────┐          ┌─────────────┘
+│          │
+┌──────┴──────────▼────────┐
+│  3. CHECK (Verificar)    │
+│        Capítulo 9        │
+└──────────────────────────┘
+
+
+### 3.3. Pensamiento Basado en Riesgos (*Risk-based Thinking*)
+
+Uno de los cambios más trascendentales introducidos en ISO 9001:2015 fue la sustitución del concepto tradicional de "acción preventiva" por el **enfoque basado en riesgos**. 
+
+La norma exige a la organización identificar proactivamente los **riesgos y oportunidades** en la fase de planificación (Capítulo 6), evaluando su probabilidad e impacto. De esta forma, la prevención de fallos se convierte en una propiedad intrínseca a la propia estructura del Sistema de Gestión de la Calidad.
+
+
+
+## 4. Ejemplo Real (Caso Práctico sin Analogías)
+
+Imaginemos el departamento de TI responsable de la **Sede Electrónica de un Ministerio**:
+
+*   **Sistemas con ISO 9001 Certificada:**
+    El departamento de TI ha documentado estrictamente el procedimiento de despliegue de nuevas versiones de la Sede Electrónica (Ciclo PDCA). Ante una auditoría externa de certificación, se demuestra que todos los cambios siguen la plantilla de control de cambios, que se realizan pruebas de regresión en el entorno de preproducción y que se registra la satisfacción de los ciudadanos. Si el auditor verifica que los requisitos de la norma se cumplen sin desviación, otorga o renueva el **Certificado ISO 9001**.
+
+*   **Aplicación del Modelo EFQM:**
+    La dirección del Ministerio busca evaluar la madurez global del servicio más allá de cumplir un estándar de requisitos. Realiza un ejercicio de autoevaluación midiendo el impacto medioambiental y social de la Sede Electrónica (Resultados en la Sociedad), la motivación y capacitación de los programadores públicos (Personas / Cultura) y la percepción directa de los usuarios (Resultados en Clientes). Aplica la matriz **RADAR/REDER** para puntuar estos bloques y obtiene una valoración que le da acceso a un **Sello de Excelencia EFQM (ej. 500+ Puntos)**.
+
+
+
+## 5. Cuadro Síntesis y "Palabras Chivatas" para Examen Tipo Test
+
+| Concepto / Norma | Tipo de Herramienta | Enfoque Principal | Palabra Chivata / Clave en el Test |
+| :--- | :--- | :--- | :--- |
+| **Aseguramiento de Calidad (QA)** | Prevención en Procesos | Evitar la aparición de defectos mediante estándares. | "Procesos", "Preventivo", "Interfaz CAL de Métrica v3". |
+| **Control de Calidad (QC)** | Detección en Producto | Identificar fallos en el software terminado. | "Producto", "Reactivo", "Pruebas/Inspección". |
+| **ISO 9000** | Estándar de Fundamentos | Definiciones técnicas y vocabulario oficial. | "Fundamentos", "Vocabulario", "7 principios", "No certificable". |
+| **ISO 9001** | Estándar de Requisitos | Especificación del Sistema de Gestión de Calidad (SGC). | **"Certificable"**, "Ciclo PDCA", "Riesgos y Oportunidades", "Anexo SL". |
+| **ISO 9004** | Guía de Orientación | Directrices para la mejora continua del desempeño. | "Éxito sostenido", "Desempeño", "No certificable". |
 | **Ciclo PDCA (Deming)** | "Planificar, Hacer, Verificar, Actuar", "Mejora iterativa". |
-| **Modelo EFQM (2013)** | "Autoevaluación", "Excelencia", "Agentes facilitadores y Resultados", "Matriz RADAR", "9 criterios". |
-| **Modelo EFQM (2020)** | "Organización sobresaliente", "7 criterios", "Dirección-Ejecución-Resultados". |
+| **EFQM Clásico (2013)** | Modelo de Autoevaluación | Marco de Excelencia en gestión de organizaciones. | "9 Criterios", "5 Agentes / 4 Resultados", "Matriz RADAR/REDER". |
+| **EFQM Actualizado (2020)** | Modelo de Autoevaluación | Marco para organizaciones sobresalientes y sostenibles. | "7 Criterios", "Dirección-Ejecución-Resultados", "Estructura 200-400-400". |
+
 
 ### 5.1. Simulacro de Test
 
