@@ -34,20 +34,20 @@ Este tema es el núcleo operativo de Métrica v3 (Interfaz de Gestión de Proyec
 
 La planificación transforma la idea en tareas ejecutables.
 
-*   **WBS (Work Breakdown Structure):** Es el **árbol jerárquico** que descompone el proyecto en entregables manejables (fases -> actividades -> tareas)[cite: 8]. Es la base para cualquier estimación.
+*   **WBS (Work Breakdown Structure):** Es el **árbol jerárquico** que descompone el proyecto en entregables manejables (fases -> actividades -> tareas). Es la base para cualquier estimación.
 *   **Estimación:**
-    *   **Puntos Función (Albrecht / Mark II):** Técnica empírica e independiente del lenguaje. Mide la complejidad de la funcionalidad[cite: 8].
-    *   **Staffing Size:** Específico para **Orientación a Objetos**. Se basa en estimar el número de clases clave y secundarias para determinar el esfuerzo en días/persona[cite: 8].
+    *   **Puntos Función (Albrecht / Mark II):** Técnica empírica e independiente del lenguaje. Mide la complejidad de la funcionalidad.
+    *   **Staffing Size:** Específico para **Orientación a Objetos**. Se basa en estimar el número de clases clave y secundarias para determinar el esfuerzo en días/persona.
 *   **Cronogramas:**
-    *   **PERT:** Grafo de redes (nodos/flechas). Permite calcular la **Ruta Crítica** (la secuencia de tareas sin holgura)[cite: 8].
-    *   **Gantt:** El diagrama de barras clásico para visualizar plazos y superposición de tareas en el tiempo[cite: 8].
+    *   **PERT:** Grafo de redes (nodos/flechas). Permite calcular la **Ruta Crítica** (la secuencia de tareas sin holgura).
+    *   **Gantt:** El diagrama de barras clásico para visualizar plazos y superposición de tareas en el tiempo.
 
 ## 2. Gestión de Riesgos y Cambios
 
-En Métrica v3, la gestión de incidencias y cambios se hace en la fase **GPS (Seguimiento y Control)**[cite: 8].
+En Métrica v3, la gestión de incidencias y cambios se hace en la fase **GPS (Seguimiento y Control)**.
 
 *   **Riesgos:** Deben identificarse, analizarse y cuantificarse (probabilidad e impacto).
-*   **Control de Cambios:** Cuando un usuario pide cambiar un requisito, el Jefe de Proyecto realiza un **Análisis de Impacto** (¿cuánto tiempo/dinero extra supone?). El cambio se registra formalmente, pero **solo lo aprueba el Comité de Seguimiento**[cite: 8].
+*   **Control de Cambios:** Cuando un usuario pide cambiar un requisito, el Jefe de Proyecto realiza un **Análisis de Impacto** (¿cuánto tiempo/dinero extra supone?). El cambio se registra formalmente, pero **solo lo aprueba el Comité de Seguimiento**.
 
 ## 3. Métricas: Valor Ganado (EVM)
 
