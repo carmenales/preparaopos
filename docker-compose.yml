@@ -47,6 +47,22 @@ services:
       - ./knowledge:/workspace/knowledge:ro
       - ./apps/studyassistant/data:/workspace/apps/studyassistant/data
 
+  knowledge-service:
+    build:
+      context: ./services/knowledge
+    container_name: preparaopos-knowledge-service
+    ports:
+      - "8100:8000"
+    environment:
+      SEARCH_SERVICE_URL: "http://embeddings:8000"
+      OLLAMA_URL: "http://host.docker.internal:11434"
+      OLLAMA_MODEL: "llama3.1:latest"
+      OLLAMA_READ_TIMEOUT_SECONDS: "900"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - embeddings
+
   db:
     image: mariadb:10.4
     container_name: preparaopos-preparadortai-db
