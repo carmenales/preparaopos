@@ -50,7 +50,7 @@ class Settings:
     # en una función de "generar para un conjunto de fragmentos" y una
     # de "orquestar la nota completa" precisamente para poder pasar a
     # generación por secciones más adelante sin tocar este cliente.
-    ollama_num_predict: int = _get_int("OLLAMA_NUM_PREDICT", 2048)
+    ollama_num_predict: int = _get_int("OLLAMA_NUM_PREDICT", 800)
     ollama_temperature: float = _get_float("OLLAMA_TEMPERATURE", 0.0)
     ollama_keep_alive: int = _get_int("OLLAMA_KEEP_ALIVE", -1)
 
