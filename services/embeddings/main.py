@@ -99,6 +99,10 @@ def search(
             "anchor": chunk["anchor"],
             "text_preview": chunk["text_preview"],
             "score": round(float(scores[idx]), 4),
+            "chunk_id": chunk.get("chunk_id"),
+            "source_id": chunk.get("source_id"),
+            "content": chunk.get("content"),
+            "tags": chunk.get("tags", []),
         })
 
     return {"query": q, "results": results}
