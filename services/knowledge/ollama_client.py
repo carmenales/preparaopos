@@ -33,7 +33,12 @@ class OllamaClient:
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._model = model
-        self._timeout = httpx.Timeout(connect=connect_timeout_seconds, read=read_timeout_seconds)
+        self._timeout = httpx.Timeout(
+            connect=connect_timeout_seconds,
+            read=read_timeout_seconds,
+            write=connect_timeout_seconds,
+            pool=connect_timeout_seconds,
+        )
         self._num_predict = num_predict
         self._temperature = temperature
         self._keep_alive = keep_alive
