@@ -108,20 +108,29 @@ def build_semantic_index(
         metadata, body = parse_frontmatter(path)
         title = metadata.get("title") or path.stem.replace("-", " ").title()
         note_id = metadata["id"]
+        tags = metadata.get("tags") or []
+        if not isinstance(tags, list):
+            tags = [tags]
 
-        for chunk in split_into_heading_chunks(body):
+        source_id = note_id
+
+        for chunk_index, chunk in enumerate(split_into_heading_chunks(body)):
             heading_label = chunk["heading"] or "(introducción)"
-            # Anteponer título + heading ayuda al modelo a situar el
-            # fragmento aunque el texto en sí no repita esas palabras.
             embed_text = f"{title} — {heading_label}\n{chunk['text']}"
 
+            chunk_id = f"{note_id}::{chunk_index:03d}"
+
             all_chunks.append({
+                "chunk_id": chunk_id,
                 "note_id": note_id,
+                "source_id": source_id,
                 "note_title": title,
                 "heading": chunk["heading"],
                 "anchor": chunk["anchor"],
                 "level": chunk["level"],
                 "text_preview": chunk["text"][:280],
+                "content": chunk["text"],
+                "tags": tags,
             })
             texts_to_encode.append(embed_text)
 
