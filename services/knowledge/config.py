@@ -52,7 +52,7 @@ class Settings:
     # generación por secciones más adelante sin tocar este cliente.
     ollama_num_predict: int = _get_int("OLLAMA_NUM_PREDICT", 2048)
     ollama_temperature: float = _get_float("OLLAMA_TEMPERATURE", 0.0)
-    ollama_keep_alive: str = os.environ.get("OLLAMA_KEEP_ALIVE", "-1")
+    ollama_keep_alive: int = _get_int("OLLAMA_KEEP_ALIVE", -1)
 
     # --- Recuperación (topic_retriever) ---
     default_top_k: int = _get_int("NOTE_GENERATION_TOP_K", 20)

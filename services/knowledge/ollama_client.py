@@ -29,7 +29,7 @@ class OllamaClient:
         read_timeout_seconds: float = settings.ollama_read_timeout_seconds,
         num_predict: int = settings.ollama_num_predict,
         temperature: float = settings.ollama_temperature,
-        keep_alive: str = settings.ollama_keep_alive,
+        keep_alive: int = settings.ollama_keep_alive,
     ) -> None:
         self._base_url = base_url.rstrip("/")
         self._model = model
