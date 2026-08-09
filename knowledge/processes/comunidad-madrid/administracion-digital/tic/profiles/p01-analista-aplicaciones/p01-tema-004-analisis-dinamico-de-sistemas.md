@@ -23,6 +23,7 @@ created_at: "2026-08-09"
 last_reviewed: "2026-08-09"
 ai_generated: true
 ai_sources:
+  - "chatgpt"
   - "gemini"
   - "perplexity"
 needs_human_review: true
@@ -52,6 +53,38 @@ El **BPM** no es solo una notación gráfica, sino una disciplina de gestión co
 
 Esta naturaleza cíclica y de mejora continua es precisamente lo que distingue al **BPM** del **BPR**: el BPR rompe con el proceso existente y lo rediseña desde cero buscando un salto drástico de rendimiento, mientras que el BPM gestiona el proceso de forma evolutiva a lo largo de su ciclo de vida completo.
 
+### 1.2. Elementos del modelado de procesos
+
+El modelado de procesos permite identificar las actividades que componen un proceso, su secuencia, los responsables de su ejecución, los eventos que condicionan su desarrollo, las decisiones que se adoptan y la información que se intercambia.
+
+Entre los elementos que deben identificarse se encuentran:
+
+* **Actividades:** unidades de trabajo realizadas durante el proceso.
+* **Eventos:** sucesos que inician, modifican o finalizan el comportamiento del proceso.
+* **Flujos:** relaciones que determinan la secuencia de ejecución o el intercambio de mensajes.
+* **Decisiones:** puntos en los que el flujo se determina a partir de condiciones o reglas.
+* **Participantes y responsables:** organizaciones, unidades, roles o sistemas que intervienen en el proceso.
+* **Entradas y salidas:** información, documentos, productos o servicios que recibe o genera el proceso.
+* **Reglas de negocio:** condiciones que determinan el comportamiento del proceso o la adopción de decisiones.
+
+El modelo debe mantener una correspondencia clara entre las actividades, los responsables, las entradas y salidas y las reglas que gobiernan el proceso.
+
+### 1.3. Procesos y subprocesos
+
+Un proceso puede descomponerse jerárquicamente en subprocesos para representar diferentes niveles de detalle. La descomposición permite pasar de una visión general del proceso a modelos más detallados sin perder la relación entre ambos niveles.
+
+En BPMN, un **subproceso** es una actividad compuesta cuyo detalle puede representarse mediante un diagrama de proceso independiente. Esta capacidad permite controlar la complejidad del modelo y reutilizar una estructura de proceso en diferentes niveles de abstracción.
+
+### 1.4. Modelado de procesos y automatización
+
+El modelo de proceso puede utilizarse como especificación para el diseño de soluciones de automatización. Para ello es necesario diferenciar entre:
+
+* **Modelo de negocio:** representa el comportamiento del proceso desde la perspectiva organizativa y funcional.
+* **Modelo ejecutable:** incorpora el nivel de precisión necesario para que un sistema de gestión de procesos pueda ejecutar o coordinar las actividades.
+* **Implementación:** materializa el proceso mediante aplicaciones, servicios, sistemas de información y tareas humanas.
+
+La notación BPMN está diseñada para facilitar la comunicación entre los participantes del negocio y los responsables técnicos, manteniendo una semántica suficientemente precisa para representar procesos complejos.
+
 ## 2. Modelado Dinámico de Sistemas (UML)
 
 En el ámbito de la Ingeniería de Software, el Lenguaje Unificado de Modelado (UML) proporciona varios diagramas de comportamiento (dinámicos) para representar cómo cambia el sistema a lo largo del tiempo:
@@ -63,6 +96,33 @@ En el ámbito de la Ingeniería de Software, el Lenguaje Unificado de Modelado (
 
 Un quinto diagrama de comportamiento que suele omitirse pero que UML define formalmente es el **Diagrama de Comunicación (*Communication Diagram*)**, variante del diagrama de secuencia que pone el énfasis en las relaciones estructurales entre los objetos que intercambian mensajes, en lugar de en el orden temporal estricto. Conviene también distinguir con precisión el **Diagrama de Actividades** del **Diagrama de Estados**: el primero modela el flujo de un *proceso o algoritmo* (qué pasos se ejecutan y en qué orden), mientras que el segundo modela el *ciclo de vida de un objeto concreto* (en qué estado se encuentra y qué eventos provocan su cambio de estado); es una trampa de examen habitual confundir ambos por su similitud visual.
 
+### 2.1. Diagramas de comportamiento UML
+
+Los diagramas de comportamiento UML permiten representar aspectos dinámicos de un sistema. Entre ellos se encuentran:
+
+* **Diagrama de actividades:** representa flujos de control y de objetos mediante actividades, decisiones, concurrencia y sincronización.
+* **Máquina de estados:** representa los estados de un objeto o elemento y las transiciones provocadas por eventos.
+* **Diagrama de secuencia:** representa la interacción entre participantes mediante mensajes ordenados temporalmente.
+* **Diagrama de comunicación:** representa las interacciones haciendo especial énfasis en las relaciones entre los participantes y los mensajes intercambiados.
+* **Diagrama de tiempos:** representa el comportamiento de los elementos respecto de una escala temporal.
+* **Diagrama de visión general de interacción:** proporciona una visión de alto nivel del flujo de interacciones, combinando elementos propios de actividades con referencias a interacciones.
+
+Los diagramas de actividades y los diagramas de estados tienen finalidades diferentes. El diagrama de actividades representa el flujo de ejecución de actividades; la máquina de estados representa el ciclo de vida de un elemento y las transiciones entre sus estados.
+
+### 2.2. Actividades UML: control, decisión y concurrencia
+
+En un diagrama de actividades pueden representarse:
+
+* **Nodo inicial**, que indica el comienzo del flujo.
+* **Acciones y actividades**, que representan unidades de comportamiento.
+* **Nodos de decisión y combinación**, utilizados para seleccionar y reunir flujos alternativos.
+* **Nodos de bifurcación y unión**, utilizados para representar flujos concurrentes.
+* **Nodos finales**, que indican la terminación de un flujo o de la actividad.
+* **Flujos de control**, que determinan la secuencia de ejecución.
+* **Flujos de objetos**, que representan el paso de objetos o datos entre acciones.
+
+La bifurcación permite iniciar flujos concurrentes, mientras que la unión permite sincronizarlos posteriormente.
+
 ## 3. BPMN (Business Process Model and Notation)
 
 BPMN es el estándar internacional *de facto* para el modelado de procesos de negocio. Está mantenido por el **OMG (Object Management Group)** y su versión actual estandarizada por ISO es **BPMN 2.0.2 (ISO/IEC 19510)**.
@@ -71,7 +131,7 @@ Su objetivo principal es proveer una notación gráfica fácilmente comprensible
 
 ### 3.1. Tipos de Modelos en BPMN 2.0
 
-Una pregunta clásica de examen es distinguir los tres tipos de diagramas que soporta BPMN 2.0:
+BPMN 2.0 distingue tres tipos principales de representaciones:
 
 1.  **Procesos de Orquestación (Orchestration):** Representan un proceso privado interno de una organización o departamento (todo ocurre dentro de un único Pool).
 2.  **Procesos de Colaboración (Collaboration):** Muestran las interacciones entre dos o más entidades de negocio independientes (dos o más Pools). Se representan mediante flujos de mensajes entre los participantes.
@@ -81,9 +141,104 @@ Una pregunta clásica de examen es distinguir los tres tipos de diagramas que so
 
 **DMN** es otro estándar del OMG, hermano de BPMN, diseñado específicamente para modelar **decisiones de negocio** de forma independiente del proceso que las contiene. Es habitual encontrarlo mencionado junto a BPMN porque ambas notaciones se complementan: BPMN modela el "cómo fluye el trabajo" y DMN modela el "cómo se toma una decisión concreta dentro de ese flujo" (típicamente mediante **Tablas de Decisión**, que listan de forma tabular las combinaciones de condiciones de entrada y su resultado). En BPMN, una actividad de tipo **Tarea de Regla de Negocio (*Business Rule Task*)** es la que delega su lógica en un modelo DMN externo, evitando "ensuciar" el diagrama de proceso con reglas complejas de decisión.
 
+### 3.3. BPMN y semántica de los flujos
+
+BPMN distingue entre el flujo de secuencia y el flujo de mensaje:
+
+* El **flujo de secuencia** representa el orden de ejecución de las actividades y solamente se utiliza dentro de un mismo Pool.
+* El **flujo de mensaje** representa la comunicación entre participantes y se utiliza entre Pools.
+* La **asociación** relaciona elementos del diagrama con datos, artefactos o anotaciones, sin representar el control del proceso.
+
+Esta distinción permite separar el comportamiento interno de un participante de las comunicaciones que mantiene con otros participantes.
+
+### 3.4. Participantes, Pools y Lanes
+
+Un **Pool** representa un participante de una colaboración. El participante puede ser una organización, una entidad, un sistema u otra unidad que intervenga en el proceso.
+
+Un **Lane** constituye una partición de un Pool y permite organizar las actividades atendiendo, por ejemplo, a roles, departamentos, funciones o sistemas.
+
+Un Pool puede representarse de forma **black-box**, mostrando al participante sin detallar su proceso interno. Esta representación resulta adecuada cuando únicamente interesa mostrar las interacciones de un participante con otros.
+
+### 3.5. Subprocesos y actividades BPMN
+
+Las actividades BPMN pueden ser tareas o subprocesos.
+
+Una **tarea** representa una actividad atómica que no se descompone en el nivel de modelado considerado.
+
+Un **subproceso** representa una actividad cuyo comportamiento puede detallarse mediante actividades internas. Puede utilizarse para estructurar procesos complejos y establecer diferentes niveles de abstracción.
+
+Los subprocesos pueden aparecer embebidos en el proceso o referenciar estructuras reutilizables mediante mecanismos definidos por BPMN.
+
+### 3.6. Tipos de tareas BPMN
+
+BPMN permite especificar el tipo de trabajo realizado mediante marcadores de actividad. Entre los tipos de tareas se encuentran:
+
+* **User Task:** tarea realizada por una persona con asistencia de una aplicación.
+* **Manual Task:** tarea realizada manualmente sin asistencia de una aplicación.
+* **Service Task:** tarea ejecutada mediante un servicio o aplicación.
+* **Business Rule Task:** tarea que proporciona una entrada a un motor de reglas de negocio y recibe el resultado correspondiente.
+* **Script Task:** tarea ejecutada mediante un script.
+* **Send Task:** tarea cuyo propósito es enviar un mensaje.
+* **Receive Task:** tarea cuyo propósito es recibir un mensaje.
+
+La utilización de estos tipos permite expresar con mayor precisión la naturaleza de cada actividad del proceso.
+
+### 3.7. Datos en BPMN
+
+Los elementos de datos permiten representar la información utilizada o producida durante la ejecución del proceso.
+
+Entre los elementos de datos se encuentran:
+
+* **Data Object:** representa información que se crea, utiliza o modifica durante una actividad.
+* **Data Input:** representa los datos requeridos como entrada de una actividad o proceso.
+* **Data Output:** representa los datos generados como salida.
+* **Data Store:** representa un mecanismo persistente de almacenamiento de datos que puede ser utilizado por uno o varios procesos.
+
+Los elementos de datos se relacionan con actividades mediante asociaciones y no constituyen por sí mismos flujos de control.
+
+### 3.8. Eventos BPMN
+
+Los eventos se clasifican atendiendo a su posición en el proceso y al tipo de evento que representan.
+
+Por su posición:
+
+* **Eventos de inicio:** indican dónde comienza un proceso o subproceso.
+* **Eventos intermedios:** se producen durante el desarrollo del proceso.
+* **Eventos de fin:** indican la terminación de un proceso o flujo.
+
+Por su comportamiento, los eventos pueden representar, entre otros, mensajes, temporizadores, errores, señales, condiciones, escalados, cancelaciones, compensaciones o enlaces.
+
+Los **eventos de borde** se asocian a una actividad y permiten reaccionar ante un evento mientras dicha actividad está en ejecución. Pueden ser interruptivos o no interruptivos.
+
+### 3.9. Pasarelas BPMN
+
+Las pasarelas controlan la divergencia y convergencia de los flujos.
+
+* **Exclusive Gateway (XOR):** selecciona una única alternativa de entre las disponibles.
+* **Inclusive Gateway (OR):** permite seleccionar una o varias alternativas.
+* **Parallel Gateway (AND):** crea o sincroniza flujos paralelos sin realizar una evaluación condicional.
+* **Event-Based Gateway:** determina la continuación del proceso en función del evento que se produzca.
+* **Complex Gateway:** permite modelar condiciones complejas de divergencia o convergencia que no quedan cubiertas por las pasarelas anteriores.
+
+En una convergencia paralela, la pasarela espera los flujos entrantes necesarios antes de continuar. En una convergencia inclusiva, la sincronización depende de las ramas que hayan sido activadas.
+
+### 3.10. Conformidad y ejecución BPMN
+
+BPMN es una especificación de modelado, por lo que debe distinguirse la notación de la tecnología concreta utilizada para ejecutar procesos.
+
+La especificación define una semántica común para los elementos del modelo y mecanismos de intercambio de modelos. Una herramienta BPMN puede proporcionar capacidades adicionales de ejecución, monitorización o automatización, pero dichas capacidades no deben confundirse con la propia notación.
+
+### 3.11. BPMN y DMN
+
+BPMN puede complementarse con **DMN (Decision Model and Notation)** para separar la lógica de decisión de la lógica de proceso.
+
+BPMN representa principalmente el flujo de actividades e interacciones, mientras que DMN permite representar decisiones y reglas de negocio. Las **Decision Tables** constituyen uno de los mecanismos principales de DMN para expresar de forma tabular las relaciones entre entradas y resultados de una decisión.
+
+Esta separación permite mantener los procesos y las reglas de decisión como modelos diferenciados y facilita su mantenimiento.
+
 ## 4. Elementos Clave de BPMN 2.0
 
-Los tribunales TIC suelen poner preguntas descriptivas de las figuras ("¿Qué representa un rombo con un signo + en su interior?"). BPMN se divide en cuatro categorías fundamentales:
+BPMN se estructura en cuatro categorías fundamentales:
 
 ### A) Objetos de Flujo (Flow Objects)
 Son los elementos que definen el comportamiento del proceso.
@@ -130,6 +285,13 @@ Proveen información adicional sobre el proceso sin afectar directamente el fluj
 *   **Grupo (Group):** Caja con borde punteado que agrupa visualmente varios elementos para su comprensión, sin afectar al flujo.
 *   **Anotación (Text Annotation):** Texto libre conectado con una Asociación para explicar un elemento complejo.
 
+## 6. Referencias normativas y técnicas
+
+* Object Management Group (OMG), **Business Process Model and Notation (BPMN), versión 2.0.2**.
+* ISO/IEC 19510:2013, **Information technology — Object Management Group Business Process Model and Notation**.
+* Object Management Group (OMG), **Unified Modeling Language (UML), versión 2.5.1**.
+* Object Management Group (OMG), **Decision Model and Notation (DMN)**.
+
 ## 5. Patrones de Examen y "Palabras Chivata"
 
 | Concepto | Palabra Chivata o Regla para el Test |
@@ -149,7 +311,7 @@ Proveen información adicional sobre el proceso sin afectar directamente el fluj
 | **DMN** | "Tablas de decisión", "Complementa a BPMN", "Business Rule Task". |
 | **Ciclo de vida BPM** | "Diseñar-Modelar-Ejecutar-Monitorizar-Optimizar", "Mejora continua e iterativa". |
 
-### 5.1. Simulacro de Test: Desmontando trampas
+### 5.1. Ejercicios de aplicación
 
 **Pregunta 1:**
 *En un diagrama de colaboración BPMN 2.0 que representa la interacción entre un "Ciudadano" y el "Ministerio de Hacienda", necesitas conectar la actividad "Enviar Solicitud" (situada en el pool del Ciudadano) con el evento "Recepción de Solicitud" (situado en el pool del Ministerio). ¿Qué tipo de conector debes utilizar obligatoriamente?*
@@ -196,7 +358,7 @@ d) El BPM es la notación gráfica y el BPR es el motor de ejecución tecnológi
 2.  **Desmontando las opciones:** La opción A tiene las definiciones invertidas. La opción C es falsa. La opción D confunde BPM con BPMN (que sí es la notación) y BPMS (el motor). La opción B describe de forma precisa y exacta ambos conceptos.
 3.  **Respuesta correcta: B.**
 
-### 5.2. Simulacro de Test adicional
+### 5.2. Ejercicios de aplicación adicionales
 
 **Pregunta 4:**
 *Un proceso BPMN necesita que, si una actividad de "Revisión de Documentación" tarda más de 48 horas sin completarse, se cancele automáticamente y el flujo se desvíe hacia una tarea de "Escalado a Supervisor". ¿Qué elemento BPMN modela correctamente este comportamiento?*
