@@ -27,6 +27,7 @@ created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
 ai_sources:
+  - "chatgpt"
   - "gemini"
   - "perplexity"
 needs_human_review: true
@@ -64,6 +65,8 @@ Su tarea principal es generar especificaciones correctas, claras y sin ambigüed
 
 El estándar **ISO/IEC 25010** (modelo de calidad de producto software, sucesor de ISO/IEC 9126) es la referencia oficial para clasificar los **requisitos no funcionales** en 8 características: *Functional suitability* (idoneidad funcional), *Performance efficiency* (eficiencia de desempeño), *Compatibility*, *Usability*, *Reliability*, *Security*, *Maintainability* y *Portability*.
 
+La edición **ISO/IEC 25010:2023** sustituye a la edición de 2011 y establece un modelo de calidad de producto con **9 características**: adecuación funcional (*functional suitability*), eficiencia de desempeño (*performance efficiency*), compatibilidad (*compatibility*), capacidad de interacción (*interaction capability*), fiabilidad (*reliability*), seguridad (*security*), mantenibilidad (*maintainability*), flexibilidad (*flexibility*) y seguridad de uso (*safety*). El modelo se utiliza para especificar, medir y evaluar la calidad de productos TIC y software.
+
 **Atributos de un buen requisito (ISO/IEC/IEEE 29148):** necesario, no ambiguo, completo, singular (atómico), factible, verificable, correcto y conforme (con estándares aplicables).
 
 **Trazabilidad de requisitos:** capacidad de seguir la vida de un requisito desde su origen (necesidad de negocio) hasta su implementación y prueba, en ambas direcciones (hacia atrás y hacia adelante). Es clave para la gestión del cambio y para la auditoría en procesos certificados bajo CMMI o ISO 9001.
@@ -72,6 +75,35 @@ El estándar **ISO/IEC 25010** (modelo de calidad de producto software, sucesor 
 
 *   **Verificación:** ¿estamos construyendo el sistema correctamente? (¿el producto cumple la especificación?).
 *   **Validación:** ¿estamos construyendo el sistema correcto? (¿la especificación satisface la necesidad real del usuario?).
+
+
+
+### 1.2.1. Análisis funcional y diseño del sistema
+
+El análisis funcional transforma las necesidades y requisitos de los interesados en una especificación estructurada del comportamiento que debe proporcionar el sistema. El diseño parte de los requisitos establecidos y determina la estructura y las características de la solución que permitirán satisfacerlos.
+
+En el análisis funcional deben identificarse, como mínimo:
+
+* **Actores e interesados:** personas, organizaciones, sistemas externos u otros elementos que interactúan con el sistema o condicionan sus requisitos.
+* **Procesos y actividades de negocio:** secuencia y reglas que permiten alcanzar los objetivos de la organización.
+* **Funciones del sistema:** servicios que el sistema debe proporcionar para soportar los procesos identificados.
+* **Datos e información:** entidades, atributos, relaciones, entradas, salidas y reglas de negocio relevantes.
+* **Reglas de negocio:** restricciones, políticas, condiciones o cálculos que determinan el comportamiento del sistema.
+* **Requisitos funcionales y de calidad:** comportamiento esperado y características de calidad que debe satisfacer la solución.
+* **Interfaces externas:** intercambios de información con usuarios, sistemas, dispositivos o servicios externos.
+* **Criterios de aceptación:** condiciones objetivas que permiten determinar si un requisito o producto satisface lo especificado.
+
+El diseño del sistema se desarrolla a partir de los requisitos y puede comprender la arquitectura lógica y física, la descomposición en componentes, las interfaces, los modelos de datos, la gestión de errores, los mecanismos de persistencia y las decisiones tecnológicas necesarias para implementar la solución.
+
+La especificación de requisitos debe mantener la correspondencia entre las necesidades identificadas, los requisitos, los elementos de diseño, la implementación y las pruebas. Esta trazabilidad permite controlar el impacto de los cambios y comprobar la cobertura de los requisitos.
+
+### 1.2.2. Gestión de cambios y línea base de requisitos
+
+Los requisitos están sujetos a cambios durante el ciclo de vida del sistema. La gestión de requisitos comprende la identificación, documentación, análisis, priorización, aprobación y seguimiento de dichos cambios.
+
+Una **línea base de requisitos** es un conjunto de requisitos formalmente revisado y aprobado que constituye una referencia para las actividades posteriores. Los cambios posteriores a la línea base deben quedar identificados y controlados, manteniendo su trazabilidad y evaluando su impacto sobre alcance, coste, plazo, calidad, arquitectura, desarrollo y pruebas.
+
+La **matriz de trazabilidad de requisitos** relaciona los requisitos con sus fuentes, elementos de diseño, componentes de implementación, casos de prueba y resultados de las pruebas. Puede establecerse trazabilidad hacia delante, desde el requisito hasta su realización y verificación, y hacia atrás, desde un elemento de la solución hasta el requisito que lo justifica.
 
 ### 1.3. Casos de Uso e Historias de Usuario
 
@@ -122,7 +154,28 @@ Jerarquía habitual en ágil: **Épica** (gran bloque de valor, varias historias
 | Cuándo se completa el detalle | Al inicio (documento cerrado) | Progresivamente, justo a tiempo |
 | Verificación | Flujos alternativos/excepción | Criterios de aceptación |
 
----
+### 1.3.1. Modelado de casos de uso mediante UML
+
+Un **diagrama de casos de uso UML** representa las funcionalidades del sistema desde el punto de vista de los actores externos. El límite del sistema delimita qué elementos pertenecen al sistema y qué elementos son externos a él.
+
+Sus elementos principales son:
+
+* **Actor:** clasificador que representa un papel desempeñado por una entidad externa que interactúa con el sistema. Un actor no tiene por qué ser una persona; puede representar otro sistema, dispositivo u organización.
+* **Caso de uso:** especificación del comportamiento que el sistema proporciona a los actores para alcanzar un resultado observable.
+* **Asociación:** relación que representa la comunicación entre un actor y un caso de uso.
+* **Generalización:** relación en la que un elemento más específico hereda las características de otro elemento más general.
+* **`<<include>>`:** relación en la que el comportamiento del caso de uso incluido forma parte del comportamiento del caso de uso base. Se utiliza para extraer comportamiento común y reutilizable.
+* **`<<extend>>`:** relación en la que un caso de uso de extensión añade comportamiento al caso de uso base bajo determinadas condiciones. El caso de uso base define puntos de extensión y puede ejecutarse sin la extensión.
+
+El modelo de casos de uso se utiliza para delimitar el alcance funcional, identificar interacciones con sistemas externos y servir de base para la especificación detallada de requisitos y para el diseño de pruebas funcionales.
+
+### 1.3.2. Historias de usuario y refinamiento del Product Backlog
+
+En entornos ágiles, una historia de usuario constituye una descripción breve de una necesidad desde la perspectiva del usuario o interesado. La historia no constituye por sí misma una especificación técnica completa; su detalle se desarrolla mediante conversación, refinamiento y criterios de aceptación.
+
+El **refinamiento del Product Backlog** consiste en descomponer y definir con mayor precisión los elementos del Product Backlog, añadiendo información como descripción, orden, tamaño y criterios de aceptación cuando resulte necesario. Los elementos suficientemente preparados para ser seleccionados en un Sprint deben presentar el grado de claridad necesario para que el equipo pueda comprender el trabajo y realizar una previsión razonable.
+
+Los **criterios de aceptación** establecen las condiciones que debe cumplir un elemento para ser aceptado. Deben ser observables y verificables y pueden utilizarse como base para el diseño de pruebas funcionales.
 
 ## 2. Metodologías Ágiles de Desarrollo
 
@@ -137,10 +190,23 @@ Las metodologías ágiles valoran la adaptación al cambio, las entregas tempran
 
 Y 12 principios, entre los que destacan (muy preguntados): satisfacer al cliente mediante entrega temprana y continua de software con valor; aceptar los cambios de requisitos incluso en fases avanzadas; entregar software funcionando frecuentemente (semanas, no meses); la simplicidad es esencial; los equipos auto-organizados producen las mejores arquitecturas y diseños.
 
-### 2.1. Scrum
+### 2.1. Modelos y metodologías de desarrollo de sistemas
+
+El desarrollo de sistemas de información puede organizarse mediante distintos modelos de ciclo de vida. Entre los principales se encuentran:
+
+* **Modelo en cascada:** las actividades se organizan en fases secuenciales, con una definición progresiva de requisitos, análisis, diseño, implementación, pruebas y mantenimiento. Los cambios posteriores pueden requerir volver a fases anteriores.
+* **Modelo en V:** relaciona las actividades de especificación y diseño con las correspondientes actividades de verificación y validación. Cada nivel de definición tiene asociado un nivel de pruebas.
+* **Modelo incremental:** el sistema se desarrolla mediante incrementos sucesivos, cada uno de los cuales aporta funcionalidad al producto.
+* **Modelo iterativo:** la solución se desarrolla mediante ciclos sucesivos de análisis, construcción, evaluación y refinamiento.
+* **Modelo en espiral:** combina desarrollo iterativo con una gestión explícita del riesgo, realizando ciclos en los que se determinan objetivos, alternativas, riesgos, desarrollo y evaluación.
+* **Modelos ágiles:** organizan el desarrollo en ciclos cortos y frecuentes de inspección, adaptación y entrega de valor, admitiendo cambios de requisitos durante el desarrollo.
+
+Los modelos de ciclo de vida no deben confundirse con una metodología o marco de trabajo concreto. Un estándar de ciclo de vida puede establecer procesos y actividades aplicables con diferentes enfoques de desarrollo, sin imponer una metodología única.
+
+### 2.2. Scrum
 Es un marco de trabajo iterativo e incremental para proyectos en entornos complejos.
 
-#### 2.1.1. Modificaciones clave de la Guía Scrum (Edición 2020) y Compromisos
+#### 2.2.1. Modificaciones clave de la Guía Scrum (Edición 2020) y Compromisos
 Para asegurar la máxima precisión en preguntas tipo test de la AGE, es fundamental conocer las actualizaciones de la **Scrum Guide 2020**:
 *   **De "3 Roles" a "Un único Scrum Team con Responsabilidades":** Se elimina la división rígida de roles. Ahora existe un único *Scrum Team* (10 o menos personas) enfocado en un mismo objetivo, compuesto por 3 responsabilidades (*Accountabilities*):
     *   **Product Owner:** Único responsable de maximizar el valor del producto y de la gestión efectiva del *Product Backlog*.
@@ -152,7 +218,6 @@ Para asegurar la máxima precisión en preguntas tipo test de la AGE, es fundame
 ightarrow$ **Sprint Goal** (Objetivo del Sprint, la meta concreta de la iteración).
     *   Para el **Incremento** $
 ightarrow$ **Definition of Done** (Definición de Terminado, el criterio de calidad).
-
 
 **Base normativa:** Scrum se define formalmente en la **Scrum Guide** (Ken Schwaber y Jeff Sutherland), documento de referencia oficial y gratuito, actualizado por última vez en 2020. Scrum se define allí como un **marco de trabajo ligero** (no una metodología, no un proceso ni una técnica) que ayuda a las personas, equipos y organizaciones a generar valor a través de soluciones adaptativas a problemas complejos.
 
@@ -188,7 +253,7 @@ Scrum se fundamenta en el **empirismo** (el conocimiento procede de la experienc
 
 **Definición de Terminado (*Definition of Done*, DoD):** descripción formal del estado del Incremento cuando cumple las medidas de calidad requeridas para el producto. En cuanto un elemento del Product Backlog cumple la DoD, nace un Incremento. Es un concepto muy preguntado porque garantiza transparencia y calidad homogénea.
 
-### 2.2. Kanban
+### 2.3. Kanban
 Método para gestionar el flujo de trabajo con énfasis en la entrega "justo a tiempo".
 
 > **Origen y principios:** Kanban (palabra japonesa: "tarjeta visual") proviene del sistema de producción de Toyota (Lean Manufacturing) y fue adaptado al desarrollo software por David J. Anderson. A diferencia de Scrum, **no exige roles ni eventos fijos**, no trabaja en Sprints con duración fija, y puede aplicarse como capa de mejora continua sobre cualquier proceso existente (incluido Scrum, dando lugar a "Scrumban").
@@ -207,7 +272,7 @@ Método para gestionar el flujo de trabajo con énfasis en la entrega "justo a t
 4.  **Gestionar el flujo explícitamente:** definir y comunicar políticas claras de cómo se mueven las tareas entre columnas.
 5.  **Mejora colaborativa mediante modelos y método científico:** uso de métricas (como el diagrama de flujo acumulado) para detectar cuellos de botella y mejorar continuamente.
 
-### 2.3. DSDM (Dynamic Systems Development Method)
+### 2.4. DSDM (Dynamic Systems Development Method)
 Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones (RAD).
 
 **Patrón Lógico de DSDM:**
@@ -245,8 +310,6 @@ Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones 
 | Qué es variable | El alcance dentro del Sprint | El orden/prioridad de tareas | El alcance/requisitos (vía MoSCoW) |
 | Métrica clave | Velocidad del equipo | Lead Time / Cycle Time | Cumplimiento de plazo con calidad |
 
----
-
 ## 3. Pruebas Funcionales y Metodologías Dirigidas por Pruebas
 
 **Tipos y niveles de prueba (marco general, examinable):**
@@ -257,7 +320,36 @@ Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones 
 *   **Pruebas de regresión:** se repiten tras cada cambio para verificar que no se han introducido nuevos errores.
 *   **Pruebas funcionales vs. no funcionales:** las funcionales verifican *qué hace* el sistema (entradas/salidas esperadas); las no funcionales verifican *cómo lo hace* (rendimiento, carga, seguridad, usabilidad).
 
-### 3.1. TDD (Test Driven Development - Desarrollo Guiado por Pruebas)
+### 3.1. Planificación y diseño de pruebas funcionales
+
+Las pruebas deben planificarse en función de los requisitos, los riesgos y los objetivos de calidad. Un caso de prueba debe permitir identificar las condiciones de entrada, los datos necesarios, las acciones o pasos de ejecución y los resultados esperados.
+
+Las pruebas funcionales pueden diseñarse utilizando técnicas de especificación, entre ellas:
+
+* **Particiones de equivalencia:** divide el dominio de entrada o salida en clases cuyos elementos se consideran equivalentes a efectos de prueba, seleccionando representantes de cada clase.
+* **Análisis de valores límite:** selecciona valores situados en los límites de las clases de equivalencia, donde es frecuente encontrar defectos.
+* **Tablas de decisión:** representan combinaciones de condiciones y las acciones asociadas a cada combinación. Son apropiadas para reglas de negocio complejas.
+* **Pruebas de transición de estados:** verifican el comportamiento del sistema ante eventos que provocan transiciones entre estados.
+* **Pruebas basadas en casos de uso:** derivan escenarios de prueba de los flujos principales, alternativos y de excepción de los casos de uso.
+
+La **cobertura de requisitos** permite determinar qué requisitos han sido objeto de pruebas. La trazabilidad entre requisitos y pruebas facilita demostrar que los requisitos han sido verificados y permite identificar el impacto de los cambios.
+
+Las pruebas pueden ser **estáticas**, cuando se examinan productos de trabajo sin ejecutar el software, o **dinámicas**, cuando se ejecuta el software o sistema objeto de prueba. Las revisiones son una forma de prueba estática; las pruebas funcionales ejecutadas sobre el sistema son pruebas dinámicas.
+
+La serie **ISO/IEC/IEEE 29119** establece un marco internacional para las pruebas de software. Incluye conceptos generales, procesos de prueba, documentación de pruebas y técnicas de diseño de pruebas.
+
+### 3.1.1. Pruebas funcionales en el ciclo de vida
+
+Las pruebas funcionales pueden realizarse en diferentes niveles:
+
+1. **Pruebas de componente o unidad:** verifican elementos individuales de software.
+2. **Pruebas de integración:** verifican las interacciones entre componentes o sistemas.
+3. **Pruebas de sistema:** verifican el sistema integrado frente a sus requisitos especificados.
+4. **Pruebas de aceptación:** proporcionan evidencia para determinar si el sistema satisface los criterios de aceptación y las necesidades de los interesados.
+
+Las **pruebas de regresión** comprueban que los cambios realizados no han provocado efectos adversos en funcionalidades previamente verificadas. Pueden aplicarse en cualquiera de los niveles de prueba en los que resulte necesario.
+
+### 3.2. TDD (Test Driven Development - Desarrollo Guiado por Pruebas)
 Metodología donde **primero se escribe la prueba** antes de escribir el código fuente.
 *   **Ciclo patrón:**
     1. Escribir una prueba que falla (porque el código no existe).
@@ -266,13 +358,13 @@ Metodología donde **primero se escribe la prueba** antes de escribir el código
 
 Este ciclo se conoce popularmente como **Red-Green-Refactor** (rojo: la prueba falla; verde: la prueba pasa; refactor: se mejora el código sin romper la prueba). Fue popularizado por Kent Beck en el contexto de Extreme Programming (XP). Su beneficio principal es que el diseño del código emerge de las propias pruebas, favoreciendo bajo acoplamiento y alta cohesión.
 
-### 3.2. BDD (Behavior Driven Development - Desarrollo Orientado al Comportamiento)
+### 3.3. BDD (Behavior Driven Development - Desarrollo Orientado al Comportamiento)
 Evolución del TDD que fomenta la colaboración entre desarrolladores, probadores y clientes. Se usan lenguajes naturales estructurados (como Gherkin: `Dado que... Cuando... Entonces...`) para definir el comportamiento del sistema de forma que el cliente lo entienda fácilmente.
 
 BDD nació de la mano de Dan North como refinamiento de TDD, trasladando el foco desde "probar unidades de código" hacia "describir comportamientos de negocio". Herramientas típicas asociadas: **Cucumber**, **SpecFlow**, **JBehave**.
 
 
-#### 3.3. Pirámide de Pruebas y Especificación mediante Gherkin
+#### 3.4. Pirámide de Pruebas y Especificación mediante Gherkin
 *   **Pirámide de Pruebas (Mike Cohn):**
     *   **Base (Mayor volumen, ejecuciones rápidas y de bajo coste):** Pruebas Unitarias.
     *   **Capa Intermedia (Volumen medio):** Pruebas de Servicio / Integración (APIs, componentes).
@@ -284,8 +376,6 @@ BDD nació de la mano de Dan North como refinamiento de TDD, trasladando el foco
  La estructura Gherkin (`Given / When / Then`) permite que los criterios de aceptación de una historia de usuario se conviertan directamente en pruebas automatizables, cerrando el círculo entre requisitos ágiles (historias de usuario) y pruebas funcionales.
 
 **ATDD (Acceptance Test Driven Development):** enfoque hermano de TDD y BDD donde los criterios de aceptación se escriben de forma colaborativa (cliente, desarrollador, tester) *antes* de codificar, y se convierten directamente en las pruebas de aceptación del sistema.
-
----
 
 ## 4. Enfoque CMMI (Capability Maturity Model Integration)
 
@@ -318,7 +408,24 @@ Es habitual que en el examen tipo test de la AGE pregunten sobre la distinción 
 
 **Relación CMMI ↔ Ágil:** aunque tradicionalmente se percibían como incompatibles (CMMI = documentación exhaustiva vs. Ágil = documentación mínima), el propio SEI reconoce que se pueden combinar: los niveles de madurez CMMI valoran *qué* procesos deben existir y ser medibles, no *cómo* se ejecutan; Scrum o XP pueden ser el "cómo" que satisface las metas de REQM/RD exigidas por CMMI (enfoque conocido como "Agile + CMMI" o, en investigación académica, propuestas como "xScrum").
 
----
+### 4.2. CMMI V3.0 y gestión de requisitos
+
+La evolución de CMMI ha sustituido la estructura histórica de áreas de proceso de CMMI-DEV v1.3 por una estructura de **dominios y áreas de práctica**. La versión actual CMMI V3.0 integra prácticas de mejora del desempeño organizativo en diferentes dominios, entre ellos **Development (DEV)**.
+
+En CMMI V3.0, el área **Requirements Development and Management (RDM)** integra las actividades relacionadas con el desarrollo y la gestión de requisitos. Entre sus prácticas se incluyen actividades orientadas a:
+
+* obtener y desarrollar los requisitos;
+* establecer y mantener la comprensión común de los requisitos;
+* gestionar los cambios de requisitos;
+* mantener la trazabilidad y la consistencia de los requisitos con los productos y planes relacionados;
+* establecer y mantener criterios que permitan evaluar los requisitos;
+* asegurar que los requisitos se encuentran preparados para las actividades posteriores del ciclo de vida.
+
+La referencia a **REQM = nivel 2** y **RD = nivel 3** corresponde a la estructura de **CMMI-DEV v1.3** y no debe trasladarse directamente a CMMI V3.0. En la estructura actual, el desarrollo y la gestión de requisitos se abordan conjuntamente mediante RDM.
+
+CMMI V3.0 mantiene los conceptos de **niveles de madurez** para las valoraciones que utilizan una representación por madurez. Los niveles de madurez permiten expresar la evolución de las capacidades organizativas, mientras que las áreas de práctica permiten concretar las capacidades y prácticas que deben implantarse.
+
+CMMI puede aplicarse junto con enfoques ágiles. El modelo define prácticas de desempeño y capacidad, pero no obliga a utilizar un único marco de desarrollo. Por tanto, prácticas ágiles como Scrum pueden emplearse dentro de una organización que utilice CMMI, siempre que se establezcan y mantengan las prácticas y evidencias requeridas por el modelo.
 
 ## 5. Metodologías Ágiles: cuadro-resumen normativo
 
@@ -332,9 +439,20 @@ Es habitual que en el examen tipo test de la AGE pregunten sobre la distinción 
 | TDD | Práctica de desarrollo dirigida por pruebas | El ciclo Red-Green-Refactor | El diseño interno del código | Kent Beck / Extreme Programming |
 | BDD | Práctica de especificación de comportamiento | El lenguaje Gherkin (Given/When/Then) | La granularidad del escenario | Dan North |
 
----
+## 6. Referencias normativas y técnicas
 
-## 6. Patrones de Examen y "Palabras Chivatas"
+* **ISO/IEC/IEEE 29148:2018**, *Systems and software engineering — Life cycle processes — Requirements engineering*.
+* **ISO/IEC 25010:2023**, *Systems and software engineering — Systems and software Quality Requirements and Evaluation (SQuaRE) — Product quality model*.
+* **ISO/IEC/IEEE 12207:2026**, *Systems and software engineering — Software life cycle processes*.
+* **ISO/IEC/IEEE 29119-1:2022**, *Software and systems engineering — Software testing — Part 1: General concepts*.
+* **ISO/IEC/IEEE 29119-2:2021**, *Software and systems engineering — Software testing — Part 2: Test processes*.
+* **ISO/IEC/IEEE 29119 series**, *Software and systems engineering — Software testing*.
+* **OMG UML 2.5.1**, *Unified Modeling Language Specification*.
+* **The Scrum Guide, November 2020**, Ken Schwaber y Jeff Sutherland.
+* **CMMI V3.0**, ISACA / CMMI Institute.
+* **DSDM Agile Project Framework**, Agile Business Consortium.
+
+## 7. Resumen
 
 | Concepto | Palabra Chivata en el Test |
 | :--- | :--- |
@@ -352,7 +470,7 @@ Es habitual que en el examen tipo test de la AGE pregunten sobre la distinción 
 | **Casos de uso** | "Actor", "flujo principal/alternativo/excepción", "include/extend". |
 | **Historias de usuario** | "Como... quiero... para...", "INVEST", "criterios de aceptación". |
 
-### 6.1. Simulacro de Test: Desmontando trampas
+### 7.1. Simulacro de Test
 
 **Pregunta:**
 *En el marco de trabajo Scrum, ¿quién es el único responsable de decidir qué elementos del Product Backlog tienen mayor prioridad para el negocio y, por tanto, deben desarrollarse primero?*
