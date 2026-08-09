@@ -25,9 +25,8 @@ created_at: "2026-08-08"
 last_reviewed: null
 ai_generated: true
 ai_sources:
-  - "A2_Bloque_III.pdf"
-  - "A2_Bloque_IV.pdf"
   - "gemini"
+  - "perplexity"
 needs_human_review: true
 ---
 

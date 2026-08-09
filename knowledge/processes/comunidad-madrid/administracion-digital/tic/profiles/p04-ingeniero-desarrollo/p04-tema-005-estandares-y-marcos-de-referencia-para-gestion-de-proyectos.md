@@ -10,6 +10,7 @@ profiles:
 official_profile: "P04 - Ingeniero de Desarrollo"
 official_topic: "Tema 5. Estándares y Marcos de Referencia para la Gestión de Proyecto"
 source_ids:
+  - "A2_Bloque_III.pdf"
   - "A2_Bloque_IV.pdf"
 tags:
   - "gestion-proyectos"

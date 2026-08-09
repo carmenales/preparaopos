@@ -10,6 +10,7 @@ profiles:
 official_profile: "P04 - Ingeniero de Desarrollo"
 official_topic: "Tema 2. Fundamentos y principios de la Gestión de Proyectos"
 source_ids:
+  - "A2_Bloque_III.pdf"
   - "A2_Bloque_IV.pdf"
 tags:
   - "gestion-proyectos"

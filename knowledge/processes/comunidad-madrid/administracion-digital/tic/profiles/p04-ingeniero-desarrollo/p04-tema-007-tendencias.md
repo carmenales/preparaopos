@@ -24,7 +24,7 @@ created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
 ai_sources:
-  - "conocimiento-experto"
+  - "gemini"
   - "perplexity"
 needs_human_review: true
 ---

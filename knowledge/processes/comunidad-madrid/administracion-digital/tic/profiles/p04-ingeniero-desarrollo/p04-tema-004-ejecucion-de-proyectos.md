@@ -10,6 +10,8 @@ profiles:
 official_profile: "P04 - Ingeniero de Desarrollo"
 official_topic: "Tema 4. Ejecución de proyectos"
 source_ids:
+  - "A2_Bloque_III.pdf"
+  - "A2_Bloque_IV.pdf"
 tags:
   - "ejecucion-proyectos"
   - "roles"
