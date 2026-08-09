@@ -10,6 +10,8 @@ profiles:
 official_profile: "P01 - Analista de Aplicaciones"
 official_topic: "Tema 3. Análisis funcional/diseño"
 source_ids:
+  - "A2_Bloque_III.pdf"
+  - "A2_Bloque_IV.pdf"
 tags:
   - "analisis-funcional"
   - "casos-de-uso"
@@ -146,8 +148,10 @@ Para asegurar la máxima precisión en preguntas tipo test de la AGE, es fundame
     *   **Developers:** Profesionales comprometidos a crear cualquier aspecto de un *Incremento* utilizable. Pasan de ser definidos como "autoorganizados" a **autogestionados** (deciden *quién*, *qué*, *cuándo* y *cómo* se realiza el trabajo).
 *   **Los 3 Compromisos (*Commitments*) asociados a cada Artefacto:**
     *   Para el **Product Backlog** $\rightarrow$ **Product Goal** (Objetivo del Producto, la meta a largo plazo).
-    *   Para el **Sprint Backlog** $ightarrow$ **Sprint Goal** (Objetivo del Sprint, la meta concreta de la iteración).
-    *   Para el **Incremento** $ightarrow$ **Definition of Done** (Definición de Terminado, el criterio de calidad).
+    *   Para el **Sprint Backlog** $
+ightarrow$ **Sprint Goal** (Objetivo del Sprint, la meta concreta de la iteración).
+    *   Para el **Incremento** $
+ightarrow$ **Definition of Done** (Definición de Terminado, el criterio de calidad).
 
 
 **Base normativa:** Scrum se define formalmente en la **Scrum Guide** (Ken Schwaber y Jeff Sutherland), documento de referencia oficial y gratuito, actualizado por última vez en 2020. Scrum se define allí como un **marco de trabajo ligero** (no una metodología, no un proceso ni una técnica) que ayuda a las personas, equipos y organizaciones a generar valor a través de soluciones adaptativas a problemas complejos.

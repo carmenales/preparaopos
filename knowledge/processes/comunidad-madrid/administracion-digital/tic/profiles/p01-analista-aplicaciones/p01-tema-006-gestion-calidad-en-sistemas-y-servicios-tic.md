@@ -10,6 +10,7 @@ profiles:
 official_profile: "P01 - Analista de Aplicaciones"
 official_topic: "Tema 6. Gestión de calidad en los sistemas y servicios TIC"
 source_ids:
+  - "A2_Bloque_III.pdf"
   - "A2_Bloque_IV.pdf"
 tags:
   - "calidad"
