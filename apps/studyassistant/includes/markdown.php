@@ -3,7 +3,13 @@
 function sa_normalize_markdown($markdown) {
     $markdown = (string)$markdown;
     $markdown = preg_replace('/^\xEF\xBB\xBF/', '', $markdown);
-    return str_replace(["\r\n", "\r"], "\n", $markdown);
+    $markdown = str_replace(["\r\n", "\r"], "\n", $markdown);
+
+    $markdown = preg_replace_callback('/^([ \t]+)/m', function ($m) {
+        return str_replace("\t", "    ", $m[1]);
+    }, $markdown);
+
+    return $markdown;
 }
 
 function sa_strip_frontmatter($markdown) {
@@ -125,9 +131,7 @@ function sa_render_table($lines) {
         $html .= '<tr>';
 
         foreach ($cells as $cell) {
-            // Allow explicit newlines inside table cells to render as <br>
             $cell = str_replace("\n", '%%SA_BR%%', $cell);
-            // Also allow literal HTML <br> tags in source to become real breaks
             $cell = str_ireplace(['<br>', '<br/>', '<br />'], '%%SA_BR%%', $cell);
             $cellHtml = sa_inline_markdown($cell);
             $cellHtml = str_replace('%%SA_BR%%', '<br>', $cellHtml);
@@ -296,7 +300,7 @@ function sa_parse_list_marker($line) {
             'type' => 'ol',
             'number' => (int)$matches[2],
             'content' => trim($matches[3]),
-            'indent' => strlen($matches[1]),
+            'indent_spaces' => strlen($matches[1]),
         ];
     }
 
@@ -305,7 +309,7 @@ function sa_parse_list_marker($line) {
             'type' => 'ul',
             'number' => null,
             'content' => trim($matches[2]),
-            'indent' => strlen($matches[1]),
+            'indent_spaces' => strlen($matches[1]),
         ];
     }
 
@@ -331,7 +335,7 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
 
     $type = $firstMarker['type'];
     $start = $firstMarker['number'];
-    $baseIndent = $firstMarker['indent'];
+    $baseIndent = $firstMarker['indent_spaces'] ?? 0;
     $items = [];
     $current = null;
 
@@ -347,14 +351,33 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
                 break;
             }
 
-            $nextMarker = sa_parse_list_marker($lines[$nextIndex]);
+            $nextLine = $lines[$nextIndex];
+            $nextMarker = sa_parse_list_marker($nextLine);
 
-            if ($nextMarker !== null && $nextMarker['type'] === $type && $nextMarker['indent'] === $baseIndent) {
-                $index++;
+            if ($nextMarker !== null && $nextMarker['type'] === $type && (($nextMarker['indent_spaces'] ?? 0) <= $baseIndent)) {
+                $index = $nextIndex;
+                break;
+            }
+
+            $trimNext = trim($nextLine);
+
+            if (preg_match('/^#{1,6}\s+/', $trimNext)
+                || sa_is_quiz_question_start($trimNext)
+                || preg_match('/^```/', $trimNext)
+                || preg_match('/^\$\$/', $trimNext)
+                || sa_is_table_start($lines, $nextIndex)) {
+                $index = $nextIndex;
+                break;
+            }
+
+            if ($current !== null) {
+                $current['text'] .= "\n\n";
+                $index = $nextIndex;
                 continue;
             }
 
-            break;
+            $index = $nextIndex;
+            continue;
         }
 
         if (
@@ -370,13 +393,13 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
         $marker = sa_parse_list_marker($line);
 
         if ($marker !== null) {
-            // Nested list (indent greater than base)
-            if ($marker['type'] !== $type && $marker['indent'] <= $baseIndent) {
+            $markerIndent = $marker['indent_spaces'] ?? 0;
+
+            if ($markerIndent < $baseIndent) {
                 break;
             }
 
-            if ($marker['indent'] > $baseIndent) {
-                // Parse nested list and append HTML to current item's nested content
+            if ($markerIndent > $baseIndent) {
                 $nestedHtml = sa_collect_list($lines, $index, $baseIndent);
 
                 if ($current !== null) {
@@ -386,7 +409,6 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
                 continue;
             }
 
-            // Same level item
             if ($marker['type'] !== $type) {
                 break;
             }
