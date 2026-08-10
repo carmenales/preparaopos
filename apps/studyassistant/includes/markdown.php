@@ -83,7 +83,21 @@ function sa_inline_markdown($text) {
         return '<img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '" loading="lazy">';
     }, $html);
 
-    $html = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $html);
+    $html = preg_replace_callback('/\[([^\]]+)\]\(([^)]+)\)/', function ($matches) {
+        $text = $matches[1];
+        $path = $matches[2];
+        $escapedPath = htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
+
+        if (preg_match('/^\s*#/u', $path)) {
+            return '<a href="' . $escapedPath . '">' . $text . '</a>';
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            return '<a href="' . $escapedPath . '" target="_blank" rel="noopener noreferrer">' . $text . '</a>';
+        }
+
+        return '<a href="' . $escapedPath . '">' . $text . '</a>';
+    }, $html);
 
     return sa_restore_math_placeholders($html, $mathBlocks);
 }
