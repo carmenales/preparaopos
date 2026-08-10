@@ -111,7 +111,11 @@ function sa_render_table($lines) {
         $html .= '<tr>';
 
         foreach ($cells as $cell) {
-            $html .= '<' . $tag . '>' . sa_inline_markdown($cell) . '</' . $tag . '>';
+                // Allow explicit newlines inside table cells to render as <br>
+                $cell = str_replace("\n", '%%SA_BR%%', $cell);
+                $cellHtml = sa_inline_markdown($cell);
+                $cellHtml = str_replace('%%SA_BR%%', '<br>', $cellHtml);
+                $html .= '<' . $tag . '>' . $cellHtml . '</' . $tag . '>';
         }
 
         $html .= '</tr>';
@@ -520,6 +524,48 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
             $slug = sa_slugify_heading($text);
 
             $html .= '<h' . $level . ' id="' . htmlspecialchars($slug, ENT_QUOTES, 'UTF-8') . '">' . sa_inline_markdown($text) . '</h' . $level . '>';
+            continue;
+        }
+
+        if (preg_match('/^>/', $trimmed)) {
+            $flushParagraph();
+
+            $bq = [];
+            while ($i < count($lines) && preg_match('/^>\s?(.*)$/', $lines[$i], $m)) {
+                $bq[] = $m[1];
+                $i++;
+            }
+            $i--;
+
+            if (!empty($bq) && preg_match('/^(Nota|Note):/iu', $bq[0])) {
+                $bq[0] = preg_replace('/^(Nota|Note):/iu', '', $bq[0]);
+            }
+
+            $paragraphs = [];
+            $currentParagraph = '';
+            foreach ($bq as $bqLine) {
+                if (trim($bqLine) === '') {
+                    if ($currentParagraph !== '') {
+                        $paragraphs[] = $currentParagraph;
+                        $currentParagraph = '';
+                    }
+                    continue;
+                }
+                if ($currentParagraph !== '') {
+                    $currentParagraph .= ' ' . $bqLine;
+                } else {
+                    $currentParagraph = $bqLine;
+                }
+            }
+            if ($currentParagraph !== '') {
+                $paragraphs[] = $currentParagraph;
+            }
+
+            $noteHtml = '';
+            foreach ($paragraphs as $noteParagraph) {
+                $noteHtml .= '<p>' . sa_inline_markdown(trim($noteParagraph)) . '</p>';
+            }
+            $html .= '<aside class="note"><div class="note-body">' . $noteHtml . '</div></aside>';
             continue;
         }
 
