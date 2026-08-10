@@ -111,11 +111,13 @@ function sa_render_table($lines) {
         $html .= '<tr>';
 
         foreach ($cells as $cell) {
-                // Allow explicit newlines inside table cells to render as <br>
-                $cell = str_replace("\n", '%%SA_BR%%', $cell);
-                $cellHtml = sa_inline_markdown($cell);
-                $cellHtml = str_replace('%%SA_BR%%', '<br>', $cellHtml);
-                $html .= '<' . $tag . '>' . $cellHtml . '</' . $tag . '>';
+            // Allow explicit newlines inside table cells to render as <br>
+            $cell = str_replace("\n", '%%SA_BR%%', $cell);
+            // Also allow literal HTML <br> tags in source to become real breaks
+            $cell = str_ireplace(['<br>', '<br/>', '<br />'], '%%SA_BR%%', $cell);
+            $cellHtml = sa_inline_markdown($cell);
+            $cellHtml = str_replace('%%SA_BR%%', '<br>', $cellHtml);
+            $html .= '<' . $tag . '>' . $cellHtml . '</' . $tag . '>';
         }
 
         $html .= '</tr>';
@@ -275,19 +277,21 @@ function sa_collect_quiz_question($lines, &$index) {
 }
 
 function sa_parse_list_marker($line) {
-    if (preg_match('/^\s*([0-9]+)\.\s+(.+)$/u', $line, $matches)) {
+    if (preg_match('/^(\s*)([0-9]+)\.\s+(.+)$/u', $line, $matches)) {
         return [
             'type' => 'ol',
-            'number' => (int)$matches[1],
-            'content' => trim($matches[2]),
+            'number' => (int)$matches[2],
+            'content' => trim($matches[3]),
+            'indent' => strlen($matches[1]),
         ];
     }
 
-    if (preg_match('/^\s*[-*]\s+(.+)$/u', $line, $matches)) {
+    if (preg_match('/^(\s*)[-*]\s+(.+)$/u', $line, $matches)) {
         return [
             'type' => 'ul',
             'number' => null,
-            'content' => trim($matches[1]),
+            'content' => trim($matches[2]),
+            'indent' => strlen($matches[1]),
         ];
     }
 
@@ -304,7 +308,7 @@ function sa_next_non_empty_index($lines, $index) {
     return null;
 }
 
-function sa_collect_list($lines, &$index) {
+function sa_collect_list($lines, &$index, $parentIndent = 0) {
     $firstMarker = sa_parse_list_marker($lines[$index]);
 
     if ($firstMarker === null) {
@@ -313,6 +317,7 @@ function sa_collect_list($lines, &$index) {
 
     $type = $firstMarker['type'];
     $start = $firstMarker['number'];
+    $baseIndent = $firstMarker['indent'];
     $items = [];
     $current = null;
 
@@ -330,7 +335,7 @@ function sa_collect_list($lines, &$index) {
 
             $nextMarker = sa_parse_list_marker($lines[$nextIndex]);
 
-            if ($nextMarker !== null && $nextMarker['type'] === $type) {
+            if ($nextMarker !== null && $nextMarker['type'] === $type && $nextMarker['indent'] === $baseIndent) {
                 $index++;
                 continue;
             }
@@ -351,15 +356,32 @@ function sa_collect_list($lines, &$index) {
         $marker = sa_parse_list_marker($line);
 
         if ($marker !== null) {
+            // Nested list (indent greater than base)
+            if ($marker['type'] !== $type && $marker['indent'] <= $baseIndent) {
+                break;
+            }
+
+            if ($marker['indent'] > $baseIndent) {
+                // Parse nested list and append HTML to current item's nested content
+                $nestedHtml = sa_collect_list($lines, $index, $baseIndent);
+
+                if ($current !== null) {
+                    $current['nested'] .= $nestedHtml;
+                }
+
+                continue;
+            }
+
+            // Same level item
             if ($marker['type'] !== $type) {
                 break;
             }
 
             if ($current !== null) {
-                $items[] = trim($current);
+                $items[] = $current;
             }
 
-            $current = $marker['content'];
+            $current = ['text' => $marker['content'], 'nested' => ''];
             $index++;
             continue;
         }
@@ -368,12 +390,12 @@ function sa_collect_list($lines, &$index) {
             break;
         }
 
-        $current .= ' ' . $trimmed;
+        $current['text'] .= ' ' . $trimmed;
         $index++;
     }
 
     if ($current !== null) {
-        $items[] = trim($current);
+        $items[] = $current;
     }
 
     if (empty($items)) {
@@ -389,7 +411,7 @@ function sa_collect_list($lines, &$index) {
     $html = '<' . $type . $attrs . '>';
 
     foreach ($items as $item) {
-        $html .= '<li>' . sa_inline_markdown($item) . '</li>';
+        $html .= '<li>' . sa_inline_markdown($item['text']) . $item['nested'] . '</li>';
     }
 
     $html .= '</' . $type . '>';
@@ -511,7 +533,7 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
 
         if ($listMarker !== null) {
             $flushParagraph();
-            $html .= sa_collect_list($lines, $i);
+            $html .= sa_collect_list($lines, $i, 0);
             $i--;
             continue;
         }
