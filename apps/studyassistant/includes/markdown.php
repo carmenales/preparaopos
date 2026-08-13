@@ -370,14 +370,7 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
                 break;
             }
 
-            if ($current !== null) {
-                $current['text'] .= "\n\n";
-                $index = $nextIndex;
-                continue;
-            }
-
-            $index = $nextIndex;
-            continue;
+            break;
         }
 
         if (
