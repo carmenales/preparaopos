@@ -42,18 +42,20 @@ El análisis funcional es la fase donde definimos **qué** debe hacer el sistema
 ### 1.1. Ingeniería de Requerimientos
 Su tarea principal es generar especificaciones correctas, claras y sin ambigüedades sobre el comportamiento del sistema.
 
-> **Norma de referencia:** El estándar internacional que regula formalmente la Ingeniería de Requisitos es la **ISO/IEC/IEEE 29148:2018** *"Systems and software engineering — Life cycle processes — Requirements engineering"*, que sustituyó a los antiguos IEEE 830, IEEE 1233 e IEEE 1362. Define el **proceso de elicitación de requisitos** (*requirements elicitation*) como el proceso mediante el cual el adquirente y los proveedores del sistema descubren, revisan, articulan, entienden y documentan los requisitos del sistema y sus procesos de ciclo de vida.
+> **Norma de referencia:** El estándar internacional que regula formalmente la Ingeniería de Requisitos es la **ISO/IEC/IEEE 29148:2018** *"Systems and software engineering — Life cycle processes — Requirements engineering"*, que sustituyó a los antiguos IEEE 830, IEEE 1233 e IEEE 1362. 
+> 
+> Define el **proceso de elicitación de requisitos** (*requirements elicitation*) como el proceso mediante el cual el adquirente y los proveedores del sistema descubren, revisan, articulan, entienden y documentan los requisitos del sistema y sus procesos de ciclo de vida.
 
 **Técnicas principales de obtención de requisitos:**
 *   **Entrevistas:** Encuentros "cara a cara" con los usuarios. Requieren preparación previa, envío de un guion y elaboración de un acta final.
-*   **Reuniones JAD (Joint Application Design):** Sesiones de trabajo largas y preparadas para conseguir consenso rápido. Reúnen a usuarios, desarrolladores y un moderador. El objetivo es reducir el tiempo de desarrollo manteniendo la calidad.
-*   **Reuniones JRP (Joint Requirement Planning):** Similares a las JAD, pero enfocadas a la Alta Dirección para tomar decisiones estratégicas.
+*   **Reuniones JAD (Joint Application Design):** **Sesiones** de trabajo **largas y preparadas** para conseguir consenso rápido. Reúnen a usuarios, desarrolladores y un moderador. El objetivo es reducir el tiempo de desarrollo manteniendo la calidad.
+*   **Reuniones JRP (Joint Requirement Planning):** **Similares a las JAD**, pero enfocadas a la **Alta Dirección** para tomar decisiones estratégicas.
 *   **Cuestionarios/encuestas:** útiles cuando el número de usuarios afectados es muy grande y no es viable entrevistar a todos.
-*   **Observación directa (*Job shadowing*):** el analista observa al usuario realizar su trabajo real, útil para detectar requisitos implícitos que el usuario no verbaliza.
-*   **Tormenta de ideas (*brainstorming*) y talleres de trabajo:** generación creativa de requisitos en grupo.
+*   **Observación directa** (*Job shadowing*): el analista observa al usuario realizar su trabajo real, útil para detectar requisitos implícitos que el usuario no verbaliza.
+*   **Tormenta de ideas** (*brainstorming*) y **talleres de trabajo:** generación creativa de requisitos en grupo.
 *   **Prototipado:** construcción de una versión preliminar (maqueta o prototipo funcional) del sistema para validar requisitos con el usuario antes de construir la solución final.
 *   **Análisis de documentación existente:** manuales, normativa, procedimientos y sistemas legados como fuente de requisitos.
-*   **Técnicas de grupo nominal y Delphi:** para llegar a consenso entre expertos de forma estructurada, minimizando sesgos de grupo.
+*   **Técnicas de grupo nominal y Delphi:** para llegar a **consenso entre expertos** de forma estructurada, **minimizando sesgos de grupo**.
 
 ### 1.2. Tipos de requisitos y sus atributos de calidad
 
@@ -63,9 +65,30 @@ Su tarea principal es generar especificaciones correctas, claras y sin ambigüed
 *   **Requisitos no funcionales (RNF):** describen **cómo** debe comportarse el sistema en términos de calidad (rendimiento, seguridad, usabilidad, disponibilidad, mantenibilidad, portabilidad, etc.), sin especificar una función concreta.
 *   **Requisitos de negocio, de usuario, de sistema y de diseño/implementación:** distintos niveles de abstracción según la ISO/IEC/IEEE 29148, desde la necesidad de negocio hasta el requisito técnico concreto que implementa el desarrollador.
 
-El estándar **ISO/IEC 25010** (modelo de calidad de producto software, sucesor de ISO/IEC 9126) es la referencia oficial para clasificar los **requisitos no funcionales** en 8 características: *Functional suitability* (idoneidad funcional), *Performance efficiency* (eficiencia de desempeño), *Compatibility*, *Usability*, *Reliability*, *Security*, *Maintainability* y *Portability*.
+El estándar **ISO/IEC 25010** (modelo de calidad de producto software, sucesor de ISO/IEC 9126) es la referencia oficial para clasificar los **requisitos no funcionales** en 8 características: 
 
-La edición **ISO/IEC 25010:2023** sustituye a la edición de 2011 y establece un modelo de calidad de producto con **9 características**: adecuación funcional (*functional suitability*), eficiencia de desempeño (*performance efficiency*), compatibilidad (*compatibility*), capacidad de interacción (*interaction capability*), fiabilidad (*reliability*), seguridad (*security*), mantenibilidad (*maintainability*), flexibilidad (*flexibility*) y seguridad de uso (*safety*). El modelo se utiliza para especificar, medir y evaluar la calidad de productos TIC y software.
+* Functional suitability (*idoneidad funcional*).
+* Performance efficiency (*eficiencia de desempeño*).
+* Compatibility.
+* Usability.
+* Reliability.
+* Security.
+* Maintainability.
+* Portability.
+
+La edición **ISO/IEC 25010:2023** sustituye a la edición de 2011 y establece un modelo de calidad de producto con **9 características**: 
+
+* Adecuación funcional (*functional suitability*).
+* Eficiencia de desempeño (*performance efficiency*).
+* Compatibilidad (*compatibility*).
+* Capacidad de interacción (*interaction capability*).
+* Fiabilidad (*reliability*).
+* Seguridad (*security*).
+* Mantenibilidad (*maintainability*).
+* Flexibilidad (*flexibility*)
+* Seguridad de uso (*safety*). 
+
+El modelo se utiliza para especificar, medir y evaluar la calidad de productos TIC y software.
 
 **Atributos de un buen requisito (ISO/IEC/IEEE 29148):** necesario, no ambiguo, completo, singular (atómico), factible, verificable, correcto y conforme (con estándares aplicables).
 
@@ -75,8 +98,6 @@ La edición **ISO/IEC 25010:2023** sustituye a la edición de 2011 y establece u
 
 *   **Verificación:** ¿estamos construyendo el sistema correctamente? (¿el producto cumple la especificación?).
 *   **Validación:** ¿estamos construyendo el sistema correcto? (¿la especificación satisface la necesidad real del usuario?).
-
-
 
 ### 1.2.1. Análisis funcional y diseño del sistema
 
@@ -112,7 +133,7 @@ Son las dos herramientas principales para documentar requisitos, dependiendo de 
 *   **Historias de Usuario (Metodologías Ágiles - XP/Scrum):**
     *   Son tarjetas de papel donde el cliente describe brevemente una característica que el sistema debe tener.
     *   Se descomponen luego en tareas de programación.
-    *   **Estructura patrón:** "Como [Rol], quiero [Funcionalidad], para [Beneficio/Objetivo]". Ejemplo real: "Como ciudadano, quiero un botón de descarga en PDF para guardar mi certificado de empadronamiento".
+    *   **Estructura patrón:** "Como [**Rol**], quiero [**Funcionalidad**], para [**Beneficio/Objetivo**]". *Ejemplo real: "Como ciudadano, quiero un botón de descarga en PDF para guardar mi certificado de empadronamiento"*.
 
 *   **Casos de Uso (Metodologías Tradicionales/UML - Métrica v3):**
     *   Definen la interacción exacta entre un "Actor" (un usuario u otro sistema) y el sistema.
@@ -131,16 +152,20 @@ Son las dos herramientas principales para documentar requisitos, dependiendo de 
 *   **Relaciones entre casos de uso (UML):**
     *   **Include** (`<<include>>`): un caso de uso *siempre* incluye la ejecución de otro (obligatorio, ej. "Realizar pedido" incluye "Verificar stock").
     *   **Extend** (`<<extend>>`): un caso de uso *opcionalmente* extiende a otro en ciertas condiciones (ej. "Pagar con tarjeta" extiende a "Realizar pedido").
-    *   **Generalización:** un actor o caso de uso especializa a otro más general.
+    *   **Generalización:** un actor o caso de uso especializa a otro más general.   
+
 **Historias de Usuario, criterio INVEST y criterios de aceptación:**
-Una buena historia de usuario debe cumplir el acrónimo **INVEST**:
+
 *   **I**ndependiente: puede desarrollarse sin depender estrictamente de otra.
 *   **N**egociable: no es un contrato cerrado, se puede discutir con el cliente.
 *   **V**aliosa: aporta valor de negocio al usuario final.
 *   **E**stimable: el equipo puede estimar su esfuerzo.
 *   **S**mall (pequeña): cabe en un sprint.
-*   **T**estable: existen criterios claros para comprobar que está terminada.
-Las historias de usuario se acompañan de **criterios de aceptación**: condiciones concretas que deben cumplirse para considerar la historia "terminada" (*Done*). Frecuentemente se redactan en formato Gherkin (Dado/Cuando/Entonces), enlazando con BDD (ver apartado 3.2).
+*   **T**estable: existen criterios claros para comprobar que está terminada.   
+
+> Una buena historia de usuario debe cumplir el acrónimo **INVEST**.
+
+Las historias de usuario se acompañan de **criterios de aceptación**: condiciones concretas que deben cumplirse para considerar la historia "terminada" (*Done*). Frecuentemente se redactan en formato Gherkin (Dado/Cuando/Entonces), enlazando con [BDD](#3-3-bdd-behavior-driven-development-desarrollo-orientado-al-comportamiento).
 
 Jerarquía habitual en ágil: **Épica** (gran bloque de valor, varias historias) → **Historia de usuario** → **Tareas** (unidades técnicas de trabajo del equipo).
 
@@ -171,24 +196,32 @@ El modelo de casos de uso se utiliza para delimitar el alcance funcional, identi
 
 ### 1.3.2. Historias de usuario y refinamiento del Product Backlog
 
-En entornos ágiles, una historia de usuario constituye una descripción breve de una necesidad desde la perspectiva del usuario o interesado. La historia no constituye por sí misma una especificación técnica completa; su detalle se desarrolla mediante conversación, refinamiento y criterios de aceptación.
+En entornos ágiles, una **historia de usuario** constituye una **descripción breve de una necesidad** desde la **perspectiva del usuario o interesado**. La historia no constituye por sí misma una especificación técnica completa; su detalle se desarrolla mediante conversación, refinamiento y criterios de aceptación.
 
-El **refinamiento del Product Backlog** consiste en descomponer y definir con mayor precisión los elementos del Product Backlog, añadiendo información como descripción, orden, tamaño y criterios de aceptación cuando resulte necesario. Los elementos suficientemente preparados para ser seleccionados en un Sprint deben presentar el grado de claridad necesario para que el equipo pueda comprender el trabajo y realizar una previsión razonable.
+El **refinamiento del Product Backlog** consiste en **descomponer y definir con mayor precisión** los elementos del **Product Backlog**, añadiendo información como descripción, orden, tamaño y criterios de aceptación cuando resulte necesario. Los elementos suficientemente preparados para ser seleccionados en un Sprint deben presentar el grado de claridad necesario para que el equipo pueda comprender el trabajo y realizar una previsión razonable.
 
-Los **criterios de aceptación** establecen las condiciones que debe cumplir un elemento para ser aceptado. Deben ser observables y verificables y pueden utilizarse como base para el diseño de pruebas funcionales.
+Los **criterios de aceptación** establecen las **condiciones que debe cumplir un elemento para ser aceptado**. Deben ser observables y verificables y pueden utilizarse como base para el diseño de pruebas funcionales.
 
 ## 2. Metodologías Ágiles de Desarrollo
 
 Las metodologías ágiles valoran la adaptación al cambio, las entregas tempranas y la interacción de los individuos por encima de los procesos rígidos y la documentación exhaustiva.
 
-**Manifiesto Ágil (2001):** origen formal de la filosofía ágil. Establece 4 valores:
+**Manifiesto Ágil (2001):** 
+
+Origen formal de la filosofía ágil, que establece **4 valores**:
 
 1. Individuos e interacciones sobre procesos y herramientas.
 2. Software funcionando sobre documentación extensiva.
 3. Colaboración con el cliente sobre negociación contractual.
 4. Respuesta ante el cambio sobre seguimiento de un plan.
 
-Y 12 principios, entre los que destacan (muy preguntados): satisfacer al cliente mediante entrega temprana y continua de software con valor; aceptar los cambios de requisitos incluso en fases avanzadas; entregar software funcionando frecuentemente (semanas, no meses); la simplicidad es esencial; los equipos auto-organizados producen las mejores arquitecturas y diseños.
+Y **12 principios**, entre los que destacan: 
+
+* Satisfacer al cliente mediante entrega temprana y continua de software con valor.
+* Aceptar los cambios de requisitos incluso en fases avanzadas.
+* Entregar software funcionando frecuentemente (semanas, no meses).
+* La simplicidad es esencial.
+* Los equipos auto-organizados producen las mejores arquitecturas y diseños.
 
 ### 2.1. Modelos y metodologías de desarrollo de sistemas
 
@@ -201,85 +234,122 @@ El desarrollo de sistemas de información puede organizarse mediante distintos m
 * **Modelo en espiral:** combina desarrollo iterativo con una gestión explícita del riesgo, realizando ciclos en los que se determinan objetivos, alternativas, riesgos, desarrollo y evaluación.
 * **Modelos ágiles:** organizan el desarrollo en ciclos cortos y frecuentes de inspección, adaptación y entrega de valor, admitiendo cambios de requisitos durante el desarrollo.
 
-Los modelos de ciclo de vida no deben confundirse con una metodología o marco de trabajo concreto. Un estándar de ciclo de vida puede establecer procesos y actividades aplicables con diferentes enfoques de desarrollo, sin imponer una metodología única.
+> Los modelos de ciclo de vida no deben confundirse con una metodología o marco de trabajo concreto. Un estándar de ciclo de vida puede establecer procesos y actividades aplicables con diferentes enfoques de desarrollo, sin imponer una metodología única.
 
 ### 2.2. Scrum
-Es un marco de trabajo iterativo e incremental para proyectos en entornos complejos.
+Es un marco de trabajo **iterativo e incremental** para proyectos en **entornos complejos**.
 
 #### 2.2.1. Modificaciones clave de la Guía Scrum (Edición 2020) y Compromisos
 Para asegurar la máxima precisión en preguntas tipo test de la AGE, es fundamental conocer las actualizaciones de la **Scrum Guide 2020**:
-*   **De "3 Roles" a "Un único Scrum Team con Responsabilidades":** Se elimina la división rígida de roles. Ahora existe un único *Scrum Team* (10 o menos personas) enfocado en un mismo objetivo, compuesto por 3 responsabilidades (*Accountabilities*):
-    *   **Product Owner:** Único responsable de maximizar el valor del producto y de la gestión efectiva del *Product Backlog*.
-    *   **Scrum Master:** Responsable de la efectividad del *Scrum Team* y de adoptar Scrum según la Guía.
-    *   **Developers:** Profesionales comprometidos a crear cualquier aspecto de un *Incremento* utilizable. Pasan de ser definidos como "autoorganizados" a **autogestionados** (deciden *quién*, *qué*, *cuándo* y *cómo* se realiza el trabajo).
-*   **Los 3 Compromisos (*Commitments*) asociados a cada Artefacto:**
+
+De **"3 Roles"** a **"Un único Scrum Team con Responsabilidades":** Se elimina la división rígida de roles. Ahora existe un único *Scrum Team* (10 o menos personas) enfocado en un mismo objetivo, compuesto por 3 responsabilidades (*Accountabilities*).
+   
+*   **Roles:**
+    *   **Product Owner** (*El cliente*): 
+        *   Único responsable de maximizar el valor del producto y de la gestión efectiva del *Product Backlog*. 
+        *   Escribe las historias de usuario y prioriza el trabajo (Product Backlog) basándose en el valor de negocio.
+        *   Incluyendo redactar los elementos, ordenarlos por valor y asegurar que sean transparentes y comprendidos por el equipo.
+    *   **Scrum Master** (*El facilitador*): 
+        *   Responsable de la efectividad del *Scrum Team* y de adoptar Scrum según la Guía.
+        *   Mantiene el proceso, elimina obstáculos (impedimentos) y protege al equipo de interrupciones externas. No es un jefe, es un facilitador.
+        *   Es responsable de establecer Scrum tal y como se define en la Guía Scrum, ayudando a todos a entender la teoría y práctica de Scrum, tanto dentro del Scrum Team como en la organización.
+    *   **Team/Developers** (*El equipo de desarrollo*): 
+        *   Equipo autoorganizado (de 4 a 9 personas) que construye el software.
+        *   Profesionales comprometidos a crear cualquier aspecto de un *Incremento* utilizable utilizable en cada Sprint. 
+        *   Pasan de ser definidos como "autoorganizados" a **autogestionados** (deciden *quién*, *qué*, *cuándo* y *cómo* se realiza el trabajo).
+
+*   **Artefactos y Eventos:**
+    *   **Sprint:** 
+        *   Iteración de 1 a 4 semanas. Durante el Sprint, los requisitos están congelados.
+        *    Cada Sprint puede considerarse un proyecto corto y tiene una duración máxima de **un mes**; cuanto más largo es el Sprint, más riesgo de que cambie la definición de "hecho", el valor se reduzca o la complejidad aumente. 
+        *    Los Sprints permiten la **previsibilidad** al asegurar inspección y adaptación al menos cada mes.
+    *   **Product Backlog:** 
+        *   Lista completa y priorizada de todo lo que el sistema necesita.
+    *   **Sprint Backlog:** 
+        *   Subconjunto del Product Backlog que el equipo se compromete a hacer en el Sprint actual.
+           Está compuesto por el objetivo del Sprint (*Sprint Goal*), los elementos del Product Backlog seleccionados para el Sprint y un plan de acción para entregar el Incremento.
+    *   **Incremento:** 
+        *   Es un peldaño concreto hacia la Visión u objetivo del producto.
+        *   Cada Incremento se suma a los anteriores y se verifica exhaustivamente, garantizando que todos los Incrementos funcionan juntos.
+    *   **Daily Scrum:** 
+        *   Reunión diaria de 15 minutos, de pie, para sincronizar el trabajo.
+           La realizan únicamente los **Developers**.
+           Es un evento para inspeccionar el progreso hacia el Sprint Goal y adaptar el Sprint Backlog si es necesario.
+    *   **Sprint Planning:** 
+        *   Inicia el Sprint.
+        *   En ella se decide qué se puede conseguir en el Sprint (Sprint Goal) y cómo se llevará a cabo el trabajo elegido.
+    *   **Sprint Review:** 
+        *   Reunión al final del Sprint para mostrar el software funcionando a los interesados (Stakeholders).
+           Su propósito es inspeccionar el resultado del Sprint y determinar futuras adaptaciones.
+    *   **Sprint Retrospective:** 
+        *   Reunión interna del equipo para analizar qué ha ido bien y qué mejorar en sus procesos.
+        *   Cierra el Sprint.
+        *   El Scrum Team inspecciona cómo fue el último Sprint en cuanto a individuos, interacciones, procesos, herramientas y su Definición de Terminado.   
+
+*   **Definición de Terminado** (*Definition of Done*, DoD):
+    *   Descripción formal del estado del Incremento cuando cumple las medidas de calidad requeridas para el producto. 
+    *   En cuanto un elemento del Product Backlog cumple la DoD, nace un Incremento. 
+    *   Garantiza transparencia y calidad homogénea.
+
+*   Los **3 Compromisos** (*Commitments*) asociados a cada Artefacto:
     *   Para el **Product Backlog** $\rightarrow$ **Product Goal** (Objetivo del Producto, la meta a largo plazo).
-    *   Para el **Sprint Backlog** $
-ightarrow$ **Sprint Goal** (Objetivo del Sprint, la meta concreta de la iteración).
-    *   Para el **Incremento** $
-ightarrow$ **Definition of Done** (Definición de Terminado, el criterio de calidad).
+    *   Para el **Sprint Backlog** $\rightarrow$ **Sprint Goal** (Objetivo del Sprint, la meta concreta de la iteración).
+    *   Para el **Incremento** $\rightarrow$ **Definition of Done** (Definición de Terminado, el criterio de calidad).
 
-**Base normativa:** Scrum se define formalmente en la **Scrum Guide** (Ken Schwaber y Jeff Sutherland), documento de referencia oficial y gratuito, actualizado por última vez en 2020. Scrum se define allí como un **marco de trabajo ligero** (no una metodología, no un proceso ni una técnica) que ayuda a las personas, equipos y organizaciones a generar valor a través de soluciones adaptativas a problemas complejos.
+*   **Base normativa:** 
+    *   Scrum se define formalmente en la **Scrum Guide** (Ken Schwaber y Jeff Sutherland), documento de referencia oficial y gratuito, actualizado por última vez en 2020. Scrum se define allí como un **marco de trabajo ligero** (no una metodología, no un proceso ni una técnica) que ayuda a las personas, equipos y organizaciones a generar valor a través de soluciones adaptativas a problemas complejos.
+    *   Scrum se fundamenta en el **empirismo** (el conocimiento procede de la experiencia y de tomar decisiones basadas en lo observado) y en la teoría de control de procesos **Lean**, apoyándose en **3 pilares**: **Transparencia, Inspección y Adaptación**.
 
-Scrum se fundamenta en el **empirismo** (el conocimiento procede de la experiencia y de tomar decisiones basadas en lo observado) y en la teoría de control de procesos **Lean**, apoyándose en **3 pilares**: **Transparencia, Inspección y Adaptación**.
+*   **Valores de Scrum (5):** 
+    * Compromiso.
+    * Foco.
+    * Apertura.
+    * Respeto.
+    * Coraje.
 
-**Valores de Scrum (5):** Compromiso, Foco, Apertura, Respeto y Coraje.
 
-**Patrón Lógico - Los Roles:**
 
-**Terminología oficial actualizada (Scrum Guide 2020):** desde 2020 no se habla de "3 roles" separados sino de un único **Scrum Team**, compuesto por 10 o menos personas, que incluye tres tipos de **responsabilidades (accountabilities)**:
-
-1.  **Product Owner (El cliente):** Escribe las historias de usuario y prioriza el trabajo (Product Backlog) basándose en el valor de negocio.
-    > Es el **único responsable** de gestionar el Product Backlog, incluyendo redactar los elementos, ordenarlos por valor y asegurar que sean transparentes y comprendidos por el equipo.
-2.  **Scrum Master (El facilitador):** Mantiene el proceso, elimina obstáculos (impedimentos) y protege al equipo de interrupciones externas. No es un jefe, es un facilitador.
-    > Es responsable de establecer Scrum tal y como se define en la Guía Scrum, ayudando a todos a entender la teoría y práctica de Scrum, tanto dentro del Scrum Team como en la organización.
-3.  **Team (El equipo de desarrollo):** Equipo autoorganizado (de 4 a 9 personas) que construye el software.
-    > Terminología 2020: **Developers**, los profesionales del Scrum Team comprometidos con crear cualquier aspecto de un Incremento utilizable en cada Sprint. Son **auto-gestionados** (deciden internamente quién hace qué, cuándo y cómo), característica que sustituye al término "autoorganizado".
-
-**Patrón Lógico - Los Artefactos y Eventos:**
-*   **Sprint:** Iteración de 1 a 4 semanas. Durante el Sprint, los requisitos están congelados.
-    > Cada Sprint puede considerarse un proyecto corto y tiene una duración máxima de **un mes**; cuanto más largo es el Sprint, más riesgo de que cambie la definición de "hecho", el valor se reduzca o la complejidad aumente. Los Sprints permiten la **previsibilidad** al asegurar inspección y adaptación al menos cada mes.
-*   **Product Backlog:** Lista completa y priorizada de todo lo que el sistema necesita.
-*   **Sprint Backlog:** Subconjunto del Product Backlog que el equipo se compromete a hacer en el Sprint actual.
-    > Está compuesto por el objetivo del Sprint (*Sprint Goal*), los elementos del Product Backlog seleccionados para el Sprint y un plan de acción para entregar el Incremento.
-*   **Incremento:** *(artefacto no citado en el apunte original y clave en examen)* es un peldaño concreto hacia la Visión u objetivo del producto; cada Incremento se suma a los anteriores y se verifica exhaustivamente, garantizando que todos los Incrementos funcionan juntos.
-*   **Daily Scrum:** Reunión diaria de 15 minutos, de pie, para sincronizar el trabajo.
-    > La realizan únicamente los **Developers**; es un evento para inspeccionar el progreso hacia el Sprint Goal y adaptar el Sprint Backlog si es necesario.
-*   **Sprint Planning:** *(evento no citado en el apunte original)* inicia el Sprint; en ella se decide qué se puede conseguir en el Sprint (Sprint Goal) y cómo se llevará a cabo el trabajo elegido.
-*   **Sprint Review:** Reunión al final del Sprint para mostrar el software funcionando a los interesados (Stakeholders).
-    > Su propósito es inspeccionar el resultado del Sprint y determinar futuras adaptaciones.
-*   **Sprint Retrospective:** Reunión interna del equipo para analizar qué ha ido bien y qué mejorar en sus procesos.
-    > Cierra el Sprint; el Scrum Team inspecciona cómo fue el último Sprint en cuanto a individuos, interacciones, procesos, herramientas y su Definición de Terminado.
-
-**Definición de Terminado (*Definition of Done*, DoD):** descripción formal del estado del Incremento cuando cumple las medidas de calidad requeridas para el producto. En cuanto un elemento del Product Backlog cumple la DoD, nace un Incremento. Es un concepto muy preguntado porque garantiza transparencia y calidad homogénea.
 
 ### 2.3. Kanban
 Método para gestionar el flujo de trabajo con énfasis en la entrega "justo a tiempo".
 
-> **Origen y principios:** Kanban (palabra japonesa: "tarjeta visual") proviene del sistema de producción de Toyota (Lean Manufacturing) y fue adaptado al desarrollo software por David J. Anderson. A diferencia de Scrum, **no exige roles ni eventos fijos**, no trabaja en Sprints con duración fija, y puede aplicarse como capa de mejora continua sobre cualquier proceso existente (incluido Scrum, dando lugar a "Scrumban").
+> **Origen y principios:** Kanban (palabra japonesa: "tarjeta visual") proviene del sistema de producción de Toyota (Lean Manufacturing) y fue adaptado al desarrollo software por David J. Anderson. 
+> 
+> A diferencia de Scrum, **no exige roles ni eventos fijos**, no trabaja en Sprints con duración fija, y puede aplicarse como capa de mejora continua sobre cualquier proceso existente (incluido Scrum, dando lugar a "Scrumban").
 
-**Los 4 principios básicos de Kanban:**
+#### 2.3.1. Los 4 principios básicos de Kanban:
+
 1. Empezar con lo que se hace ahora (no exige rediseñar el proceso desde cero).
 2. Acordar realizar cambios incrementales y evolutivos.
 3. Respetar inicialmente los roles, responsabilidades y cargos actuales.
 4. Fomentar el liderazgo en todos los niveles.
 
-**Patrón Lógico y Reglas Clave:**
+
+#### 2.3.2. Patrón Lógico y Reglas Clave:
+
 1.  **Mostrar el proceso:** Uso de un tablero visual con columnas (Ej: Cola, Análisis, Desarrollo, Pruebas).
 2.  **Limitar el Trabajo en Curso (WIP - Work In Progress):** Regla fundamental. Se fija un límite máximo de tareas por columna para evitar cuellos de botella.
 3.  **Optimizar el flujo (Cycle Time / Lead Time):** Se mide el tiempo desde que una tarea entra al tablero hasta que sale.
-    > **Matiz examinable:** el **Lead Time** mide desde que la tarea se *solicita* hasta que se *entrega*; el **Cycle Time** mide desde que el equipo *empieza a trabajar* en ella hasta que se completa. Son métricas distintas, y confundirlas es una trampa habitual de test.
+    *  El **Lead Time** mide desde que la tarea se *solicita* hasta que se *entrega*. 
+    *  El **Cycle Time** mide desde que el equipo *empieza a trabajar* en ella hasta que se *completa*. 
 4.  **Gestionar el flujo explícitamente:** definir y comunicar políticas claras de cómo se mueven las tareas entre columnas.
 5.  **Mejora colaborativa mediante modelos y método científico:** uso de métricas (como el diagrama de flujo acumulado) para detectar cuellos de botella y mejorar continuamente.
 
 ### 2.4. DSDM (Dynamic Systems Development Method)
-Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones (RAD).
 
-**Patrón Lógico de DSDM:**
+Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones (**RAD**).
+
+*   **Ciclo de vida DSDM:** 
+    *   Pre-proyecto → Viabilidad → Fundamentos → Desarrollo iterativo evolutivo → Despliegue → Post-proyecto.
+
+*   **Relación con RAD:** DSDM nació en 1994 como una respuesta estructurada al RAD (*Rapid Application Development*), aportando disciplina y gobernanza al desarrollo rápido, algo que el RAD original no garantizaba.
+
+#### 2.4.1. Patrón Lógico de DSDM:
+
 *   **Fijo:** El tiempo (plazos) y el presupuesto están fijados estrictamente desde el principio.
 *   **Variable:** Los requisitos son variables y se negocian para asegurar que se cumple el plazo.
 
-**Los 8 Principios de DSDM (DSDM Agile Project Framework, oficial):**
+#### 2.4.2. Los 8 Principios de DSDM:
 
 1. Centrarse en la necesidad del negocio (*Focus on the business need*).
 2. Entregar a tiempo (*Deliver on time*).
@@ -290,17 +360,15 @@ Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones 
 7. Comunicarse de forma continua y clara (*Communicate continuously and clearly*).
 8. Demostrar control (*Demonstrate control*).
 
-**Priorización MoSCoW:** técnica de priorización de requisitos característica de DSDM (aunque usada también en otras metodologías), que clasifica cada requisito en:
+#### 2.4.3. Priorización MoSCoW: 
+
+Técnica de priorización de requisitos característica de DSDM (aunque usada también en otras metodologías), que clasifica cada requisito en:
 *   **M**ust have (imprescindible).
 *   **S**hould have (importante pero no crítico).
 *   **C**ould have (deseable si hay tiempo).
 *   **W**on't have this time (aplazado a una futura iteración).
 
-**Ciclo de vida DSDM:** Pre-proyecto → Viabilidad → Fundamentos → Desarrollo iterativo evolutivo → Despliegue → Post-proyecto.
-
-**Relación con RAD:** DSDM nació en 1994 como una respuesta estructurada al RAD (*Rapid Application Development*), aportando disciplina y gobernanza al desarrollo rápido, algo que el RAD original no garantizaba.
-
-> **Cuadro comparativo Scrum vs. Kanban vs. DSDM (muy útil para examen):**
+#### 2.4.4. Scrum vs. Kanban vs. DSDM 
 
 | Característica | Scrum | Kanban | DSDM |
 | :--- | :--- | :--- | :--- |
@@ -351,12 +419,14 @@ Las **pruebas de regresión** comprueban que los cambios realizados no han provo
 
 ### 3.2. TDD (Test Driven Development - Desarrollo Guiado por Pruebas)
 Metodología donde **primero se escribe la prueba** antes de escribir el código fuente.
+
 *   **Ciclo patrón:**
+
     1. Escribir una prueba que falla (porque el código no existe).
     2. Escribir el código más simple posible (KISS) para que la prueba pase.
     3. Refactorizar (limpiar y optimizar el código eliminando duplicidades).
 
-Este ciclo se conoce popularmente como **Red-Green-Refactor** (rojo: la prueba falla; verde: la prueba pasa; refactor: se mejora el código sin romper la prueba). Fue popularizado por Kent Beck en el contexto de Extreme Programming (XP). Su beneficio principal es que el diseño del código emerge de las propias pruebas, favoreciendo bajo acoplamiento y alta cohesión.
+    Este ciclo se conoce popularmente como **Red-Green-Refactor** (rojo: la prueba falla; verde: la prueba pasa; refactor: se mejora el código sin romper la prueba). Fue popularizado por Kent Beck en el contexto de Extreme Programming (XP). Su beneficio principal es que el diseño del código emerge de las propias pruebas, favoreciendo bajo acoplamiento y alta cohesión.
 
 ### 3.3. BDD (Behavior Driven Development - Desarrollo Orientado al Comportamiento)
 Evolución del TDD que fomenta la colaboración entre desarrolladores, probadores y clientes. Se usan lenguajes naturales estructurados (como Gherkin: `Dado que... Cuando... Entonces...`) para definir el comportamiento del sistema de forma que el cliente lo entienda fácilmente.
