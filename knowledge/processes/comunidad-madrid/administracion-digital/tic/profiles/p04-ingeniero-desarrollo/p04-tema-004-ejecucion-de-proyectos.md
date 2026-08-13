@@ -24,6 +24,7 @@ created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
 ai_sources:
+  - "chatgpt"
   - "gemini"
   - "perplexity"
 needs_human_review: true
@@ -35,7 +36,7 @@ needs_human_review: true
 
 Como ingeniero de desarrollo, saber cómo está estructurado el poder en tu proyecto te ahorra muchos quebraderos de cabeza. En el test, suelen preguntar por el tipo de estructura organizativa y el grado de autoridad del Jefe de Proyecto según el PMBOK.
 
-**Patrón Lógico - Tipos de Organización:**
+**Tipos de organización:**
 1.  **Organización Funcional (Clásica):** Agrupación por especialidad (ej. todos los programadores en el "Departamento de Desarrollo", los de redes en "Sistemas"). El Jefe de Proyecto **apenas tiene autoridad**; manda el jefe del departamento funcional.
 2.  **Organización Orientada a Proyectos (Proyectizada):** Todo el equipo trabaja a tiempo completo en el proyecto y responden *exclusivamente* al Jefe de Proyecto. Éste tiene **autoridad total** sobre el presupuesto y los recursos.
 3.  **Organización Matricial (La más común):** Mezcla las dos anteriores. El técnico tiene un jefe "funcional" pero está asignado a un proyecto donde responde también a un Jefe de Proyecto. 
@@ -45,7 +46,7 @@ Dentro de la organización matricial distinguimos tres niveles clave en función
 *   **Matricial Equilibrada:** El Jefe de Proyecto y el jefe funcional comparten el poder y las decisiones presupuestarias de forma similar.
 *   **Matricial Fuerte:** El Jefe de Proyecto tiene mayor autoridad que el gerente funcional y controla el presupuesto del proyecto.
 
-**Tabla Resumen de Autoridad (Pregunta de Examen):**
+**Tabla Resumen de Autoridad (Resumen de autoridad):**
 
 | Estructura | Autoridad del Jefe de Proyecto | Control del Presupuesto | Rol del Jefe de Proyecto |
 | :--- | :--- | :--- | :--- |
@@ -58,6 +59,24 @@ Dentro de la organización matricial distinguimos tres niveles clave en función
 *Nota:* Un matiz adicional examinable es el de la **organización compuesta o híbrida**: en la práctica, muchas organizaciones combinan varias estructuras simultáneamente (ej. mantienen departamentos funcionales estables pero crean una PMO directiva para determinados proyectos estratégicos).
 
 ---
+
+### 1.1. Estructuras organizativas y autoridad
+
+La estructura organizativa condiciona la disponibilidad de recursos, la autoridad del director del proyecto, los mecanismos de comunicación y la asignación de responsabilidades.
+
+En una estructura funcional, la autoridad sobre los recursos se concentra en los responsables funcionales. En las estructuras matriciales, la autoridad se comparte en distinto grado entre responsables funcionales y de proyecto. En una estructura proyectizada, el director del proyecto dispone de una autoridad considerablemente mayor sobre el equipo y los recursos asignados.
+
+La estructura organizativa debe distinguirse de la estructura de gobernanza específica del proyecto. Una organización puede mantener departamentos funcionales y, simultáneamente, establecer una estructura de gobierno para un proyecto concreto.
+
+### 1.2. Organización del equipo y comunicación
+
+La organización del proyecto debe definir canales de comunicación, responsabilidades, mecanismos de coordinación y procedimientos para resolver conflictos o escalar decisiones.
+
+En proyectos TIC con equipos multidisciplinares pueden coexistir perfiles de negocio, análisis, arquitectura, desarrollo, pruebas, seguridad, operaciones y proveedores externos. La claridad en las responsabilidades reduce duplicidades y facilita la gestión de dependencias.
+
+### 1.3. PMO y estructuras organizativas
+
+Una PMO puede actuar como estructura de apoyo, control o dirección en función de su mandato. Su relación con los proyectos debe estar definida para evitar conflictos de autoridad y establecer claramente qué decisiones permanecen en el director del proyecto, cuáles corresponden a la dirección y cuáles se delegan en otros niveles.
 
 ## 2. Roles y Responsabilidades Clave
 
@@ -88,11 +107,23 @@ PRINCE2 estructura la gobernanza del proyecto en torno al **Project Board (Comit
 
 ---
 
+### 2.1. Responsabilidades y delegación
+
+La dirección de proyectos requiere distribuir la autoridad de forma que cada nivel de gestión pueda tomar decisiones dentro de unos límites previamente definidos.
+
+La delegación no elimina la responsabilidad del nivel superior sobre el resultado global. Cada nivel debe disponer de información suficiente para controlar el proyecto y elevar únicamente las cuestiones que requieran decisión superior.
+
+### 2.2. Gobernanza y escalado
+
+La gobernanza establece quién tiene autoridad para iniciar, modificar, supervisar y cerrar un proyecto o una fase.
+
+Los mecanismos de escalado deben permitir que los asuntos que superen la autoridad delegada lleguen al nivel competente con información suficiente sobre su impacto, alternativas y recomendación de actuación.
+
 ## 3. Gestión por Excepción
 
 "Gestión por excepción" es uno de los **7 principios fundamentales de PRINCE2**.
 
-**Patrón Lógico - ¿Qué significa "Por Excepción"?:**
+**Significado de la gestión por excepción:**
 *   **La Regla general:** Cada nivel de gestión delega autoridad al nivel inferior estableciendo unos límites o **tolerancias**. Mientras el proyecto se mantenga dentro de esas tolerancias, el trabajo sigue sin necesidad de reuniones continuas ni microgestión.
 *   **La Excepción:** Si surge una incidencia que va a superar esas tolerancias (ej. un retraso previsto mayor al límite), se considera una "excepción". El Project Manager debe detenerse y **escalar el problema** al Project Board mediante un documento formal.
 *   **Documentos clave:** El aviso se hace mediante un **Informe de Excepción** (*Exception Report*), y la solución propuesta se presenta como un **Plan de Excepción** (*Exception Plan*), que, si se aprueba, sustituye al plan original.
@@ -107,6 +138,26 @@ Para que la gestión por excepción funcione, PRINCE2 define tolerancias en 6 á
 6.  **Riesgo:** Límites en el nivel de exposición al riesgo que la organización está dispuesta a asumir.
 
 ---
+
+### 3.1. Tolerancias y gestión por excepción
+
+En PRINCE2, la **gestión por excepción** delega autoridad mediante la definición de tolerancias. Mientras las previsiones del proyecto permanezcan dentro de dichas tolerancias, el nivel de gestión responsable puede continuar el trabajo sin elevar cada desviación al nivel superior.
+
+Las tolerancias se establecen respecto del **tiempo, coste, alcance, calidad, beneficio y riesgo**.
+
+Cuando se prevé que una tolerancia sea rebasada, se produce una excepción y la decisión se escala al nivel correspondiente. La finalidad es evitar la microgestión y concentrar la intervención de la dirección en las situaciones que requieren una decisión fuera de la autoridad delegada.
+
+### 3.2. Gestión de una excepción
+
+Ante una posible superación de tolerancias, el responsable debe informar de la situación y de sus consecuencias. En PRINCE2, el **Exception Report** informa al nivel de dirección correspondiente de la previsión de superar la tolerancia.
+
+Cuando resulte necesario modificar la forma de gestionar el proyecto, puede elaborarse un **Exception Plan** para sustituir o revisar el plan que ha dejado de ser válido. El plan de excepción debe seguir el procedimiento de autorización establecido por el nivel de gobierno competente.
+
+### 3.3. Gestión por excepción y niveles de gestión
+
+La gestión por excepción se aplica a los diferentes niveles del sistema de gestión de PRINCE2. Cada nivel recibe una delegación de autoridad, establece tolerancias y escala únicamente las desviaciones que exceden esos límites.
+
+Este mecanismo permite combinar control y autonomía: los responsables de los niveles inferiores disponen de margen para gestionar el trabajo dentro de sus límites y la dirección conserva el control sobre las decisiones relevantes.
 
 ## 4. Gestión de Dominios o Ámbitos y de Procesos en los Proyectos
 
@@ -132,6 +183,22 @@ El estándar ha evolucionado para ser aplicable a entornos ágiles, predictivos 
 
 ---
 
+### 4.1. Dominios de desempeño y procesos de gestión
+
+La dirección de proyectos comprende actividades relacionadas con la gobernanza, el alcance, cronograma, finanzas, interesados, recursos y riesgos. La forma concreta de organizar estas actividades depende del estándar o método utilizado.
+
+En **PMBOK 8**, PMI mantiene los principios y dominios de desempeño como base y presenta siete dominios: Gobernanza, Alcance, Cronograma, Finanzas, Interesados, Recursos y Riesgo. La guía también incorpora orientación sobre procesos de manera no prescriptiva.
+
+En **ISO 21502:2020**, la gestión se plantea mediante prácticas aplicables a diferentes enfoques de entrega, incluidos predictivo, incremental, iterativo, adaptativo e híbrido. La norma se aplica a proyectos públicos y privados y no prescribe una única metodología.
+
+En **PRINCE2 7**, las prácticas y procesos proporcionan el marco de gobierno y gestión del proyecto.
+
+### 4.2. Gestión de procesos durante la ejecución
+
+Durante la ejecución deben gestionarse y controlarse, según corresponda, el trabajo del proyecto, los recursos, las comunicaciones, los riesgos, las cuestiones, la calidad, los cambios y los entregables.
+
+Los procesos de gestión deben aportar información suficiente para comparar el desempeño real con las previsiones, identificar desviaciones y adoptar decisiones. La ejecución no debe considerarse un proceso aislado: interactúa con la planificación, el seguimiento y control y el cierre.
+
 ## 5. Enfoque en Productos y Gestión de Proyectos
 
 Es fundamental distinguir qué estamos construyendo (el producto) y cómo lo estamos construyendo (el proyecto).
@@ -144,17 +211,79 @@ A diferencia de la planificación tradicional que empieza listando tareas, PRINC
 
 ---
 
+### 5.1. Enfoque basado en productos
+
+El principio de **enfoque en los productos** de PRINCE2 orienta la gestión hacia los productos que deben entregarse y hacia los criterios que permiten determinar si son aceptables.
+
+La planificación basada en productos comienza identificando los productos que deben generarse, sus relaciones y sus características. A partir de ellos se determina el trabajo necesario para producirlos y comprobar su aceptación.
+
+La **Product Breakdown Structure (PBS)** representa la descomposición jerárquica de los productos. Las **Product Descriptions** definen, entre otros aspectos, el propósito del producto, su composición, criterios de calidad, tolerancias y método de aceptación.
+
+### 5.2. Calidad y aceptación
+
+El enfoque en productos relaciona directamente alcance y calidad. Cada producto debe disponer de criterios de calidad suficientemente precisos para determinar si cumple su propósito.
+
+La aceptación debe basarse en criterios previamente definidos. De este modo se reduce la ambigüedad sobre lo que debe considerarse terminado y se facilita la verificación de los entregables.
+
+### 5.3. Enfoque en productos frente a enfoque en actividades
+
+Un enfoque centrado exclusivamente en actividades puede llevar a ejecutar muchas tareas sin demostrar que se ha obtenido el resultado requerido.
+
+El enfoque basado en productos parte de lo que debe entregarse y utiliza los productos para derivar el trabajo, las actividades, los recursos y las comprobaciones necesarias. No elimina la planificación de actividades, sino que proporciona una base para relacionarlas con resultados concretos.
+
 ## 6. Adaptación al Entorno del Proyecto
 
 La **Adaptación** (*Tailoring*) es un principio fundamental tanto en PRINCE2 como en PMBOK 7. Significa que ninguna metodología se aplica como una "camisa de fuerza" ni de forma burocrática ciega.
 
-*   **En PRINCE2:** La metodología DEBE adaptarse a la escala, riesgo, complejidad e importancia del proyecto. Esta adaptación se documenta formalmente en el *Project Initiation Document (PID)*. Ojo a la trampa de examen: **Adaptar no significa eliminar principios**. Los 7 principios de PRINCE2 son universales y obligatorios; lo que se adapta (simplifica o fusiona) son los roles, los documentos de gestión (temas) y la formalidad de los procesos.
+*   **En PRINCE2:** La metodología DEBE adaptarse a la escala, riesgo, complejidad e importancia del proyecto. Esta adaptación se documenta formalmente en el *Project Initiation Document (PID)*.  **Adaptar no significa eliminar principios**. Los 7 principios de PRINCE2 son universales y obligatorios; lo que se adapta (simplifica o fusiona) son los roles, los documentos de gestión (temas) y la formalidad de los procesos.
 *   **En PMBOK 7:** Se denomina "Tailoring". Incluye elegir el ciclo de vida adecuado (predictivo, iterativo, ágil o híbrido), seleccionar los procesos, herramientas y métodos que aporten valor y descartar el papeleo innecesario.
 *   **En Métrica v3:** Sus manuales indican explícitamente que las tareas y perfiles deben "adaptarse y dimensionarse" a las características del sistema de información concreto.
 
 ---
 
-## 7. Ejemplo Real (Sin analogías)
+### 6.1. Adaptación al contexto organizativo
+
+La adaptación o **tailoring** consiste en ajustar el enfoque de gestión a las características del proyecto y al contexto de la organización.
+
+La adaptación puede afectar a la selección del enfoque de desarrollo, nivel de detalle, mecanismos de gobierno, documentación, roles, herramientas, técnicas, controles y frecuencia de seguimiento.
+
+### 6.2. Factores que condicionan la adaptación
+
+Entre los factores que deben considerarse se encuentran:
+
+* tamaño y duración del proyecto;
+* complejidad técnica y organizativa;
+* criticidad del sistema o servicio;
+* nivel de riesgo;
+* requisitos legales y reglamentarios;
+* número y diversidad de interesados;
+* distribución geográfica de los equipos;
+* modelo de contratación y relación con proveedores;
+* restricciones presupuestarias y de recursos;
+* cultura y capacidad de la organización;
+* enfoque de desarrollo adoptado.
+
+La adaptación no debe utilizarse para eliminar controles exigidos por la normativa o por el modelo de gobierno aplicable.
+
+### 6.3. Tailoring en PMBOK y PRINCE2
+
+PMI establece explícitamente la necesidad de adaptar el enfoque, prácticas, herramientas y técnicas al contexto.
+
+PRINCE2 7 refuerza la flexibilidad y la personalización del método. La adaptación permite ajustar el método al proyecto manteniendo sus elementos fundamentales y evitando una aplicación burocrática que no aporte valor. citeturn155725search3turn155725search8
+
+### 6.4. Adaptación y cumplimiento
+
+La adaptación metodológica no equivale a eliminar obligaciones legales, contractuales, de seguridad, protección de datos, calidad o auditoría.
+
+Cuando existan requisitos externos de obligado cumplimiento, estos constituyen restricciones del proyecto y deben integrarse en el diseño de la gobernanza, procesos y productos.
+
+## 8. Referencias normativas y técnicas
+
+* **Project Management Institute (PMI), A Guide to the Project Management Body of Knowledge (PMBOK® Guide) — Eighth Edition**, 2025. citeturn155725search3
+* **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*. citeturn155725search0
+* **PRINCE2 Project Management (Version 7)**, PeopleCert. citeturn155725search8
+
+## 9. Ejemplo Real (Sin analogías)
 
 Estás trabajando en un proyecto para lanzar una nueva App móvil del ayuntamiento para el pago de impuestos.
 
@@ -166,9 +295,9 @@ Estás trabajando en un proyecto para lanzar una nueva App móvil del ayuntamien
 
 ---
 
-## 8. Resumen
+## 10. Resumen
 
-| Concepto | Palabra Chivata en el Test |
+| Concepto | Concepto clave |
 | :--- | :--- |
 | **Matricial Fuerte vs. Débil** | Fuerte = "Control del presupuesto y autoridad del JP"; Débil = "JP como coordinador, manda el jefe funcional". |
 | **Comité de Dirección (Métrica v3)** | "Promotor", "Autoridad final", "Aprueba paso a producción". |
@@ -181,7 +310,7 @@ Estás trabajando en un proyecto para lanzar una nueva App móvil del ayuntamien
 | **Enfoque en los Productos** | "Product-based planning", "PBS", "Descripción del producto y sus criterios de calidad". |
 | **Adaptación / Tailoring** | "Ajustar al tamaño/riesgo", "No se eliminan los principios", "Evitar burocracia ciega". |
 
-### 8.1. Simulacro de Test
+### 10.1. Simulacro de Test
 
 **Pregunta 1:**
 *Durante el desarrollo de un nuevo sistema en un ministerio siguiendo Métrica v3, surge un cambio legislativo que obliga a modificar una funcionalidad troncal del sistema. Una vez analizado el impacto por el Jefe de Proyecto, ¿qué órgano tiene la responsabilidad de aprobar esta petición de cambio de requisitos?*
