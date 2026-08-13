@@ -24,6 +24,7 @@ created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
 ai_sources:
+  - "chatgpt"
   - "gemini"
   - "perplexity"
 needs_human_review: true
@@ -40,6 +41,30 @@ Un **proyecto** es un esfuerzo temporal que se lleva a cabo para crear un produc
 *   **Elaboración progresiva (desarrollo gradual):** El proyecto se despliega por pasos e incrementos. El alcance y las especificaciones técnicas se perfilan en términos generales al inicio y se refinan conforme el equipo incrementa el conocimiento del dominio del problema.
 *   **Incertidumbre y Riesgo:** La naturaleza singular del resultado introduce un nivel intrínseco de riesgo y volatilidad superior al de las actividades operativas estandarizadas.
 *   **Consumo y restricción de recursos:** Requiere la asignación formal de recursos humanos, temporales, tecnológicos y presupuestarios específicos.
+
+### 1.1. Proyecto, programa y portafolio
+
+Un **proyecto** es una iniciativa temporal emprendida para crear un producto, servicio o resultado único.
+
+Un **programa** es un conjunto de proyectos relacionados y actividades de programa gestionados de manera coordinada para obtener beneficios y control que no se obtendrían gestionándolos individualmente.
+
+Un **portafolio** es un conjunto de proyectos, programas, subportafolios y operaciones gestionados como un grupo para alcanzar objetivos estratégicos.
+
+La gestión de proyectos se centra en resultados y objetivos concretos; la gestión de programas, en beneficios relacionados; y la gestión de portafolios, en la alineación y priorización de inversiones con la estrategia organizativa.
+
+### 1.2. Entregables, resultados y beneficios
+
+El **entregable** es un producto, resultado o capacidad verificable producido por un proyecto.
+
+El **resultado (outcome)** es el efecto o consecuencia que se produce como resultado de la utilización de los entregables.
+
+El **beneficio** es el resultado percibido que contribuye a los objetivos de la organización. La entrega de un producto no garantiza por sí misma la obtención de los beneficios previstos.
+
+### 1.3. Restricciones, objetivos y valor
+
+La dirección de proyectos debe considerar conjuntamente alcance, cronograma, presupuesto, calidad, recursos, riesgos y demás condiciones aplicables al contexto. Las restricciones concretas y su importancia relativa dependen del proyecto.
+
+La gestión no consiste únicamente en cumplir plazo y presupuesto, sino en alcanzar los resultados y beneficios previstos y generar valor para la organización y sus partes interesadas.
 
 ## 2. Principios Generales de la Dirección de Proyectos
 
@@ -58,7 +83,32 @@ La 7ª edición de la Guía PMBOK (PMI, 2021) evolucionó desde la estructura r�
 11. **Adoptar la adaptabilidad y la resiliencia:** Capacidad de recuperación y respuesta ágil ante el cambio o la adversidad.
 12. **Habilitar el cambio para alcanzar el estado futuro previsto:** Facilitar la transición organizacional requerida para materializar los beneficios.
 
-> **Nota para examen:** Los 12 principios rectores de PMBOK 7ª Edición coexisten operativamente con los **8 Dominios de Desempeño del Proyecto** (Stakeholders, Equipo, Enfoque de Desarrollo y Ciclo de Vida, Planificación, Trabajo del Proyecto, Entrega, Medición, e Incertidumbre).
+Los 12 principios rectores de PMBOK 7ª Edición coexisten operativamente con los **8 Dominios de Desempeño del Proyecto** (Stakeholders, Equipo, Enfoque de Desarrollo y Ciclo de Vida, Planificación, Trabajo del Proyecto, Entrega, Medición, e Incertidumbre).
+
+### 2.1. PMBOK: evolución del marco de principios
+
+La **Guía PMBOK, octava edición**, publicada por PMI en noviembre de 2025, mantiene la orientación basada en principios y dominios de desempeño de la séptima edición, pero simplifica su estructura y reincorpora orientación sobre procesos de forma no prescriptiva.
+
+La octava edición establece **seis principios fundamentales**:
+
+1. Adoptar una visión holística.
+2. Centrarse en el valor.
+3. Integrar la calidad.
+4. Liderar con responsabilidad.
+5. Integrar la sostenibilidad.
+6. Construir equipos empoderados.
+
+También establece **siete dominios de desempeño**: Gobernanza, Alcance, Cronograma, Finanzas, Interesados, Recursos y Riesgo.
+
+La séptima edición establecía 12 principios y 8 dominios de desempeño. Por tanto, ambas terminologías pueden aparecer en documentación de referencia.
+
+### 2.2. Principios generales en otros marcos
+
+ISO 21502:2020 proporciona orientación sobre dirección de proyectos aplicable a organizaciones públicas y privadas y a proyectos de cualquier tamaño, complejidad, coste o duración. Admite enfoques predictivos, incrementales, iterativos, adaptativos e híbridos.
+
+PRINCE2 Project Management, versión 7, establece siete principios, siete prácticas y siete procesos y contempla la adaptación del método al tamaño, complejidad y contexto del proyecto.
+
+PMBOK, ISO 21502 y PRINCE2 no son equivalentes: el primero proporciona un estándar y guía de dirección de proyectos, ISO proporciona directrices internacionales y PRINCE2 constituye un método estructurado de dirección.
 
 ## 3. Beneficios de la Gestión de Proyectos
 
@@ -69,6 +119,18 @@ La aplicación formal de la dirección de proyectos aporta las siguientes ventaj
 *   **Predictibilidad y Control:** Mitiga sorpresas operativas mediante la monitorización cuantitativa y la gestión proactiva de riesgos.
 *   **Satisfacción de Interesados:** Mejora la comunicación, la transparencia y la gestión de expectativas.
 *   **Gobernanza y Trazabilidad:** Establece estructuras claras de toma de decisiones, roles (Sponsor, Project Manager, Comités) y canales formales de escalado.
+
+### 3.1. Beneficios relacionados con la gobernanza y el valor
+
+La gestión de proyectos establece una estructura de gobernanza en la que se definen responsabilidades, autoridad, mecanismos de decisión, escalado y rendición de cuentas.
+
+La gestión orientada al valor permite relacionar los objetivos del proyecto con los resultados y beneficios que justifican su ejecución. La evaluación del éxito no debe limitarse a comprobar si se entregó el alcance previsto, sino que debe considerar si los resultados contribuyen a los objetivos de la organización y a las necesidades de los interesados.
+
+### 3.2. Medición del desempeño
+
+La gestión de proyectos requiere mecanismos de seguimiento que permitan comparar el desempeño observado con los objetivos y previsiones.
+
+Las métricas pueden referirse al alcance, cronograma, costes, calidad, recursos, riesgos, satisfacción de interesados y resultados obtenidos. Las desviaciones deben analizarse para determinar sus causas y adoptar las actuaciones correspondientes.
 
 ## 4. Tipología de Proyectos
 
@@ -94,6 +156,20 @@ Los proyectos se clasifican formalmente bajo los siguientes criterios de agrupac
 
 
 
+### 4.1. Ciclos de vida según el enfoque de entrega
+
+El ciclo de vida puede estructurarse de acuerdo con el enfoque de desarrollo y entrega:
+
+* **Predictivo:** alcance definido al inicio con mayor detalle y planificación anticipada.
+* **Iterativo:** desarrollo mediante ciclos sucesivos que permiten revisar y mejorar el resultado.
+* **Incremental:** entrega del producto mediante incrementos funcionales.
+* **Adaptativo:** ajuste frecuente del alcance y las prioridades a partir de la información obtenida durante el desarrollo.
+* **Híbrido:** combinación de elementos predictivos y adaptativos.
+
+### 4.2. Proyectos TIC por naturaleza de la intervención
+
+Pueden distinguirse, entre otros, proyectos de desarrollo o adquisición de aplicaciones, evolución de sistemas existentes, integración e interoperabilidad, implantación o migración de infraestructuras, transformación digital de procesos, seguridad, renovación tecnológica y adecuación a requisitos legales o reglamentarios.
+
 ## 5. Ciclo de Vida del Proyecto: Grupos de Procesos, Fases y Entregables
 
 ### 5.1. Comparativa de Fases y Marcos de Referencia
@@ -114,6 +190,24 @@ Los proyectos se clasifican formalmente bajo los siguientes criterios de agrupac
 5.  **Cierre:** Finalización formal de todas las actividades, aceptación administrativa/técnica del cliente, transferencia del producto a la fase de Operación, archivo de la documentación y registro de **Lecciones Aprendidas**.
 
 
+
+### 5.3. Concepto general de ciclo de vida
+
+El **ciclo de vida del proyecto** es el conjunto de fases que atraviesa un proyecto desde su inicio hasta su finalización. Las fases permiten organizar el trabajo, establecer puntos de control y definir los entregables y decisiones de cada etapa.
+
+No existe una única estructura de fases válida para todos los proyectos. Los puntos de decisión entre fases pueden utilizarse para revisar alcance, costes, cronograma, riesgos, calidad y justificación antes de continuar.
+
+### 5.4. Entregables, hitos y criterios de aceptación
+
+Un **entregable** es un resultado verificable que debe producirse como consecuencia del proyecto. Un **hito** es un punto o acontecimiento significativo utilizado para controlar el progreso. Los **criterios de aceptación** establecen las condiciones que deben cumplirse para aceptar un entregable.
+
+### 5.5. Ciclo de vida y enfoque de desarrollo
+
+El ciclo de vida establece las fases que estructuran el proyecto, mientras que el enfoque de desarrollo determina cómo se realiza el trabajo para crear y entregar el producto, servicio o resultado. Un proyecto puede combinar distintos enfoques dentro de sus fases.
+
+### 5.6. Cierre del proyecto
+
+El cierre comprende la finalización formal de las actividades, la aceptación de los entregables, el cierre de contratos cuando proceda, la transferencia a operación, el archivo de la información y la captura de las lecciones aprendidas.
 
 ## 6. Concepto de Oficina de Dirección de Proyectos (PMO)
 
@@ -136,6 +230,18 @@ La **PMO** *(Project Management Office)* es la estructura organizativa encargada
 
 
 
+### 6.2. Funciones de una PMO
+
+Una PMO puede proporcionar servicios como desarrollo de metodologías, estándares y plantillas; apoyo a directores de proyecto; formación; consolidación de información; seguimiento de indicadores, riesgos, costes y cronogramas; apoyo a la gobernanza; gestión de recursos compartidos; y gestión del conocimiento y de las lecciones aprendidas.
+
+El grado de autoridad de la PMO depende del mandato de la organización. Puede prestar principalmente servicios de apoyo, ejercer funciones de control o asumir responsabilidades directas sobre proyectos.
+
+### 6.3. PMO y gobernanza
+
+La PMO no sustituye necesariamente al patrocinador ni al director del proyecto. Su función depende de la estructura de gobierno adoptada.
+
+La gobernanza define autoridad, responsabilidades y mecanismos mediante los cuales se dirige y controla el proyecto. La PMO puede apoyar dicha gobernanza mediante información, estándares, supervisión y coordinación.
+
 ## 7. Diferencias entre Proyectos y Operaciones
 
 Es un axioma fundamental de la gestión organizativa distinguir el trabajo enfocado a proyectos del trabajo operativo:
@@ -150,15 +256,27 @@ Es un axioma fundamental de la gestión organizativa distinguir el trabajo enfoc
 | **Entorno de Trabajo** | Dinámico, con mayor nivel de incertidumbre y riesgo. | Estable, enfocado en la eficiencia de procesos. |
 | **Gestión de Recursos** | Asignación temporal por proyecto / presupuesto cerrado. | Presupuesto operativo recurrente (OPEX) / puestos fijos. |
 
-> **Punto de Transición Crítico:** La transición de **Proyecto a Operación** se formaliza durante el proceso de **Cierre del Proyecto**, traspasando el entregable aceptado a los equipos de explotación/mantenimiento (ej. Centro de Atención a Usuarios, CAU, o gestión de contratos de mantenimiento evolutivo/correctivo).
+> **Transición a operación:** La transición de **Proyecto a Operación** se formaliza durante el proceso de **Cierre del Proyecto**, traspasando el entregable aceptado a los equipos de explotación/mantenimiento (ej. Centro de Atención a Usuarios, CAU, o gestión de contratos de mantenimiento evolutivo/correctivo).
 
 
+
+### 7.1. Diferencia entre proyectos y operaciones
+
+Las operaciones son actividades continuas y repetitivas que mantienen la organización o los servicios en funcionamiento. Los proyectos son esfuerzos temporales orientados a producir un resultado único.
+
+Las operaciones se orientan principalmente a continuidad, eficiencia y estabilidad. Los proyectos se orientan al cambio, transformación o creación de nuevos productos, servicios o resultados.
+
+### 7.2. Interacción entre proyectos y operaciones
+
+Los proyectos pueden iniciar cambios que posteriormente pasan a formar parte de las operaciones. Las necesidades detectadas durante la operación pueden originar nuevos proyectos.
+
+La transición a operación debe planificarse, incluyendo cuando proceda formación, documentación, soporte, mantenimiento, aceptación y asignación de responsabilidades.
 
 ## 8. Estándares y Marcos de Referencia
 
-| Estándar / Marco | Entidad Emisora | Tipo de Marco | Conceptos Chivata / Claves para Test |
+| Estándar / Marco | Entidad Emisora | Tipo de Marco | Conceptos clave |
 | :--- | :--- | :--- | :--- |
-| **PMBOK** | PMI | Estándar / Guía de Buenas Prácticas | • 12 Principios + 8 Dominios (7ª Ed.)<br>• 5 Grupos de Procesos + 10 Áreas (6ª Ed.)<br>• Enfoque en aportación de **Valor** |
+| **PMBOK** | PMI | Estándar / Guía de Buenas Prácticas | • 6 Principios + 7 Dominios de Desempeño (8ª Ed.)<br>• 12 Principios + 8 Dominios (7ª Ed.)<br>• 5 Grupos de Procesos + 10 Áreas (6ª Ed.)<br>• Enfoque en aportación de **Valor** |
 | **PRINCE2** | AXELOS | Metodología Estructurada | • **Entornos Controlados**<br>• **Business Case** continuo<br>• 7 Principios, 7 Temas/Prácticas, 7 Procesos<br>• **Gestión por Excepción** y **Enfoque en Productos** |
 | **ISO 21502:2020** | ISO | Norma / Guía Internacional | • Sustituye a ISO 21500:2012<br>• Enfoque de gobernanza integrando proyectos, programas y portafolios |
 | **ITIL v4** | AXELOS | Marco de Gestión de Servicios IT | • **SVS** (Sistema de Valor del Servicio)<br>• **CMDB** y **CIs** (Configuration Items)<br>• **CAC** (Comité Asesor de Cambios)<br>• Cambios: Estándar, Normal, Emergencia/Urgente |
@@ -213,9 +331,9 @@ Una vez que el proyecto se ha cerrado y transferido a producción, los cambios e
 
 
 
-## 12. Cuadro Resumen de Conceptos Clave para Test
+## 12. Cuadro Resumen de Conceptos Clave
 
-| Concepto | Términos Chivata / Palabras Clave de Examen |
+| Concepto | Términos Chivata / Conceptos clave |
 | :--- | :--- |
 | **Proyecto** | Temporal, inicio y fin, resultado único, elaboración progresiva. |
 | **Operación** | Trabajo continuo, repetitivo, mantenimiento del negocio. |
@@ -234,6 +352,15 @@ Una vez que el proyecto se ha cerrado y transferido a producción, los cambios e
 | **Plan de Back-out** | Plan B de marcha atrás/reversión en caso de fallo del cambio. |
 
 
+## 14. Referencias normativas y técnicas
+
+* **PMI, A Guide to the Project Management Body of Knowledge (PMBOK® Guide) — Eighth Edition**, 2025.
+* **ISO 21500:2021**, *Project, programme and portfolio management — Context and concepts*.
+* **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*.
+* **ISO 21505:2017**, *Project, programme and portfolio management — Guidance on governance*.
+* **ISO 21506:2024**, *Project, programme and portfolio management — Vocabulary*.
+* **PRINCE2 Project Management (Version 7)**, PeopleCert.
+* **MÉTRICA Versión 3, Interfaz de Gestión de Proyectos (GP)**, Ministerio de Administraciones Públicas.
 
 ## 13. Simulacro de Examen
 
