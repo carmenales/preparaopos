@@ -67,32 +67,32 @@ Su tarea principal es generar especificaciones correctas, claras y sin ambigüed
 
 El estándar **ISO/IEC 25010** (modelo de calidad de producto software, sucesor de ISO/IEC 9126) es la referencia oficial para clasificar los **requisitos no funcionales** en 8 características: 
 
-* Functional suitability (*idoneidad funcional*).
-* Performance efficiency (*eficiencia de desempeño*).
-* Compatibility.
-* Usability.
-* Reliability.
-* Security.
-* Maintainability.
-* Portability.
+*   Functional suitability (*idoneidad funcional*).
+*   Performance efficiency (*eficiencia de desempeño*).
+*   Compatibility.
+*   Usability.
+*   Reliability.
+*   Security.
+*   Maintainability.
+*   Portability.
 
 La edición **ISO/IEC 25010:2023** sustituye a la edición de 2011 y establece un modelo de calidad de producto con **9 características**: 
 
-* Adecuación funcional (*functional suitability*).
-* Eficiencia de desempeño (*performance efficiency*).
-* Compatibilidad (*compatibility*).
-* Capacidad de interacción (*interaction capability*).
-* Fiabilidad (*reliability*).
-* Seguridad (*security*).
-* Mantenibilidad (*maintainability*).
-* Flexibilidad (*flexibility*)
-* Seguridad de uso (*safety*). 
+*   Adecuación funcional (*functional suitability*).
+*   Eficiencia de desempeño (*performance efficiency*).
+*   Compatibilidad (*compatibility*).
+*   Capacidad de interacción (*interaction capability*).
+*   Fiabilidad (*reliability*).
+*   Seguridad (*security*).
+*   Mantenibilidad (*maintainability*).
+*   Flexibilidad (*flexibility*)
+*   Seguridad de uso (*safety*). 
 
 El modelo se utiliza para especificar, medir y evaluar la calidad de productos TIC y software.
 
 **Atributos de un buen requisito (ISO/IEC/IEEE 29148):** necesario, no ambiguo, completo, singular (atómico), factible, verificable, correcto y conforme (con estándares aplicables).
 
-**Trazabilidad de requisitos:** capacidad de seguir la vida de un requisito desde su origen (necesidad de negocio) hasta su implementación y prueba, en ambas direcciones (hacia atrás y hacia adelante). Es clave para la gestión del cambio y para la auditoría en procesos certificados bajo CMMI o ISO 9001.
+**Trazabilidad de requisitos:** capacidad de seguir la vida de un requisito desde su origen (necesidad de negocio) hasta su implementación y prueba, en ambas direcciones (hacia atrás y hacia adelante). Es clave para la gestión del cambio y para la auditoría en procesos certificados bajo **CMMI** o **ISO 9001**.
 
 **Validación vs. Verificación de requisitos:**
 
@@ -165,7 +165,7 @@ Son las dos herramientas principales para documentar requisitos, dependiendo de 
 
 > Una buena historia de usuario debe cumplir el acrónimo **INVEST**.
 
-Las historias de usuario se acompañan de **criterios de aceptación**: condiciones concretas que deben cumplirse para considerar la historia "terminada" (*Done*). Frecuentemente se redactan en formato Gherkin (Dado/Cuando/Entonces), enlazando con [BDD](#3-3-bdd-behavior-driven-development-desarrollo-orientado-al-comportamiento).
+Las historias de usuario se acompañan de **criterios de aceptación**: condiciones concretas que deben cumplirse para considerar la historia "terminada" (*Done*). Frecuentemente se redactan en formato **Gherkin** (Dado/Cuando/Entonces), enlazando con [BDD](#3-3-bdd-behavior-driven-development-desarrollo-orientado-al-comportamiento).
 
 Jerarquía habitual en ágil: **Épica** (gran bloque de valor, varias historias) → **Historia de usuario** → **Tareas** (unidades técnicas de trabajo del equipo).
 
@@ -215,13 +215,20 @@ Origen formal de la filosofía ágil, que establece **4 valores**:
 3. Colaboración con el cliente sobre negociación contractual.
 4. Respuesta ante el cambio sobre seguimiento de un plan.
 
-Y **12 principios**, entre los que destacan: 
+Y **12 principios**: 
 
-* Satisfacer al cliente mediante entrega temprana y continua de software con valor.
-* Aceptar los cambios de requisitos incluso en fases avanzadas.
-* Entregar software funcionando frecuentemente (semanas, no meses).
-* La simplicidad es esencial.
-* Los equipos auto-organizados producen las mejores arquitecturas y diseños.
+1. Satisfacción temprana (Software de valor)  
+2. Aceptar el cambio (Incluso tarde)  
+3. Entregas frecuentes (Semanas)  
+4. Negocio y desarrolladores juntos (A diario)  
+5. Individuos motivados (Confianza)
+6. Comunicación cara a cara (Eficiencia)
+7. Software funcionando (Medida de progreso)
+8. Ritmo sostenible (Indefinido)
+9. Excelencia técnica y buen diseño
+10. Simplicidad (El arte de no hacer trabajo innecesario)
+11. Equipos auto-organizados (Mejores arquitecturas)
+12. Mejora continua (Reflexión a intervalos regulares)
 
 ### 2.1. Modelos y metodologías de desarrollo de sistemas
 
