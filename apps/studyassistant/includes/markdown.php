@@ -3,7 +3,13 @@
 function sa_normalize_markdown($markdown) {
     $markdown = (string)$markdown;
     $markdown = preg_replace('/^\xEF\xBB\xBF/', '', $markdown);
-    return str_replace(["\r\n", "\r"], "\n", $markdown);
+    $markdown = str_replace(["\r\n", "\r"], "\n", $markdown);
+
+    $markdown = preg_replace_callback('/^([ \t]+)/m', function ($m) {
+        return str_replace("\t", "    ", $m[1]);
+    }, $markdown);
+
+    return $markdown;
 }
 
 function sa_strip_frontmatter($markdown) {
@@ -83,7 +89,21 @@ function sa_inline_markdown($text) {
         return '<img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '" loading="lazy">';
     }, $html);
 
-    $html = preg_replace('/\[([^\]]+)\]\(([^)]+)\)/', '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>', $html);
+    $html = preg_replace_callback('/\[([^\]]+)\]\(([^)]+)\)/', function ($matches) {
+        $text = $matches[1];
+        $path = $matches[2];
+        $escapedPath = htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
+
+        if (preg_match('/^\s*#/u', $path)) {
+            return '<a href="' . $escapedPath . '">' . $text . '</a>';
+        }
+
+        if (preg_match('#^https?://#i', $path)) {
+            return '<a href="' . $escapedPath . '" target="_blank" rel="noopener noreferrer">' . $text . '</a>';
+        }
+
+        return '<a href="' . $escapedPath . '">' . $text . '</a>';
+    }, $html);
 
     return sa_restore_math_placeholders($html, $mathBlocks);
 }
@@ -111,7 +131,11 @@ function sa_render_table($lines) {
         $html .= '<tr>';
 
         foreach ($cells as $cell) {
-            $html .= '<' . $tag . '>' . sa_inline_markdown($cell) . '</' . $tag . '>';
+            $cell = str_replace("\n", '%%SA_BR%%', $cell);
+            $cell = str_ireplace(['<br>', '<br/>', '<br />'], '%%SA_BR%%', $cell);
+            $cellHtml = sa_inline_markdown($cell);
+            $cellHtml = str_replace('%%SA_BR%%', '<br>', $cellHtml);
+            $html .= '<' . $tag . '>' . $cellHtml . '</' . $tag . '>';
         }
 
         $html .= '</tr>';
@@ -271,19 +295,21 @@ function sa_collect_quiz_question($lines, &$index) {
 }
 
 function sa_parse_list_marker($line) {
-    if (preg_match('/^\s*([0-9]+)\.\s+(.+)$/u', $line, $matches)) {
+    if (preg_match('/^(\s*)([0-9]+)\.\s+(.+)$/u', $line, $matches)) {
         return [
             'type' => 'ol',
-            'number' => (int)$matches[1],
-            'content' => trim($matches[2]),
+            'number' => (int)$matches[2],
+            'content' => trim($matches[3]),
+            'indent_spaces' => strlen($matches[1]),
         ];
     }
 
-    if (preg_match('/^\s*[-*]\s+(.+)$/u', $line, $matches)) {
+    if (preg_match('/^(\s*)[-*]\s+(.+)$/u', $line, $matches)) {
         return [
             'type' => 'ul',
             'number' => null,
-            'content' => trim($matches[1]),
+            'content' => trim($matches[2]),
+            'indent_spaces' => strlen($matches[1]),
         ];
     }
 
@@ -300,7 +326,7 @@ function sa_next_non_empty_index($lines, $index) {
     return null;
 }
 
-function sa_collect_list($lines, &$index) {
+function sa_collect_list($lines, &$index, $parentIndent = 0) {
     $firstMarker = sa_parse_list_marker($lines[$index]);
 
     if ($firstMarker === null) {
@@ -309,6 +335,7 @@ function sa_collect_list($lines, &$index) {
 
     $type = $firstMarker['type'];
     $start = $firstMarker['number'];
+    $baseIndent = $firstMarker['indent_spaces'] ?? 0;
     $items = [];
     $current = null;
 
@@ -324,11 +351,23 @@ function sa_collect_list($lines, &$index) {
                 break;
             }
 
-            $nextMarker = sa_parse_list_marker($lines[$nextIndex]);
+            $nextLine = $lines[$nextIndex];
+            $nextMarker = sa_parse_list_marker($nextLine);
 
-            if ($nextMarker !== null && $nextMarker['type'] === $type) {
-                $index++;
-                continue;
+            if ($nextMarker !== null && $nextMarker['type'] === $type && (($nextMarker['indent_spaces'] ?? 0) <= $baseIndent)) {
+                $index = $nextIndex;
+                break;
+            }
+
+            $trimNext = trim($nextLine);
+
+            if (preg_match('/^#{1,6}\s+/', $trimNext)
+                || sa_is_quiz_question_start($trimNext)
+                || preg_match('/^```/', $trimNext)
+                || preg_match('/^\$\$/', $trimNext)
+                || sa_is_table_start($lines, $nextIndex)) {
+                $index = $nextIndex;
+                break;
             }
 
             break;
@@ -347,15 +386,31 @@ function sa_collect_list($lines, &$index) {
         $marker = sa_parse_list_marker($line);
 
         if ($marker !== null) {
+            $markerIndent = $marker['indent_spaces'] ?? 0;
+
+            if ($markerIndent < $baseIndent) {
+                break;
+            }
+
+            if ($markerIndent > $baseIndent) {
+                $nestedHtml = sa_collect_list($lines, $index, $baseIndent);
+
+                if ($current !== null) {
+                    $current['nested'] .= $nestedHtml;
+                }
+
+                continue;
+            }
+
             if ($marker['type'] !== $type) {
                 break;
             }
 
             if ($current !== null) {
-                $items[] = trim($current);
+                $items[] = $current;
             }
 
-            $current = $marker['content'];
+            $current = ['text' => $marker['content'], 'nested' => ''];
             $index++;
             continue;
         }
@@ -364,12 +419,12 @@ function sa_collect_list($lines, &$index) {
             break;
         }
 
-        $current .= ' ' . $trimmed;
+        $current['text'] .= ' ' . $trimmed;
         $index++;
     }
 
     if ($current !== null) {
-        $items[] = trim($current);
+        $items[] = $current;
     }
 
     if (empty($items)) {
@@ -385,7 +440,7 @@ function sa_collect_list($lines, &$index) {
     $html = '<' . $type . $attrs . '>';
 
     foreach ($items as $item) {
-        $html .= '<li>' . sa_inline_markdown($item) . '</li>';
+        $html .= '<li>' . sa_inline_markdown($item['text']) . $item['nested'] . '</li>';
     }
 
     $html .= '</' . $type . '>';
@@ -507,7 +562,7 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
 
         if ($listMarker !== null) {
             $flushParagraph();
-            $html .= sa_collect_list($lines, $i);
+            $html .= sa_collect_list($lines, $i, 0);
             $i--;
             continue;
         }
@@ -520,6 +575,48 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
             $slug = sa_slugify_heading($text);
 
             $html .= '<h' . $level . ' id="' . htmlspecialchars($slug, ENT_QUOTES, 'UTF-8') . '">' . sa_inline_markdown($text) . '</h' . $level . '>';
+            continue;
+        }
+
+        if (preg_match('/^>/', $trimmed)) {
+            $flushParagraph();
+
+            $bq = [];
+            while ($i < count($lines) && preg_match('/^>\s?(.*)$/', $lines[$i], $m)) {
+                $bq[] = $m[1];
+                $i++;
+            }
+            $i--;
+
+            if (!empty($bq) && preg_match('/^(Nota|Note):/iu', $bq[0])) {
+                $bq[0] = preg_replace('/^(Nota|Note):/iu', '', $bq[0]);
+            }
+
+            $paragraphs = [];
+            $currentParagraph = '';
+            foreach ($bq as $bqLine) {
+                if (trim($bqLine) === '') {
+                    if ($currentParagraph !== '') {
+                        $paragraphs[] = $currentParagraph;
+                        $currentParagraph = '';
+                    }
+                    continue;
+                }
+                if ($currentParagraph !== '') {
+                    $currentParagraph .= ' ' . $bqLine;
+                } else {
+                    $currentParagraph = $bqLine;
+                }
+            }
+            if ($currentParagraph !== '') {
+                $paragraphs[] = $currentParagraph;
+            }
+
+            $noteHtml = '';
+            foreach ($paragraphs as $noteParagraph) {
+                $noteHtml .= '<p>' . sa_inline_markdown(trim($noteParagraph)) . '</p>';
+            }
+            $html .= '<aside class="note"><div class="note-body">' . $noteHtml . '</div></aside>';
             continue;
         }
 
