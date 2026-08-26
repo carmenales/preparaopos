@@ -270,7 +270,7 @@ function sa_collect_quiz_question($lines, &$index) {
             continue;
         }
 
-        if (preg_match('/^([A-D])\.\s+(.+)$/u', $currentLine, $optionMatches)) {
+        if (preg_match('/^([A-D])[\.)]\s+(.+)$/iu', $currentLine, $optionMatches)) {
             $options[] = trim($optionMatches[2]);
             $currentOptionIndex = count($options) - 1;
             $index++;
@@ -301,6 +301,16 @@ function sa_parse_list_marker($line) {
             'number' => (int)$matches[2],
             'content' => trim($matches[3]),
             'indent_spaces' => strlen($matches[1]),
+        ];
+    }
+
+    if (preg_match('/^(\s*)([A-Za-z])[\.)]\s+(.+)$/u', $line, $matches)) {
+        return [
+            'type' => 'ol',
+            'number' => null,
+            'content' => trim($matches[3]),
+            'indent_spaces' => strlen($matches[1]),
+            'letter' => strtoupper($matches[2]),
         ];
     }
 
@@ -433,7 +443,9 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
 
     $attrs = '';
 
-    if ($type === 'ol' && $start !== null && $start !== 1) {
+    if ($type === 'ol' && isset($firstMarker['letter'])) {
+        $attrs = ' type="' . strtolower((string)$firstMarker['letter']) . '"';
+    } elseif ($type === 'ol' && $start !== null && $start !== 1) {
         $attrs = ' start="' . (int)$start . '"';
     }
 
