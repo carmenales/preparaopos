@@ -27,7 +27,23 @@ $currentTitle = $pageTitle ?? 'Study Assistant';
         mermaid.initialize({
             startOnLoad: false,
             securityLevel: 'loose',
-            theme: 'default'
+            theme: 'base',
+            themeVariables: {
+                darkMode: false,
+                background: '#ffffff',
+                primaryColor: '#f8fafc',
+                primaryTextColor: '#111827',
+                primaryBorderColor: '#cbd5e1',
+                lineColor: '#475569',
+                secondaryColor: '#f1f5f9',
+                tertiaryColor: '#ffffff',
+                textColor: '#111827',
+                mainBkg: '#ffffff',
+                nodeBorder: '#cbd5e1',
+                clusterBkg: '#ffffff',
+                clusterBorder: '#dfe6ee',
+                defaultLinkColor: '#475569'
+            }
         });
 
         document.addEventListener('DOMContentLoaded', () => {
