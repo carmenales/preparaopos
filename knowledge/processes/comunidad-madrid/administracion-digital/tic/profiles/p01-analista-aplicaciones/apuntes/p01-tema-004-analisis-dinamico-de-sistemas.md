@@ -45,11 +45,13 @@ El modelado de procesos es la representación gráfica y estructurada de los pro
 
 El **BPM** no es solo una notación gráfica, sino una disciplina de gestión completa que abarca descubrir, modelar, ejecutar, monitorizar y optimizar los procesos de negocio de forma continua. Su ciclo de vida se estructura habitualmente en **5 fases**, muy preguntables porque distintos autores/herramientas usan nombres ligeramente distintos que conviene saber equiparar:
 
-1.  **Diseño / Descubrimiento (*Design/Discover*):** se analiza el proceso AS-IS existente, identificando actividades, responsables (propietarios de tarea) y puntos de mejora.
-2.  **Modelado (*Model*):** se construye la representación visual del proceso TO-BE, habitualmente en notación **BPMN**, incluyendo tareas, decisiones, eventos y flujos de datos.
-3.  **Ejecución (*Execute*):** el proceso modelado se implementa, bien mediante un motor BPM (BPMS) que interpreta directamente el diagrama, bien integrándolo en las aplicaciones existentes; se suele validar primero con una prueba piloto.
-4.  **Monitorización (*Monitor*):** se hace seguimiento en tiempo real del proceso en ejecución, midiendo indicadores clave de rendimiento (KPI) como tiempos de ciclo, cuellos de botella y tasas de excepción.
-5.  **Optimización (*Optimize*):** con los datos reales obtenidos, se ajusta y mejora el proceso (eliminando pasos sin valor, automatizando decisiones repetitivas), cerrando el ciclo y volviendo a la fase de diseño de forma iterativa (enfoque tipo PDCA/Kaizen aplicado a procesos).
+![Gestión de Procesos de Negocio BPM](../images/gestion-de-procesos-de-negocio-BPM.jpg)
+
+1.  **Diseño / Descubrimiento** (*Design/Discover*): se analiza el proceso AS-IS existente, identificando actividades, responsables (propietarios de tarea) y puntos de mejora.
+2.  **Modelado** (*Model*): se construye la representación visual del proceso TO-BE, habitualmente en notación **BPMN**, incluyendo tareas, decisiones, eventos y flujos de datos.
+3.  **Ejecución** (*Execute*): el proceso modelado se implementa, bien mediante un motor BPM (BPMS) que interpreta directamente el diagrama, bien integrándolo en las aplicaciones existentes; se suele validar primero con una prueba piloto.
+4.  **Monitorización** (*Monitor*): se hace seguimiento en tiempo real del proceso en ejecución, midiendo indicadores clave de rendimiento (KPI) como tiempos de ciclo, cuellos de botella y tasas de excepción.
+5.  **Optimización** (*Optimize*): con los datos reales obtenidos, se ajusta y mejora el proceso (eliminando pasos sin valor, automatizando decisiones repetitivas), cerrando el ciclo y volviendo a la fase de diseño de forma iterativa (enfoque tipo PDCA/Kaizen aplicado a procesos).
 
 Esta naturaleza cíclica y de mejora continua es precisamente lo que distingue al **BPM** del **BPR**: el BPR rompe con el proceso existente y lo rediseña desde cero buscando un salto drástico de rendimiento, mientras que el BPM gestiona el proceso de forma evolutiva a lo largo de su ciclo de vida completo.
 
@@ -94,7 +96,9 @@ En el ámbito de la Ingeniería de Software, el Lenguaje Unificado de Modelado (
 *   **Diagrama de Secuencia:** Muestra cómo los objetos interactúan entre sí y el orden temporal en que se intercambian los mensajes. Es fundamental para diseñar el comportamiento de los Casos de Uso.
 *   **Diagrama de Tiempos:** Se centra específicamente en las restricciones de tiempo y la duración de los eventos (muy usado en sistemas empotrados o de tiempo real).
 
-Un quinto diagrama de comportamiento que suele omitirse pero que UML define formalmente es el **Diagrama de Comunicación (*Communication Diagram*)**, variante del diagrama de secuencia que pone el énfasis en las relaciones estructurales entre los objetos que intercambian mensajes, en lugar de en el orden temporal estricto. Conviene también distinguir con precisión el **Diagrama de Actividades** del **Diagrama de Estados**: el primero modela el flujo de un *proceso o algoritmo* (qué pasos se ejecutan y en qué orden), mientras que el segundo modela el *ciclo de vida de un objeto concreto* (en qué estado se encuentra y qué eventos provocan su cambio de estado); es una trampa de examen habitual confundir ambos por su similitud visual.
+Un quinto diagrama de comportamiento que suele omitirse pero que UML define formalmente es el **Diagrama de Comunicación (*Communication Diagram*)**, variante del diagrama de secuencia que pone el énfasis en las relaciones estructurales entre los objetos que intercambian mensajes, en lugar de en el orden temporal estricto. 
+
+Conviene también distinguir con precisión el **Diagrama de Actividades** del **Diagrama de Estados**: el primero modela el flujo de un *proceso o algoritmo* (qué pasos se ejecutan y en qué orden), mientras que el segundo modela el *ciclo de vida de un objeto concreto* (en qué estado se encuentra y qué eventos provocan su cambio de estado); es una trampa de examen habitual confundir ambos por su similitud visual.
 
 ### 2.1. Diagramas de comportamiento UML
 
@@ -263,10 +267,10 @@ Son los elementos que definen el comportamiento del proceso.
 *   **Evento de Señal (icono de triángulo):** representa una difusión (*broadcast*) sin destinatario concreto; a diferencia del mensaje (dirigido a un participante específico), cualquier proceso que esté "escuchando" esa señal puede reaccionar a ella.
 *   **Evento Condicional:** se dispara cuando se cumple una condición lógica de negocio evaluada sobre los datos del proceso.
 
-Un matiz muy examinable sobre los **Eventos de Borde (*Boundary Events*)**: se adjuntan al borde de una actividad y pueden ser **interruptivos** (círculo de borde sólido: si se dispara, cancela la actividad y desvía el flujo) o **no interruptivos** (círculo de borde discontinuo: se dispara en paralelo sin cancelar la actividad en curso, por ejemplo para enviar una notificación de recordatorio sin detener la tarea).
+Un matiz muy examinable sobre los **Eventos de Borde** (*Boundary Events*): se adjuntan al borde de una actividad y pueden ser **interruptivos** (círculo de borde sólido: si se dispara, cancela la actividad y desvía el flujo) o **no interruptivos** (círculo de borde discontinuo: se dispara en paralelo sin cancelar la actividad en curso, por ejemplo para enviar una notificación de recordatorio sin detener la tarea).
 
 ### B) Objetos de Conexión (Connecting Objects)
-Conectan los objetos de flujo entre sí o con otra información. **(¡ALERTA TRAMPA DE EXAMEN!)**
+Conectan los objetos de flujo entre sí o con otra información.
 
 *   **Flujo de Secuencia (Sequence Flow):** Línea continua con flecha cerrada. Muestra el orden en que se ejecutan las actividades. **Regla de Oro:** Un flujo de secuencia NUNCA puede cruzar los límites de un Pool.
 *   **Flujo de Mensaje (Message Flow):** Línea discontinua con flecha abierta en la punta y un pequeño círculo en el inicio. Representa mensajes entre participantes. **Regla de Oro:** Un flujo de mensaje SÓLO puede existir entre Pools distintos; NUNCA dentro del mismo Pool.
@@ -285,12 +289,6 @@ Proveen información adicional sobre el proceso sin afectar directamente el fluj
 *   **Grupo (Group):** Caja con borde punteado que agrupa visualmente varios elementos para su comprensión, sin afectar al flujo.
 *   **Anotación (Text Annotation):** Texto libre conectado con una Asociación para explicar un elemento complejo.
 
-## 6. Referencias normativas y técnicas
-
-* Object Management Group (OMG), **Business Process Model and Notation (BPMN), versión 2.0.2**.
-* ISO/IEC 19510:2013, **Information technology — Object Management Group Business Process Model and Notation**.
-* Object Management Group (OMG), **Unified Modeling Language (UML), versión 2.5.1**.
-* Object Management Group (OMG), **Decision Model and Notation (DMN)**.
 
 ## 5. Patrones de Examen y "Palabras Chivata"
 
@@ -315,6 +313,7 @@ Proveen información adicional sobre el proceso sin afectar directamente el fluj
 
 **Pregunta 1:**
 *En un diagrama de colaboración BPMN 2.0 que representa la interacción entre un "Ciudadano" y el "Ministerio de Hacienda", necesitas conectar la actividad "Enviar Solicitud" (situada en el pool del Ciudadano) con el evento "Recepción de Solicitud" (situado en el pool del Ministerio). ¿Qué tipo de conector debes utilizar obligatoriamente?*
+
 a) Flujo de Secuencia (Sequence Flow).
 b) Flujo de Mensaje (Message Flow).
 c) Asociación Bidireccional.
@@ -330,6 +329,7 @@ d) Gateway de Comunicación.
 
 **Pregunta 2:**
 *Durante el modelado de un proceso de aprobación de expedientes en BPMN, el flujo llega a un punto donde, dependiendo de ciertas reglas de negocio, el expediente puede enviarse a "Revisión Económica", a "Revisión Jurídica", o a **ambas simultáneamente**. ¿Qué tipo de Gateway o Pasarela se debe utilizar para modelar correctamente este comportamiento divergente?*
+
 a) Pasarela Exclusiva (XOR).
 b) Pasarela Paralela (AND).
 c) Pasarela Inclusiva (OR).
@@ -346,6 +346,7 @@ d) Pasarela Basada en Eventos.
 
 **Pregunta 3:**
 *¿Cuál de las siguientes afirmaciones respecto a la diferencia entre BPM (Business Process Management) y BPR (Business Process Reengineering) es cierta en el ámbito del modelado y mejora de procesos?*
+
 a) El BPR se enfoca en la mejora continua, progresiva e incremental, mientras que el BPM requiere rediseñar todo desde cero.
 b) El BPR busca cambios radicales y rupturistas rediseñando el proceso desde su raíz, mientras que el BPM se basa en la gestión y mejora continua del proceso existente.
 c) Ambos términos son sinónimos absolutos definidos por el estándar OMG.
@@ -362,6 +363,7 @@ d) El BPM es la notación gráfica y el BPR es el motor de ejecución tecnológi
 
 **Pregunta 4:**
 *Un proceso BPMN necesita que, si una actividad de "Revisión de Documentación" tarda más de 48 horas sin completarse, se cancele automáticamente y el flujo se desvíe hacia una tarea de "Escalado a Supervisor". ¿Qué elemento BPMN modela correctamente este comportamiento?*
+
 a) Un Evento de Temporizador de Inicio.
 b) Un Evento de Borde de Temporizador interruptivo, adjunto a la actividad.
 c) Un Evento de Borde de Temporizador no interruptivo, adjunto a la actividad.
@@ -383,3 +385,10 @@ d) ArchiMate.
 1.  UML (A) modela software orientado a objetos, no reglas de decisión de negocio en tablas. BPEL (C) es un lenguaje de ejecución de procesos, no de modelado de decisiones. ArchiMate (D) es una notación de arquitectura empresarial, no de reglas de decisión.
 2.  DMN es el estándar del OMG diseñado específicamente para modelar decisiones mediante tablas de decisión, complementando a BPMN mediante la Tarea de Regla de Negocio.
 3.  **Respuesta correcta: B.**
+
+## 6. Referencias normativas y técnicas
+
+* Object Management Group (OMG), **Business Process Model and Notation (BPMN), versión 2.0.2**.
+* ISO/IEC 19510:2013, **Information technology — Object Management Group Business Process Model and Notation**.
+* Object Management Group (OMG), **Unified Modeling Language (UML), versión 2.5.1**.
+* Object Management Group (OMG), **Decision Model and Notation (DMN)**.
