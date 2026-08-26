@@ -1,13 +1,24 @@
+.container img,
+.container svg,
+.note-body img,
+.note-body svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
 .mermaid {
     background: #ffffff;
     border-radius: 12px;
     padding: 8px;
+    overflow: hidden;
 }
 
 .mermaid svg {
     background: #ffffff !important;
     max-width: 100%;
     height: auto;
+    display: block;
 }
 
 .mermaid svg * {

@@ -26,7 +26,10 @@ if ($noteId === '' || $relativePath === '') {
     sa_asset_fail(400, 'Faltan parámetros note/path.');
 }
 
-if (strpos($relativePath, '..') !== false) {
+$relativePath = str_replace('\\', '/', $relativePath);
+$relativePath = urldecode($relativePath);
+
+if ($relativePath === '' || $relativePath[0] === '/' || preg_match('#^([A-Za-z]:)?/#', $relativePath)) {
     sa_asset_fail(400, 'Ruta no permitida.');
 }
 
