@@ -468,6 +468,8 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
     $paragraph = [];
     $inCode = false;
     $codeBuffer = [];
+    $inMermaid = false;
+    $mermaidBuffer = [];
     $inMathBlock = false;
     $mathBuffer = [];
 
@@ -481,6 +483,33 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
     for ($i = 0; $i < count($lines); $i++) {
         $line = $lines[$i];
         $trimmed = trim($line);
+
+        if (preg_match('/^```mermaid\s*$/i', $trimmed)) {
+            $flushParagraph();
+
+            if ($inMermaid) {
+                $html .= '<pre class="mermaid">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
+                $mermaidBuffer = [];
+                $inMermaid = false;
+                continue;
+            }
+
+            $inMermaid = true;
+            $mermaidBuffer = [];
+            continue;
+        }
+
+        if ($inMermaid) {
+            if (preg_match('/^```\s*$/', $trimmed)) {
+                $html .= '<pre class="mermaid">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
+                $mermaidBuffer = [];
+                $inMermaid = false;
+                continue;
+            }
+
+            $mermaidBuffer[] = $line;
+            continue;
+        }
 
         if (preg_match('/^```/', $trimmed)) {
             $flushParagraph();
@@ -625,6 +654,10 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
 
     if ($inCode) {
         $html .= '<pre><code>' . htmlspecialchars(implode("\n", $codeBuffer), ENT_QUOTES, 'UTF-8') . '</code></pre>';
+    }
+
+    if ($inMermaid) {
+        $html .= '<pre class="mermaid">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
     }
 
     if ($inMathBlock) {

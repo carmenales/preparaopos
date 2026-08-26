@@ -21,6 +21,22 @@ $currentTitle = $pageTitle ?? 'Study Assistant';
         };
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+
+        mermaid.initialize({
+            startOnLoad: false,
+            securityLevel: 'loose',
+            theme: 'default'
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            mermaid.run({
+                nodes: document.querySelectorAll('.mermaid'),
+                suppressErrors: true
+            });
+        });
+    </script>
 
     <link href="assets/styles.css" rel="stylesheet">
 </head>
