@@ -25,13 +25,13 @@ tags:
   - "aaa"
   - "tratamiento"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 5. Otros tipos de análisis en los sistemas de información
@@ -498,44 +498,3 @@ En base a la exigencia de los tribunales sobre el cumplimiento normativo en las 
 *   **ENS (RD 311/2022):** "Categorías Básica-Media-Alta", "Dimensiones AICAT".
 *   **Privacidad desde el diseño:** "Desde la fase inicial del proyecto/análisis", "no como añadido posterior".
 *   **JMeter:** "Pruebas de carga Open Source Java", "Multiprotocolo (HTTP, JDBC, LDAP)".
-
-## 8. Simulacro de Test:
-
-**Pregunta 1:**
-*Durante el análisis de requisitos de un nuevo sistema centralizado para el Ministerio de Sanidad, se documenta la siguiente restricción: "El sistema deberá procesar un mínimo de 500 peticiones concurrentes por segundo utilizando un máximo del 60% de uso de CPU del servidor". ¿A qué categoría de análisis pertenece este requisito?*
-a) Análisis Funcional de comportamiento.
-b) Análisis de Rendimiento (Requisito No Funcional).
-c) Análisis de Privacidad.
-d) Análisis de Seguridad.
-
-**Razonamiento Estructurado:**
-1.  **Busca la palabra chivata:** El enunciado da datos concretos sobre "500 peticiones concurrentes por segundo" (esto es el throughput) y "máximo del 60% de uso de CPU" (consumo de recursos).
-2.  **Aplica tu patrón lógico de descarte:**
-    *   ¿Habla de una acción de negocio que realiza el usuario (ej. pedir una cita)? No, define una restricción técnica. Por tanto, no es funcional. **(A) es falsa**.
-    *   ¿Menciona el tratamiento de datos de carácter personal o regulaciones como el RGPD? No. **(C) es falsa**.
-    *   ¿Se trata de proteger contra accesos o modificaciones no autorizadas (cifrado, certificados)? No. **(D) es falsa**.
-    *   Se refiere estrictamente a métricas operativas de estrés y carga del sistema.
-3.  **Respuesta correcta:** B.
-
-**Pregunta 2:**
-*Según el Real Decreto 311/2022, por el que se regula el Esquema Nacional de Seguridad, ¿cuáles son las cinco dimensiones de seguridad que se valoran para determinar la categoría de un sistema de información?*
-a) Confidencialidad, Integridad, Disponibilidad, Autenticación y Portabilidad.
-b) Confidencialidad, Integridad, Trazabilidad, Autenticidad y Disponibilidad.
-c) Privacidad, Integridad, Disponibilidad, Escalabilidad y Rendimiento.
-d) Confidencialidad, Fiabilidad, Usabilidad, Mantenibilidad y Disponibilidad.
-
-**Razonamiento Estructurado:**
-1.  El propio texto del RD 311/2022 (Anexo I) enumera literalmente: Confidencialidad [C], Integridad [I], Trazabilidad [T], Autenticidad [A] y Disponibilidad [D] (regla mnemotécnica CIDTA/DICAT).
-2.  (A) confunde Autenticidad con "Autenticación" e incluye Portabilidad, que es un atributo de calidad ISO 25010, no una dimensión ENS. (C) y (D) mezclan conceptos de rendimiento y calidad de software que no son dimensiones de seguridad del ENS.
-3.  **Respuesta correcta:** B.
-
-**Pregunta 3:**
-*Una empresa pública sustituye los DNI de los ciudadanos en una base de datos estadística por un código alfanumérico, pero conserva en un fichero separado y protegido la tabla de correspondencia entre DNI y código. ¿Qué técnica de protección de datos ha aplicado?*
-a) Anonimización.
-b) Seudonimización.
-c) Cifrado asimétrico.
-d) Minimización de datos.
-
-**Razonamiento Estructurado:**
-1.  La clave está en que existe una "tabla de correspondencia" que permite revertir el proceso: eso es exactamente la definición de seudonimización, que sigue considerando el dato como personal a efectos del RGPD porque es reversible con información adicional. Si no existiera esa tabla y fuera imposible reidentificar a la persona, hablaríamos de anonimización (A).
-2.  **Respuesta correcta:** B.

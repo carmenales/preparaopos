@@ -26,13 +26,13 @@ tags:
   - "iso-29148"
   - "requisitos"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 3. Análisis funcional/diseño
@@ -807,43 +807,3 @@ CMMI puede aplicarse junto con enfoques ágiles. El modelo define prácticas de 
 | **CMMI** | "5 niveles de madurez", "Requirements Management = Nivel 2", "Requirements Development = Nivel 3", "SEI/CMMI Institute". |
 | **Casos de uso** | "Actor", "flujo principal/alternativo/excepción", "include/extend". |
 | **Historias de usuario** | "Como... quiero... para...", "INVEST", "criterios de aceptación". |
-
-### 7.1. Simulacro de Test
-
-**Pregunta 1:**
-*En el marco de trabajo Scrum, ¿quién es el único responsable de decidir qué elementos del Product Backlog tienen mayor prioridad para el negocio y, por tanto, deben desarrollarse primero?*
-a) El Scrum Master, ya que gestiona el proceso.
-b) El Director del Proyecto.
-c) El Product Owner.
-d) El Equipo de Desarrollo de forma consensuada.
-
-**Razonamiento Estructurado:**
-1.  **Busca la palabra chivata:** El enunciado pregunta por el "único responsable de decidir qué elementos tienen mayor prioridad para el negocio" en Scrum.
-2.  **Aplica el patrón:**
-    *   El equipo de desarrollo (D) construye.
-    *   El Scrum Master (A) facilita y quita estorbos, no decide prioridades de negocio.
-    *   El Director de Proyecto (B) es un rol de metodologías clásicas (como Métrica v3), pero en Scrum puro **no existe** la figura del Director de Proyecto como tal que dicte prioridades de negocio.
-    *   El **Product Owner** (C) es literalmente "la voz del cliente" y el dueño del producto. Su única función clave es ordenar el Backlog.
-3.  **Respuesta correcta:** C.
-
-**Pregunta 2:**
-*Según CMMI-DEV, ¿en qué nivel de madurez se sitúa el área de proceso "Requirements Development" (Desarrollo de Requisitos)?*
-a) Nivel 1 (Inicial).
-b) Nivel 2 (Gestionado).
-c) Nivel 3 (Definido).
-d) Nivel 5 (En Optimización).
-
-**Razonamiento Estructurado:**
-1.  **Distingue REQM de RD:** "Requirements **Management**" (gestionar inconsistencias entre requisitos y planes) es Nivel 2; "Requirements **Development**" (elicitar, analizar y establecer los requisitos) es Nivel 3.
-2.  **Respuesta correcta:** C.
-
-**Pregunta 3:**
-*¿Cuál de las siguientes NO es uno de los 8 principios oficiales de DSDM?*
-a) Centrarse en la necesidad del negocio.
-b) Nunca comprometer la calidad.
-c) Priorizar siempre el coste sobre el plazo.
-d) Comunicarse de forma continua y clara.
-
-**Razonamiento Estructurado:**
-1.  Los 8 principios de DSDM giran en torno a negocio, plazo, colaboración, calidad, construcción incremental, iteración, comunicación y control; en ningún caso se prioriza "el coste sobre el plazo" como principio explícito.
-2.  **Respuesta correcta:** C.

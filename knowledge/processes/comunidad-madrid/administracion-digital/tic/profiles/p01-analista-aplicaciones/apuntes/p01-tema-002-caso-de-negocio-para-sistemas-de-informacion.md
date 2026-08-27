@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-002-caso-de-negocio"
 title: "Caso de negocio para sistemas de información"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -20,7 +20,7 @@ tags:
   - "benefits-review-plan"
   - "five-case-model"
 created_at: "2026-08-09"
-last_reviewed: "2026-08-10"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatgpt"
@@ -230,70 +230,7 @@ Dado que la bibliografía y tribunales pueden mezclar terminología, la correspo
 | **Opciones básicas** | "No hacer nada, Hacer lo mínimo, Hacer algo". |
 | **Five Case Model (HM Treasury)** | "Strategic, Economic, Commercial, Financial, Management Case", marco del sector público británico. |
 
-## 10 Simulacro de Test
-
-**Pregunta 1:**
-*Según PRINCE2, ¿cuál de los siguientes roles es responsable de verificar y monitorizar de forma independiente el Caso de Negocio frente a eventos externos y al progreso del proyecto, sin ser su propietario ni su autor?*
-a) El Ejecutivo (Executive).
-b) El Jefe de Proyecto (Project Manager).
-c) El Project Assurance.
-d) El Senior Supplier.
-
-**Razonamiento Estructurado:**
-1.  **Busca la palabra chivata:** "verificar y monitorizar de forma independiente... sin ser su propietario ni su autor".
-2.  **Aplica el patrón de descarte:** El Ejecutivo (A) es el propietario y responsable final, no un verificador independiente. El Jefe de Proyecto (B) es el autor que redacta y actualiza el documento, no quien lo verifica de forma independiente. El Senior Supplier (D) aporta estimaciones de coste y tiempo, no verifica el Caso de Negocio en su conjunto.
-3.  El **Project Assurance** es precisamente el rol que, actuando en nombre del Project Board, verifica y monitoriza el Caso de Negocio de forma independiente a lo largo de todo el proyecto.
-4.  **Respuesta correcta:** C.
-
-**Pregunta 2:**
-*Según la técnica PRINCE2 de gestión del Caso de Negocio en cuatro pasos, ¿en qué paso se evalúa si los beneficios previstos se han conseguido realmente, comprobación que ocurre principalmente después del cierre del proyecto?*
-a) Desarrollar (Develop).
-b) Verificar (Check).
-c) Mantener (Maintain).
-d) Confirmar (Confirm).
-
-**Razonamiento Estructurado:**
-1.  "Desarrollar" (A) ocurre al principio, explorando opciones. "Verificar" (B) se hace antes de cada autorización importante, para decidir si el proyecto sigue mereciendo la pena. "Mantener" (C) consiste en actualizar el documento con el progreso real durante la ejecución.
-2.  El enunciado describe exactamente la comprobación de si los beneficios se han materializado, lo cual ocurre sobre todo tras el cierre del proyecto: esa es la definición literal del paso "Confirmar".
-3.  **Respuesta correcta:** D.
-
-**Pregunta 3:**
-*Durante el proceso de Iniciar un Proyecto en PRINCE2, el Jefe de Proyecto actualiza el Caso de Negocio Preliminar para convertirlo en el Caso de Negocio Detallado. ¿De qué producto de gestión obtiene los datos de costes y plazos necesarios para esta actualización?*
-a) Del Registro de Riesgos.
-b) Del Plan de Proyecto.
-c) Del Informe de Excepción.
-d) Del Registro de Interesados.
-
-**Razonamiento Estructurado:**
-1.  El Registro de Riesgos (A) aporta los riesgos principales, no los costes ni plazos. El Informe de Excepción (C) solo se genera si se prevé superar una tolerancia, no es un insumo estándar del Caso de Negocio Detallado. El Registro de Interesados (D) no aporta datos financieros ni de calendario.
-2.  Los costes y plazos del Caso de Negocio Detallado provienen directamente del Plan de Proyecto, que ya ha sido elaborado con mayor precisión durante la fase de inicio.
-3.  **Respuesta correcta:** B.
-
-**Pregunta 4:**
-*Según la terminología vigente de PRINCE2 Project Management (Version 7), ¿cómo se denomina el elemento que en la edición anterior del método se conocía como "tema" y que incluye al Business Case?*
-a) Proceso.
-b) Principio.
-c) Práctica (Practice).
-d) Componente de gobierno.
-
-**Razonamiento Estructurado:**
-1.  Los 7 procesos (A) y los 7 principios (B) son categorías distintas que no cambiaron de nombre entre ediciones. "Componente de gobierno" (D) no es terminología oficial de PRINCE2.
-2.  Lo que en PRINCE2 6 se llamaba "tema" (*Theme*) pasa a llamarse "práctica" (*Practice*) en PRINCE2 7, incluyendo la práctica Business Case.
-3.  **Respuesta correcta:** C.
-
-**Pregunta 5:**
-*Un organismo público británico está desarrollando un caso de negocio siguiendo el Five Case Model de HM Treasury. En la dimensión que analiza el listado de alternativas posibles y determina la opción que ofrece la mejor relación calidad-precio, ¿qué "caso" está desarrollando?*
-a) Strategic Case.
-b) Economic Case.
-c) Commercial Case.
-d) Financial Case.
-
-**Razonamiento Estructurado:**
-1.  El Strategic Case (A) justifica la necesidad y el encaje estratégico, no compara alternativas. El Commercial Case (C) se centra en cómo obtener los bienes o servicios (contratación). El Financial Case (D) analiza la asequibilidad para el organismo.
-2.  El análisis de la relación de alternativas (longlist/shortlist) para identificar la opción de mejor relación calidad-precio es, por definición, el Economic Case.
-3.  **Respuesta correcta:** B.
-
-## 11. Fuentes utilizadas para la ampliación
+## 10. Fuentes utilizadas para la ampliación
 
 **PRINCE2 / PeopleCert:**
 - PeopleCert, *PRINCE2 Project Management Foundation (Version 7)*: información oficial sobre principios, prácticas y materiales oficiales.

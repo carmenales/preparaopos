@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-006-gestion-calidad"
 title: "Gestión de calidad en los sistemas y servicios TIC"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -20,13 +20,13 @@ tags:
   - "iso-9000"
   - "principios-calidad"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatpgt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 6. Gestión de calidad en los sistemas y servicios TIC
@@ -346,45 +346,3 @@ Imaginemos el departamento de TI responsable de la **Sede Electrónica de un Min
 | **Ciclo PDCA (Deming)** | Modelo | Estructura la iteración de mejora. | "Planificar, Hacer, Verificar, Actuar", "Mejora iterativa". |
 | **EFQM Clásico (2013)** | Modelo de Autoevaluación | Marco de Excelencia en gestión de organizaciones. | "9 Criterios", "5 Agentes / 4 Resultados", "Matriz RADAR/REDER". |
 | **EFQM Actualizado (2020)** | Modelo de Autoevaluación | Marco para organizaciones sobresalientes y sostenibles. | "7 Criterios", "Dirección-Ejecución-Resultados", "Estructura 200-400-400". |
-
-## 7. Simulacro de Test
-
-**Pregunta 1:**
-*Dentro de los criterios del modelo de excelencia EFQM (versión clásica), ¿cuál de los siguientes elementos es considerado un "Agente Facilitador" y no un "Resultado"?*
-a) Resultados en la sociedad.
-b) El Liderazgo.
-c) Satisfacción del cliente.
-d) Resultados clave del negocio.
-
-**Razonamiento Estructurado:**
-1.  **Busca el patrón:** Te piden distinguir entre la "Causa" (lo que hacemos = Agente facilitador) y el "Efecto" (lo que conseguimos = Resultado).
-2.  **Aplica tu patrón lógico de descarte:**
-    *   (A) "Resultados en la sociedad": Contiene la palabra "resultado". Es el efecto que nuestra organización tiene en el entorno. Falsa.
-    *   (C) "Satisfacción del cliente": Es la consecuencia (efecto) de dar un buen servicio. Es un resultado. Falsa.
-    *   (D) "Resultados clave": Contiene la palabra "resultado". Falsa.
-    *   (B) "El Liderazgo": ¿Es algo que *hacemos* internamente para mover la organización? Sí. Es la forma en que los directivos guían al equipo. Es una causa (Agente Facilitador).
-3.  **Respuesta correcta:** B.
-
-**Pregunta 2:**
-*¿Cuál de las siguientes normas de la familia ISO 9000 es la única que resulta certificable por una entidad externa?*
-a) ISO 9000.
-b) ISO 9001.
-c) ISO 9004.
-d) ISO 19011.
-
-**Razonamiento Estructurado:**
-1.  ISO 9000 recoge solo fundamentos y vocabulario; ISO 9004 son directrices para la mejora del desempeño; ISO 19011 son directrices de auditoría. Ninguna de las tres establece requisitos certificables.
-2.  ISO 9001 es la norma de "Requisitos" del Sistema de Gestión de Calidad, y es la única que una organización puede certificar frente a un organismo acreditado.
-3.  **Respuesta correcta:** B.
-
-**Pregunta 3:**
-*Según el Modelo EFQM 2020, ¿cuál de las siguientes afirmaciones es correcta respecto a la versión anterior (2013)?*
-a) Mantiene los 9 criterios agrupados en Agentes Facilitadores y Resultados.
-b) Introduce un criterio específico y aislado llamado "Personas".
-c) Se estructura en 7 criterios bajo la lógica Dirección-Ejecución-Resultados.
-d) Elimina por completo la matriz REDER de evaluación.
-
-**Razonamiento Estructurado:**
-1.  (A) es falsa porque el modelo 2020 abandona la estructura de 9 criterios en favor de 7. (B) es falsa porque las Personas dejan de tener un criterio propio y pasan a ser transversales. (D) es falsa porque REDER sigue siendo la lógica de evaluación, solo cambia cómo se publican las tablas de puntuación.
-2.  (C) describe exactamente la nueva estructura: Dirección (criterios 1-2), Ejecución (criterios 3-5) y Resultados (criterios 6-7).
-3.  **Respuesta correcta:** C.

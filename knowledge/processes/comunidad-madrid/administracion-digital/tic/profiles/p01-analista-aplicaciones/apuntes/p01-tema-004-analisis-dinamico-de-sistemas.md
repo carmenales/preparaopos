@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-004-analisis-dinamico"
 title: "Análisis dinámico de sistemas"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -20,13 +20,13 @@ tags:
   - "bpm"
   - "dmn"
 created_at: "2026-08-09"
-last_reviewed: "2026-08-09"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 4. Análisis dinámico de sistemas
@@ -289,8 +289,7 @@ Proveen información adicional sobre el proceso sin afectar directamente el fluj
 *   **Grupo (Group):** Caja con borde punteado que agrupa visualmente varios elementos para su comprensión, sin afectar al flujo.
 *   **Anotación (Text Annotation):** Texto libre conectado con una Asociación para explicar un elemento complejo.
 
-
-## 5. Patrones de Examen y "Palabras Chivata"
+## 5. Resumen
 
 | Concepto | Palabra Chivata o Regla para el Test |
 | :--- | :--- |
@@ -308,83 +307,6 @@ Proveen información adicional sobre el proceso sin afectar directamente el fluj
 | **Evento de borde interruptivo vs. no interruptivo** | Borde sólido = cancela la actividad; borde discontinuo = no la cancela. |
 | **DMN** | "Tablas de decisión", "Complementa a BPMN", "Business Rule Task". |
 | **Ciclo de vida BPM** | "Diseñar-Modelar-Ejecutar-Monitorizar-Optimizar", "Mejora continua e iterativa". |
-
-### 5.1. Ejercicios de aplicación
-
-**Pregunta 1:**
-*En un diagrama de colaboración BPMN 2.0 que representa la interacción entre un "Ciudadano" y el "Ministerio de Hacienda", necesitas conectar la actividad "Enviar Solicitud" (situada en el pool del Ciudadano) con el evento "Recepción de Solicitud" (situado en el pool del Ministerio). ¿Qué tipo de conector debes utilizar obligatoriamente?*
-
-a) Flujo de Secuencia (Sequence Flow).
-b) Flujo de Mensaje (Message Flow).
-c) Asociación Bidireccional.
-d) Gateway de Comunicación.
-
-**Razonamiento Estructurado:**
-1.  **Aplica la regla de oro de los Pools:** El enunciado habla de conectar elementos situados en **dos Pools distintos** ("Ciudadano" y "Ministerio").
-2.  **Desmontando:**
-    *   (A) Es la trampa clásica. El Flujo de Secuencia indica el orden de ejecución, pero en BPMN *jamás* puede cruzar de un Pool a otro, porque cada Pool tiene su propio control de proceso interno.
-    *   (C) y (D) No son conectores de flujo válidos para esta acción.
-    *   (B) El Flujo de Mensaje se utiliza exclusivamente para mostrar la comunicación e interacción entre participantes diferentes (Pools distintos).
-3.  **Respuesta correcta: B.**
-
-**Pregunta 2:**
-*Durante el modelado de un proceso de aprobación de expedientes en BPMN, el flujo llega a un punto donde, dependiendo de ciertas reglas de negocio, el expediente puede enviarse a "Revisión Económica", a "Revisión Jurídica", o a **ambas simultáneamente**. ¿Qué tipo de Gateway o Pasarela se debe utilizar para modelar correctamente este comportamiento divergente?*
-
-a) Pasarela Exclusiva (XOR).
-b) Pasarela Paralela (AND).
-c) Pasarela Inclusiva (OR).
-d) Pasarela Basada en Eventos.
-
-**Razonamiento Estructurado:**
-1.  **Busca el patrón:** Se pueden seguir "una, la otra, o ambas". Hay que elegir caminos basados en condiciones, pudiendo ser válidos más de uno a la vez.
-2.  **Desmontando:**
-    *   (A) La Exclusiva (XOR) forzaría a que solo se pueda elegir uno de los caminos, excluyendo al resto de forma absoluta. Falsa.
-    *   (B) La Paralela (AND) forzaría a que el flujo *siempre* tome obligatoriamente todos los caminos (tanto Económica como Jurídica), sin importar la condición. Falsa.
-    *   (D) La basada en eventos se bifurca según qué evento externo ocurra primero, no por evaluación de datos. Falsa.
-    *   (C) La Pasarela Inclusiva (OR) evalúa todas las condiciones y activa todos los caminos de salida que resulten ciertos (puede ser uno, varios, o todos).
-3.  **Respuesta correcta: C.**
-
-**Pregunta 3:**
-*¿Cuál de las siguientes afirmaciones respecto a la diferencia entre BPM (Business Process Management) y BPR (Business Process Reengineering) es cierta en el ámbito del modelado y mejora de procesos?*
-
-a) El BPR se enfoca en la mejora continua, progresiva e incremental, mientras que el BPM requiere rediseñar todo desde cero.
-b) El BPR busca cambios radicales y rupturistas rediseñando el proceso desde su raíz, mientras que el BPM se basa en la gestión y mejora continua del proceso existente.
-c) Ambos términos son sinónimos absolutos definidos por el estándar OMG.
-d) El BPM es la notación gráfica y el BPR es el motor de ejecución tecnológica del software.
-
-**Razonamiento Estructurado:**
-1.  **Identifica los conceptos clave:**
-    *   *BPR (Reengineering):* Reingeniería, romper con lo establecido y empezar de nuevo para un salto drástico en métricas.
-    *   *BPM (Management):* Ciclo de vida completo, medir y mejorar continuamente (enfoque iterativo tipo Kaizen/PDCA).
-2.  **Desmontando las opciones:** La opción A tiene las definiciones invertidas. La opción C es falsa. La opción D confunde BPM con BPMN (que sí es la notación) y BPMS (el motor). La opción B describe de forma precisa y exacta ambos conceptos.
-3.  **Respuesta correcta: B.**
-
-### 5.2. Ejercicios de aplicación adicionales
-
-**Pregunta 4:**
-*Un proceso BPMN necesita que, si una actividad de "Revisión de Documentación" tarda más de 48 horas sin completarse, se cancele automáticamente y el flujo se desvíe hacia una tarea de "Escalado a Supervisor". ¿Qué elemento BPMN modela correctamente este comportamiento?*
-
-a) Un Evento de Temporizador de Inicio.
-b) Un Evento de Borde de Temporizador interruptivo, adjunto a la actividad.
-c) Un Evento de Borde de Temporizador no interruptivo, adjunto a la actividad.
-d) Una Pasarela Basada en Eventos.
-
-**Razonamiento Estructurado:**
-1.  El Evento de Temporizador de Inicio (A) solo sirve para arrancar procesos en una fecha/ciclo, no para vigilar una actividad en curso. La Pasarela Basada en Eventos (D) se usa para bifurcar el flujo según qué evento ocurra primero, no para cancelar una actividad concreta.
-2.  La clave del enunciado es que la actividad debe **cancelarse** ("se cancele automáticamente") si se supera el plazo: eso exige un evento de borde **interruptivo** (borde sólido), no uno no interruptivo (C), que dejaría continuar la actividad en paralelo.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 5:**
-*¿Qué notación del OMG se utiliza específicamente para modelar tablas de decisión y lógica de reglas de negocio de forma independiente y complementaria a un diagrama de proceso BPMN?*
-a) UML.
-b) DMN (Decision Model and Notation).
-c) BPEL.
-d) ArchiMate.
-
-**Razonamiento Estructurado:**
-1.  UML (A) modela software orientado a objetos, no reglas de decisión de negocio en tablas. BPEL (C) es un lenguaje de ejecución de procesos, no de modelado de decisiones. ArchiMate (D) es una notación de arquitectura empresarial, no de reglas de decisión.
-2.  DMN es el estándar del OMG diseñado específicamente para modelar decisiones mediante tablas de decisión, complementando a BPMN mediante la Tarea de Regla de Negocio.
-3.  **Respuesta correcta: B.**
 
 ## 6. Referencias normativas y técnicas
 
