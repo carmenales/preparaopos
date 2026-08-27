@@ -65,6 +65,22 @@ function sa_render_context(?string $noteId = null, bool $set = false): ?string {
     return $currentNoteId;
 }
 
+function sa_render_details_block(string $detailsHtml): string {
+    $detailsHtml = trim($detailsHtml);
+    $detailsHtml = preg_replace('/^\s*<details\b[^>]*>\s*/is', '', $detailsHtml);
+    $detailsHtml = preg_replace('/\s*<\/details>\s*$/is', '', $detailsHtml);
+
+    if (preg_match('/^(.*?)(<summary\b[^>]*>.*?<\/summary>\s*)(.*)$/is', $detailsHtml, $matches)) {
+        $summaryHtml = $matches[2];
+        $body = trim($matches[3]);
+        $bodyHtml = $body === '' ? '' : sa_render_markdown($body, sa_render_context());
+
+        return '<details>' . $summaryHtml . $bodyHtml . '</details>';
+    }
+
+    return '<details>' . sa_render_markdown($detailsHtml, sa_render_context()) . '</details>';
+}
+
 function sa_inline_markdown($text) {
     $mathBlocks = [];
     $text = sa_extract_inline_math((string)$text, $mathBlocks);
@@ -483,6 +499,8 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
     $inMermaid = false;
     $mermaidBuffer = [];
     $mermaidClass = '';
+    $inDetails = false;
+    $detailsBuffer = [];
     $inMathBlock = false;
     $mathBuffer = [];
 
@@ -496,6 +514,32 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
     for ($i = 0; $i < count($lines); $i++) {
         $line = $lines[$i];
         $trimmed = trim($line);
+
+        if ($inDetails) {
+            $detailsBuffer[] = $line;
+
+            if (stripos($line, '</details>') !== false) {
+                $html .= sa_render_details_block(implode("\n", $detailsBuffer));
+                $detailsBuffer = [];
+                $inDetails = false;
+            }
+
+            continue;
+        }
+
+        if (preg_match('/^<details\b/i', $trimmed)) {
+            $flushParagraph();
+            $inDetails = true;
+            $detailsBuffer = [$line];
+
+            if (stripos($trimmed, '</details>') !== false) {
+                $html .= sa_render_details_block(implode("\n", $detailsBuffer));
+                $detailsBuffer = [];
+                $inDetails = false;
+            }
+
+            continue;
+        }
 
         if (preg_match('/^```mermaid\s*$/i', $trimmed)) {
             $flushParagraph();
