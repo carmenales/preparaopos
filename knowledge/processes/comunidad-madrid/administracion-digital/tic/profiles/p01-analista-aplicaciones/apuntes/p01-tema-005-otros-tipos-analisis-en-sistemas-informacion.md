@@ -279,8 +279,6 @@ La seguridad en los sistemas de información garantiza que los activos informát
 6.  **Integridad:** Protección de la exactitud y la totalidad de los datos e interfaces frente a alteraciones no autorizadas o accidentes.
 7.  **Disponibilidad:** Garantía de que los usuarios autorizados tengan acceso a los datos y recursos cuando lo requieran.
 
-### 3.2. Marco Normativo de Seguridad en la Administración Pública: El Esquema Nacional de Seguridad (ENS)
-
 ### 3.2. Marco Normativo de Seguridad en la AAPP: El ENS (RD 311/2022)
 
 En el ámbito de la Administración Pública española, los requisitos no funcionales de seguridad se articulan formalmente a través del **Real Decreto 311/2022**, por el que se regula el **Esquema Nacional de Seguridad (ENS)**. Los tribunales exigen conocer la literalidad de sus principios y roles.
@@ -303,14 +301,15 @@ En el ámbito de la Administración Pública española, los requisitos no funcio
     *   Responsable de la seguridad.
     *   Responsable del sistema.
 
-*   **Principios Básicos del ENS:** Seguridad integral, gestión de la seguridad basada en los riesgos, prevención, reorientación y actualización permanente, líneas de defensa, vigilancia continua y reevaluación periódica, diferenciación de responsabilidades.
-*   **Dimensiones de Seguridad del ENS (Marco ACIDT):**
-    *   **A**utenticidad.
-    *   **I**ntegridad.
-    *   **C**onfidencialidad.
-    *   **A**disponibilidad.
-    *   **T**razabilidad.
-*   **Categorización de Sistemas:** Los sistemas se clasifican en categorías **Básica, Media o Alta** en función de la valoración de las dimensiones de seguridad en sus servicios e información.
+**Dimensiones de Seguridad del ENS (Marco ACIDT):**
+*   **A**utenticidad.
+*   **C**onfidencialidad.
+*   **I**ntegridad.
+*   **D**isponibilidad.
+*   **T**razabilidad.
+
+**Categorización de Sistemas:** 
+Los sistemas se clasifican en categorías **Básica, Media o Alta** en función de la valoración de las dimensiones de seguridad en sus servicios e información.
 
 ### 3.3. Análisis de riesgos de seguridad
 
