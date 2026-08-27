@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-003-analisis-funcional-diseño"
 title: "Análisis funcional/diseño"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -16,6 +16,7 @@ tags:
   - "analisis-funcional"
   - "casos-de-uso"
   - "historias-de-usuario"
+  - "agile"
   - "scrum"
   - "kanban"
   - "dsdm"
@@ -23,6 +24,7 @@ tags:
   - "tdd"
   - "bdd"
   - "iso-29148"
+  - "requisitos"
 created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
@@ -456,6 +458,142 @@ Técnica de priorización de requisitos característica de DSDM (aunque usada ta
 | Qué es fijo | El calendario del Sprint | El límite WIP | Tiempo y presupuesto |
 | Qué es variable | El alcance dentro del Sprint | El orden/prioridad de tareas | El alcance/requisitos (vía MoSCoW) |
 | Métrica clave | Velocidad del equipo | Lead Time / Cycle Time | Cumplimiento de plazo con calidad |
+
+### 2.5. Estimación y Seguimiento en Metodologías Ágiles
+
+Los tribunales TIC prestan especial atención a las técnicas de estimación y métricas de seguimiento ágil, que difieren de la gestión tradicional:
+
+*   **Puntos de Historia** (*Story Points*): Medida relativa utilizada por los equipos ágiles para estimar el esfuerzo, la complejidad y el riesgo de implementar una Historia de Usuario, en lugar de utilizar horas exactas.
+*   **Planning Poker:** Técnica de estimación basada en el **consenso**. El equipo (Developers) utiliza una baraja basada en la **sucesión de Fibonacci** (1, 2, 3, 5, 8, 13, 21...). 
+    *   Si aparecen estimaciones muy dispares (ej. un 3 y un 13), **nunca se hace la media ni decide el Scrum Master**; la buena práctica dicta que los miembros con valores extremos justifiquen su postura y se repita la votación hasta alcanzar el consenso.
+*   **Velocidad** (*Velocity*): Cantidad de Puntos de Historia que un equipo es capaz de completar (cumpliendo la *Definition of Done*) en un **único Sprint**. Sirve para predecir **cuántos Sprints** se necesitarán para acabar el **Product Backlog**.
+*   **Radiadores de Información (Gráficos de seguimiento):**
+    *   **Burndown Chart (Gráfico de trabajo pendiente):** 
+        *   Muestra el esfuerzo restante (eje Y) frente al tiempo (eje X). La línea debe tener tendencia descendente. 
+        *   Si la línea tiene una **tendencia ascendente**, no significa que el equipo trabaje mal, sino que **se está incrementando el trabajo pendiente** (se han añadido nuevas tareas o reestimado el esfuerzo al alza).
+    *   **Burnup Chart (Gráfico de trabajo completado):** 
+        *   Muestra cuánto trabajo se ha completado y los cambios en el alcance total del proyecto.
+    *   **Diagrama de Flujo Acumulado (*Cumulative Flow Diagram - CFD*):** Fundamental en Kanban. Muestra la cantidad de tareas en cada estado (columna) a lo largo del tiempo. Permite detectar visualmente los cuellos de botella (cuando una franja se ensancha bruscamente).
+
+#### 2.5.1. Burndown chat
+
+Existen fundamentalmente **3 tipos de gráficos de burndown** que suelen utilizarse en **Scrum**: sprint burndown chart, release burndown chart y product burndown chart.
+
+##### Sprint burndown chart
+
+Durante la creación del **Sprint Backlog** cada miembro del equipo determinará el esfuerzo y tiempo que requiere cada tarea pendiente del sprint. 
+
+Según avanza el sprint, cada miembro actualizará el esfuerzo dedicado y tiempo utilizado en cada tarea. Con toda esta información del backlog, el **Scrum Master** creará el **gráfico de trabajo pendiente del Sprint**.
+
+##### Release burndown chart
+
+Un lanzamiento en **Scrum** es el proceso que conlleva las tareas desde el desarrollo del producto hasta que éste llega al cliente. 
+
+En **metodologías Agile**, se dice que es posible liberar o lanzar el producto cuando cumple los requisitos de funcionalidad y expectativas del cliente. 
+
+Un lanzamiento de producto en **Scrum** generalmente constará de uno o varios **Sprints** cada uno de ellos de la misma duración. 
+
+Así, este gráfico mostrará el **progreso del equipo hasta la fecha final del lanzamiento del producto**.
+
+##### Product burndown chart
+
+Un **Product burndown chart** monitoriza la **cantidad de trabajo pendiente que queda para cumplir con los objetivos de producto definidos inicialmente** con el cliente.
+
+Este gráfico burndown **representa** los **story points** del **Product Backlog**. 
+
+El gráfico **muestra los puntos de las historias para cada sprint completado**, por lo que representa la **evolución del cumplimiento de los requisitos del producto a lo largo del tiempo**. 
+
+> El Backlog y el Product burndown chart suelen actualizarse al final de cada sprint.
+
+##### ¿Cómo funcionan los burndown chart?
+
+Con los gráficos **burndown** se estima la **cantidad de trabajo que queda por hacer** y **se comparan** con el **tiempo que llevará completar el trabajo**. El **objetivo** es representar con precisión el tiempo asignado para **planificar con anticipación los recursos** futuros.
+
+##### Cómo interpretar un gráfico burndown
+
+Un **Burndown chart** suele incluir lo siguiente:
+
+* **Eje X**: Representa la **cantidad de tiempo que queda para completar el proyecto**. Esto generalmente se muestra en **días**.
+
+* **Eje Y**: Representa el **esfuerzo restante** necesario **para completar el proyecto**. Es decir, aquí aparecerán las **tareas del Backlog pendiente** o **Sprint Backlog**.
+
+* **Línea de trabajo real**: Representa el **trabajo real que aún queda por realizar**. A menudo difiere de la estimación inicial debido a los posibles obstáculos que surgen durante el proyecto y al tiempo adicional que a veces se necesita para completar el trabajo. La línea de trabajo real puede ser recta en algunos casos, pero tiende a ser un trazado menos lineal debido a los inconvenientes que surgen en el transcurso del proyecto y al trabajo no previsto. 
+
+* **Línea ideal de trabajo restante** (trabajo estimado): Representa la **cantidad de trabajo** que calculaste en un **escenario ideal**. A menudo, es una trayectoria más recta en comparación con la línea de trabajo real. 
+
+* **Puntos de historia**: Los equipos ágiles suelen usar los puntos de historia para estimar el trabajo pendiente. En un burndown chart, los puntos de historia se representan en los ejes X e Y. Por ejemplo, el eje Y puede tener de 0 a 100 puntos de historia, que representan la dedicación, y el eje X puede tener de 1 a 30 puntos de historia, que representan los días que quedan para completar el trabajo.
+
+* **Objetivo del sprint**: por último, para que un gráfico burndown sea eficaz, debe incluir el objetivo general del sprint. Por ejemplo, tu objetivo de sprint podría ser una línea recta que represente el 50 % del esfuerzo durante 12 días. Si bien es posible que tu trabajo real no cumpla con este objetivo de manera exacta, siempre es bueno tener un objetivo a alcanzar para que las tareas sigan avanzando. 
+
+Los **burndown charts** son excelentes para **visualizar** rápidamente el **trabajo pendiente y el tiempo que se necesita para completar ese trabajo**. Sin embargo, no brindan información sobre la trayectoria de un proyecto, como por ejemplo, los cambios realizados. Esto hace que sea difícil saber si los cambios se deben a que se finalizaron tareas de la lista de trabajos pendientes o a un cambio en los puntos de historia.
+
+Este es el motivo por el cual **los gráficos burndown suelen combinarse** con una **lista del trabajo pendiente** del producto, gestionada por el **Product Owner**, y un **proceso de control de cambios** para realizar un **seguimiento** eficaz del **progreso** del proyecto.
+
+A continuación, se muestra un ejemplo de un **gráfico burndown**.
+
+![Ejemplo Burndown Chart](../images/ejemplo-burndown-chart.jpg)
+
+> Como puedes ver, la línea de trabajo real es ligeramente diferente a la del trabajo ideal. El esfuerzo de trabajo real fue mayor de lo previsto al principio, pero menor de lo esperado al final. Por lo tanto, aunque el camino fue ligeramente diferente, el resultado final fue el mismo.
+
+#### Beneficios de usar un burndown chart
+
+Un **gráfico burndown** es una excelente herramienta para **visualizar** el **trabajo que se debe realizar en comparación con el tiempo que lleva completarlo**. Por lo tanto, es ideal para equipos que trabajan en **Sprints**.
+
+Otros beneficios de usar un **gráfico burndown** incluyen:
+
+* **Comparación directa**: el **gráfico burndown** muestra una comparación directa entre el trabajo que se necesita realizar y el esfuerzo requerido para completar el sprint. Esta información ayuda a los equipos a conectar las tareas con los objetivos más grandes y avanzar para cumplir los objetivos del sprint. 
+
+* **Mantiene sintonía**: los miembros del equipo tienen información a la que pueden acceder para visualizar el trabajo necesario y el esfuerzo diario estimado, lo que les permite dar seguimiento y estar al día con el trabajo.
+
+* **Información sobre la productividad del equipo**: un **burndown chart** no solo es una excelente herramienta para visualizar el trabajo, sino que también puede darte información sobre la productividad de tu equipo y la velocidad con la que se finalizan los trabajos.
+
+Todos estos beneficios hacen que los **gráficos burndown** sean una herramienta excelente para dar **seguimiento a la gestión de recursos** del equipo, al esfuerzo y la productividad.
+
+#### 2.5.2. Burnup chat
+
+Un **gráfico burnup** es una hoja de ruta que representa el trabajo en dos líneas a lo largo de un eje vertical. Una línea indica la carga de trabajo total del proyecto. La otra muestra el trabajo completado hasta el momento. Cuando se termina el proyecto, las dos líneas se unen.
+
+![Ejemplo Burnup Chart](../images/ejemplo-burnup-chart.png)
+
+##### Cómo interpretar un gráfico burnup
+
+Un **Burndown chart** suele incluir lo siguiente:
+
+* **Eje X**: Representa la línea temporal de todo el proyecto. Permite ver el tiempo que se tarda en completar las tareas y ayuda a representar gráficamente los **Sprints**.
+* **Eje Y**: Representa el trabajo completado. Esta medida puede ser puntos de historia en los incrementos que se consideren adecuados.
+
+##### Beneficios de usar un burndown chart
+
+Estas son algunas de las ventajas de utilizar un gráfico de avance en proyectos ágiles y Scrum:
+
+* **Indica claramente el progreso:** una ventaja respecto a los **diagramas de Gantt** es que los **gráficos burnup** se pueden leer de un solo vistazo. No son tan complejos ni confusos como un diagrama de Gantt. Y, a diferencia de un **gráfico burndown**, un **gráfico burnup** muestra el trabajo completado en una gráfica ascendente con mayor detalle. Muestra tanto el trabajo total como el trabajo completado.
+
+* **Facilita la previsión:** los **gráficos burnup** permiten a tu equipo determinar una fecha aproximada de finalización. Es posible trabajar hacia atrás para establecer métricas o puntos de referencia de **Scrum**.
+
+* **Destaca los cambios en el alcance y gestiona la desviación del alcance:** a diferencia de un **gráfico burndown**, es posible marcar fácilmente cualquier cambio en el alcance y relacionarlo con el progreso del equipo. Esto ayuda a **mitigar** cualquier **desviación del alcance** antes de que se vaya de las manos.
+
+* **Permite la detección temprana de problemas:** los **gráficos burnup** permiten mitigar los problemas antes de que se conviertan en grandes quebraderos de cabeza.
+
+* **Aporta transparencia para todos:** los **gráficos burnup** son más fáciles de leer y facilitan una transparencia total entre el equipo, lo que ayuda a tomar mejores decisiones sobre el proyecto.
+
+#### 2.5.3. Comparativa entre Burdown and Burnup charts
+
+En ambos casos, la abscisa del gráfico representa el tiempo; realizando un gráfico por sprint, se puede utilizar como unidad el día, pero esto se puede adaptar a la temporalidad del producto. La ordenada representa el trabajo realizado en el caso del **Burnup**, o el trabajo que queda por hacer en el caso del **Burndown**.
+
+Los dos tipos de gráficos satisfacen la misma necesidad pero ofrecen diferentes ventajas.
+
+![Comparativas Burndown vs Burnup Charts](../images/comparativa-burndown-vs-burnup-charts.png)
+
+El **gráfico burndown**, que se usa a menudo a nivel de **Sprint**, permite al equipo **visualizar** mejor el **trabajo que queda por hacer en un periodo corto de tiempo**.
+
+El **gráfico burnup** permite **representar** mejor los **cambios en el alcance del Sprint o del producto completo** al distinguir dos líneas:
+
+* Una línea (en azul arriba) que representa el alcance del producto o una liberación del producto. Esta línea crece cuando agregamos elementos del backlog.
+* La otra línea representa el trabajo ya realizado.
+
+El **gráfico burnup** a menudo brinda una visión precisa del ritmo de desarrollo: en el siguiente caso, el **gráfico burndown** da la impresión de un equipo que no está progresando, mientras que el **gráfico burnup** muestra que en realidad el alcance esperado evoluciona tan rápido como la capacidad de producción del equipo.
+
+> Una versión mejorada consiste en agregar otra línea que represente el ritmo «ideal» de trabajo, haciendo posible determinar visualmente cada día si el desarrollo está delante o detrás del ritmo teórico.
 
 ## 3. Pruebas Funcionales y Metodologías Dirigidas por Pruebas
 
