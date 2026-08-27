@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-005-analisis-no-funcional"
 title: "Otros tipos de análisis en los sistemas de información"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -19,8 +19,11 @@ tags:
   - "seguridad"
   - "privacidad"
   - "rgpd"
+  - "lopdgdd"
   - "ens"
   - "benchmark"
+  - "aaa"
+  - "tratamiento"
 created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
@@ -122,7 +125,7 @@ e) **T**razabilidad.
 
 Es habitual encontrar en test y manuales el acrónimo alternativo **DICAT** o **AICAT**, que ordena las mismas cinco dimensiones. Cada dimensión afectada por un incidente se clasifica en un **nivel de seguridad BAJO, MEDIO o ALTO**, y de la combinación de niveles surge la **categoría del sistema** (BÁSICA, MEDIA o ALTA), que determina qué medidas de seguridad son exigibles.
 
-El ENS se estructura en **principios básicos** (seguridad integral, gestión de riesgos, prevención/reacción/recuperación, líneas de defensa, reevaluación periódica y diferenciación de responsabilidades) y en un conjunto de **medidas de seguridad** agrupadas en tres marcos: **marco organizativo**, **marco operacional** y **medidas de protección**, detalladas en su Anexo II. El organismo de referencia técnica que da soporte al ENS es el **CCN (Centro Criptológico Nacional)**, a través de la serie de guías **CCN-STIC**.
+El **ENS** se estructura en **principios básicos** (seguridad integral, gestión de riesgos, prevención/reacción/recuperación, líneas de defensa, reevaluación periódica y diferenciación de responsabilidades) y en un conjunto de **medidas de seguridad** agrupadas en tres marcos: **marco organizativo**, **marco operacional** y **medidas de protección**, detalladas en su Anexo II. El organismo de referencia técnica que da soporte al **ENS** es el **CCN (Centro Criptológico Nacional)**, a través de la serie de guías **CCN-STIC**.
 
 A nivel de estándares internacionales de gestión de la seguridad de la información, la referencia es la familia **ISO/IEC 27000**, en particular **ISO/IEC 27001** (Sistema de Gestión de Seguridad de la Información, SGSI) e **ISO/IEC 27002** (catálogo de controles). Para la seguridad específica en aplicaciones web, la referencia técnica más citada es el **OWASP Top 10**, que recopila los riesgos de seguridad más críticos en aplicaciones web (p. ej. control de acceso roto, fallos criptográficos, inyección), y el **OWASP ASVS** (*Application Security Verification Standard*) como marco de verificación de requisitos de seguridad en el análisis y diseño.
 
@@ -278,10 +281,30 @@ La seguridad en los sistemas de información garantiza que los activos informát
 
 ### 3.2. Marco Normativo de Seguridad en la Administración Pública: El Esquema Nacional de Seguridad (ENS)
 
-En el ámbito de la Administración Pública española, los requisitos no funcionales de seguridad se articulan formalmente a través del **Real Decreto 311/2022**, de 3 de mayo, por el que se regula el **Esquema Nacional de Seguridad (ENS)**.
+### 3.2. Marco Normativo de Seguridad en la AAPP: El ENS (RD 311/2022)
+
+En el ámbito de la Administración Pública española, los requisitos no funcionales de seguridad se articulan formalmente a través del **Real Decreto 311/2022**, por el que se regula el **Esquema Nacional de Seguridad (ENS)**. Los tribunales exigen conocer la literalidad de sus principios y roles.
+
+**Los 7 Principios Básicos del ENS (Artículos 5 al 11):**
+1.  **Seguridad como proceso integral:** Implica a todos los elementos humanos, materiales, técnicos, jurídicos y organizativos. 
+    *   Se prestará la máxima atención a la concienciación de las personas; hay que evitar que la ignorancia, la falta de organización o de instrucciones constituyan fuentes de riesgo.
+2.  **Gestión de la seguridad basada en los riesgos:** El análisis y gestión de riesgos es el elemento esencial (no basarse en eventos pasados, sino en **prevención proactiva**).
+3.  **Prevención, detección, respuesta y conservación:** 
+    *   **Prevención:** Minimizar vulnerabilidades para que las amenazas no se materialicen.
+    *   **Detección:** Descubrir ciberincidentes de forma continua.
+    *   **Respuesta:** Restaurar la información y servicios afectados en tiempo oportuno.
+    *   **Conservación:** Garantizar la conservación de datos en soporte electrónico.
+4.  **Existencia de líneas de defensa:** Implantar medidas de seguridad organizativas, físicas y lógicas múltiples y en capas.
+5.  **Vigilancia continua:** Monitorización continua del sistema.
+6.  **Reevaluación periódica:** Actualización permanente ante nuevas amenazas.
+7.  **Diferenciación de responsabilidades:** Separación estricta de funciones. En todo sistema deben existir, al menos, las siguientes figuras diferenciadas: 
+    *   Responsable de la información.
+    *   Responsable del servicio.
+    *   Responsable de la seguridad.
+    *   Responsable del sistema.
 
 *   **Principios Básicos del ENS:** Seguridad integral, gestión de la seguridad basada en los riesgos, prevención, reorientación y actualización permanente, líneas de defensa, vigilancia continua y reevaluación periódica, diferenciación de responsabilidades.
-*   **Dimensiones de Seguridad del ENS (Marco AICAT):**
+*   **Dimensiones de Seguridad del ENS (Marco ACIDT):**
     *   **A**utenticidad.
     *   **I**ntegridad.
     *   **C**onfidencialidad.
@@ -293,7 +316,7 @@ En el ámbito de la Administración Pública española, los requisitos no funcio
 
 El análisis de seguridad debe identificar activos, amenazas, vulnerabilidades, impactos y riesgos, y determinar las medidas necesarias para reducir los riesgos a niveles aceptables.
 
-En el ámbito del ENS, el análisis y gestión de riesgos constituye uno de los requisitos mínimos de seguridad. La categorización del sistema y la selección de medidas deben realizarse atendiendo a los activos, a la categoría del sistema y a los riesgos identificados.
+En el ámbito del **ENS**, el análisis y gestión de riesgos constituye uno de los requisitos mínimos de seguridad. La categorización del sistema y la selección de medidas deben realizarse atendiendo a los activos, a la categoría del sistema y a los riesgos identificados.
 
 El análisis de seguridad debe integrarse en el ciclo de vida del sistema y considerar, entre otros aspectos:
 
@@ -442,6 +465,14 @@ La **seguridad de la información** protege la información y los sistemas frent
 La **protección de datos personales** regula el tratamiento de datos personales y protege los derechos y libertades de las personas físicas.
 
 Un sistema puede disponer de controles de seguridad adecuados y, sin embargo, realizar un tratamiento contrario a los principios del **RGPD**. Por ello, el análisis de privacidad debe realizarse de forma específica y coordinada con el análisis de seguridad.
+
+### 4.10. Figuras e hitos críticos del RGPD en la Administración Pública
+
+En base a la exigencia de los tribunales sobre el cumplimiento normativo en las Administraciones, en el análisis de sistemas deben contemplarse estas figuras y plazos legales estipulados por el RGPD:
+
+*   **Delegado de Protección de Datos (DPD / DPO):** Figura obligatoria en todas las autoridades u organismos públicos. Su función es asesorar, supervisar el cumplimiento del RGPD, actuar como punto de contacto con la AEPD y cooperar con ella. El DPD no recibe instrucciones sobre el desempeño de sus funciones (independencia).
+*   **Registro de Actividades de Tratamiento (RAT):** Las AAPP están obligadas a llevar un registro formal (y público) de las actividades de tratamiento efectuadas bajo su responsabilidad (sustituye a la antigua obligación de inscribir ficheros en la AEPD).
+*   **Notificación de brechas de seguridad (Data Breaches):** Requisito no funcional crítico. El sistema debe contar con mecanismos de auditoría porque el responsable del tratamiento tiene la obligación legal de notificar cualquier violación de la seguridad de los datos a la autoridad de control (AEPD) **sin dilación indebida y, de ser posible, a más tardar 72 horas** después de que haya tenido constancia de ella.
 
 ## 5. Cuadro Comparativo Sintético: Aspectos No Funcionales
 
