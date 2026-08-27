@@ -31,16 +31,16 @@
 .mermaid .node polygon,
 .mermaid .cluster rect,
 .mermaid .cluster polygon {
-    fill: #f8fafc !important;
-    stroke: #cbd5e1 !important;
+    fill: #e0f2fe !important;
+    stroke: #38bdf8 !important;
     stroke-width: 1.5px !important;
 }
 
 .mermaid .node .label,
 .mermaid .edgeLabel,
 .mermaid text {
-    fill: #111827 !important;
-    color: #111827 !important;
+    fill: #0f172a !important;
+    color: #0f172a !important;
     font-family: inherit !important;
 }
 
@@ -50,8 +50,8 @@
 .mermaid line,
 .mermaid polygon,
 .mermaid marker {
-    stroke: #475569 !important;
-    stroke-width: 1.5px !important;
+    stroke: #0ea5e9 !important;
+    stroke-width: 1.2px !important;
     fill: none !important;
 }
 

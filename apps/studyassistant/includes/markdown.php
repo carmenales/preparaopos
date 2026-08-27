@@ -482,6 +482,7 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
     $codeBuffer = [];
     $inMermaid = false;
     $mermaidBuffer = [];
+    $mermaidClass = '';
     $inMathBlock = false;
     $mathBuffer = [];
 
@@ -500,23 +501,33 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
             $flushParagraph();
 
             if ($inMermaid) {
-                $html .= '<pre class="mermaid">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
+                $html .= '<pre class="mermaid' . $mermaidClass . '">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
                 $mermaidBuffer = [];
+                $mermaidClass = '';
                 $inMermaid = false;
                 continue;
             }
 
             $inMermaid = true;
             $mermaidBuffer = [];
+            $mermaidClass = '';
             continue;
         }
 
         if ($inMermaid) {
             if (preg_match('/^```\s*$/', $trimmed)) {
-                $html .= '<pre class="mermaid">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
+                $html .= '<pre class="mermaid' . $mermaidClass . '">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
                 $mermaidBuffer = [];
+                $mermaidClass = '';
                 $inMermaid = false;
                 continue;
+            }
+
+            if ($mermaidClass === '' && preg_match('/^\s*(mindmap|graph|flowchart|sequenceDiagram|classDiagram|erDiagram|journey|pie|gantt|stateDiagram|xychart)\b/i', $line, $mmMatch)) {
+                $type = strtolower($mmMatch[1]);
+                if ($type === 'mindmap') {
+                    $mermaidClass = ' mermaid-mindmap';
+                }
             }
 
             $mermaidBuffer[] = $line;

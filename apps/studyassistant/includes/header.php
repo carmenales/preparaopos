@@ -31,18 +31,19 @@ $currentTitle = $pageTitle ?? 'Study Assistant';
             themeVariables: {
                 darkMode: false,
                 background: '#ffffff',
-                primaryColor: '#f8fafc',
-                primaryTextColor: '#111827',
-                primaryBorderColor: '#cbd5e1',
-                lineColor: '#475569',
-                secondaryColor: '#f1f5f9',
-                tertiaryColor: '#ffffff',
-                textColor: '#111827',
+                primaryColor: '#e0f2fe',
+                primaryTextColor: '#0f172a',
+                primaryBorderColor: '#38bdf8',
+                lineColor: '#0ea5e9',
+                secondaryColor: '#ecfeff',
+                tertiaryColor: '#fef3c7',
+                textColor: '#0f172a',
                 mainBkg: '#ffffff',
-                nodeBorder: '#cbd5e1',
+                nodeBorder: '#38bdf8',
                 clusterBkg: '#ffffff',
                 clusterBorder: '#dfe6ee',
-                defaultLinkColor: '#475569'
+                defaultLinkColor: '#0ea5e9',
+                fontFamily: 'system-ui, sans-serif'
             }
         });
 
