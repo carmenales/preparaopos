@@ -20,6 +20,7 @@ tags:
   - "pmo"
   - "portfolio"
   - "bcr"
+  - "iso-21504"
 created_at: "2026-08-09"
 last_reviewed: "2026-08-09"
 ai_generated: true
@@ -32,287 +33,267 @@ needs_human_review: true
 
 # Tema 3. Evaluación y selección de proyectos
 
-La selección de proyectos es un proceso estratégico. Las organizaciones (y especialmente la Administración Pública) tienen recursos limitados y no pueden ejecutar todas las ideas que surgen. Este tema aborda cómo la Alta Dirección o la PMO de Portfolio deciden qué proyectos se aprueban (Go) y cuáles se descartan (No-Go).
+La evaluación y selección de proyectos es un proceso estratégico de gobernanza mediante el cual la organización o la Administración Pública optimiza la asignación de sus recursos limitados (presupuesto, personal y capacidad técnica). 
 
-## 1. Criterios de Evaluación de un Proyecto
+Este proceso determina qué iniciativas se autorizan (*Go*), cuáles se posponen y cuáles se descartan (*No-Go*), garantizando la máxima aportación de valor y la alineación con los planes estratégicos corporativos e institucionales.
 
-Para comparar manzanas con manzanas, los proyectos se evalúan bajo dos grandes prismas: el financiero (cuantitativo puro, basado en el dinero) y el no financiero (alineación estratégica y cumplimiento).
+```mermaid
+graph TD
+    classDef criteria fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef method fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef decision fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
 
-### 1.1. Criterios Financieros (Formulación financiera)
+    PROP[Propuestas de Proyectos Candidatos] --> CRIT{Criterios de Evaluación}
+    
+    CRIT --> CRIT_FIN[Criterios Financieros<br>VAN, TIR, Payback, BCR, TCO]:::criteria
+    CRIT --> CRIT_NOFIN[Criterios No Financieros<br>Estrategia, ENS, RGPD, ESG]:::criteria
+    
+    CRIT_FIN --> MET{Métodos de Selección}
+    CRIT_NOFIN --> MET
+    
+    MET --> MET_BEN[Medición de Beneficios<br>Scoring, Delphi, AHP, ACB]:::method
+    MET --> MET_OPT[Optimización Restringida<br>Prog. Lineal, Entera, Dinámica]:::method
+    
+    MET_BEN --> DEC[DECISIÓN DE CARTERA / PORTFOLIO<br>Go / No-Go / Priorización]:::decision
+    MET_OPT --> DEC
+```
 
-Estas métricas son matemáticas y buscan maximizar el retorno económico. En el examen, no te pedirán calcular raíces cuadradas complejas, pero **sí debes saber la teoría de cada fórmula y qué valor elegir al comparar dos proyectos**.
+## 1. Criterios de Evaluación de Proyectos
 
-*   **Valor Actual Neto (VAN / NPV):** Es el valor presente de los flujos de caja futuros (ingresos menos gastos), descontando la tasa de interés o inflación.
-    *   *Regla de oro:* Si $VAN > 0$, el proyecto es rentable. Si $VAN < 0$, perderás dinero.
-    *   *Comparación:* Entre dos proyectos, **elige siempre el que tenga el VAN más alto**.
-*   **Tasa Interna de Retorno (TIR / IRR):** Es la tasa de interés que hace que el VAN sea exactamente cero. Mide la rentabilidad intrínseca del proyecto expresada en porcentaje.
-    *   *Regla de oro:* Si la TIR es mayor que el coste de capital de la organización, el proyecto es viable.
-    *   *Comparación:* Entre dos proyectos, **elige el que tenga la TIR más alta**.
-*   **Plazo de Recuperación (Payback Period):** Mide el tiempo exacto que se tarda en recuperar la inversión inicial.
-    *   *Regla de oro:* Mide riesgo y liquidez, no rentabilidad total (ignora lo que pasa después de recuperar la inversión).
-    *   *Comparación:* Entre dos proyectos, **elige el que tenga el Payback más corto**.
-*   **Retorno de la Inversión (ROI):** Es un porcentaje que indica el beneficio obtenido en relación con la inversión. $ROI = (Beneficio Neto / Coste de Inversión) \times 100$.
-*   **Coste de Oportunidad:** Es el valor del proyecto que *descartas* al elegir otro. Si el proyecto A tiene un VAN de 100.000€ y el B tiene un VAN de 80.000€, si eliges A, el coste de oportunidad es 80.000€.
-*   **Costos Hundidos (Sunk Costs):** Son costes en los que ya se ha incurrido y no se pueden recuperar. *Regla de examen:* **Los costes hundidos NUNCA deben considerarse** al decidir si se continúa o se cancela un proyecto.
+La evaluación integral de un proyecto exige **combinar** el **análisis económico-financiero** con la **valoración estratégica, operativa y normativa**.
 
-Un indicador financiero adicional muy citado en manuales de selección de proyectos, y que suele aparecer como distractor frente al ROI, es la **Relación Beneficio-Coste (RBC / BCR — *Benefit-Cost Ratio*)**: se calcula dividiendo el valor presente de los beneficios (PVB) entre el valor presente de los costes (PVC): $BCR = PVB / PVC$. La regla de decisión es distinta a la del VAN: si BCR > 1, los beneficios superan a los costes y el proyecto es viable; si BCR = 1, hay punto de equilibrio; si BCR < 1, se debe rechazar. La diferencia clave frente al VAN es que el **VAN se expresa en unidades monetarias absolutas** (cuánto valor neto se crea), mientras que el **BCR es un ratio o índice de eficiencia** (cuánto beneficio se obtiene por cada unidad de coste invertida), lo cual lo hace especialmente útil para comparar proyectos de tamaños muy distintos o para priorizar carteras bajo restricción presupuestaria.
+### 1.1. Criterios Financieros (Matemática de la Inversión)
 
-En el ámbito específico de la evaluación de proyectos e inversiones públicas en España, es habitual encontrar referencias al **Análisis Coste-Beneficio (ACB) social**, que amplía el análisis financiero privado incorporando externalidades (impacto ambiental, social, en el empleo) y utilizando una **tasa social de descuento**, normalmente distinta (y habitualmente inferior) a la tasa de descuento financiera privada, reflejando la menor aversión al riesgo y la mayor perspectiva temporal del Estado frente a un inversor privado.
+Los métodos financieros cuantitativos **modelan los flujos de caja previstos** (ingresos/ahorros frente a inversiones y gastos operativos) a lo largo del horizonte temporal del proyecto.
 
-### 1.2. Criterios No Financieros
+#### 1.1.1. Valor Actual Neto (VAN / NPV - Net Present Value)
+Es el criterio financiero prioritario por excelencia. Calcula el valor presente de los flujos netos de caja futuros descontados a una tasa de actualización $k$ (coste de oportunidad del capital o inflación), minorados por la inversión inicial $I_0$:
 
-Especialmente críticos en la Administración Pública, donde el objetivo principal no siempre es ganar dinero, sino prestar un servicio al ciudadano.
+$$VAN = \sum_{t=1}^{n} \frac{F_t}{(1 + k)^t} - I_0$$
 
-*   **Alineación Estratégica:** Grado en el que el proyecto apoya los objetivos de la organización (ej. alineación con el Plan de Digitalización de las AAPP).
-*   **Cumplimiento Normativo / Legal:** Proyectos obligatorios por ley (ej. adaptación urgente al Esquema Nacional de Seguridad o GDPR). Estos proyectos suelen tener prioridad absoluta independientemente de su VAN.
-*   **Impacto Social y Sostenibilidad (ESG):** Beneficios intangibles como la mejora de la imagen pública, la reducción de la huella de carbono o la mejora de la accesibilidad ciudadana.
-*   **Riesgo y Complejidad Técnica:** Nivel de incertidumbre tecnológica o resistencia al cambio organizacional.
+*   **Regla de decisión:**
+    *   $VAN > 0$: El proyecto es **rentable** y genera valor económico neto por encima de la tasa exigida.
+    *   $VAN = 0$: El proyecto recupera exactamente la inversión y la rentabilidad mínima exigida ($k$).
+    *   $VAN < 0$: El proyecto destruye valor; debe **rechazarse**.
 
-### 1.3. Criterios financieros y valor temporal del dinero
+> Entre proyectos independientes o mutuamente excluyentes, **se selecciona** siempre el que posea el **mayor VAN absoluto**.
 
-La comparación financiera de proyectos debe realizarse sobre flujos de caja relevantes para la decisión y expresados en términos comparables.
+#### 1.1.2. Tasa Interna de Retorno (TIR / IRR - Internal Rate of Return)
+Es la tasa de descuento $r$ que iguala el valor actual de los flujos de caja futuros con la inversión inicial, haciendo que el $VAN = 0$:
 
-El **VAN** incorpora el valor temporal del dinero mediante el descuento de los flujos futuros. Un VAN positivo indica que, con la tasa de descuento utilizada, el valor presente de los beneficios o entradas supera al de los costes o salidas.
+$$\sum_{t=1}^{n} \frac{F_t}{(1 + TIR)^t} - I_0 = 0$$
 
-La **TIR** es la tasa que hace que el VAN sea igual a cero. Su utilización debe interpretarse junto con la tasa de descuento o coste de oportunidad aplicable. En proyectos mutuamente excluyentes, no siempre debe seleccionarse automáticamente la alternativa con mayor TIR: cuando las escalas, los perfiles temporales o los flujos presentan diferencias significativas, el VAN puede proporcionar una medida más adecuada del valor absoluto creado.
+*   **Regla de decisión:** Se compara la $TIR$ con el coste de capital $k$ de la organización.
+    *   $TIR > k$: El proyecto es financieramente **viable**.
+    *   $TIR < k$: El proyecto debe **rechazarse**.
 
-El **payback simple** no considera el valor temporal del dinero y no tiene en cuenta los flujos posteriores al periodo de recuperación. El **payback descontado** incorpora el descuento de los flujos, aunque mantiene la limitación de ignorar los flujos posteriores al momento de recuperación.
+>   **Conflicto VAN vs. TIR** (*Cruce de Fisher*): En proyectos mutuamente excluyentes con diferente escala de inversión o distribución temporal de flujos, el $VAN$ y la $TIR$ pueden dar recomendaciones contradictorias. Es recomendable **priorizar** siempre el criterio del **VAN**, ya que mide el valor absoluto agregado a la organización.
 
-El **ROI** proporciona una relación entre beneficio y coste, pero su interpretación depende de cómo se definan beneficio, inversión y periodo de cálculo.
+#### 1.1.3. Relación Beneficio-Coste (RBC / BCR - Benefit-Cost Ratio)
+Índice de rentabilidad que divide el valor actual de los flujos de beneficios ($PVB$) entre el valor actual de los flujos de costes ($PVC$):
 
-### 1.4. Criterios financieros relevantes en el sector público
+$$BCR = \frac{\sum_{t=1}^{n} \frac{B_t}{(1+k)^t}}{\sum_{t=0}^{n} \frac{C_t}{(1+k)^t}} = \frac{PVB}{PVC}$$
 
-En proyectos públicos, la rentabilidad financiera no constituye por sí sola el criterio de decisión. El análisis debe considerar el valor que la intervención genera para la sociedad, sus efectos distributivos, riesgos, costes y beneficios monetizables y no monetizables y la asequibilidad para las entidades públicas.
+*   **Regla de decisión:**
+    *   $BCR > 1$: Los beneficios actualizados superan a los costes; el proyecto es **viable**.
+    *   $BCR = 1$: Punto de equilibrio.
+    *   $BCR < 1$: Los costes superan a los beneficios; el proyecto se **rechaza**.
+*   **Diferencia con el VAN:** El $VAN$ es una medida absoluta (euros netos); el $BCR$ es un ratio relativo de eficiencia por cada euro invertido, **idóneo** para **comparar proyectos de distinta escala presupuestaria**.
 
-El **Análisis Coste-Beneficio social** expresa en términos monetarios los principales costes y beneficios sociales para poder compararlos. Cuando los beneficios relevantes no pueden monetizarse adecuadamente, puede utilizarse un **Análisis Coste-Efectividad**, comparando el coste de alternativas que producen resultados comparables.
+#### 1.1.4. Plazo de Recuperación (Payback Period)
+Mide el tiempo necesario para que los flujos netos de caja acumulados igualen la inversión inicial.
+*   **Payback Simple:** No actualiza los flujos de caja en el tiempo. Mide **liquidez y riesgo temporal**, pero **no mide la rentabilidad global** (ignora los flujos generados tras la recuperación).
+*   **Payback Descontado:** Incorpora la tasa de descuento $k$ en los flujos antes de calcular el periodo de recuperación.
+*   **Regla de decisión:** Entre varias opciones, se elige la de **menor periodo de recuperación**.
 
-El análisis debe realizarse durante el ciclo de vida de la intervención, considerando inversión, operación, mantenimiento y terminación cuando proceda.
+#### 1.1.5. Retorno de la Inversión (ROI - Return on Investment)
+Ratio contable básico que relaciona el beneficio neto obtenido con el capital total invertido:
 
-### 1.5. Criterios no financieros adicionales
+$$ROI = \left( \frac{\text{Beneficio Neto}}{\text{Coste de Inversión}} \right) \times 100$$
 
-Además de los criterios estratégicos y legales, pueden considerarse:
+#### 1.1.6. Costes de Oportunidad y Costes Hundidos
+*   **Coste de Oportunidad:** Beneficio económico o valor que se deja de percibir al seleccionar una alternativa en detrimento de otra (*el valor de la mejor opción descartada*).
+*   **Costes Hundidos** (*Sunk Costs*): **Gastos pasados** ya ejecutados que **no pueden recuperarse** independientemente de la decisión futura (*ej. licencias ya adquiridas no reembolsables*).
 
-* impacto sobre la ciudadanía y otras partes interesadas;
-* contribución a objetivos de transformación digital;
-* interoperabilidad y reutilización;
-* seguridad y protección de datos;
-* sostenibilidad ambiental y social;
-* capacidad organizativa para ejecutar y operar el resultado;
-* dependencias con otros proyectos y sistemas;
-* urgencia temporal;
-* riesgos de suministro, tecnología y cambio organizativo;
-* contribución a la continuidad o resiliencia de servicios críticos.
+> Los **costes hundidos** NUNCA deben influir ni incluirse en las decisiones de continuar o cancelar un proyecto.
+
+### 1.2. Criterios de Evaluación en el Sector Público
+
+En las Administraciones Públicas, la justificación de una inversión trasciende el beneficio contable privado e incorpora el impacto social, legal y la eficiencia en el gasto público:
+
+*   **Análisis Coste-Beneficio Social (ACB):** Cuantifica y monetiza tanto los costes directos como las externalidades positivas y negativas generadas para la sociedad (*ahorro de tiempo del ciudadano, reducción de emisiones, fomento del empleo*). Emplea una **tasa social de descuento** (generalmente inferior a la privada por el horizonte temporal público).
+*   **Análisis Coste-Efectividad (ACE):** Aplicable cuando los beneficios esenciales del servicio público no pueden monetizarse con fiabilidad (*ej. nivel de ciberseguridad, vidas salvadas, tasa de escolarización*). Compara el coste monetario de distintas alternativas técnicas para alcanzar un mismo nivel de eficacia cuantificado en unidades físicas o métricas operativas.
+*   **Coste del Ciclo de Vida (LCC / TCO - Total Cost of Ownership):** Exigido por el **artículo 148** de la **Ley 9/2017** de Contratos del Sector Público (**LCSP**). Integra el coste de adquisición, desarrollo, licencias, consumo energético, costes de operación, mantenimiento evolutivo y gastos de retirada o desmantelamiento.
+
+### 1.3. Criterios No Financieros
+
+*   **Alineación Estratégica:** Grado de contribución a planes directores (*ej. Estrategia de Digitalización de la Comunidad de Madrid, Plan de Recuperación, Transformación y Resiliencia*).
+*   **Cumplimiento Normativo y Regulatorio:** Proyectos de implantación obligatoria por mandato legal (adecuación estricta al Esquema Nacional de Seguridad **RD 311/2022**, **RGPD UE 2016/679**, Directiva **NIS2**). Poseen prioridad ejecutiva con independencia de su rentabilidad financiera.
+*   **Sostenibilidad y Criterios ESG** (*Environmental, Social and Governance*): Eficiencia energética (*Green IT*), accesibilidad universal (**Directiva UE 2016/2102**) e impacto ético.
+*   **Viabilidad Organizativa y Riesgo Tecnológico:** Disponibilidad de recursos especializados, madurez en procesos (niveles **CMMI**) y nivel de obsolescencia tecnológica.
 
 ## 2. Métodos de Selección de Proyectos
 
-Una vez tenemos los criterios, necesitamos métodos estructurados para aplicar esos criterios y tomar la decisión. El marco clásico de referencia (recogido en el PMBOK y en la literatura de dirección de proyectos) agrupa todos los métodos de selección en **dos grandes familias**, distinción que conviene memorizar porque suele preguntarse de forma directa: los **Métodos de Medición de Beneficios (*Benefit Measurement Methods*)**, de naturaleza comparativa, y los **Métodos de Optimización Restringida (*Constrained Optimization Methods*)**, de naturaleza matemática. Los métodos cualitativos y cuantitativos que se detallan a continuación se distribuyen, respectivamente, dentro de estas dos familias.
+La literatura internacional y el **PMBOK** dividen formalmente los métodos de selección en dos grandes familias:
 
-### 2.1. Métodos Cuantitativos (Modelos Matemáticos)
+![Familias de Métodos de Selección de Proyectos](..\images\familias-metodos-seleccion-proyectos.jpg)
 
-Se basan en algoritmos y números.
+### 2.1. Métodos de Medición de Beneficios (*Benefit Measurement Methods*)
 
-*   **Modelos de Puntuación Ponderada (Scoring Models):** Se crea una matriz con varios criterios (VAN, riesgo, alineación). A cada criterio se le asigna un peso (ej. VAN 40%, Riesgo 20%, Estrategia 40%). Cada proyecto se puntúa y se elige el de mayor puntuación total ponderada.
-*   **Modelos de Optimización Matemática:** Utilizados para carteras complejas. Se basan en programación lineal, programación no lineal, programación entera o algoritmos multiobjetivo para maximizar el valor de un portfolio de proyectos sujetos a restricciones estrictas (ej. "no superar un presupuesto total de 5M€ y utilizar un máximo de 50 programadores").
+Se basan en la comparación analítica de proyectos entre sí o frente a estándares establecidos:
 
-Dentro de la familia de Métodos de Optimización Restringida, además de los ya citados, se incluye formalmente la **programación dinámica** (descompone el problema de selección en subproblemas secuenciales más pequeños, típica para decisiones de inversión escalonadas en el tiempo). Todos estos métodos matemáticos se consideran de mayor complejidad técnica y se reservan habitualmente para decisiones de cartera (portfolio) con múltiples proyectos y restricciones simultáneas, no para evaluar un único proyecto aislado.
+*   **Modelos de Puntuación Ponderada** (*Weighted Scoring Models*): Se definen criterios clave ($C_i$) con un peso relativo asignado ($w_i$, donde $\sum w_i = 1$). Cada propuesta se puntúa en cada criterio ($P_{ij}$), obteniendo una puntuación final agregada:
 
-### 2.2. Métodos Cualitativos (Análisis Experto)
+$$S_j = \sum_{i=1}^{m} w_i \times P_{ij}$$
 
-Se basan en el juicio humano y el consenso.
+*   **Proceso Analítico Jerárquico (AHP - Saaty):** Método **multicriterio** estructurado que **descompone** la **decisión** en una jerarquía de objetivos, criterios y alternativas, **realizando comparaciones** pareadas entre elementos mediante matrices matemáticas para **calcular prioridades relativas**.
+*   **Método Delphi:** Técnica iterativa y anónima para obtener **consenso** entre un panel de expertos. Se ejecutan rondas sucesivas de cuestionarios con retroalimentación controlada, **eliminando** el **sesgo** de líderes de opinión dominantes.
+*   **Q-Sort:** Técnica de **ordenación** forzada donde los evaluadores clasifican una gran cantidad de propuestas en pilas o grupos homogéneos (Alta, Media, Baja prioridad) siguiendo una **distribución estadística** prefijada.
+*   **Comité Asesino** (*Murder Board*): Panel de revisión técnica rigurosa que somete a los defensores del proyecto a preguntas exhaustivas para **detectar inconsistencias y vulnerabilidades** antes de conceder la autorización formal.
 
-*   **Revisión por Pares (Peer Review) o Comités:** Un grupo de expertos o la PMO de Portfolio evalúa las propuestas y debate su viabilidad.
-*   **Método Delphi:** Técnica estructurada para obtener el consenso de un panel de expertos de forma anónima. Se realizan varias rondas de cuestionarios para evitar que la opinión de un "experto dominante" sesgue al resto del grupo.
-*   **Q-Sort:** Método de clasificación comparativa. Los expertos clasifican los proyectos propuestos en grupos según su prioridad (Alta, Media, Baja) distribuyéndolos de forma forzada bajo una curva normal.
-*   **Asesinato de Proyectos (Murder Board):** Un comité agresivo ataca la propuesta de proyecto buscando todos sus fallos para asegurar que solo sobrevivan las propuestas verdaderamente robustas.
+### 2.2. Métodos de Optimización Restringida (*Constrained Optimization Methods*)
 
-### 2.3. Métodos de medición de beneficios
+Emplean **algoritmos matemáticos** para seleccionar la combinación óptima de proyectos dentro de un portafolio, **maximizando** una **función objetivo** (*ej. valor total o beneficio social*) sujeta a un sistema de **restricciones** simultáneas (*límite presupuestario anual, horas de desarrollo disponibles, dependencias técnicas*):
 
-Los métodos de **medición de beneficios** permiten comparar alternativas utilizando indicadores homogéneos. Entre ellos se encuentran modelos de puntuación, análisis económico y otras técnicas comparativas.
-
-En un modelo de puntuación ponderada, los criterios se definen previamente, se asigna a cada uno un peso y cada alternativa recibe una valoración. El resultado es una puntuación agregada que permite ordenar las opciones.
-
-Los pesos y escalas deben definirse antes de comparar alternativas y aplicarse de forma consistente. Deben documentarse los supuestos utilizados para facilitar la trazabilidad de la decisión.
-
-### 2.4. Métodos de optimización restringida
-
-Los métodos de optimización restringida buscan determinar una combinación o cartera de proyectos que maximice una función objetivo respetando restricciones.
-
-Pueden emplearse técnicas de programación lineal, programación entera, programación no lineal, programación dinámica y otros modelos matemáticos.
-
-Entre las restricciones pueden encontrarse presupuesto, personal disponible, capacidad técnica, dependencias temporales, capacidad de infraestructura o límites de riesgo.
-
-Estos métodos son especialmente útiles cuando no basta con ordenar proyectos individualmente y debe determinarse la mejor combinación posible dentro de una cartera.
+*   **Programación Lineal:** Variables continuas bajo relaciones lineales de restricción.
+*   **Programación Entera y Binaria (0-1):** Modela la decisión de selección donde una variable toma valor 1 si el proyecto se aprueba y 0 si se descarta.
+*   **Programación Dinámica:** Resuelve problemas secuenciales complejos descomponiéndolos en una serie de etapas o subproblemas entrelazados en el tiempo.
 
 ## 3. Factores Clave en la Toma de Decisiones
 
-La decisión de seleccionar un proyecto no se basa en una única fórmula matemática. Los directivos y la PMO combinan los métodos anteriores sopesando varios factores clave:
+La selección no responde a una variable aislada, sino a la **conjunción de múltiples factores de gobernanza** (**ISO 21504**):
 
-1.  **Relación Riesgo vs. Recompensa:** Un proyecto con un VAN enorme puede ser rechazado si tiene un riesgo de fracaso tecnológico inasumible.
-2.  **Capacidad Operativa y Disponibilidad de Recursos:** Un proyecto puede ser excelente sobre el papel, pero si la organización no tiene el personal cualificado (o no puede contratarlo a tiempo), se descartará o pospondrá.
-3.  **Dependencias e Interrelaciones:** Un proyecto puede tener un VAN negativo, pero ser un prerrequisito técnico obligatorio (habilitador) para otro proyecto que tiene un VAN extremadamente positivo.
-4.  **Restricciones Presupuestarias (Entorno Público):** En la AGE, los presupuestos son anualizados. Un proyecto debe encajar en las partidas presupuestarias aprobadas en los PGE (Presupuestos Generales del Estado) o contar con fondos específicos europeos (ej. PRTR).
+```mermaid
+graph TD
+    classDef main fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef factor fill:#e3f2fd,stroke:#1565c0,stroke-width:1px,color:#000
 
-Un quinto factor que suele añadirse en manuales actualizados es la **madurez y capacidad de gobierno de la organización** (nivel CMMI, existencia de PMO consolidada): dos proyectos con idéntico VAN pueden recibir prioridades distintas si uno de ellos exige un nivel de madurez organizativa que la entidad todavía no tiene, elevando su riesgo de ejecución real más allá de lo que refleja el análisis financiero.
+    DEC[DECISIÓN ESTRATÉGICA<br>DE SELECCIÓN]:::main
+    
+    DEC --> F1[Rentabilidad<br>vs.<br>Riesgo Técnico y Operativo]:::factor
+    DEC --> F2[Disponibilidad de Recursos<br>y<br>Capacidad del Equipo]:::factor
+    DEC --> F3[Dependencias Técnicas<br>y<br>Proyectos Habilitadores]:::factor
+    DEC --> F4[Anualidad Presupuestaria<br>y<br>Fondos Disponibles]:::factor
+    DEC --> F5[Madurez Organizativa<br>y<br>Capacidad de Mantenimiento]:::factor
+```
 
-### 3.1. Factores de decisión en la selección de proyectos
+1.  **Balance Riesgo-Rentabilidad:** Un proyecto con alto $VAN$ puede ser desestimado si la probabilidad o impacto del riesgo tecnológico es inaceptable para la organización.
+2.  **Capacidad de Ejecución y Recursos:** Disponibilidad real de personal capacitado, infraestructura y licitaciones viables en plazo.
+3.  **Proyectos Habilitadores e Interdependencias:** Iniciativas con rentabilidad financiera nula o negativa (*ej. renovación del bus de integración o arquitectura base*) que son requisitos indispensables para ejecutar proyectos tractores de alto valor.
+4.  **Restricciones Presupuestarias y Temporalidad:** En las Administraciones Públicas, encaje en los Presupuestos Generales del Estado/Comunidad y cumplimiento de hitos temporales para fondos europeos (**PRTR/Next Generation EU**).
+5.  **Sostenibilidad y Operación Posterior:** Capacidad del área operativa (*Sistemas/CAU*) para asumir el mantenimiento del entregable tras el cierre del proyecto.
 
-La selección debe considerar conjuntamente:
+## 4. Herramientas y Técnicas de Selección y Priorización
 
-1. **Alineación estratégica:** contribución a objetivos y prioridades de la organización.
-2. **Valor esperado:** beneficios y resultados que se pretende obtener.
-3. **Viabilidad:** capacidad técnica, organizativa, jurídica y económica.
-4. **Riesgos e incertidumbres:** probabilidad, impacto y capacidad de respuesta.
-5. **Recursos y restricciones:** disponibilidad de presupuesto, personal, tecnología y tiempo.
-6. **Dependencias:** relaciones con otros proyectos, sistemas, contratos o iniciativas.
-7. **Urgencia y oportunidad temporal:** necesidad de actuar dentro de un plazo determinado.
-8. **Sostenibilidad y efectos a largo plazo:** consecuencias económicas, sociales y ambientales.
-9. **Capacidad de operación y mantenimiento:** posibilidad de sostener el resultado una vez implantado.
-10. **Cumplimiento normativo:** obligaciones legales o regulatorias que condicionen la alternativa.
+### 4.1. El Caso de Negocio (*Business Case*)
+Documento central de gobierno (definido en **PRINCE2** y **Five Case Model** de *HM Treasury*) que **justifica** la **inversión analizando opciones** (*no hacer nada, hacer lo mínimo, hacer algo*), costes del ciclo de vida, beneficios medibles, disbeneficios y riesgos.
 
-### 3.2. Restricciones presupuestarias y capacidad de ejecución
+### 4.2. Árboles de Decisión y Valor Monetario Esperado (VME / EMV)
+**Técnica gráfica** que **evalúa decisiones bajo** condiciones de **incertidumbre**. 
 
-Un proyecto puede ser atractivo desde el punto de vista financiero y, sin embargo, no resultar seleccionable por falta de recursos, incompatibilidad con otras iniciativas o ausencia de capacidad para ejecutarlo.
+El **Valor Monetario Esperado** cuantifica el impacto medio ponderado de eventos probabilísticos:
 
-La decisión debe considerar el presupuesto disponible a lo largo del horizonte temporal del proyecto y la capacidad efectiva de la organización para ejecutar las actividades previstas y posteriormente operar el resultado.
+$$VME = \sum (P_i \times I_i)$$
 
-### 3.3. Dependencias y proyectos habilitadores
+Donde $P_i$ es la probabilidad del escenario $i$ e $I_i$ es el impacto económico del resultado.
 
-Algunos proyectos generan beneficios de forma directa, mientras que otros son necesarios para que puedan ejecutarse otras iniciativas.
+### 4.3. Matriz de Priorización de Cartera $2 \times 2$ (Portfolio Management)
+**Herramienta visual** que mapea los proyectos propuestos en cuadrantes cruzando **Valor / Beneficio Estratégico** frente a **Complejidad / Coste / Riesgo**:
 
-Un proyecto habilitador puede tener un retorno directo reducido y, sin embargo, resultar necesario para alcanzar determinados objetivos estratégicos o para desbloquear otros proyectos.
+| Cuadrante | Relación Valor / Complejidad | Decisión de Selección |
+| :--- | :--- | :--- |
+| **Victorias Rápidas** (*Quick Wins*) | Alto Valor / Bajo Coste-Riesgo | **Prioridad 1:** Aprobación y ejecución inmediata. |
+| **Proyectos Estratégicos** | Alto Valor / Alto Coste-Riesgo | **Prioridad 2:** Aprobación con desglose en fases y mitigación de riesgos. |
+| **Proyectos Menores / Relleno** | Bajo Valor / Bajo Coste-Riesgo | **Prioridad 3:** Ejecución sujeta a disponibilidad remanente de recursos. |
+| **Proyectos Trampa / Descarte** | Bajo Valor / Alto Coste-Riesgo | **Descarte** (*No-Go*): Rechazo sistemático. |
 
-La valoración debe considerar, por tanto, las interdependencias de la cartera y no únicamente la rentabilidad individual de cada propuesta.
-
-## 4. Herramientas y Técnicas de Selección
-
-Para ejecutar los métodos descritos, se emplean herramientas visuales y analíticas.
-
-*   **El Caso de Negocio (Business Case):** Es el documento fundamental (central en PRINCE2) que consolida toda la información: los motivos, las opciones, los costes, los beneficios esperados, el análisis de inversión (VAN, TIR) y los riesgos. Es la herramienta de venta del proyecto ante el Comité.
-*   **Árboles de Decisión y Valor Monetario Esperado (VME):** Herramienta gráfica que representa diferentes alternativas de decisión y sus posibles resultados futuros, asignando probabilidades. El VME se calcula multiplicando la probabilidad de un evento por su impacto económico.
-    *   *Fórmula VME:* $Probabilidad (\%) \times Impacto Económico (\$)$.
-    *   *Suma de Nodos:* Un nodo de decisión se evalúa sumando el VME de todas sus ramas.
-*   **Análisis DAFO / SWOT:** Técnica de análisis de la situación que evalúa las Debilidades, Amenazas, Fortalezas y Oportunidades del proyecto en relación con el entorno competitivo o institucional.
-*   **Matrices de Decisión (Matriz Causa-Efecto):** Tablas que cruzan las alternativas de proyecto con los criterios de evaluación, muy utilizadas en los modelos de puntuación ponderada.
-
-En el contexto de carteras de proyectos (Portfolio Management), la herramienta visual más habitual para representar y priorizar de forma sencilla es la **Matriz de Priorización 2x2** (equivalente a la matriz de Mendelow pero aplicada a proyectos en lugar de a interesados), que cruza típicamente **Valor/Beneficio esperado** en un eje contra **Riesgo/Complejidad** o **Coste/Esfuerzo** en el otro, ubicando cada proyecto candidato en uno de los cuatro cuadrantes resultantes (ej. "quick wins": alto valor y bajo esfuerzo, que se priorizan primero) para facilitar una decisión visual e inmediata al Comité de Dirección o Project Board.
-
-### 4.3. Análisis de sensibilidad y escenarios
-
-El **análisis de sensibilidad** estudia cómo varía el resultado de la evaluación cuando cambian uno o varios supuestos relevantes, como costes, demanda, plazo, tasa de descuento o nivel de beneficios.
-
-El **análisis de escenarios** considera conjuntamente distintas combinaciones de supuestos, por ejemplo escenarios optimista, central y pesimista.
-
-Estas técnicas permiten identificar qué variables tienen mayor influencia sobre la decisión y valorar la robustez de la alternativa seleccionada.
-
-### 4.4. Árboles de decisión y valor monetario esperado
-
-Un **árbol de decisión** representa gráficamente alternativas, eventos inciertos y posibles resultados.
-
-El **Valor Monetario Esperado (VME)** de una alternativa se obtiene ponderando cada resultado por su probabilidad y sumando los resultados ponderados:
-
-**VME = Σ (probabilidad del resultado × valor del resultado)**
-
-El VME es especialmente útil cuando existen decisiones secuenciales y resultados inciertos. No elimina la incertidumbre, sino que permite incorporarla de forma explícita al análisis.
-
-### 4.5. Matrices de decisión
-
-Una matriz de decisión permite comparar alternativas mediante varios criterios. Puede utilizarse con escalas cualitativas o cuantitativas y con pesos diferenciados.
-
-El procedimiento habitual consiste en definir criterios, establecer pesos, determinar las escalas de valoración, puntuar las alternativas y calcular la puntuación agregada.
-
-### 4.6. Análisis coste-beneficio y coste-efectividad
-
-El **Análisis Coste-Beneficio (ACB)** compara costes y beneficios de las alternativas expresados en términos monetarios.
-
-El **Análisis Coste-Efectividad (ACE)** compara los costes de alternativas respecto de resultados o beneficios que no se monetizan de forma adecuada. Resulta especialmente útil cuando las alternativas persiguen un resultado común cuya unidad física puede medirse.
-
-En el sector público, la selección de la alternativa debe considerar también los impactos no monetizables, la distribución de costes y beneficios, los riesgos y la incertidumbre.
+### 4.4. Análisis de Sensibilidad y de Escenarios
+*   **Análisis de Sensibilidad (Tornado Diagram):** Examina cómo varía el $VAN$ o la $TIR$ al modificar una única variable crítica (*ej. variación en el coste de licencias o inflación*) manteniendo constantes las demás.
+*   **Análisis de Escenarios:** Modifica simultáneamente múltiples variables para evaluar situaciones globales alternativas (*Escenario Optimista, Más Probable y Pesimista*).
 
 ## 5. Resumen
 
-| Concepto | Regla para el Test / Concepto clave |
+| Concepto | Definición |
 | :--- | :--- |
-| **VAN (Valor Actual Neto)** | "Flujos de caja descontados". A mayor VAN, mejor. Si es $>0$, se acepta. |
-| **TIR (Tasa Interna de Retorno)** | "Rentabilidad en %". Hace que el $VAN = 0$. A mayor TIR, mejor. |
-| **Payback (Plazo de recuperación)** | "Tiempo en recuperar la inversión". Mide **liquidez y riesgo**, NO rentabilidad. Se elige el más corto. |
-| **BCR (Relación Beneficio-Coste)** | "PV Beneficios / PV Costes", "Ratio, no importe absoluto", "Se acepta si BCR > 1". |
-| **Coste de Oportunidad** | "El valor del proyecto que se rechaza". No se suma ni se resta, es simplemente el valor de la alternativa descartada. |
-| **Costos Hundidos** | "Costos ya gastados irrecuperables". **NUNCA** se tienen en cuenta para decisiones futuras. |
-| **Métodos de Medición de Beneficios** | "Comparativos", "Scoring models, análisis coste-beneficio, Payback, VAN". |
-| **Métodos de Optimización Restringida** | "Matemáticos", "Programación lineal/no lineal/entera/dinámica/multiobjetivo". |
-| **Scoring Models** | "Puntuación ponderada", "Criterios con pesos". |
-| **Método Delphi** | "Panel de expertos", "Anónimo", "Rondas sucesivas", "Consenso". |
-| **VME (Valor Monetario Esperado)** | "Árboles de decisión", "Probabilidad por Impacto". |
-| **Matriz de Priorización 2x2** | "Valor vs. Riesgo/Esfuerzo", "Quick wins", "Decisión visual de cartera". |
+| **VAN / NPV** | "Valor presente de flujos futuros", "Criterio rey de rentabilidad", "Elegir el más alto". |
+| **TIR / IRR** | "Tasa de descuento que hace VAN=0", "Rentabilidad intrínseca en porcentaje". |
+| **Payback** | "Tiempo en recuperar la inversión", "Mide liquidez y riesgo, NO rentabilidad global". |
+| **BCR / RBC** | "Ratio PVB / PVC", "Eficiencia relativa", "Viable si es mayor que 1". |
+| **Coste de Oportunidad** | "Valor de la mejor alternativa descartada", no se suma al coste real. |
+| **Costes Hundidos** (*Sunk Costs*) | "Costes ya incurridos e irrecuperables", "**NUNCA** influyen en decisiones futuras". |
+| **Métodos de Medición de Beneficios** | "Comparativos", "Scoring models, análisis económico, Delphi, Q-Sort, Murder Board". |
+| **Métodos de Optimización Restringida** | "Matemáticos de cartera", "Programación lineal, entera, dinámica, algoritmos multiobjetivo". |
+| **Método Delphi** | "Panel de expertos", "Iterativo, anónimo, cuestionarios por rondas, busca consenso". |
+| **VME** (*Valor Monetario Esperado*) | "Árboles de decisión", "Probabilidad por impacto económico". |
+| **Coste del Ciclo de Vida (LCC / TCO)** | **Art. 148 LCSP**, "Coste total: adquisición, desarrollo, mantenimiento y retirada". |
 
-## 7. Referencias normativas y técnicas
+## 6. Referencias Normativas y Técnicas
 
-* **Project Management Institute (PMI)**, *A Guide to the Project Management Body of Knowledge (PMBOK® Guide)*.
-* **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*.
+* **Project Management Institute (PMI)**, *A Guide to the Project Management Body of Knowledge (PMBOK® Guide)* — 7ª y 8ª Edición.
 * **ISO 21504:2022**, *Project, programme and portfolio management — Guidance on portfolio management*.
+* **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*.
 * **ISO 21500:2021**, *Project, programme and portfolio management — Context and concepts*.
-* **HM Treasury, The Green Book 2026**, marco oficial de evaluación de costes, beneficios y riesgos en propuestas públicas.
+* **Ley 9/2017 (LCSP)**, de 8 de noviembre, de Contratos del Sector Público (especialmente art. 148 sobre Coste del Ciclo de Vida).
+* **HM Treasury**, *The Green Book: Central Government Guidance on Appraisal and Evaluation*.
 
-## 6. Simulacro de Test
+## 7. Simulacro de Test
 
 **Pregunta 1:**
-*La PMO de un Ministerio está evaluando dos proyectos mutuamente excluyentes para modernizar el archivo digital. El Proyecto A tiene un VAN de 150.000€ y una duración de 3 años. El Proyecto B tiene un VAN de 85.000€ y una duración de 1 año. Si no existen otras restricciones, ¿qué decisión debe tomar el comité basándose estrictamente en los criterios financieros?*
-a) Seleccionar el Proyecto B porque su plazo de recuperación es mucho menor.
-b) Seleccionar el Proyecto A porque su VAN es mayor, independientemente de la duración.
-c) Rechazar ambos porque no se detalla la TIR de ninguno.
-d) Sumar ambos VAN y ejecutar ambos proyectos para maximizar beneficios.
+*Un comité de dirección evalúa dos proyectos tecnológicos mutuamente excluyentes para una infraestructura de almacenamiento. El Proyecto Alfa presenta un VAN de 320.000 € y una TIR del 14 %. El Proyecto Beta presenta un VAN de 210.000 € y una TIR del 22 %. Si el coste de capital de la organización es del 7 %, ¿cuál es la decisión financieramente correcta?*
+a) Seleccionar el Proyecto Beta porque su rentabilidad porcentual (TIR) es netamente superior.
+b) Seleccionar el Proyecto Alfa porque genera mayor valor absoluto (VAN), primando este criterio en proyectos mutuamente excluyentes.
+c) Rechazar ambos proyectos porque la TIR supera excesivamente el coste de capital.
+d) Seleccionar el Proyecto Beta únicamente si su periodo de recuperación simple es superior a 5 años.
 
-**Razonamiento:**
-*   La regla de oro de la selección financiera dictamina que, ante proyectos mutuamente excluyentes, el criterio rey absoluto de rentabilidad es el Valor Actual Neto (VAN). Siempre se escoge el proyecto con el VAN superior.
-*   El Proyecto A (150.000€) aporta más valor a la organización que el B (85.000€).
-**Respuesta correcta: B.**
+**Razonamiento Estructurado:**
+1.  **Identifica el conflicto:** En proyectos mutuamente excluyentes donde $VAN$ y $TIR$ discrepan, el criterio de decisión universal y jerárquicamente superior es el **Valor Actual Neto (VAN)**.
+2.  **Descarte:** La $TIR$ mide eficiencia relativa, pero el $VAN$ mide el incremento de riqueza o valor absoluto generado para la organización (Alfa aporta 320.000 € frente a los 210.000 € de Beta).
+3.  **Respuesta correcta: B.**
 
 **Pregunta 2:**
-*Durante una reunión de selección de cartera, la directiva no logra ponerse de acuerdo sobre qué proyectos tecnológicos priorizar debido a la fuerte influencia y presión del Director Financiero sobre el resto de vocales. Para evitar este sesgo, deciden utilizar una técnica donde expertos evalúan los proyectos de forma estructurada, iterativa y, sobre todo, anónima. ¿Qué técnica han decidido utilizar?*
-a) Revisión por pares (Peer Review).
-b) Q-Sort.
-c) Método Delphi.
-d) Modelos de puntuación ponderada.
+*¿En qué categoría de métodos de selección de proyectos se engloban técnicas como la programación entera binaria (0-1), la programación lineal y la programación dinámica utilizadas para optimizar una cartera de proyectos sujeta a límites presupuestarios?*
+a) Métodos de Medición de Beneficios.
+b) Métodos de Optimización Restringida.
+c) Modelos Cualitativos de Consenso.
+d) Análisis de Reducción de Costes Operativos.
 
-**Razonamiento:**
-*   Las palabras chivata del enunciado son "iterativa" y "anónima" para evitar el "sesgo de la influencia".
-*   Esta es la definición de manual del Método Delphi.
-**Respuesta correcta: C.**
+**Razonamiento Estructurado:**
+1.  **Palabra chivata:** "Programación entera, lineal, dinámica", "optimizar cartera sujeta a límites presupuestarios".
+2.  **Descarte:** Los métodos comparativos como scoring o Delphi pertenecen a Medición de Beneficios (a). Los modelos matemáticos basados en restricciones corresponden formalmente a la familia de **Optimización Restringida** (b).
+3.  **Respuesta correcta: B.**
 
 **Pregunta 3:**
-*Se está evaluando la viabilidad de continuar o cancelar un proyecto de desarrollo de software que lleva 6 meses de retraso. El departamento de contabilidad informa que ya se han gastado 250.000€ en licencias que no se pueden devolver. En la terminología de selección financiera de proyectos, ¿cómo se denomina este importe y cómo debe afectar a la decisión?*
-a) Es el Coste de Oportunidad, y debe restarse de los beneficios futuros.
-b) Es un Costo Hundido (Sunk Cost), y no debe tenerse en cuenta al decidir si se continúa o cancela el proyecto.
-c) Es el Valor Monetario Esperado (VME), y obliga a la finalización obligatoria del proyecto.
-d) Es un Costo Hundido (Sunk Cost), y debe sumarse al cálculo del nuevo VAN para justificar la inversión.
+*Un organismo público ha invertido 180.000 € en el desarrollo de un módulo de software que ha quedado obsoleto antes de desplegarse debido a un cambio normativo. Para adaptarlo a la nueva ley se requieren 40.000 € adicionales, estimándose que el valor de los beneficios que aportará asciende a 70.000 €. ¿Cómo debe calificarse el gasto inicial de 180.000 € y cuál debe ser la decisión?*
+a) Coste de Oportunidad; debe cancelarse el proyecto al superar el coste total acumulado a los beneficios.
+b) Coste Hundido; el gasto previo debe ignorarse y el proyecto debe continuar porque el beneficio futuro (70.000 €) supera al coste pendiente (40.000 €).
+c) Coste Amortizable; debe sumarse a la inversión restante obligando a rehacer el análisis de TIR.
+d) Coste Marginal; debe descontarse íntegramente del Valor Monetario Esperado.
 
-**Razonamiento:**
-*   El dinero ya gastado que es irrecuperable es, por definición, un "Costo Hundido" (Sunk Cost).
-*   La regla fundamental en la evaluación de proyectos es que los costos hundidos nunca se deben incluir en el análisis de decisiones futuras (no "llorar sobre la leche derramada"). La decisión de seguir o parar solo debe basarse en el coste necesario *desde hoy hasta el final* frente al beneficio esperado.
-**Respuesta correcta: B.**
-
-### 6.1. Simulacro de Test adicional
+**Razonamiento Estructurado:**
+1.  **Identifica el concepto:** El dinero ya gastado e irrecuperable es un **Coste Hundido (*Sunk Cost*)**.
+2.  **Aplica la regla de oro:** Los costes hundidos son irrelevantes para decisiones futuras. Se evalúa exclusivamente lo que queda por gastar (40.000 €) frente a lo que se va a obtener (70.000 €). Como $70.000 > 40.000$, la continuación es favorable.
+3.  **Respuesta correcta: B.**
 
 **Pregunta 4:**
-*Un analista debe comparar dos proyectos de tamaño muy distinto: el Proyecto X tiene un valor presente de beneficios de 400.000€ y un valor presente de costes de 100.000€; el Proyecto Y tiene un valor presente de beneficios de 900.000€ y un valor presente de costes de 600.000€. Si se utiliza la Relación Beneficio-Coste (BCR) como criterio de eficiencia, ¿qué proyecto resulta más eficiente por cada euro invertido?*
-a) El Proyecto Y, porque tiene mayores beneficios absolutos.
-b) El Proyecto X, porque su BCR es de 4, frente a 1,5 del Proyecto Y.
-c) Ambos son igual de eficientes porque los dos superan un BCR de 1.
-d) El Proyecto Y, porque su VAN absoluto es mayor.
+*Al evaluar ofertas en una licitación de servicios cloud según el artículo 148 de la Ley 9/2017 de Contratos del Sector Público (LCSP), ¿qué enfoque de evaluación económica abarca no solo el precio de adquisición sino también los costes de utilización, mantenimiento y final de vida útil?*
+a) Análisis Coste-Efectividad Simple.
+b) Valor Monetario Esperado (VME).
+c) Coste del Ciclo de Vida (LCC / TCO).
+d) Retorno de la Inversión Contable (ROI).
 
-**Razonamiento:**
-1.  BCR = PVB / PVC. Para el Proyecto X: 400.000 / 100.000 = 4. Para el Proyecto Y: 900.000 / 600.000 = 1,5.
-2.  Aunque los beneficios absolutos de Y son mayores, el BCR mide la eficiencia relativa por unidad de coste, y en ese ratio X es netamente superior (4 frente a 1,5).
-3.  **Respuesta correcta:** B.
+**Razonamiento Estructurado:**
+1.  **Referencia legal:** El art. 148 LCSP define expresamente el cálculo del **Coste del Ciclo de Vida** (*Life Cycle Costing*).
+2.  **Definición:** Integra costes de adquisición, utilización (energía, recursos), mantenimiento y desmantelamiento/reciclaje.
+3.  **Respuesta correcta: C.**
 
 **Pregunta 5:**
-*Según la clasificación clásica de métodos de selección de proyectos (PMBOK), ¿en qué categoría se incluyen técnicas como la programación lineal, la programación entera y la programación dinámica?*
-a) Métodos de Medición de Beneficios (comparativos).
-b) Métodos de Optimización Restringida (matemáticos).
-c) Métodos cualitativos de consenso experto.
-d) Análisis Coste-Beneficio social.
+*Si un proyecto tecnológico tiene un 30 % de probabilidad de sufrir una sanción de seguridad de 100.000 € por fuga de datos y un 70 % de probabilidad de operar sin incidentes con un impacto de 0 €, ¿cuál es el Valor Monetario Esperado (VME) del riesgo considerado?*
+a) -100.000 €
+b) -30.000 €
+c) 70.000 €
+d) -70.000 €
 
-**Razonamiento:**
-1.  Los Métodos de Medición de Beneficios (A) agrupan técnicas comparativas como scoring models, VAN o Payback. Los métodos cualitativos de consenso (C) agrupan técnicas como Delphi o Q-Sort. El Análisis Coste-Beneficio social (D) es una técnica de evaluación de criterios, no una familia matemática de optimización.
-2.  La programación lineal, entera y dinámica son técnicas matemáticas que buscan maximizar el valor de una cartera sujeta a restricciones estrictas de recursos: esa es exactamente la definición de los Métodos de Optimización Restringida.
-3.  **Respuesta correcta:** B.
+**Razonamiento Estructurado:**
+1.  **Aplica la fórmula:** $VME = \sum (P_i \times I_i)$.
+2.  **Cálculo:** $VME = (0{,}30 \times (-100.000\text{ \euro})) + (0{,}70 \times 0\text{ \euro}) = -30.000\text{ \euro}$.
+3.  **Respuesta correcta: B.**
