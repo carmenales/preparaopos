@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-006-herramientas-tecnicas"
 title: "Herramientas y Técnicas de Gestión"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -21,366 +21,258 @@ tags:
   - "metrica-v3"
   - "itil"
   - "cmdb"
+  - "iso-21508"
+  - "iso-21511"
 created_at: "2026-08-08"
-last_reviewed: null
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
-# Tema 6. Herramientas y Técnicas
+# Tema 6. Herramientas y Técnicas de Gestión
+
+Este tema constituye el núcleo operativo de la ingeniería de gestión de proyectos y servicios TIC, integrando los procesos de planificación de **Métrica v3** (*interfaz GP*), los estándares del **PMI** (*PMBOK*), las directrices internacionales **ISO** (*ISO 21511, ISO 21508*) y las mejores prácticas de gestión del servicio de **ITIL v4**.
 
-Este tema es el núcleo operativo de Métrica v3 (Interfaz de Gestión de Proyectos - GP) y de estándares como el PMBOK o marcos de servicio como ITIL v4. Como ingeniero, esto es "código de gestión": reglas claras para construir la estructura del proyecto y asegurar su correcta operación técnica y gobernanza.
+## 1. Planificación: WBS/EDT, Cronogramas y Estimación
 
-## 1. Planificación: WBS, Cronogramas y Estimación
+La planificación técnica transforma los requisitos y el alcance en entregables cuantificables, cronogramas viables y líneas base de control.
 
-La planificación transforma la idea en tareas ejecutables, estableciendo las líneas base del proyecto.
+```mermaid
+graph TD
+    classDef wbs fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef act fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef sched fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+
+    WBS["<b>WBS / EDT (ISO 21511)</b><br>Descomposición jerárquica del alcance<br>Regla del 100%"]:::wbs
+    
+    WBS --> WP["<b>Paquetes de Trabajo (Work Packages)</b><br>Nivel más bajo / Diccionario WBS"]:::wbs
+    
+    WP --> ACT["<b>Identificación y Estimación de Actividades</b><br>Juicio Experto, Paramétrica, 3 Puntos, Puntos Función"]:::act
+    
+    ACT --> PREC["<b>Secuenciación de Precedencias</b><br>FS, FF, SS, SF"]:::sched
+    
+    PREC --> NET["<b>Diagramas de Red / CPM / PERT</b><br>Cálculo de Ruta Crítica y Holguras"]:::sched
+    
+    NET --> GANTT["<b>Cronograma del Proyecto (Gantt)</b><br>Línea Base del Cronograma"]:::sched
+```
 
-*   **WBS (Work Breakdown Structure / Estructura de Desglose del Trabajo - EDT):** Es el **árbol jerárquico** que descompone el proyecto en entregables manejables (fases -> actividades -> tareas). Es la base para cualquier estimación. 
-    *   *Regla del 100%:* La WBS debe incluir el 100% del trabajo definido por el alcance del proyecto.
-    *   *Paquete de trabajo (Work Package):* Es el nivel más bajo de la WBS, donde el coste y la duración pueden ser estimados y gestionados con fiabilidad.
-    *   *Diccionario de la WBS:* Documento de respaldo que proporciona información detallada (descripción, responsable, criterios de aceptación) sobre cada componente de la WBS.
-*   **Estimación:**
-    *   **Puntos Función (Albrecht / Mark II):** Técnica empírica e independiente del lenguaje. Mide la complejidad de la funcionalidad basándose en las entradas, salidas, consultas, archivos lógicos internos y archivos de interfaz externos.
-    *   **Staffing Size:** Específico para **Orientación a Objetos**. Se basa en estimar el número de clases clave y secundarias para determinar el esfuerzo en días/persona.
-    *   **COCOMO (Constructive Cost Model):** Modelo matemático de Barry Boehm basado en líneas de código (KLOC) y multiplicadores de esfuerzo.
-    *   **Técnica Delphi / Delphi de banda ancha:** Método cualitativo basado en el consenso de un panel de expertos anónimos.
-*   **Cronogramas y Secuenciación:**
-    *   **Método de la Ruta Crítica (CPM):** Algoritmo para predecir la duración del proyecto. La ruta crítica es la secuencia de actividades con **holgura cero**; cualquier retraso en ella retrasa el proyecto.
-    *   **PERT (Program Evaluation and Review Technique):** Grafo de redes (nodos/flechas) probabilístico. Usa tres estimaciones (Optimista, Pesimista, Más probable) para calcular la duración esperada: $E = \frac{O + 4M + P}{6}$. Permite calcular la **Ruta Crítica** (la secuencia de tareas sin holgura).
-    *   **Holgura (Float):** *Holgura Total* es el tiempo que una actividad puede retrasarse sin retrasar el proyecto; *Holgura Libre* es el tiempo que puede retrasarse sin afectar a las actividades sucesoras.
-    *   **Gantt:** El diagrama de barras clásico para visualizar plazos y superposición de tareas en el tiempo.
+### 1.1. Estructura de Desglose del Trabajo (WBS / EDT - ISO 21511)
 
-### 1.1. WBS y planificación del alcance
+La **WBS (Work Breakdown Structure)** o **EDT (Estructura de Descomposición del Trabajo)** es la descomposición jerárquica, orientada a entregables, del alcance total del trabajo que el equipo debe ejecutar:
 
-La **WBS/EDT** organiza jerárquicamente el alcance total del proyecto mediante entregables y componentes de trabajo. El nivel inferior de la descomposición puede corresponder a **paquetes de trabajo**, que permiten planificar y controlar coste, duración y recursos con un nivel de detalle adecuado.
+*   **Regla del 100%:** Principio fundamental que establece que la **WBS debe incluir el 100% del alcance del proyecto** (tanto los entregables del producto como el trabajo de gestión del proyecto) y nada que esté fuera de él. La suma del trabajo de los niveles inferiores debe ser exactamente igual al nivel superior.
+*   **Paquete de Trabajo** (*Work Package*): Es el **nivel más bajo de la descomposición** jerárquica de la WBS. En este nivel, el coste, el cronograma y los recursos pueden ser estimados, asignados y controlados con máxima fiabilidad.
+*   **Cuenta de Control** (*Control Account*): Punto de control de gestión donde **se integran el alcance, el presupuesto y el cronograma** para la **medición** del desempeño mediante **Valor Ganado** (EVM). Una cuenta de control engloba uno o varios paquetes de trabajo.
+*   **Diccionario de la WBS** (*WBS Dictionary*): Documento formal que **detalla cada componente de la WBS**, incluyendo el código identificador, descripción del trabajo, entregables asociados, responsable, recursos asignados, supuestos, restricciones y criterios de aceptación.
 
-La WBS constituye una referencia para desarrollar el cronograma, estimar costes y asignar responsabilidades. La descomposición debe ser suficiente para planificar y controlar el trabajo, evitando niveles de detalle innecesarios.
+### 1.2. Técnicas de Estimación de Esfuerzo, Duración y Coste
 
-La **regla del 100 %** establece que la WBS debe recoger todo el trabajo necesario para completar el alcance definido, incluyendo el trabajo de dirección y gestión del proyecto cuando forme parte del alcance.
+*   **Estimación Análoga** (*Top-Down*): Utiliza la duración o coste real de proyectos anteriores similares. Rápida y de bajo coste, pero con menor precisión.
+*   **Estimación Paramétrica:** Emplea algoritmos matemáticos basados en relaciones estadísticas entre datos históricos y parámetros del proyecto (*ej. coste por punto de función o coste por línea de código*).
+*   **Estimación Ascendente** (*Bottom-Up*): Estima el esfuerzo o coste de cada paquete de trabajo o actividad individual de la WBS y luego agrega los resultados hacia los niveles superiores. Máxima precisión, pero mayor consumo de tiempo.
+*   **Puntos de Función** (*FPA - Albrecht / Mark II*): Métrica estándar independiente del lenguaje de programación que cuantifica el tamaño funcional del software a partir de cinco componentes: Entradas Externas (EI), Salidas Externas (EO), Consultas Externas (EQ), Archivos Lógicos Internos (ILF) y Archivos de Interfaz Externos (EIF).
+*   **COCOMO** (*Constructive Cost Model - Barry Boehm*): Modelo paramétrico empírico basado en el volumen de líneas de código fuente (KLOC) y factores de coste multiplicadores. Posee tres variantes: Básico, Intermedio y Detallado.
+*   **Staffing Size** (*Orientación a Objetos*): Estima el esfuerzo a partir del número de clases clave y secundarias del modelo de dominio.
+*   **Técnica Delphi y Delphi de Banda Ancha** (*Wideband Delphi*): Método cualitativo de consenso estructurado basado en rondas sucesivas y anónimas entre expertos para mitigar sesgos individuales.
 
-El **diccionario de la WBS** complementa la representación gráfica mediante información detallada de sus componentes, como descripción, responsables, criterios de aceptación, supuestos y restricciones.
+### 1.3. Secuenciación y Dependencias entre Actividades
 
-### 1.2. Cronogramas y relaciones entre actividades
+Las relaciones de precedencia entre actividades en los diagramas de red se clasifican en cuatro tipos:
 
-El cronograma representa la planificación temporal del trabajo. Para construirlo es necesario identificar y secuenciar actividades y determinar su duración y dependencias.
+![Tipo de relaciones PDM](../images/tipo-relaciones-pdm.jpg)
 
-Las relaciones de precedencia más habituales son:
+*   **Fin a Inicio** (FS): La actividad predecesora debe terminar antes de que la sucesora pueda comenzar (la relación más habitual en desarrollo software).
+*   **Inicio a Inicio** (SS): La actividad sucesora no puede comenzar hasta que haya comenzado la predecesora.
+*   **Fin a Fin** (FF): La actividad sucesora no puede finalizar hasta que haya finalizado la predecesora.
+*   **Inicio a Fin** (SF): La actividad sucesora no puede finalizar hasta que haya comenzado la predecesora (la relación menos frecuente).
+*   **Adelanto** (*Lead*): Tiempo en el que una actividad sucesora puede anticiparse respecto a la predecesora (FS con desfase negativo).
+*   **Retraso** (*Lag*): Tiempo de espera obligado entre la finalización de una actividad y el inicio de la siguiente (FS con desfase positivo).
 
-* **Fin a inicio (FS):** la actividad sucesora comienza cuando termina la predecesora.
-* **Fin a fin (FF):** la actividad sucesora termina cuando termina la predecesora.
-* **Inicio a inicio (SS):** la actividad sucesora comienza cuando comienza la predecesora.
-* **Inicio a fin (SF):** la actividad sucesora termina cuando comienza la predecesora.
+### 1.4. Métodos de Análisis de Redes: CPM y PERT
 
-El cronograma puede representarse mediante diagramas de red y diagramas de Gantt. El uso de relaciones de precedencia permite identificar dependencias y determinar posibles ajustes de secuencia.
+*   **Método de la Ruta Crítica** (CPM - *Critical Path Method*): Modelo determinista que calcula las fechas tempranas y tardías de inicio y fin de todas las actividades.
+    *   **Ruta Crítica:** Es la secuencia continua de actividades dependientes que suma la **mayor duración total** del proyecto y determina la **duración mínima posible** para completarlo.
+    *   **Holgura:** Las actividades sobre la ruta crítica tienen **holgura total cero** ($HT = 0$). Cualquier retraso en una actividad crítica retrasa forzosamente la fecha de fin del proyecto.
+*   **Técnica PERT** (*Program Evaluation and Review Technique*): Modelo probabilístico que incorpora la incertidumbre mediante la **estimación de tres puntos**:
+    *   *Optimista ($O$):* Duración mínima si todo transcurre en condiciones ideales.
+    *   *Más Probable ($M$):* Duración más realista en condiciones estándar.
+    *   *Pesimista ($P$):* Duración máxima si se materializan los problemas previstos.
 
-### 1.3. Ruta crítica y holguras
+$$\text{Duración Esperada PERT } (\mu_E) = \frac{O + 4M + P}{6}$$
 
-El **método de la ruta crítica (CPM)** determina la secuencia de actividades que condiciona la duración mínima del proyecto. Las actividades de la ruta crítica presentan, en el modelo básico, **holgura total cero**.
+$$\text{Varianza de la Actividad } (\sigma^2) = \left( \frac{P - O}{6} \right)^2 \quad \Longrightarrow \quad \text{Desviación Típica } (\sigma) = \frac{P - O}{6}$$
 
-La **holgura total** es el tiempo que una actividad puede retrasarse sin retrasar la fecha de finalización del proyecto. La **holgura libre** es el tiempo que puede retrasarse una actividad sin retrasar el comienzo más temprano de una actividad sucesora.
+*   **Tipos de Holgura** (*Float / Slack*):
+    *   **Holgura Total (*Total Float*):** Margen de tiempo que una actividad puede retrasarse sin retrasar la fecha final del proyecto ($HT = \text{Fin Tardío} - \text{Fin Temprano} = \text{Inicio Tardío} - \text{Inicio Temprano}$).
+    *   **Holgura Libre** (*Free Float*): Margen de tiempo que una actividad puede retrasarse sin retrasar la fecha de inicio temprano de ninguna de sus sucesoras inmediatas.
+*   **Diagrama de Gantt:** Gráfico de barras horizontales sobre un eje temporal que permite visualizar la programación de actividades, sus duraciones, dependencias e hitos (*milestones*).
 
-Una actividad fuera de la ruta crítica puede convertirse en crítica si su holgura se consume como consecuencia de retrasos o cambios de planificación.
+### 1.5. Líneas Base (*Baselines*) del Proyecto
 
-### 1.4. Estimación de duración y esfuerzo
+Una **línea base** es la versión aprobada y formalizada de un plan de trabajo que solo puede modificarse a través de un procedimiento formal de control de cambios. Constituye el patrón de referencia frente al cual se mide el desempeño real:
+*   **Línea Base del Alcance:** Integrada por el Enunciado del Alcance del Proyecto, la **WBS**/**EDT** y el Diccionario de la **WBS**.
+*   **Línea Base del Cronograma:** Versión formal del cronograma con fechas de inicio y fin acordadas.
+*   **Línea Base de Costes (Presupuesto del Proyecto):** Presupuesto distribuido en el tiempo (Curva S) que incluye los costes de los paquetes de trabajo más las **Reservas de Contingencia** (para riesgos conocidos/identificados). 
+  
+> Las **Reservas de Gestión** (para imprevistos/riesgos no identificados) forman parte del presupuesto total del proyecto pero no de la línea base de costes.
 
-La estimación debe expresar sus supuestos y el grado de incertidumbre asociado.
+## 2. Gestión de Riesgos, Control de Cambios y Configuración
 
-Entre las técnicas pueden utilizarse:
+### 2.1. Gestión Integral de Riesgos
 
-* **Estimación análoga:** utiliza información histórica de proyectos o actividades similares.
-* **Estimación paramétrica:** aplica relaciones estadísticas entre variables históricas y parámetros del trabajo.
-* **Estimación ascendente (bottom-up):** estima componentes detallados y agrega sus resultados.
-* **Estimación de tres puntos:** utiliza valores optimista, más probable y pesimista.
-* **Juicio de expertos:** incorpora conocimiento especializado cuando existe información suficiente.
-* **Estimación por consenso:** combina estimaciones independientes para reducir sesgos individuales.
+Un **riesgo** en un proyecto es un evento o condición incierta que, de materializarse, tiene un impacto positivo (oportunidad) o negativo (amenaza) sobre uno o varios objetivos del proyecto (alcance, tiempo, coste, calidad).
 
-### 1.5. PERT y estimación de tres puntos
+*   **Tipología de Riesgos por su Estado:**
+    *   *Riesgo Inherente:* Nivel de riesgo en bruto antes de aplicar medidas de mitigación o salvaguardas.
+    *   *Riesgo Residual:* Nivel de riesgo que permanece tras la aplicación efectiva de las respuestas al riesgo.
+    *   *Riesgo Secundario:* Nuevo riesgo que aparece como consecuencia directa de haber implementado una respuesta a un riesgo previo.
+    *   *Riesgo Emergente:* Riesgo imprevisto que surge durante la ejecución fruto de cambios en el entorno.
+*   **Análisis Cualitativo vs. Cuantitativo:**
+    *   *Cualitativo:* Evalúa y clasifica los riesgos mediante una **Matriz de Probabilidad e Impacto** ($P \times I$), priorizándolos por su urgencia y proximidad.
+    *   *Cuantitativo:* Asigna valores numéricos e impacto monetario a los riesgos mediante técnicas como la **Simulación de Monte Carlo**, el **Árbol de Decisiones** y el **Valor Monetario Esperado ($VME = \sum P_i \times I_i$)**.
 
-En la formulación PERT clásica, la duración esperada se obtiene mediante:
+![Estrategias de respuesta al riesgo](../images/estrategias-respuesta-al-riesgo.jpg) 
 
-**E = (O + 4M + P) / 6**
+### 2.2. Control Integrado de Cambios (Métrica v3 y PMBOK)
 
-donde **O** es la estimación optimista, **M** la más probable y **P** la pesimista.
+Toda modificación que altere las líneas base del proyecto debe gestionarse mediante el **Control Integrado de Cambios**:
+1.  **Registro de la Solicitud:** Se formaliza la petición de cambio detallando la necesidad y el origen.
+2.  **Análisis de Impacto Técnico y Económico:** El Director de Proyecto evalúa el impacto sobre el alcance, cronograma, presupuesto, calidad y riesgos.
+3.  **Aprobación Formal:**
+    *   *En Métrica v3 (fase GPS - Seguimiento y Control):* El **Jefe de Proyecto** analiza el **impacto**, pero la **autorización** reglada corresponde exclusivamente al **Comité de Seguimiento**.
+    *   *En PMBOK:* Corresponde al **Comité de Control de Cambios** (CCB - *Change Control Board*).
+4.  **Actualización de Líneas Base:** Si el cambio se aprueba, se reconfiguran las líneas base y se comunica a los interesados.
 
-La misma técnica puede utilizarse para representar la incertidumbre del esfuerzo o duración de una actividad. La estimación de tres puntos no elimina la incertidumbre, sino que la incorpora explícitamente al cálculo.
+### 2.3. Habilitación del Cambio en Explotación (ITIL v4 - *Change Enablement*)
 
-### 1.6. Líneas base
+Cuando el proyecto transfiere entregables a entornos productivos, los cambios se gestionan bajo la práctica de *Change Enablement* de **ITIL v4**:
 
-Una **línea base** es una versión aprobada de un elemento o conjunto de elementos utilizada como referencia para medir el desempeño y controlar los cambios.
+| Tipo de Cambio | Nivel de Riesgo | Procedimiento de Autorización | Requisitos Clave |
+| :--- | :--- | :--- | :--- |
+| **Cambio Estándar** | Muy bajo / Conocido | **Preautorizado**; no requiere paso por el CAB en cada ejecución. | Procedimiento repetitivo, probado y documentado. |
+| **Cambio Normal** | Medio a Alto | Evaluado y aprobado por el **CAB / CAC (*Change Advisory Board*)**. | Solicitud formal (**RFC**), análisis de impacto, ventana de parada y **Plan de Back-out obligatorio**. |
+| **Cambio de Emergencia** | Crítico / Urgente | Autorización ágil por el **ECAB / CAC de Emergencia**. | Restauración de un incidente grave de seguridad o indisponibilidad. |
 
-En la dirección de proyectos pueden establecerse, entre otras, líneas base de alcance, cronograma y coste. Las desviaciones se analizan comparando la situación real con las referencias aprobadas.
+### 2.4. Gestión de la Configuración y Control de Versiones
 
-Las líneas base no son inmutables: pueden modificarse mediante el proceso de control de cambios establecido por el proyecto.
+*   **Elemento de Configuración** (CI - *Configuration Item*): Cualquier componente (hardware, software, documentación, contrato, base de datos) necesario para prestar un servicio TIC y que se encuentra bajo control de cambios.
+*   **CMDB** (*Configuration Management Database*): Base de datos que almacena todos los CIs, sus atributos técnicos, estado operativo y las relaciones de dependencia existentes entre ellos.
+*   **Sistemas de Control de Versiones** (VCS - Git, SVN):
+    *   *Repositorio:* Almacenamiento centralizado o distribuido del código y sus versiones.
+    *   *Commit:* Registro inmutable de un conjunto atómico de cambios.
+    *   *Branch (Rama):* Línea de desarrollo independiente y bifurcada.
+    *   *Merge:* Integración y fusión de cambios entre ramas.
+    *   *Tag:* Etiqueta inmutable que marca un hito o versión concreta (ej. `v2.1.0`).
 
-## 2. Gestión de Riesgos y Cambios
+## 3. Métricas de Desempeño: Valor Ganado (EVM - ISO 21508 / ISO 21512)
 
-En Métrica v3, la gestión de incidencias y cambios se hace en la fase **GPS (Seguimiento y Control)**. A nivel de servicio y operaciones (ITIL), se sistematiza rigurosamente la configuración.
+El **Earned Value Management (EVM)** es una metodología objetiva que integra la medición del alcance, el cronograma y el coste en una única estructura de análisis para evaluar el rendimiento y predecir el comportamiento futuro del proyecto.
 
-### 2.1. Gestión de Riesgos
-Los riesgos son eventos inciertos que, de ocurrir, tienen un efecto positivo (oportunidad) o negativo (amenaza) en los objetivos del proyecto.
-*   Deben identificarse, analizarse cualitativamente (Matriz de Probabilidad x Impacto) y cuantificarse (p. ej., simulación de Monte Carlo o Valor Monetario Esperado).
-*   **Estrategias frente a Amenazas:** Evitar (eliminar la causa), Transferir (seguros, externalizar), Mitigar (reducir probabilidad/impacto), Aceptar.
-*   **Riesgo Residual:** El riesgo que permanece después de aplicar las respuestas.
-*   **Riesgo Secundario:** Un nuevo riesgo que surge como consecuencia directa de la implementación de una respuesta al riesgo.
+![Elementos GVG](../images/elementos-gvg.jpg) 
 
-### 2.2. Control de Cambios
-Cuando un usuario pide cambiar un requisito, el Jefe de Proyecto realiza un **Análisis de Impacto** (¿cuánto tiempo/dinero extra supone?). El cambio se registra formalmente, pero **solo lo aprueba el Comité de Seguimiento**.
+```mermaid
+graph TB
+    classDef quadrant fill:#fff3e0,stroke:#e65100,stroke-width:1px,color:#000
+    classDef ideal fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef crit fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
 
-**Integración con ITIL v4 (Change Enablement):**
-A nivel de operación de servicios, el cambio se define como “la adición, modificación o eliminación de cualquier cosa que pueda tener un efecto directo o indirecto en los servicios”. ITIL especifica tres tipos de cambios:
-1.  **Cambios Estándar:** Son cambios frecuentes, directos, documentados y de riesgo bajo que están preaprobados (ej. ampliación de memoria, cambio de tóner).
-2.  **Cambios Normales:** No tienen un proceso preaprobado. Implican un riesgo medio-alto y deben seguir un proceso de programación, evaluación de riesgo y autorización. Requieren un **Plan de back-out** (plan B en caso de imprevistos) y deben ser aprobados por el **CAC (Comité Asesor de Cambios)**.
-3.  **Cambios Urgentes/Emergencia:** Necesitan evaluación rápida para resolver incidentes graves o fallos críticos de seguridad; el CAC es más flexible o existe un CAC de Emergencia (eCAB).
+    A["<b>CPI > 1  y  SPI > 1</b><br>🟢 Proyecto Óptimo<br>Bajo presupuesto y Adelantado"]:::ideal
+    B["<b>CPI < 1  y  SPI > 1</b><br>🟡 Sobrecoste pero Adelantado<br>(Se acelera gastando más)"]:::quadrant
+    C["<b>CPI > 1  y  SPI < 1</b><br>🟡 Ahorro pero Retrasado<br>(Ritmo de ejecución lento)"]:::quadrant
+    D["<b>CPI < 1  y  SPI < 1</b><br>🔴 Proyecto Crítico<br>Sobrecoste y Retrasado"]:::crit
+```
 
-### 2.3. Gestión de la Configuración y Versiones
-La Gestión de la Configuración garantiza que la información de los activos requeridos (sus estados, relaciones y atributos) esté controlada y precisa.
-*   **CIs (Configuration Items / Elementos de Configuración):** Son los componentes que deben ser gestionados para la prestación del servicio.
-*   **CMDB (Configuration Management Database):** Es el repositorio central donde se administran y relacionan todos los CIs de la organización.
+### 3.1. Magnitudes Fundamentales del EVM
 
-**Control de Versiones:**
-Para el código y la documentación, se utilizan Sistemas de Control de Versiones (VCS) como Git, Subversion o Mercurial. Los conceptos clave para examen incluyen:
-*   **Repositorio:** Lugar de almacenamiento de elementos e históricos.
-*   **Línea base (Baseline):** Revisión aprobada de un elemento desde la que parten los cambios.
-*   **Rama (Branching):** Bifurcación independiente de un elemento.
-*   **Integración (Merge) / Commit:** Fusión de cambios y su consolidación en el repositorio.
+*   **PV** (*Planned Value* - Valor Planificado): Presupuesto autorizado asignado al trabajo programado que debería haberse completado hasta la fecha de control.
+*   **EV** (*Earned Value* - Valor Ganado): Presupuesto autorizado del trabajo que ha sido **físicamente completado** a la fecha de control.
+*   **AC** (*Actual Cost* - Coste Real): Coste real total incurrido para ejecutar el trabajo completado a la fecha de control.
+*   **BAC** (*Budget at Completion* - Presupuesto a la Conclusión): Presupuesto total aprobado para completar el 100% del proyecto (la suma de todos los $PV$).
 
-### 2.4. Gestión del riesgo durante el ciclo de vida
+### 3.2. Variaciones e Índices de Rendimiento
 
-La gestión de riesgos es continua. La identificación inicial debe complementarse con la revisión periódica del registro de riesgos y de la eficacia de las respuestas adoptadas.
+| Métrica | Fórmula | Interpretación Matemática | Significado Práctico |
+| :--- | :--- | :--- | :--- |
+| **Variación del Coste (CV)** | $$CV = EV - AC$$ | • $CV > 0$: Favorable<br>• $CV = 0$: En presupuesto<br>• $CV < 0$: Desfavorable | • $CV > 0$: Gasto menor que el valor generado (ahorro).<br>• $CV < 0$: Sobrecoste presupuestario. |
+| **Variación del Cronograma (SV)** | $$SV = EV - PV$$ | • $SV > 0$: Favorable<br>• $SV = 0$: En tiempo<br>• $SV < 0$: Desfavorable | • $SV > 0$: Ritmo de avance superior al previsto (adelanto).<br>• $SV < 0$: Retraso en el cronograma. |
+| **Índice de Rendimiento de Costes (CPI)** | $$CPI = \frac{EV}{AC}$$ | • $CPI > 1$: Eficiente<br>• $CPI = 1$: En línea<br>• $CPI < 1$: Ineficiente | Por cada 1 € gastado realmente, se generan $CPI$ euros de valor presupuestado. |
+| **Índice de Rendimiento del Cronograma (SPI)** | $$SPI = \frac{EV}{PV}$$ | • $SPI > 1$: Eficiente<br>• $SPI = 1$: En línea<br>• $SPI < 1$: Ineficiente | Progreso realizado respecto al ritmo planificado a la fecha. |
 
-Debe distinguirse entre:
+### 3.3. Métricas de Previsión (*Forecasting*)
 
-* **Riesgo inherente:** exposición antes de considerar las respuestas.
-* **Riesgo residual:** exposición que permanece después de aplicar una respuesta.
-* **Riesgo secundario:** nuevo riesgo que aparece como consecuencia directa de una respuesta.
+*   **EAC** (*Estimate at Completion* - Estimación a la Conclusión): Coste total proyectado al finalizar el proyecto.
+    *   *Hipótesis típica (el desempeño actual de costes continuará en el futuro):*
 
-También pueden identificarse **riesgos emergentes**, derivados de circunstancias que no estaban previstas inicialmente o que no podían analizarse adecuadamente al comienzo.
+$$EAC = \frac{BAC}{CPI}$$
 
-### 2.5. Análisis cualitativo y cuantitativo
 
-El análisis cualitativo prioriza los riesgos según criterios como probabilidad, impacto, proximidad y urgencia.
+    *   *Hipótesis de desviaciones atípicas (el trabajo restante se ejecutará según el plan presupuestado):*
 
-El análisis cuantitativo asigna valores numéricos a los efectos de la incertidumbre sobre objetivos del proyecto. Puede apoyarse en simulaciones, análisis de escenarios, árboles de decisión y Valor Monetario Esperado.
+$$EAC = AC + (BAC - EV)$$
 
-### 2.6. Respuestas a riesgos y oportunidades
+    *   *Hipótesis combinada (influyen tanto el CPI como el SPI en el trabajo restante):*
 
-Para las amenazas pueden emplearse estrategias como **evitar, transferir, mitigar y aceptar**. Dependiendo del contexto pueden existir estrategias adicionales, como escalar cuando la respuesta requiere una autoridad externa al proyecto.
+$$EAC = AC + \frac{BAC - EV}{CPI \times SPI}$$
 
-Para las oportunidades pueden emplearse estrategias como **explotar, compartir, mejorar y aceptar**.
+*   **ETC** (*Estimate to Complete* - Estimación hasta la Conclusión): Coste estimado restante necesario para finalizar el proyecto:
 
-Cada respuesta debe tener un responsable y debe supervisarse su ejecución y eficacia.
+$$ETC = EAC - AC$$
 
-### 2.7. Control integrado de cambios
+*   **VAC** (*Variance at Completion* - Variación a la Conclusión): Diferencia presupuestaria proyectada al cierre del proyecto:
 
-Una solicitud de cambio debe analizarse considerando su impacto sobre alcance, cronograma, coste, calidad, recursos, riesgos, contratos y beneficios.
+$$VAC = BAC - EAC$$
 
-El control integrado de cambios permite evaluar las modificaciones de forma conjunta y evitar que una decisión local produzca desviaciones no controladas en otros objetivos del proyecto.
+*   **TCPI** (*To-Complete Performance Index* - Índice de Rendimiento del Trabajo por Completar): Eficiencia de costes requerida para completar el trabajo restante dentro de una meta determinada (el $BAC$ o un nuevo $EAC$ aprobado):
 
-Una **solicitud de cambio** no equivale automáticamente a un cambio aprobado. Debe seguir el procedimiento de evaluación, decisión, actualización de las líneas base cuando proceda e información a las partes afectadas.
+$$\text{Para cumplir el } BAC: \quad TCPI = \frac{BAC - EV}{BAC - AC}$$
 
-### 2.8. Gestión de configuración
 
-La gestión de configuración identifica y controla los elementos que constituyen el producto o los productos del proyecto y sus versiones.
+## 4. Herramientas Colaborativas, Gestión de Incidentes e Informes
 
-Comprende actividades como identificación de elementos de configuración, control de cambios, registro del estado de configuración y auditoría de configuración.
+### 4.1. Seguimiento de Incidentes (*Issue Tracking / Bugtracking*)
+Sistemas orientados al registro, categorización, asignación, trazabilidad y resolución de incidencias en proyectos y servicios TIC:
+*   **Soluciones destacadas:** GLPI (gestión de inventario y helpdesk open source), Jira Software, OTRS / Znuny, BMC Helix / Remedy, Redmine.
+*   **Métricas Operativas de SLA y Disponibilidad:**
+    *   **MTTR** (*Mean Time to Repair / Recovery*): Tiempo medio transcurrido desde que se produce un fallo hasta que el servicio es reparado y restaurado. Mide la eficacia del soporte técnico.
+    *   **MTBF** (*Mean Time Between Failures*): Tiempo medio transcurrido entre fallos sucesivos de un elemento. Mide la fiabilidad del sistema.
+    *   **MTTF** (*Mean Time to Failure*): Tiempo medio hasta el fallo en elementos no reparables.
 
-Los elementos de configuración pueden incluir código fuente, documentación, ejecutables, infraestructura, scripts, modelos, especificaciones y otros componentes sujetos a control.
+$$\text{Disponibilidad } (A) = \frac{\text{MTBF}}{\text{MTBF} + \text{MTTR}}$$
 
-### 2.9. Control de versiones
+### 4.2. Tipología de Informes de Proyecto y Cuadros de Mando
 
-Los sistemas de control de versiones permiten mantener el historial de cambios y recuperar estados anteriores.
+*   **Informes de Estado** (*Status Reports*): Describen la situación del proyecto a la fecha de corte actual (hitos concluidos, paquetes de trabajo en curso, desviaciones $CV$ y $SV$).
+*   **Informes de Progreso** (*Progress Reports*): Analizan el avance logrado durante un intervalo temporal específico.
+*   **Informes de Tendencias y Previsiones** (*Trend / Forecast Reports*): Extrapolan el rendimiento histórico para predecir costes y plazos finales ($EAC$, fechas proyectadas).
+*   **Cuadros de Mando** (*Dashboards*): Representaciones visuales sintéticas (gráficos de semáforos, diagramas de quemado, métricas EVM y KPIs de calidad) diseñadas para la toma ágil de decisiones directivas.
 
-Conceptos habituales son:
 
-* **Repositorio:** almacenamiento de versiones e historial.
-* **Commit:** registro de un conjunto de cambios.
-* **Branch:** línea independiente de desarrollo.
-* **Merge:** integración de cambios procedentes de distintas ramas.
-* **Tag:** referencia identificativa de una versión concreta.
-* **Baseline:** referencia aprobada utilizada como punto de control.
+## 5. Resumen
 
-En proyectos TIC, el control de versiones debe integrarse con los procedimientos de gestión de cambios y configuración.
-
-## 3. Métricas: Valor Ganado (EVM)
-
-El *Earned Value Management* (EVM) es la técnica estrella para integrar alcance, cronograma y recursos para evaluar el desempeño y avance del proyecto. Se basa en tres valores clave:
-*   **PV (Valor Planificado / Planned Value):** El presupuesto autorizado asignado al trabajo que *debíamos* haber hecho a día de hoy.
-*   **EV (Valor Ganado / Earned Value):** El valor real (presupuestado) del trabajo físicamente *finalizado* a día de hoy.
-*   **AC (Coste Real / Actual Cost):** Lo que hemos gastado *realmente* por el trabajo ejecutado hasta hoy.
-
-**Fórmulas Esenciales (Variables de Variación e Índices):**
-*   **Variación de Coste (CV):** $CV = EV - AC$. (Si CV > 0, estamos por debajo del presupuesto).
-*   **Variación del Cronograma (SV):** $SV = EV - PV$. (Si SV > 0, vamos adelantados).
-*   **Índice de Rendimiento de Costes (CPI):** $CPI = \frac{EV}{AC}$. (Si CPI > 1, eficiencia de coste alta).
-*   **Índice de Rendimiento del Cronograma (SPI):** $SPI = \frac{EV}{PV}$. (Si SPI > 1, eficiencia de tiempo alta).
-
-**Interpretación de indicadores:**
-*   Si **EV > PV**, vas por delante del cronograma (SPI > 1).
-*   Si **EV > AC**, estás ahorrando dinero (CPI > 1).
-
-### 3.1. EVM: valores de referencia
-
-El **Valor Ganado (EVM)** integra información de alcance, cronograma y coste mediante tres variables:
-
-* **PV (Planned Value):** valor presupuestado del trabajo planificado hasta una fecha de referencia.
-* **EV (Earned Value):** valor presupuestado del trabajo realmente completado hasta esa fecha.
-* **AC (Actual Cost):** coste real incurrido para realizar el trabajo completado.
-
-Estas magnitudes deben expresarse con una misma base monetaria o unidad de medida compatible.
-
-### 3.2. Variaciones de coste y cronograma
-
-* **CV = EV − AC**. Un valor positivo indica que el valor ganado supera el coste real.
-* **SV = EV − PV**. Un valor positivo indica que el valor ganado supera el valor planificado.
-
-### 3.3. Índices de desempeño
-
-* **CPI = EV / AC**. Un valor superior a 1 indica eficiencia favorable de costes; un valor inferior a 1 indica rendimiento desfavorable.
-* **SPI = EV / PV**. Un valor superior a 1 indica progreso superior al planificado; un valor inferior a 1 indica progreso inferior al planificado.
-
-Los indicadores deben interpretarse conjuntamente con las condiciones del proyecto y no de forma aislada.
-
-### 3.4. Previsiones de coste
-
-EVM también permite realizar previsiones:
-
-* **ETC (Estimate to Complete):** coste estimado necesario para completar el trabajo restante.
-* **EAC (Estimate at Completion):** coste estimado total al finalizar el proyecto.
-* **VAC (Variance at Completion):** diferencia entre el presupuesto al finalizar y el coste estimado final.
-
-Una formulación sencilla, cuando se supone que el rendimiento actual de costes continuará, es:
-
-**EAC = BAC / CPI**
-
-donde **BAC** es el presupuesto al finalizar (*Budget at Completion*).
-
-La elección de la fórmula de previsión depende de las hipótesis sobre el comportamiento futuro del proyecto.
-
-### 3.5. EVM y líneas base
-
-La aplicación de EVM requiere una referencia aprobada contra la que comparar el desempeño. Por ello, las líneas base de alcance, cronograma y coste deben mantenerse bajo control de cambios.
-
-La calidad de los resultados de EVM depende de la calidad de la medición del avance físico y de la correcta imputación de costes.
-
-## 4. Herramientas Colaborativas e Informes
-
-En la gestión de proyectos y servicios TIC, se utilizan diferentes herramientas de colaboración, ticketing y cuadros de mando.
-
-### 4.1. Seguimiento de incidentes e informes
-Un sistema de seguimiento de incidentes (ticketing o *bugtracker*) permite administrar, actualizar y resolver problemas reportados. 
-*   **Herramientas conocidas:** GLPI, Jira, OTRS (Open-source Ticket Request System), y BMC Helix (anteriormente Remedy).
-*   **Métricas de informe y seguimiento operativo:** Los SLA (Acuerdos de Nivel de Servicio) rigen la gobernanza. Para los informes de rendimiento se miden variables críticas como el **MTTR** (Mean Time to Recovery/Repair - Tiempo medio de reparación) y el **MTBF** (Mean Time Between Failures - Tiempo medio entre fallos).
-
-### 4.2. Herramientas colaborativas
-
-Las herramientas colaborativas de gestión de proyectos pueden proporcionar funciones como:
-
-* gestión de tareas y responsables;
-* planificación y visualización de cronogramas;
-* gestión documental y control de versiones;
-* comunicación y reuniones;
-* seguimiento de incidencias;
-* paneles y cuadros de mando;
-* registro de decisiones y cambios;
-* gestión de flujos de aprobación;
-* integración con repositorios de código y sistemas de automatización.
-
-La herramienta debe seleccionarse atendiendo a las necesidades del proyecto, requisitos de seguridad, trazabilidad, integración, control de acceso, disponibilidad y protección de la información.
-
-### 4.3. Informes de proyecto
-
-Los informes de seguimiento deben proporcionar información suficiente para conocer el estado del proyecto y facilitar la toma de decisiones.
-
-Pueden incluir:
-
-* estado del alcance;
-* avance del cronograma;
-* ejecución presupuestaria;
-* desempeño EVM;
-* riesgos y oportunidades;
-* cuestiones e incidencias;
-* cambios;
-* calidad y defectos;
-* recursos;
-* decisiones pendientes;
-* hitos alcanzados y próximos hitos;
-* previsiones y desviaciones.
-
-### 4.4. Cuadros de mando y niveles de información
-
-Los cuadros de mando permiten presentar indicadores agregados y facilitar la detección de desviaciones.
-
-La información debe adaptarse al nivel de gestión. La dirección necesita información consolidada sobre objetivos, riesgos, coste, plazo y decisiones; los responsables operativos necesitan mayor detalle sobre tareas, incidencias y entregables.
-
-### 4.5. Seguimiento y escalado
-
-El seguimiento no consiste únicamente en registrar datos, sino en comparar el desempeño con las referencias aprobadas, identificar desviaciones, analizar sus causas y adoptar las medidas oportunas.
-
-Cuando una desviación supera la autoridad delegada o las tolerancias establecidas, debe escalarse al nivel de gobierno correspondiente.
-
-### 4.6. Herramientas de seguimiento de incidencias
-
-Los sistemas de gestión de incidencias permiten registrar la descripción del problema, prioridad, responsable, estado, fechas, evidencias, acciones y resolución.
-
-La información de incidencias debe mantenerse trazable y relacionada, cuando proceda, con requisitos, cambios, elementos de configuración, versiones y entregables.
-## 5. Síntesis de conceptos
-
-| Concepto | Palabra Chivata |
+| Concepto | Términos Clave |
 | :--- | :--- |
-| **WBS (EDT)** | "Descomposición jerárquica", "Árbol", "Entregables", "Regla del 100%", "Paquete de trabajo". |
-| **PERT** | "Probabilístico", "Tres estimaciones", "Ruta crítica", "Holgura", "Grafo". |
-| **Ruta Crítica (CPM)** | "Holgura cero", "Camino más largo", "Determina la duración del proyecto". |
-| **Gantt** | "Diagrama de barras", "Visualización temporal". |
-| **EVM (Valor Ganado)** | "Línea base", "Desviación de coste/plazo", "$CPI$", "$SPI$". |
-| **Comité de Seguimiento (Métrica v3)** | "Aprueba los cambios de requisitos" (el Jefe de Proyecto solo analiza). |
-| **CMDB y CIs (ITIL)** | "Base de datos de configuración", "Elementos de configuración", "Relaciones de servicios". |
-| **CAC / CAB (ITIL)** | "Comité Asesor de Cambios", "Aprueba cambios normales". |
-| **Plan de Back-out (ITIL)**| "Plan de marcha atrás", "Cambios normales", "Contingencia". |
+| **WBS / EDT** | "Descomposición jerárquica orientada a entregables", "Regla del 100%", "Paquete de trabajo", "ISO 21511". |
+| **Diccionario WBS** | "Documento que detalla cada paquete de trabajo: responsable, criterios de aceptación, recursos". |
+| **Ruta Crítica (CPM)** | "Secuencia de mayor duración", "Holgura total cero ($HT=0$)", "Determina duración mínima del proyecto". |
+| **PERT** | "Estimación probabilística de 3 puntos", "$\mu_E = \frac{O + 4M + P}{6}$", "Varianza $\sigma^2 = \left(\frac{P-O}{6}\right)^2$". |
+| **Puntos de Función** | "Métrica funcional independiente del lenguaje", "Entradas, Salidas, Consultas, ILF, EIF", "Albrecht". |
+| **EVM (Valor Ganado)** | "ISO 21508", "$CV = EV - AC$", "$SV = EV - PV$", "$CPI = EV/AC$", "$SPI = EV/PV$", "$EAC = BAC/CPI$". |
+| **Comité de Seguimiento (M3)** | "Aprueba formalmente las Peticiones de Cambio de Requisitos en Métrica v3". |
+| **ITIL v4 Change Enablement** | "Cambio Normal (RFC, Back-out, CAB)", "Cambio Estándar preautorizado", "Cambio Emergencia (eCAB)". |
+| **CMDB y CIs** | "Base de datos de configuración", "Elementos de configuración y sus dependencias". |
+| **MTTR vs. MTBF** | "MTTR = Tiempo medio de reparación", "MTBF = Tiempo medio entre fallos (fiabilidad)". |
 
 
-## 6. Referencias normativas y técnicas
+## 6. Referencias Normativas y Técnicas
 
 * **ISO 21511:2018**, *Work breakdown structures for project and programme management*.
 * **ISO 21508:2026**, *Project, programme and portfolio management — Earned value management*.
 * **ISO 21512:2024**, *Project, programme and portfolio management — Earned value management implementation guidance*.
-* **PMI**, *A Guide to the Project Management Body of Knowledge (PMBOK® Guide) — Eighth Edition*, 2025.
-* **PMI**, publicaciones y guías de referencia sobre Earned Value Management.
-* **ITIL 4**, prácticas de Change Enablement y Service Configuration Management, PeopleCert.
-* **MÉTRICA v3**, Interfaz de Gestión de Proyectos (GP), Administración Pública española.
-
-### 7. Simulacro de Test: Ejercicios de aplicación
-
-**Pregunta 1:**
-*En el contexto de la Gestión del Valor Ganado (EVM), si el índice de rendimiento de costes (CPI) es 0,8, ¿qué significa?*
-a) El proyecto está costando un 20% menos de lo planificado.
-b) El proyecto está costando un 80% más de lo planificado.
-c) Por cada euro invertido, solo estamos obteniendo 0,80 euros de valor.
-d) El proyecto va un 20% retrasado.
-
-**Razonamiento:**
-1.  **Busca el patrón:** $CPI = \frac{EV}{AC}$. Si CPI < 1, significa que gastamos más de lo que ganamos (ineficiencia).
-2.  **Desmontando:**
-    *   (A) Imposible, el CPI sería > 1.
-    *   (B) Si el CPI fuera 0,8, es una ineficiencia, pero no implica un 80% extra de coste, sino una relación 1:0,8.
-    *   (D) El SPI mide el tiempo, el CPI mide el coste. Falsa.
-3.  **Respuesta correcta: C.** La definición técnica de CPI es la eficiencia de costes. Un valor de 0,8 indica que por cada unidad monetaria real (AC) aplicada, solo se genera 0,8 unidades de valor ganado (EV).
-
-**Pregunta 2:**
-*Un proyecto de migración a la nube para un ministerio está en fase de despliegue. Esta acción implica cierto nivel de riesgo y parada de los sistemas productivos durante el fin de semana. Según los fundamentos de la gestión de cambios de ITIL v4, ¿cómo debe tramitarse este despliegue?*
-a) Como un Cambio Estándar, pues las migraciones a la nube son una práctica común de la industria.
-b) Como un Cambio Normal, el cual requiere programación, autorización del CAC y un plan de back-out.
-c) Como un Cambio Urgente/de Emergencia debido a la parada del fin de semana.
-d) Como un elemento de la CMDB sin necesidad de aprobación.
-
-**Razonamiento:**
-1.  **Busca el patrón:** Las migraciones a la nube y los cambios que implican un riesgo, pero no solucionan un incidente crítico de forma inmediata, no son estándar ni de emergencia.
-2.  **Desmontando:**
-    *   (A) Falsa. Los cambios estándar son de bajo riesgo y frecuentes (ej. cambiar un cartucho de impresora).
-    *   (C) Falsa. Un cambio urgente se usa para restaurar un servicio caído por un incidente grave.
-    *   (D) Falsa. La CMDB registra los elementos, pero la acción es un cambio.
-    *   (B) Correcta. Migrar a la nube es el ejemplo de libro de un Cambio Normal, y requiere evaluación de riesgos, aprobación del CAC y plan de back-out.
-3.  **Respuesta correcta: B.**
+* **Project Management Institute (PMI)**, *A Guide to the Project Management Body of Knowledge (PMBOK® Guide)* — 7ª y 8ª Edición (Noviembre 2025).
+* **PMI**, *Practice Standard for Work Breakdown Structures* & *Practice Standard for Earned Value Management*.
+* **AXELOS / PeopleCert**, *ITIL® 4: Service Management Framework / Change Enablement Practice*.
+* **Ministerio de Hacienda y Función Pública**, *MÉTRICA Versión 3: Interfaz de Gestión de Proyectos (GP)*.

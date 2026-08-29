@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-005-analisis-no-funcional"
 title: "Otros tipos de análisis en los sistemas de información"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -19,16 +19,19 @@ tags:
   - "seguridad"
   - "privacidad"
   - "rgpd"
+  - "lopdgdd"
   - "ens"
   - "benchmark"
+  - "aaa"
+  - "tratamiento"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 5. Otros tipos de análisis en los sistemas de información
@@ -39,14 +42,7 @@ Mientras que los **requisitos funcionales (RF)** definen *qué* debe hacer un si
 
 La norma **ISO/IEC 25010** establece un modelo de calidad aplicable a productos TIC y software.
 
-[ ISO/IEC 25010 ]
-                              │
-+-----------------------------+-----------------------------+
-│                             │                             │
-[Rendimiento]                 [Seguridad]                   [Privacidad]
-(Eficiencia, Carga,          (Autenticación, AAA,          (RGPD, LOPDGDD,
-Latencia, Benchmarks)        Confidencialidad, ENS)        Privacidad desde el Diseño)
-
+![ISO/IEC 25010](../images/iso-iec-25010.jpg)
 
 ### 1.1. Rendimiento (Performance)
 Define las métricas operativas del sistema bajo una carga de trabajo determinada.
@@ -54,68 +50,122 @@ Define las métricas operativas del sistema bajo una carga de trabajo determinad
 **Métricas clave:**
 *   **Tiempo de respuesta:** Lo que tarda el sistema en reaccionar a una petición del usuario (ej. milisegundos en cargar una pantalla o procesar un pago).
 *   **Throughput (Rendimiento de procesamiento):** Número de transacciones o peticiones que el sistema puede procesar por unidad de tiempo (ej. 1000 transacciones por segundo).
-*   **Escalabilidad:** Capacidad del sistema para manejar más carga añadiendo recursos (Escalabilidad vertical: añadir más RAM/CPU a un servidor; Escalabilidad horizontal: añadir más servidores al clúster).
+*   **Escalabilidad:** Capacidad del sistema para manejar más carga añadiendo recursos.
+    *   Escalabilidad vertical: añadir más RAM/CPU a un servidor. 
+    *   Escalabilidad horizontal: añadir más servidores al clúster.
 *   **Consumo de recursos:** Límites en el uso de memoria, procesador y ancho de banda de red.
 *   **Variables Físicas y Lógicas (Monitoreo Predictivo SMART):** 
     *   *Variables Físicas:* Temperatura, vibración, humedad, consumo de energía.
     *   *Variables Lógicas:* Atributos SMART de discos duros (*Self-Monitoring, Analysis and Reporting Technology*), tasa de paquetes perdidos en red, etc.
 
-Según ISO/IEC 25010, la característica *Performance efficiency* se descompone en tres subcaracterísticas **Comportamiento temporal** (*time behaviour* — tiempos de respuesta, procesamiento y throughput), **Utilización de recursos** (*resource utilization* — cantidad y tipo de recursos usados) y **Capacidad** (*capacity* — límites máximos que puede soportar un parámetro, ej. número máximo de usuarios concurrentes).
+Según **ISO/IEC 25010**, la característica *Performance efficiency* se descompone en tres subcaracterísticas: 
+*   **Comportamiento temporal** (*time behaviour* — tiempos de respuesta, procesamiento y throughput).
+*   **Utilización de recursos** (*resource utilization* — cantidad y tipo de recursos usados).
+*   **Capacidad** (*capacity* — límites máximos que puede soportar un parámetro, ej. número máximo de usuarios concurrentes).
 
-La validación del rendimiento se realiza mediante **pruebas no funcionales de carga**, :
-*   **Pruebas de carga (*load testing*):** comprueban el comportamiento del sistema bajo el volumen de trabajo esperado en condiciones normales o en el máximo previsto.
-*   **Pruebas de estrés (*stress testing*):** llevan al sistema por encima de su capacidad máxima para identificar el punto de ruptura (*break point*) y cómo se degrada o recupera (*graceful degradation*).
-*   **Pruebas de resistencia (*endurance/soak testing*):** verifican el comportamiento del sistema bajo carga sostenida durante un periodo prolongado, detectando fugas de memoria (*memory leaks*) o degradación progresiva.
-*   **Pruebas de picos (*spike testing*):** valoran la reacción del sistema ante incrementos súbitos y muy bruscos de carga.
+La validación del rendimiento se realiza mediante **pruebas no funcionales de carga**:
+*   **Pruebas de carga** (*load testing*): comprueban el comportamiento del sistema bajo el volumen de trabajo esperado en condiciones normales o en el máximo previsto.
+*   **Pruebas de estrés** (*stress testing*): llevan al sistema por encima de su capacidad máxima para identificar el punto de ruptura (*break point*) y cómo se degrada o recupera (*graceful degradation*).
+*   **Pruebas de resistencia** (*endurance/soak testing*): verifican el comportamiento del sistema bajo carga sostenida durante un periodo prolongado, detectando fugas de memoria (*memory leaks*) o degradación progresiva.
+*   **Pruebas de picos** (*spike testing*): valoran la reacción del sistema ante incrementos súbitos y muy bruscos de carga.
+   
+```mermaid
+graph LR
+    classDef main fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef test fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef desc fill:#f1f8e9,stroke:#33691e,stroke-width:1px,color:#000
+
+    A[Pruebas de Rendimiento <br> ISO/IEC 25010]:::main --> B(Carga / Load):::test
+    A --> C(Estrés / Stress):::test
+    A --> D(Picos / Spike):::test
+    A --> E(Resistencia / Soak - Endurance):::test
+
+    B --> B1[Comportamiento bajo volumen esperado o máximo normal]:::desc
+    C --> C1[Punto de ruptura y recuperación al superar la capacidad]:::desc
+    D --> D1[Reacción ante incrementos súbitos y masivos de peticiones]:::desc
+    E --> E1[Fugas de memoria o degradación bajo carga prolongada]:::desc
+```
+
 
 #### Herramientas de Benchmark y Pruebas (Referenciadas en el temario oficial):
-*   **Apache JMeter:** Aplicación *Open Source* en Java diseñada para medir rendimiento y realizar pruebas de carga en servicios HTTP, HTTPS, SOAP/REST, JDBC, LDAP, FTP, JMS, comandos shell y TCP[cite: 3, 4].
-*   **LoadRunner (OpenText):** Solución empresarial para probar aplicaciones midiendo su comportamiento bajo carga masiva[cite: 3, 4].
-*   **PassMark:** Herramienta para evaluar y comparar la capacidad de cómputo de microprocesadores (CPU Mark) en servidores (Intel Xeon, AMD Epyc) y clientes[cite: 3, 4].
-*   **3DMark:** Benchmark orientado a gráficos 3D y evaluación del rendimiento de tarjetas gráficas (GPU)[cite: 3, 4].
-*   **PCMark:** Benchmark que ofrece tests para medir la capacidad general de los equipos, incluyendo rendimiento de batería, almacenamiento y perfiles del sistema[cite: 3, 4].
+*   **Apache JMeter:** Aplicación *Open Source* en Java diseñada para medir rendimiento y realizar pruebas de carga en servicios HTTP, HTTPS, SOAP/REST, JDBC, LDAP, FTP, JMS, comandos shell y TCP.
+*   **LoadRunner (OpenText):** Solución empresarial para probar aplicaciones midiendo su comportamiento bajo carga masiva.
+*   **PassMark:** Herramienta para evaluar y comparar la capacidad de cómputo de microprocesadores (CPU Mark) en servidores (Intel Xeon, AMD Epyc) y clientes.
+*   **3DMark:** Benchmark orientado a gráficos 3D y evaluación del rendimiento de tarjetas gráficas (GPU).
+*   **PCMark:** Benchmark que ofrece tests para medir la capacidad general de los equipos, incluyendo rendimiento de batería, almacenamiento y perfiles del sistema.
 
-En el ámbito contractual y de servicios TIC, los compromisos de rendimiento suelen fijarse mediante **Acuerdos de Nivel de Servicio (SLA — *Service Level Agreement*)**, que establecen umbrales concretos (ej. disponibilidad del 99,9%, tiempo de respuesta máximo de 2 segundos) y penalizaciones si no se cumplen[cite: 3, 4].
-
+En el ámbito contractual y de servicios TIC, los compromisos de rendimiento suelen fijarse mediante **Acuerdos de Nivel de Servicio** (SLA — *Service Level Agreement*), que establecen umbrales concretos (ej. disponibilidad del 99,9%, tiempo de respuesta máximo de 2 segundos) y penalizaciones si no se cumplen.
 
 ### 1.2. Seguridad
 Garantiza que la información esté protegida frente a accesos no autorizados, modificaciones o destrucción. En la Administración Pública española se enmarca bajo el **Esquema Nacional de Seguridad (ENS - RD 311/2022)**.
 
-** Dimensiones de la Seguridad (Regla mnemotécnica CIDTA / DICAT):**
-1.  **Confidencialidad [C]:** Solo accede a la información quien tiene permiso.
-2.  **Integridad [I]:** La información no se altera de forma no autorizada o fraudulenta.
-3.  **Disponibilidad [D]:** El sistema funciona y es accesible cuando se necesita.
-4.  **Trazabilidad [T]:** Saber quién ha hecho qué, cuándo y desde dónde (mediante registros o logs).
-5.  **Autenticidad [A]:** Garantizar que quien accede es realmente quien dice ser (ej. mediante certificado digital).
+```mermaid
+mindmap
+  root((ENS<br/>RD 311/2022))
+    Confidencialidad
+      [Solo accede quien tiene permiso]
+    Integridad
+      [Información no alterada de forma fraudulenta]
+    Disponibilidad
+      [El sistema es accesible cuando se necesita]
+    Autenticidad
+      [Garantía de que quien accede es quien dice ser]
+    Trazabilidad
+      [Registro de quién, qué, cuándo y desde dónde]
+```
 
-*Nota Métrica v3:* Métrica Versión 3 cuenta con una **Interfaz de Seguridad (SEG)** cuyo objetivo es incorporar en los sistemas de información mecanismos de seguridad adicionales a lo largo de todos los procesos (desde la Planificación hasta el Mantenimiento).
+>  **Métrica Versión 3** cuenta con una **Interfaz de Seguridad (SEG)** cuyo objetivo es incorporar en los sistemas de información mecanismos de seguridad adicionales a lo largo de todos los procesos (desde la Planificación hasta el Mantenimiento).
 
-El propio **Real Decreto 311/2022, de 3 de mayo**, que deroga y sustituye al anterior RD 3/2010, formaliza literalmente estas cinco dimensiones en su Anexo I, indicando que "se tendrán en cuenta las siguientes dimensiones de la seguridad, que se identificarán por sus correspondientes iniciales en mayúsculas: a) Confidencialidad [C]; b) Integridad [I]; c) Trazabilidad [T]; d) Autenticidad [A]; e) Disponibilidad [D]". Es habitual encontrar en test y manuales el acrónimo alternativo **DICAT** o **AICAT**, que ordena las mismas cinco dimensiones. Cada dimensión afectada por un incidente se clasifica en un **nivel de seguridad BAJO, MEDIO o ALTO**, y de la combinación de niveles surge la **categoría del sistema** (BÁSICA, MEDIA o ALTA), que determina qué medidas de seguridad son exigibles.
+El propio **Real Decreto 311/2022, de 3 de mayo**, que deroga y sustituye al anterior **RD 3/2010**, formaliza literalmente estas cinco dimensiones en su Anexo I, indicando que "se tendrán en cuenta las siguientes dimensiones de la seguridad (**ACIDT**): 
+a) **A**utenticidad.
+b) **C**onfidencialidad.
+c) **I**ntegridad.
+d) **D**isponibilidad.
+e) **T**razabilidad.
 
-El ENS se estructura en **principios básicos** (seguridad integral, gestión de riesgos, prevención/reacción/recuperación, líneas de defensa, reevaluación periódica y diferenciación de responsabilidades) y en un conjunto de **medidas de seguridad** agrupadas en tres marcos: **marco organizativo**, **marco operacional** y **medidas de protección**, detalladas en su Anexo II. El organismo de referencia técnica que da soporte al ENS es el **CCN (Centro Criptológico Nacional)**, a través de la serie de guías **CCN-STIC**.
+Es habitual encontrar en test y manuales el acrónimo alternativo **DICAT** o **AICAT**, que ordena las mismas cinco dimensiones. Cada dimensión afectada por un incidente se clasifica en un **nivel de seguridad BAJO, MEDIO o ALTO**, y de la combinación de niveles surge la **categoría del sistema** (BÁSICA, MEDIA o ALTA), que determina qué medidas de seguridad son exigibles.
 
-A nivel de estándares internacionales de gestión de la seguridad de la información, la referencia es la familia **ISO/IEC 27000**, en particular **ISO/IEC 27001** (Sistema de Gestión de Seguridad de la Información, SGSI) e **ISO/IEC 27002** (catálogo de controles)[cite: 3, 4]. Para la seguridad específica en aplicaciones web, la referencia técnica más citada es el **OWASP Top 10**, que recopila los riesgos de seguridad más críticos en aplicaciones web (p. ej. control de acceso roto, fallos criptográficos, inyección), y el **OWASP ASVS** (*Application Security Verification Standard*) como marco de verificación de requisitos de seguridad en el análisis y diseño.
+El **ENS** se estructura en **principios básicos** (seguridad integral, gestión de riesgos, prevención/reacción/recuperación, líneas de defensa, reevaluación periódica y diferenciación de responsabilidades) y en un conjunto de **medidas de seguridad** agrupadas en tres marcos: **marco organizativo**, **marco operacional** y **medidas de protección**, detalladas en su Anexo II. El organismo de referencia técnica que da soporte al **ENS** es el **CCN (Centro Criptológico Nacional)**, a través de la serie de guías **CCN-STIC**.
 
-En cuanto a mecanismos técnicos, conviene diferenciar los dos grandes tipos de cifrado: **cifrado simétrico** (misma clave para cifrar y descifrar, ej. AES, más rápido, usado para grandes volúmenes de datos) y **cifrado asimétrico** (par de claves pública/privada, ej. RSA, más lento pero permite firma digital y no repudio, base de la autenticidad en la administración electrónica mediante certificados digitales).
+A nivel de estándares internacionales de gestión de la seguridad de la información, la referencia es la familia **ISO/IEC 27000**, en particular **ISO/IEC 27001** (Sistema de Gestión de Seguridad de la Información, SGSI) e **ISO/IEC 27002** (catálogo de controles). Para la seguridad específica en aplicaciones web, la referencia técnica más citada es el **OWASP Top 10**, que recopila los riesgos de seguridad más críticos en aplicaciones web (p. ej. control de acceso roto, fallos criptográficos, inyección), y el **OWASP ASVS** (*Application Security Verification Standard*) como marco de verificación de requisitos de seguridad en el análisis y diseño.
+
+En cuanto a mecanismos técnicos, conviene diferenciar los dos grandes tipos de cifrado: 
+*   **Cifrado simétrico:** misma clave para cifrar y descifrar, ej. AES, más rápido, usado para grandes volúmenes de datos. 
+*   **Cifrado asimétrico:** par de claves pública/privada, ej. RSA, más lento pero permite firma digital y no repudio, base de la autenticidad en la administración electrónica mediante certificados digitales.
 
 ### 1.3. Privacidad
 Garantiza el tratamiento correcto y legal de los datos personales. Se rige por el **RGPD** (Reglamento (UE) 2016/679, General de Protección de Datos) y la **LOPDGDD** (Ley Orgánica 3/2018, de Protección de Datos Personales y garantía de los derechos digitales).
 
 **Conceptos clave:**
-*   **Privacidad desde el diseño (*Privacy by Design*):** La protección de datos se integra desde la fase inicial de análisis y diseño arquitectónico, no como un "parche" que se añade al final de la programación.
-*   **Privacidad por defecto (*Privacy by Default*):** El sistema debe venir configurado con la máxima privacidad posible desde el inicio, sin que el usuario tenga que configurar nada (ej. casillas de "Acepto ceder mis datos" siempre desmarcadas al entrar).
+*   **Privacidad desde el diseño** (*Privacy by Design*): La protección de datos se integra desde la fase inicial de análisis y diseño arquitectónico, no como un "parche" que se añade al final de la programación.
+*   **Privacidad por defecto** (*Privacy by Default*): El sistema debe venir configurado con la máxima privacidad posible desde el inicio, sin que el usuario tenga que configurar nada (ej. casillas de "Acepto ceder mis datos" siempre desmarcadas al entrar).
 *   **Minimización de datos:** El sistema solo debe solicitar y almacenar los datos estrictamente necesarios para cumplir su finalidad.
 
-Ambos principios están regulados literalmente en el **artículo 25 del RGPD**, titulado "Protección de datos desde el diseño y por defecto". El apartado 1 exige al responsable del tratamiento aplicar, "tanto en el momento de determinar los medios de tratamiento como en el momento del propio tratamiento, medidas técnicas y organizativas apropiadas, como la seudonimización, concebidas para aplicar de forma efectiva los principios de protección de datos". El apartado 2 concreta la privacidad por defecto: el responsable garantizará que, por defecto, "solo sean objeto de tratamiento los datos personales que sean necesarios para cada uno de los fines específicos del tratamiento", aplicándose esta obligación a la cantidad de datos recogidos, la extensión de su tratamiento, su plazo de conservación y su accesibilidad.
+Ambos principios están regulados literalmente en el **artículo 25 del RGPD**, titulado **Protección de datos desde el diseño y por defecto**. 
+*   El **apartado 1** exige al **Responsable del Tratamiento** aplicar, "tanto en el momento de determinar los medios de tratamiento como en el momento del propio tratamiento, medidas técnicas y organizativas apropiadas, como la seudonimización, concebidas para aplicar de forma efectiva los principios de protección de datos". 
+*   El **apartado 2** concreta la privacidad por defecto: el **Responsable** garantizará que, por defecto, "solo sean objeto de tratamiento los datos personales que sean necesarios para cada uno de los fines específicos del tratamiento", aplicándose esta obligación a la cantidad de datos recogidos, la extensión de su tratamiento, su plazo de conservación y su accesibilidad.
 
-Conviene relacionar la privacidad con los **principios generales del tratamiento de datos** del artículo 5 RGPD, muy preguntados de forma aislada: licitud, lealtad y transparencia; limitación de la finalidad; **minimización de datos**; exactitud; limitación del plazo de conservación; integridad y confidencialidad; y responsabilidad proactiva (*accountability*).
+Conviene relacionar la privacidad con los **principios generales del tratamiento de datos** del **artículo 5 RGPD**: 
+*   Licitud, lealtad y transparencia.
+*   Limitación de la finalidad.
+*   Minimización de datos.
+*   Exactitud.
+*   Limitación del plazo de conservación.
+*   Integridad y confidencialidad.
+*   Responsabilidad proactiva (*accountability*).
+   
+![Art 5 RGPD - Principios del Tratamiento de Datos](../images/principios-tratamiento-datos-rgpd.jpg)
 
-Otros conceptos que amplían y suelen aparecer junto a Privacy by Design/Default:
-*   **Evaluación de Impacto relativa a la Protección de Datos (EIPD/DPIA):** análisis obligatorio (art. 35 RGPD) cuando un tratamiento pueda entrañar un alto riesgo para los derechos de las personas, típico en sistemas de la Administración con tratamientos masivos o datos sensibles.
-*   **Seudonimización vs. anonimización:** la seudonimización sustituye los identificadores directos por un código, pero permite revertir el proceso con información adicional (sigue siendo dato personal); la anonimización elimina la posibilidad de reidentificación de forma irreversible (deja de ser dato personal y de estar sujeto al RGPD).
+Otros conceptos que amplían y suelen aparecer junto a **Privacy by Design/Default**:
+*   **Evaluación de Impacto relativa a la Protección de Datos (EIPD/DPIA):** análisis obligatorio (**art. 35 RGPD**) cuando un tratamiento pueda entrañar un **alto riesgo** para los derechos de las personas, típico en sistemas de la Administración con tratamientos masivos o datos sensibles.
+*   **Seudonimización vs. anonimización:** 
+    *   La **seudonimización** sustituye los identificadores directos por un código, pero permite revertir el proceso con información adicional (sigue siendo dato personal).
+    *   La **anonimización** elimina la posibilidad de reidentificación de forma irreversible (deja de ser dato personal y de estar sujeto al RGPD).
 *   **Derechos ARCO-POL / derechos digitales (LOPDGDD):** acceso, rectificación, cancelación/supresión (derecho al olvido), oposición, portabilidad, limitación del tratamiento, y los derechos digitales específicos de la LOPDGDD (ej. derecho al olvido en búsquedas de internet, derecho a la educación digital).
-*   **AEPD (Agencia Española de Protección de Datos):** autoridad de control nacional; publica guías de referencia como la *Guía de Privacidad desde el Diseño*, que recoge estrategias de optimización, configurabilidad y restricción para implementar el artículo 25 RGPD en la práctica.
 
+![Derechos ARCO-POL Derechos Digitales - LOPDGDD](../images/derechos-arco-pol.jpg)
+
+*   **AEPD (Agencia Española de Protección de Datos):** autoridad de control nacional; publica guías de referencia como la *Guía de Privacidad desde el Diseño*, que recoge estrategias de optimización, configurabilidad y restricción para implementar el **artículo 25 RGPD** en la práctica.
 
 ### 1.4. Especificación y verificación de requisitos no funcionales
 
@@ -123,36 +173,36 @@ Los requisitos no funcionales deben formularse de manera que puedan ser verifica
 
 Deben evitarse expresiones ambiguas como «el sistema deberá ser rápido» o «deberá ser seguro». Deben establecerse condiciones objetivamente evaluables, por ejemplo, un tiempo máximo de respuesta para una determinada carga, un nivel mínimo de disponibilidad o unos controles de acceso determinados.
 
-ISO/IEC 25010:2023 proporciona un modelo de calidad de producto aplicable a productos TIC y software, con nueve características de calidad y sus correspondientes subcaracterísticas. El modelo puede utilizarse para especificar, medir y evaluar propiedades de calidad durante el ciclo de vida.
+**ISO/IEC 25010:2023** proporciona un modelo de calidad de producto aplicable a productos TIC y software, con nueve características de calidad y sus correspondientes subcaracterísticas. El modelo puede utilizarse para especificar, medir y evaluar propiedades de calidad durante el ciclo de vida.
 
 ### 1.5. Modelo de calidad de producto
 
-ISO/IEC 25010:2023 establece nueve características de calidad del producto:
+**ISO/IEC 25010:2023** establece nueve características de calidad del producto:
 
-1. **Adecuación funcional (Functional suitability).**
-2. **Eficiencia de desempeño (Performance efficiency).**
-3. **Compatibilidad (Compatibility).**
-4. **Capacidad de interacción (Interaction capability).**
-5. **Fiabilidad (Reliability).**
-6. **Seguridad (Security).**
-7. **Mantenibilidad (Maintainability).**
-8. **Flexibilidad (Flexibility).**
-9. **Seguridad de uso (Safety).**
+1. **Adecuación funcional** (Functional suitability).
+2. **Eficiencia de desempeño** (Performance efficiency).
+3. **Compatibilidad** (Compatibility).
+4. **Capacidad de interacción** (Interaction capability).
+5. **Fiabilidad** (Reliability).
+6. **Seguridad** (Security).
+7. **Mantenibilidad** (Maintainability).
+8. **Flexibilidad** (Flexibility).
+9. **Seguridad de uso** (Safety).
 
 Estas características constituyen un modelo de referencia para especificar, medir y evaluar la calidad de productos TIC y software. El análisis de rendimiento y seguridad se integra en este modelo, sin limitar los requisitos no funcionales exclusivamente a dichas propiedades.
 
 ## 2. Aspectos No Funcionales de Rendimiento y Eficiencia de Desempeño
 
-El rendimiento (o *Performance Efficiency* según ISO/IEC 25010) mide la capacidad del sistema para responder a las solicitudes de los usuarios y procesos dentro de unos límites de tiempo y consumo de recursos adecuados bajo condiciones específicas.
+El rendimiento (o *Performance Efficiency* según **ISO/IEC 25010**) mide la **capacidad del sistema** para responder a las solicitudes de los usuarios y procesos **dentro de unos límites de tiempo y consumo de recursos** adecuados bajo condiciones específicas.
 
 ### 2.1. Métricas Clave de Rendimiento y Capacidad
 
-*   **Tiempo de respuesta (*Response Time*):** Tiempo transcurrido desde que un usuario o sistema envía una petición hasta que recibe la respuesta completa.
-*   **Tiempo de latencia (*Latency*):** Tiempo que tarda en procesarse el primer byte de respuesta tras la solicitud.
-*   **Rendimiento o Capacidad de procesamiento (*Throughput*):** Número de transacciones, peticiones o unidades de trabajo que el sistema procesa por unidad de tiempo (p. ej., peticiones/segundo, TPS).
-*   **Utilización de Recursos (*Resource Utilization*):** Porcentaje de uso de CPU, memoria RAM, operaciones de E/S por segundo (IOPS), ancho de banda de red y espacio en disco.
-*   **Línea Base (*Baseline*):** Registro estructurado de métricas de rendimiento obtenido en condiciones normales de operación que sirve de punto de comparación objetivo ante cambios o degradaciones del sistema.
-*   **Variables Físicas y Lógicas (Monitoreo Predictivo SMART):** 
+*   **Tiempo de respuesta** (*Response Time*) Tiempo transcurrido desde que un usuario o sistema envía una petición hasta que recibe la respuesta completa.
+*   **Tiempo de latencia** (*Latency*) Tiempo que tarda en procesarse el primer byte de respuesta tras la solicitud.
+*   **Rendimiento o Capacidad de procesamiento** (*Throughput*): Número de transacciones, peticiones o unidades de trabajo que el sistema procesa por unidad de tiempo (p. ej., peticiones/segundo, TPS).
+*   **Utilización de Recursos** (*Resource Utilization*) Porcentaje de uso de CPU, memoria RAM, operaciones de E/S por segundo (IOPS), ancho de banda de red y espacio en disco.
+*   **Línea Base** (*Baseline*) Registro estructurado de métricas de rendimiento obtenido en condiciones normales de operación que sirve de punto de comparación objetivo ante cambios o degradaciones del sistema.
+*   **Variables Físicas y Lógicas** (Monitoreo Predictivo SMART):
     *   *Variables Físicas:* Temperatura, vibración, humedad, consumo de energía.
     *   *Variables Lógicas:* Atributos SMART de discos duros (*Self-Monitoring, Analysis and Reporting Technology*), tasa de paquetes perdidos en red, etc.
 
@@ -161,17 +211,10 @@ El rendimiento (o *Performance Efficiency* según ISO/IEC 25010) mide la capacid
 Para verificar y certificar los requisitos de rendimiento se utilizan pruebas automatizadas y herramientas de *benchmarking*:
 
 #### Tipos de Pruebas de Rendimiento:
-*   **Pruebas de Carga (*Load Testing*):** Verifican el comportamiento del sistema ante la carga de trabajo máxima esperada en producción.
-*   **Pruebas de Estrés (*Stress Testing*):** Someten al sistema a cargas superiores al límite máximo planificado para identificar el punto de ruptura (*break point*) y comprobar su recuperación (*graceful degradation*).
-*   **Pruebas de Escalabilidad / Pico (*Spike Testing*):** Validan la reacción del sistema ante incrementos súbitos y masivos de peticiones en intervalos breves.
-*   **Pruebas de Resistencia (*Soak / Endurance Testing*):** Evalúan el rendimiento de la plataforma bajo una carga constante durante periodos prolongados para detectar fugas de memoria (*memory leaks*) o degradación paulatina.
-
-#### Herramientas de Benchmark y Pruebas (Referenciadas en el temario):
-*   **Apache JMeter:** Aplicación *Open Source* en Java diseñada para medir rendimiento y realizar pruebas de carga en servicios HTTP, HTTPS, SOAP/REST, JDBC, LDAP, FTP, JMS, comandos shell y TCP.
-*   **LoadRunner (OpenText):** Solución empresarial para probar aplicaciones midiendo su comportamiento bajo carga masiva.
-*   **PassMark:** Herramienta para evaluar y comparar la capacidad de cómputo de microprocesadores (CPU Mark) en servidores (Intel Xeon, AMD Epyc) y clientes.
-*   **3DMark y PCMark:** Benchmarks orientados a gráficos 3D y evaluación general de capacidades de sistemas.
-
+*   **Pruebas de Carga** (*Load Testing*): Verifican el comportamiento del sistema ante la carga de trabajo máxima esperada en producción.
+*   **Pruebas de Estrés** (*Stress Testing*): Someten al sistema a cargas superiores al límite máximo planificado para identificar el punto de ruptura (*break point*) y comprobar su recuperación (*graceful degradation*).
+*   **Pruebas de Escalabilidad / Pico** (*Spike Testing*): Validan la reacción del sistema ante incrementos súbitos y masivos de peticiones en intervalos breves.
+*   **Pruebas de Resistencia** (*Soak / Endurance Testing*): Evalúan el rendimiento de la plataforma bajo una carga constante durante periodos prolongados para detectar fugas de memoria (*memory leaks*) o degradación paulatina.
 
 ### 2.3. Capacidad, escalabilidad y disponibilidad
 
@@ -209,13 +252,14 @@ Los resultados deben compararse con una línea base o con los objetivos definido
 
 El tiempo medio puede ocultar valores extremos. Por ello pueden utilizarse percentiles.
 
-El **P95** representa el valor por debajo del cual se encuentra el 95 % de las observaciones. El **P99** representa el valor por debajo del cual se encuentra el 99 %.
+* *El **P95** representa el valor por debajo del cual se encuentra el 95 % de las observaciones. *
+* *El **P99** representa el valor por debajo del cual se encuentra el 99 %.*
 
-Los percentiles permiten caracterizar la distribución de tiempos de respuesta y establecer objetivos que no dependan exclusivamente de la media.
+Los **percentiles** permiten caracterizar la **distribución de tiempos de respuesta** y **establecer objetivos** que no dependan exclusivamente de la media.
 
 ### 2.6. Cuellos de botella
 
-Un cuello de botella es un recurso o componente cuya capacidad limita el rendimiento global del sistema. Puede encontrarse en CPU, memoria, almacenamiento, red, bases de datos, servicios externos, mecanismos de sincronización o cualquier componente que limite el flujo de trabajo.
+Un **cuello de botella** es un recurso o componente cuya capacidad **limita el rendimiento global del sistema**. Puede encontrarse en CPU, memoria, almacenamiento, red, bases de datos, servicios externos, mecanismos de sincronización o cualquier componente que limite el flujo de trabajo.
 
 La identificación de cuellos de botella requiere correlacionar las métricas de aplicación con las métricas de infraestructura y observar el comportamiento bajo distintas cargas.
 
@@ -225,35 +269,53 @@ La seguridad en los sistemas de información garantiza que los activos informát
 
 ### 3.1. Servicios Fundamentales de Seguridad (AAA)
 
-1.  **Autenticación (*Authentication*):** Verificación técnica de la identidad de un usuario, proceso o sistema.
+1.  **Autenticación** (*Authentication*): Verificación técnica de la identidad de un usuario, proceso o sistema.
     *   *Mecanismos:* Contraseñas, certificados digitales (PKI), OAuth 2.0 / OpenID Connect, Kerberos (basado en tickets de autenticación).
-2.  **Autorización (*Authorization*):** Determinación de los derechos de acceso y permisos específicos otorgados a un usuario o proceso autenticado sobre un recurso determinado.
+2.  **Autorización** (*Authorization*): Determinación de los derechos de acceso y permisos específicos otorgados a un usuario o proceso autenticado sobre un recurso determinado.
     *   *Mecanismos:* Control de acceso basado en roles (RBAC), control de acceso basado en atributos (ABAC).
-3.  **Trazabilidad / Contabilidad (*Accounting / Auditing*):** Registro y almacenamiento de las actividades realizadas por los usuarios y procesos para garantizar la rendición de cuentas y la detección de anomalías.
-4.  **No Repudio (*Non-Repudiation*):** Garantía legal y técnica de que el emisor o receptor de una transacción no puede negar haber realizado dicha acción o enviado dicho mensaje.
+3.  **Trazabilidad / Contabilidad** (*Accounting / Auditing*): Registro y almacenamiento de las actividades realizadas por los usuarios y procesos para garantizar la rendición de cuentas y la detección de anomalías.
+4.  **No Repudio** (*Non-Repudiation*): Garantía legal y técnica de que el emisor o receptor de una transacción no puede negar haber realizado dicha acción o enviado dicho mensaje.
 5.  **Confidencialidad:** Garantía de que la información no sea divulgada ni accesible a personas o sistemas no autorizados.
 6.  **Integridad:** Protección de la exactitud y la totalidad de los datos e interfaces frente a alteraciones no autorizadas o accidentes.
 7.  **Disponibilidad:** Garantía de que los usuarios autorizados tengan acceso a los datos y recursos cuando lo requieran.
 
-### 3.2. Marco Normativo de Seguridad en la Administración Pública: El Esquema Nacional de Seguridad (ENS)
+### 3.2. Marco Normativo de Seguridad en la AAPP: El ENS (RD 311/2022)
 
-En el ámbito de la Administración Pública española, los requisitos no funcionales de seguridad se articulan formalmente a través del **Real Decreto 311/2022**, de 3 de mayo, por el que se regula el **Esquema Nacional de Seguridad (ENS)**.
+En el ámbito de la Administración Pública española, los requisitos no funcionales de seguridad se articulan formalmente a través del **Real Decreto 311/2022**, por el que se regula el **Esquema Nacional de Seguridad (ENS)**. Los tribunales exigen conocer la literalidad de sus principios y roles.
 
-*   **Principios Básicos del ENS:** Seguridad integral, gestión de la seguridad basada en los riesgos, prevención, reorientación y actualización permanente, líneas de defensa, vigilancia continua y reevaluación periódica, diferenciación de responsabilidades.
-*   **Dimensiones de Seguridad del ENS (Marco AICAT):**
-    *   **A**utenticidad
-    *   **I**ntegridad
-    *   **C**onfidencialidad
-    *   **A**disponibilidad
-    *   **T**razabilidad
-*   **Categorización de Sistemas:** Los sistemas se clasifican en categorías **Básica, Media o Alta** en función de la valoración de las dimensiones de seguridad en sus servicios e información.
+**Los 7 Principios Básicos del ENS (Artículos 5 al 11):**
+1.  **Seguridad como proceso integral:** Implica a todos los elementos humanos, materiales, técnicos, jurídicos y organizativos. 
+    *   Se prestará la máxima atención a la concienciación de las personas; hay que evitar que la ignorancia, la falta de organización o de instrucciones constituyan fuentes de riesgo.
+2.  **Gestión de la seguridad basada en los riesgos:** El análisis y gestión de riesgos es el elemento esencial (no basarse en eventos pasados, sino en **prevención proactiva**).
+3.  **Prevención, detección, respuesta y conservación:** 
+    *   **Prevención:** Minimizar vulnerabilidades para que las amenazas no se materialicen.
+    *   **Detección:** Descubrir ciberincidentes de forma continua.
+    *   **Respuesta:** Restaurar la información y servicios afectados en tiempo oportuno.
+    *   **Conservación:** Garantizar la conservación de datos en soporte electrónico.
+4.  **Existencia de líneas de defensa:** Implantar medidas de seguridad organizativas, físicas y lógicas múltiples y en capas.
+5.  **Vigilancia continua:** Monitorización continua del sistema.
+6.  **Reevaluación periódica:** Actualización permanente ante nuevas amenazas.
+7.  **Diferenciación de responsabilidades:** Separación estricta de funciones. En todo sistema deben existir, al menos, las siguientes figuras diferenciadas: 
+    *   Responsable de la información.
+    *   Responsable del servicio.
+    *   Responsable de la seguridad.
+    *   Responsable del sistema.
 
+**Dimensiones de Seguridad del ENS (Marco ACIDT):**
+*   **A**utenticidad.
+*   **C**onfidencialidad.
+*   **I**ntegridad.
+*   **D**isponibilidad.
+*   **T**razabilidad.
+
+**Categorización de Sistemas:** 
+Los sistemas se clasifican en categorías **Básica, Media o Alta** en función de la valoración de las dimensiones de seguridad en sus servicios e información.
 
 ### 3.3. Análisis de riesgos de seguridad
 
 El análisis de seguridad debe identificar activos, amenazas, vulnerabilidades, impactos y riesgos, y determinar las medidas necesarias para reducir los riesgos a niveles aceptables.
 
-En el ámbito del ENS, el análisis y gestión de riesgos constituye uno de los requisitos mínimos de seguridad. La categorización del sistema y la selección de medidas deben realizarse atendiendo a los activos, a la categoría del sistema y a los riesgos identificados.
+En el ámbito del **ENS**, el análisis y gestión de riesgos constituye uno de los requisitos mínimos de seguridad. La categorización del sistema y la selección de medidas deben realizarse atendiendo a los activos, a la categoría del sistema y a los riesgos identificados.
 
 El análisis de seguridad debe integrarse en el ciclo de vida del sistema y considerar, entre otros aspectos:
 
@@ -295,7 +357,7 @@ En el ENS, el registro de actividad debe realizarse con garantías respecto de l
 
 ### 3.7. Continuidad y recuperación
 
-El análisis de seguridad debe contemplar la continuidad de la actividad y la recuperación ante incidentes o fallos.
+El análisis de seguridad debe contemplar la continuity de la actividad y la recuperación ante incidentes o fallos.
 
 Entre las medidas pueden incluirse copias de seguridad, redundancia, mecanismos de recuperación, procedimientos de contingencia y pruebas periódicas de recuperación.
 
@@ -318,8 +380,8 @@ La privacidad en el análisis de sistemas de información comprende las medidas 
 
 ### 4.2. Principios de Privacidad en el Diseño de Sistemas
 
-1.  **Privacidad desde el Diseño (*Privacy by Design*):** Las garantías de protección de datos deben integrarse técnicamente desde la fase inicial de concepción y arquitectura del sistema de información, no como un parche posterior.
-2.  **Privacidad por Defecto (*Privacy by Default*):** El sistema debe aplicar automáticamente la configuración más restrictiva de protección de datos posibles, garantizando que, por defecto, solo se traten los datos personales necesarios para cada fin específico.
+1.  **Privacidad desde el Diseño** (*Privacy by Design*): Las garantías de protección de datos deben integrarse técnicamente desde la fase inicial de concepción y arquitectura del sistema de información, no como un parche posterior.
+2.  **Privacidad por Defecto** (*Privacy by Default*): El sistema debe aplicar automáticamente la configuración más restrictiva de protección de datos posibles, garantizando que, por defecto, solo se traten los datos personales necesarios para cada fin específico.
 3.  **Minimización de Datos:** Los datos solicitados y procesados por el sistema deben ser adecuados, pertinentes y limitados a lo estrictamente necesario en relación con los fines para los que son tratados.
 4.  **Seudonimización y Cifrado:**
     *   *Seudonimización:* Tratamiento de datos personales de manera que ya no puedan atribuirse a un interesado sin utilizar información adicional que se mantenga por separado.
@@ -328,7 +390,7 @@ La privacidad en el análisis de sistemas de información comprende las medidas 
 
 ### 4.3. Licitud del tratamiento y responsabilidad proactiva
 
-El análisis de privacidad debe determinar la base jurídica que legitima cada tratamiento de datos personales. El artículo 6 del RGPD establece las condiciones que permiten que un tratamiento sea lícito.
+El análisis de privacidad debe determinar la base jurídica que legitima cada tratamiento de datos personales. El **artículo 6** del **RGPD** establece las condiciones que permiten que un tratamiento sea lícito.
 
 Entre las bases jurídicas se encuentran:
 
@@ -339,7 +401,7 @@ Entre las bases jurídicas se encuentran:
 * cumplimiento de una misión realizada en interés público o en el ejercicio de poderes públicos;
 * satisfacción de intereses legítimos, cuando proceda.
 
-La **responsabilidad proactiva (accountability)** exige que el responsable del tratamiento sea capaz de demostrar el cumplimiento de los principios y obligaciones establecidos por el RGPD.
+La **responsabilidad proactiva (accountability)** exige que el responsable del tratamiento sea capaz de demostrar el cumplimiento de los principios y obligaciones establecidos por el **RGPD**.
 
 ### 4.4. Base de legitimación, finalidad y ciclo de vida del dato
 
@@ -360,9 +422,9 @@ Debe determinarse:
 
 ### 4.5. Evaluación de impacto relativa a la protección de datos
 
-Cuando un tratamiento pueda entrañar un alto riesgo para los derechos y libertades de las personas físicas, el responsable debe realizar una **evaluación de impacto relativa a la protección de datos (EIPD)** antes del tratamiento, de acuerdo con el artículo 35 del RGPD.
+Cuando un tratamiento pueda entrañar un **alto riesgo** para los derechos y libertades de las personas físicas, el **Responsable** debe realizar una **evaluación de impacto relativa a la protección de datos (EIPD)** antes del tratamiento, de acuerdo con el **artículo 35** del **RGPD**.
 
-La evaluación debe describir el tratamiento y sus fines, valorar su necesidad y proporcionalidad, evaluar los riesgos para los derechos y libertades y determinar las medidas previstas para afrontar dichos riesgos y demostrar el cumplimiento del RGPD.
+La evaluación debe describir el tratamiento y sus fines, valorar su necesidad y proporcionalidad, evaluar los riesgos para los derechos y libertades y determinar las medidas previstas para afrontar dichos riesgos y demostrar el cumplimiento del **RGPD**.
 
 ### 4.6. Responsable y encargado del tratamiento
 
@@ -375,7 +437,7 @@ La relación entre responsable y encargado debe quedar regulada cuando proceda, 
 
 ### 4.7. Derechos de los interesados
 
-El diseño del sistema debe permitir gestionar los derechos reconocidos por el RGPD, entre ellos:
+El diseño del sistema debe permitir gestionar los derechos reconocidos por el **RGPD**, entre ellos:
 
 * derecho de acceso;
 * derecho de rectificación;
@@ -389,9 +451,9 @@ El sistema debe proporcionar mecanismos adecuados para registrar, tramitar y res
 
 ### 4.8. Transferencias internacionales
 
-Cuando el sistema implique transferencias de datos personales a terceros países u organizaciones internacionales, debe analizarse el cumplimiento del capítulo V del RGPD.
+Cuando el sistema implique transferencias de datos personales a terceros países u organizaciones internacionales, debe analizarse el cumplimiento del **capítulo V del RGPD**.
 
-Las transferencias deben apoyarse en alguno de los mecanismos previstos por el RGPD, como una decisión de adecuación o las garantías apropiadas establecidas en la normativa, cuando proceda.
+Las transferencias deben apoyarse en alguno de los mecanismos previstos por el **RGPD**, como una decisión de adecuación o las garantías apropiadas establecidas en la normativa, cuando proceda.
 
 ### 4.9. Privacidad y seguridad
 
@@ -401,7 +463,15 @@ La **seguridad de la información** protege la información y los sistemas frent
 
 La **protección de datos personales** regula el tratamiento de datos personales y protege los derechos y libertades de las personas físicas.
 
-Un sistema puede disponer de controles de seguridad adecuados y, sin embargo, realizar un tratamiento contrario a los principios del RGPD. Por ello, el análisis de privacidad debe realizarse de forma específica y coordinada con el análisis de seguridad.
+Un sistema puede disponer de controles de seguridad adecuados y, sin embargo, realizar un tratamiento contrario a los principios del **RGPD**. Por ello, el análisis de privacidad debe realizarse de forma específica y coordinada con el análisis de seguridad.
+
+### 4.10. Figuras e hitos críticos del RGPD en la Administración Pública
+
+En base a la exigencia de los tribunales sobre el cumplimiento normativo en las Administraciones, en el análisis de sistemas deben contemplarse estas figuras y plazos legales estipulados por el RGPD:
+
+*   **Delegado de Protección de Datos (DPD / DPO):** Figura obligatoria en todas las autoridades u organismos públicos. Su función es asesorar, supervisar el cumplimiento del RGPD, actuar como punto de contacto con la AEPD y cooperar con ella. El DPD no recibe instrucciones sobre el desempeño de sus funciones (independencia).
+*   **Registro de Actividades de Tratamiento (RAT):** Las AAPP están obligadas a llevar un registro formal (y público) de las actividades de tratamiento efectuadas bajo su responsabilidad (sustituye a la antigua obligación de inscribir ficheros en la AEPD).
+*   **Notificación de brechas de seguridad (Data Breaches):** Requisito no funcional crítico. El sistema debe contar con mecanismos de auditoría porque el responsable del tratamiento tiene la obligación legal de notificar cualquier violación de la seguridad de los datos a la autoridad de control (AEPD) **sin dilación indebida y, de ser posible, a más tardar 72 horas** después de que haya tenido constancia de ella.
 
 ## 5. Cuadro Comparativo Sintético: Aspectos No Funcionales
 
@@ -410,7 +480,6 @@ Un sistema puede disponer de controles de seguridad adecuados y, sin embargo, re
 | **Rendimiento** | Comportamiento del sistema ante la carga de trabajo y uso de recursos. | Tiempo de respuesta, Latencia, Throughput (TPS), % CPU/RAM/IOPS, SMART. | ISO/IEC 25010, Benchmarks (JMeter, LoadRunner, PassMark). |
 | **Seguridad** | Protección de la información y servicios contra accesos o fallos indebidos. | Niveles AAA, Cifrado, Vulnerabilidades, MTTR, MTBF. | RD 311/2022 (ENS), ISO/IEC 27001. |
 | **Privacidad** | Protección del derecho a la salvaguarda de datos personales de personas físicas. | Minimización de datos, periodo de retención, tasa de seudonimización. | RGPD (UE 2016/679), LOPDGDD 3/2018, ISO/IEC 27701. |
-
 
 ## 6. Referencias normativas y técnicas
 
@@ -429,45 +498,3 @@ Un sistema puede disponer de controles de seguridad adecuados y, sin embargo, re
 *   **ENS (RD 311/2022):** "Categorías Básica-Media-Alta", "Dimensiones AICAT".
 *   **Privacidad desde el diseño:** "Desde la fase inicial del proyecto/análisis", "no como añadido posterior".
 *   **JMeter:** "Pruebas de carga Open Source Java", "Multiprotocolo (HTTP, JDBC, LDAP)".
-
-
-## 8. Simulacro de Test:
-
-**Pregunta:**
-*Durante el análisis de requisitos de un nuevo sistema centralizado para el Ministerio de Sanidad, se documenta la siguiente restricción: "El sistema deberá procesar un mínimo de 500 peticiones concurrentes por segundo utilizando un máximo del 60% de uso de CPU del servidor". ¿A qué categoría de análisis pertenece este requisito?*
-a) Análisis Funcional de comportamiento.
-b) Análisis de Rendimiento (Requisito No Funcional).
-c) Análisis de Privacidad.
-d) Análisis de Seguridad.
-
-**Razonamiento Estructurado:**
-1.  **Busca la palabra chivata:** El enunciado da datos concretos sobre "500 peticiones concurrentes por segundo" (esto es el throughput) y "máximo del 60% de uso de CPU" (consumo de recursos).
-2.  **Aplica tu patrón lógico de descarte:**
-    *   ¿Habla de una acción de negocio que realiza el usuario (ej. pedir una cita)? No, define una restricción técnica. Por tanto, no es funcional. **(A) es falsa**.
-    *   ¿Menciona el tratamiento de datos de carácter personal o regulaciones como el RGPD? No. **(C) es falsa**.
-    *   ¿Se trata de proteger contra accesos o modificaciones no autorizadas (cifrado, certificados)? No. **(D) es falsa**.
-    *   Se refiere estrictamente a métricas operativas de estrés y carga del sistema.
-3.  **Respuesta correcta:** B.
-
-**Pregunta:**
-*Según el Real Decreto 311/2022, por el que se regula el Esquema Nacional de Seguridad, ¿cuáles son las cinco dimensiones de seguridad que se valoran para determinar la categoría de un sistema de información?*
-a) Confidencialidad, Integridad, Disponibilidad, Autenticación y Portabilidad.
-b) Confidencialidad, Integridad, Trazabilidad, Autenticidad y Disponibilidad.
-c) Privacidad, Integridad, Disponibilidad, Escalabilidad y Rendimiento.
-d) Confidencialidad, Fiabilidad, Usabilidad, Mantenibilidad y Disponibilidad.
-
-**Razonamiento Estructurado:**
-1.  El propio texto del RD 311/2022 (Anexo I) enumera literalmente: Confidencialidad [C], Integridad [I], Trazabilidad [T], Autenticidad [A] y Disponibilidad [D] (regla mnemotécnica CIDTA/DICAT).
-2.  (A) confunde Autenticidad con "Autenticación" e incluye Portabilidad, que es un atributo de calidad ISO 25010, no una dimensión ENS. (C) y (D) mezclan conceptos de rendimiento y calidad de software que no son dimensiones de seguridad del ENS.
-3.  **Respuesta correcta:** B.
-
-**Pregunta:**
-*Una empresa pública sustituye los DNI de los ciudadanos en una base de datos estadística por un código alfanumérico, pero conserva en un fichero separado y protegido la tabla de correspondencia entre DNI y código. ¿Qué técnica de protección de datos ha aplicado?*
-a) Anonimización.
-b) Seudonimización.
-c) Cifrado asimétrico.
-d) Minimización de datos.
-
-**Razonamiento Estructurado:**
-1.  La clave está en que existe una "tabla de correspondencia" que permite revertir el proceso: eso es exactamente la definición de seudonimización, que sigue considerando el dato como personal a efectos del RGPD porque es reversible con información adicional. Si no existiera esa tabla y fuera imposible reidentificar a la persona, hablaríamos de anonimización (A).
-2.  **Respuesta correcta:** B.

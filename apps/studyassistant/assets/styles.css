@@ -1,3 +1,60 @@
+.container img,
+.container svg,
+.note-body img,
+.note-body svg {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.mermaid {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 8px;
+    overflow: hidden;
+}
+
+.mermaid svg {
+    background: #ffffff !important;
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.mermaid svg * {
+    box-sizing: border-box;
+}
+
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon,
+.mermaid .cluster rect,
+.mermaid .cluster polygon {
+    fill: #e0f2fe !important;
+    stroke: #38bdf8 !important;
+    stroke-width: 1.5px !important;
+}
+
+.mermaid .node .label,
+.mermaid .edgeLabel,
+.mermaid text {
+    fill: #0f172a !important;
+    color: #0f172a !important;
+    font-family: inherit !important;
+}
+
+.mermaid .edgePath .path,
+.mermaid .flowchart-link,
+.mermaid path,
+.mermaid line,
+.mermaid polygon,
+.mermaid marker {
+    stroke: #0ea5e9 !important;
+    stroke-width: 1.2px !important;
+    fill: none !important;
+}
+
 body {
     margin: 0;
     font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

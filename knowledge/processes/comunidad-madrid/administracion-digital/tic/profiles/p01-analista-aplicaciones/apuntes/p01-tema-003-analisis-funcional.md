@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p01-tema-003-analisis-funcional-diseño"
 title: "Análisis funcional/diseño"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -16,6 +16,7 @@ tags:
   - "analisis-funcional"
   - "casos-de-uso"
   - "historias-de-usuario"
+  - "agile"
   - "scrum"
   - "kanban"
   - "dsdm"
@@ -23,14 +24,15 @@ tags:
   - "tdd"
   - "bdd"
   - "iso-29148"
+  - "requisitos"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-27"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 3. Análisis funcional/diseño
@@ -85,12 +87,18 @@ La edición **ISO/IEC 25010:2023** sustituye a la edición de 2011 y establece u
 *   Fiabilidad (*reliability*).
 *   Seguridad (*security*).
 *   Mantenibilidad (*maintainability*).
-*   Flexibilidad (*flexibility*)
+*   Flexibilidad (*flexibility*).
 *   Seguridad de uso (*safety*). 
 
 El modelo se utiliza para especificar, medir y evaluar la calidad de productos TIC y software.
 
 **Atributos de un buen requisito (ISO/IEC/IEEE 29148):** necesario, no ambiguo, completo, singular (atómico), factible, verificable, correcto y conforme (con estándares aplicables).
+
+**Documento de Especificación de Requisitos (SRS / SyRS):**
+Según las directrices consolidadas de la IEEE 830 (y recogidas en la ISO 29148), el documento formal de especificación se estructura típicamente en tres grandes bloques:
+1.  **Introducción:** Propósito, alcance, definiciones y visión general.
+2.  **Descripción General:** Perspectiva del producto, funciones, características de los usuarios, restricciones y suposiciones.
+3.  **Requisitos Específicos:** Funcionales, no funcionales (rendimiento, diseño) e interfaces, detallados para permitir el diseño y las pruebas.
 
 **Trazabilidad de requisitos:** capacidad de seguir la vida de un requisito desde su origen (necesidad de negocio) hasta su implementación y prueba, en ambas direcciones (hacia atrás y hacia adelante). Es clave para la gestión del cambio y para la auditoría en procesos certificados bajo **CMMI** o **ISO 9001**.
 
@@ -165,7 +173,7 @@ Son las dos herramientas principales para documentar requisitos, dependiendo de 
 
 > Una buena historia de usuario debe cumplir el acrónimo **INVEST**.
 
-Las historias de usuario se acompañan de **criterios de aceptación**: condiciones concretas que deben cumplirse para considerar la historia "terminada" (*Done*). Frecuentemente se redactan en formato **Gherkin** (Dado/Cuando/Entonces), enlazando con [BDD](#3-3-bdd-behavior-driven-development-desarrollo-orientado-al-comportamiento).
+Las historias de usuario se acompañan de **criterios de aceptación**: condiciones concretas que deben cumplirse para considerar la historia "terminada" (*Done*). Frecuentemente se redactan en formato **Gherkin** (Dado/Cuando/Entonces), enlazando con BDD.
 
 Jerarquía habitual en ágil: **Épica** (gran bloque de valor, varias historias) → **Historia de usuario** → **Tareas** (unidades técnicas de trabajo del equipo).
 
@@ -179,11 +187,27 @@ Jerarquía habitual en ágil: **Épica** (gran bloque de valor, varias historias
 | Cuándo se completa el detalle | Al inicio (documento cerrado) | Progresivamente, justo a tiempo |
 | Verificación | Flujos alternativos/excepción | Criterios de aceptación |
 
-### 1.3.1. Modelado de casos de uso mediante UML
+### 1.3.1. Modelado de sistemas y diseño mediante UML
 
 Un **diagrama de casos de uso UML** representa las funcionalidades del sistema desde el punto de vista de los actores externos. El límite del sistema delimita qué elementos pertenecen al sistema y qué elementos son externos a él.
 
-Sus elementos principales son:
+Para dominar el modelado y el diseño, es imprescindible conocer la **clasificación oficial de diagramas UML (OMG UML 2.5.1)**. Se dividen en dos grandes grupos:
+
+1.  **Diagramas Estructurales (Modelan la arquitectura estática):**
+    *   Diagrama de Clases.
+    *   Diagrama de Objetos.
+    *   Diagrama de Componentes.
+    *   Diagrama de Despliegue.
+    *   Diagrama de Estructura Compuesta.
+    *   Diagrama de Paquetes.
+    *   Diagrama de Perfiles.
+2.  **Diagramas de Comportamiento (Modelan la dinámica funcional):**
+    *   Diagrama de Actividad.
+    *   Diagrama de Casos de Uso.
+    *   Diagrama de Máquina de Estados.
+    *   *Diagramas de Interacción (subgrupo de comportamiento):* Diagrama de Secuencia, Diagrama de Comunicación, Diagrama de Tiempos y Diagrama Global de Interacciones.
+
+Sus elementos principales en Casos de Uso son:
 
 * **Actor:** clasificador que representa un papel desempeñado por una entidad externa que interactúa con el sistema. Un actor no tiene por qué ser una persona; puede representar otro sistema, dispositivo u organización.
 * **Caso de uso:** especificación del comportamiento que el sistema proporciona a los actores para alcanzar un resultado observable.
@@ -265,11 +289,18 @@ De **"3 Roles"** a **"Un único Scrum Team con Responsabilidades":** Se elimina 
         *   Profesionales comprometidos a crear cualquier aspecto de un *Incremento* utilizable utilizable en cada Sprint. 
         *   Pasan de ser definidos como "autoorganizados" a **autogestionados** (deciden *quién*, *qué*, *cuándo* y *cómo* se realiza el trabajo).
 
-*   **Artefactos y Eventos:**
+*   **Artefactos y Eventos** (y sus *Timeboxes* obligatorios):
+
+![Diagrama del ciclo de vida de Scrum](../images/diagrama-ciclo-vida-scrum.jpg)
+
+![Diagrama de Relación Análitica: Artefactos y Eventos](../images/diagrama-relacion-artefactos-y-eventos.jpg)
+
+
     *   **Sprint:** 
         *   Iteración de 1 a 4 semanas. Durante el Sprint, los requisitos están congelados.
         *    Cada Sprint puede considerarse un proyecto corto y tiene una duración máxima de **un mes**; cuanto más largo es el Sprint, más riesgo de que cambie la definición de "hecho", el valor se reduzca o la complejidad aumente. 
         *    Los Sprints permiten la **previsibilidad** al asegurar inspección y adaptación al menos cada mes.
+        *   **Regla de Cancelación:** El Sprint solo puede ser cancelado por el **Product Owner**, normalmente si el Sprint Goal queda obsoleto debido a un cambio drástico en el negocio.
     *   **Product Backlog:** 
         *   Lista completa y priorizada de todo lo que el sistema necesita.
     *   **Sprint Backlog:** 
@@ -285,13 +316,55 @@ De **"3 Roles"** a **"Un único Scrum Team con Responsabilidades":** Se elimina 
     *   **Sprint Planning:** 
         *   Inicia el Sprint.
         *   En ella se decide qué se puede conseguir en el Sprint (Sprint Goal) y cómo se llevará a cabo el trabajo elegido.
+        *   *Timebox:* Máximo de 8 horas para un Sprint de un mes.
     *   **Sprint Review:** 
-        *   Reunión al final del Sprint para mostrar el software funcionando a los interesados (Stakeholders).
+        *   Reunión al final del Sprint para mostrar el software funcionando a los interesados (**Stakeholders**).
            Su propósito es inspeccionar el resultado del Sprint y determinar futuras adaptaciones.
+        *   *Timebox:* Máximo de 4 horas para un Sprint de un mes.
     *   **Sprint Retrospective:** 
         *   Reunión interna del equipo para analizar qué ha ido bien y qué mejorar en sus procesos.
         *   Cierra el Sprint.
         *   El Scrum Team inspecciona cómo fue el último Sprint en cuanto a individuos, interacciones, procesos, herramientas y su Definición de Terminado.   
+        *   *Timebox:* Máximo de 3 horas para un Sprint de un mes.
+
+```mermaid
+graph TD
+    %% Definición de estilos para el examen
+    classDef evento fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef artefacto fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef alerta fill:#ffebee,stroke:#c62828,stroke-width:2px,stroke-dasharray: 5 5,color:#000
+
+    PB[("Product Backlog\n(Lista completa y priorizada)")]:::artefacto
+
+    subgraph SPRINT ["SPRINT: Iteración de 1 a 4 semanas (Máximo 1 mes)"]
+        direction TB
+        
+        SP["Sprint Planning\n⏱️ Máx. 8 horas\nInicia el Sprint"]:::evento
+        
+        SB[("Sprint Backlog\n(Sprint Goal + Elementos + Plan)")]:::artefacto
+        
+        DS(("Daily Scrum\n⏱️ 15 min diarios\n(Sólo Developers)")):::evento
+        
+        INC[("Incremento\n(Hacia el objetivo del producto)")]:::artefacto
+        
+        SRev["Sprint Review\n⏱️ Máx. 4 horas\n(Inspección con Stakeholders)"]:::evento
+        
+        SRet["Sprint Retrospective\n⏱️ Máx. 3 horas\n(Interna: Mejora de procesos)"]:::evento
+
+        SP -->|Define| SB
+        SB -->|Guía| DS
+        DS -.->|Sincronización diaria| DS
+        DS -->|Construye| INC
+        INC -->|Muestra en| SRev
+        SRev -->|Da paso a| SRet
+    end
+
+    PB -->|Alimenta| SP
+    SRet -->|Mejora de cara al siguiente| PB
+
+    Cancelar>Excepción: ÚNICAMENTE el Product Owner puede cancelar el Sprint]:::alerta
+    Cancelar -.-> SPRINT
+```
 
 *   **Definición de Terminado** (*Definition of Done*, DoD):
     *   Descripción formal del estado del Incremento cuando cumple las medidas de calidad requeridas para el producto. 
@@ -314,9 +387,6 @@ De **"3 Roles"** a **"Un único Scrum Team con Responsabilidades":** Se elimina 
     * Respeto.
     * Coraje.
 
-
-
-
 ### 2.3. Kanban
 Método para gestionar el flujo de trabajo con énfasis en la entrega "justo a tiempo".
 
@@ -331,7 +401,6 @@ Método para gestionar el flujo de trabajo con énfasis en la entrega "justo a t
 3. Respetar inicialmente los roles, responsabilidades y cargos actuales.
 4. Fomentar el liderazgo en todos los niveles.
 
-
 #### 2.3.2. Patrón Lógico y Reglas Clave:
 
 1.  **Mostrar el proceso:** Uso de un tablero visual con columnas (Ej: Cola, Análisis, Desarrollo, Pruebas).
@@ -339,16 +408,21 @@ Método para gestionar el flujo de trabajo con énfasis en la entrega "justo a t
 3.  **Optimizar el flujo (Cycle Time / Lead Time):** Se mide el tiempo desde que una tarea entra al tablero hasta que sale.
     *  El **Lead Time** mide desde que la tarea se *solicita* hasta que se *entrega*. 
     *  El **Cycle Time** mide desde que el equipo *empieza a trabajar* en ella hasta que se *completa*. 
-4.  **Gestionar el flujo explícitamente:** definir y comunicar políticas claras de cómo se mueven las tareas entre columnas.
-5.  **Mejora colaborativa mediante modelos y método científico:** uso de métricas (como el diagrama de flujo acumulado) para detectar cuellos de botella y mejorar continuamente.
+4.  **La Ley de Little (Little's Law):** Fórmula matemática esencial en Kanban y teoría de colas que relaciona las variables de flujo. Se formula como $\text{WIP} = \lambda \times W$, donde $\lambda$ es la tasa de entrega (*Throughput*) y $W$ es el tiempo medio de permanencia (*Lead Time*).
+5.  **Gestionar el flujo explícitamente:** definir y comunicar políticas claras de cómo se mueven las tareas entre columnas.
+6.  **Mejora colaborativa mediante modelos y método científico:** uso de métricas (como el diagrama de flujo acumulado) para detectar cuellos de botella y mejorar continuamente.
 
 ### 2.4. DSDM (Dynamic Systems Development Method)
+
+![Diagrama Procesos DSDM](../images/diagrama-procesos-dsdm.png)
 
 Enfoque iterativo e incremental basado en el desarrollo rápido de aplicaciones (**RAD**).
 
 *   **Ciclo de vida DSDM:** 
     *   Pre-proyecto → Viabilidad → Fundamentos → Desarrollo iterativo evolutivo → Despliegue → Post-proyecto.
 
+![Ciclo de Vida DSDM](../images/ciclo-vida-dsdm.jpg)
+  
 *   **Relación con RAD:** DSDM nació en 1994 como una respuesta estructurada al RAD (*Rapid Application Development*), aportando disciplina y gobernanza al desarrollo rápido, algo que el RAD original no garantizaba.
 
 #### 2.4.1. Patrón Lógico de DSDM:
@@ -385,6 +459,148 @@ Técnica de priorización de requisitos característica de DSDM (aunque usada ta
 | Qué es variable | El alcance dentro del Sprint | El orden/prioridad de tareas | El alcance/requisitos (vía MoSCoW) |
 | Métrica clave | Velocidad del equipo | Lead Time / Cycle Time | Cumplimiento de plazo con calidad |
 
+### 2.5. Estimación y Seguimiento en Metodologías Ágiles
+
+Los tribunales TIC prestan especial atención a las técnicas de estimación y métricas de seguimiento ágil, que difieren de la gestión tradicional:
+
+*   **Puntos de Historia** (*Story Points*): Medida relativa utilizada por los equipos ágiles para estimar el esfuerzo, la complejidad y el riesgo de implementar una Historia de Usuario, en lugar de utilizar horas exactas.
+*   **Planning Poker:** Técnica de estimación basada en el **consenso**. El equipo (Developers) utiliza una baraja basada en la **sucesión de Fibonacci** (1, 2, 3, 5, 8, 13, 21...). 
+    *   Si aparecen estimaciones muy dispares (ej. un 3 y un 13), **nunca se hace la media ni decide el Scrum Master**; la buena práctica dicta que los miembros con valores extremos justifiquen su postura y se repita la votación hasta alcanzar el consenso.
+*   **Velocidad** (*Velocity*): Cantidad de Puntos de Historia que un equipo es capaz de completar (cumpliendo la *Definition of Done*) en un **único Sprint**. Sirve para predecir **cuántos Sprints** se necesitarán para acabar el **Product Backlog**.
+*   **Radiadores de Información (Gráficos de seguimiento):**
+    *   **Burndown Chart (Gráfico de trabajo pendiente):** 
+        *   Muestra el esfuerzo restante (eje Y) frente al tiempo (eje X). La línea debe tener tendencia descendente. 
+        *   Si la línea tiene una **tendencia ascendente**, no significa que el equipo trabaje mal, sino que **se está incrementando el trabajo pendiente** (se han añadido nuevas tareas o reestimado el esfuerzo al alza).
+    *   **Burnup Chart (Gráfico de trabajo completado):** 
+        *   Muestra cuánto trabajo se ha completado y los cambios en el alcance total del proyecto.
+    *   **Diagrama de Flujo Acumulado (*Cumulative Flow Diagram - CFD*):** Fundamental en Kanban. Muestra la cantidad de tareas en cada estado (columna) a lo largo del tiempo. Permite detectar visualmente los cuellos de botella (cuando una franja se ensancha bruscamente).
+
+#### 2.5.1. Burndown chat
+
+Existen fundamentalmente **3 tipos de gráficos de burndown** que suelen utilizarse en **Scrum**: sprint burndown chart, release burndown chart y product burndown chart.
+
+##### Sprint burndown chart
+
+Durante la creación del **Sprint Backlog** cada miembro del equipo determinará el esfuerzo y tiempo que requiere cada tarea pendiente del sprint. 
+
+Según avanza el sprint, cada miembro actualizará el esfuerzo dedicado y tiempo utilizado en cada tarea. Con toda esta información del backlog, el **Scrum Master** creará el **gráfico de trabajo pendiente del Sprint**.
+
+##### Release burndown chart
+
+Un lanzamiento en **Scrum** es el proceso que conlleva las tareas desde el desarrollo del producto hasta que éste llega al cliente. 
+
+En **metodologías Agile**, se dice que es posible liberar o lanzar el producto cuando cumple los requisitos de funcionalidad y expectativas del cliente. 
+
+Un lanzamiento de producto en **Scrum** generalmente constará de uno o varios **Sprints** cada uno de ellos de la misma duración. 
+
+Así, este gráfico mostrará el **progreso del equipo hasta la fecha final del lanzamiento del producto**.
+
+##### Product burndown chart
+
+Un **Product burndown chart** monitoriza la **cantidad de trabajo pendiente que queda para cumplir con los objetivos de producto definidos inicialmente** con el cliente.
+
+Este gráfico burndown **representa** los **story points** del **Product Backlog**. 
+
+El gráfico **muestra los puntos de las historias para cada sprint completado**, por lo que representa la **evolución del cumplimiento de los requisitos del producto a lo largo del tiempo**. 
+
+> El Backlog y el Product burndown chart suelen actualizarse al final de cada sprint.
+
+##### ¿Cómo funcionan los burndown chart?
+
+Con los gráficos **burndown** se estima la **cantidad de trabajo que queda por hacer** y **se comparan** con el **tiempo que llevará completar el trabajo**. El **objetivo** es representar con precisión el tiempo asignado para **planificar con anticipación los recursos** futuros.
+
+##### Cómo interpretar un gráfico burndown
+
+Un **Burndown chart** suele incluir lo siguiente:
+
+* **Eje X**: Representa la **cantidad de tiempo que queda para completar el proyecto**. Esto generalmente se muestra en **días**.
+
+* **Eje Y**: Representa el **esfuerzo restante** necesario **para completar el proyecto**. Es decir, aquí aparecerán las **tareas del Backlog pendiente** o **Sprint Backlog**.
+
+* **Línea de trabajo real**: Representa el **trabajo real que aún queda por realizar**. A menudo difiere de la estimación inicial debido a los posibles obstáculos que surgen durante el proyecto y al tiempo adicional que a veces se necesita para completar el trabajo. La línea de trabajo real puede ser recta en algunos casos, pero tiende a ser un trazado menos lineal debido a los inconvenientes que surgen en el transcurso del proyecto y al trabajo no previsto. 
+
+* **Línea ideal de trabajo restante** (trabajo estimado): Representa la **cantidad de trabajo** que calculaste en un **escenario ideal**. A menudo, es una trayectoria más recta en comparación con la línea de trabajo real. 
+
+* **Puntos de historia**: Los equipos ágiles suelen usar los puntos de historia para estimar el trabajo pendiente. En un burndown chart, los puntos de historia se representan en los ejes X e Y. Por ejemplo, el eje Y puede tener de 0 a 100 puntos de historia, que representan la dedicación, y el eje X puede tener de 1 a 30 puntos de historia, que representan los días que quedan para completar el trabajo.
+
+* **Objetivo del sprint**: por último, para que un gráfico burndown sea eficaz, debe incluir el objetivo general del sprint. Por ejemplo, tu objetivo de sprint podría ser una línea recta que represente el 50 % del esfuerzo durante 12 días. Si bien es posible que tu trabajo real no cumpla con este objetivo de manera exacta, siempre es bueno tener un objetivo a alcanzar para que las tareas sigan avanzando. 
+
+* **Interpretación normal**:Línea descendente (se quema trabajo hasta llegar a cero).
+
+* **Línea plana**:**: El equipo está bloqueado (impedimentos) o las tareas son demasiado grandes para cerrarse en un día.
+
+* **Tendencia ascendente (Pico hacia arriba)**: Significa que el trabajo total pendiente ha aumentado. Esto ocurre porque el **Product Owner** ha añadido nuevo alcance (**scope creep**) al **Sprint Backlog**, o porque el equipo ha descubierto complejidad oculta y ha reestimado al alza las tareas restantes.
+
+Los **burndown charts** son excelentes para **visualizar** rápidamente el **trabajo pendiente y el tiempo que se necesita para completar ese trabajo**. Sin embargo, no brindan información sobre la trayectoria de un proyecto, como por ejemplo, los cambios realizados. Esto hace que sea difícil saber si los cambios se deben a que se finalizaron tareas de la lista de trabajos pendientes o a un cambio en los puntos de historia.
+
+Este es el motivo por el cual **los gráficos burndown suelen combinarse** con una **lista del trabajo pendiente** del producto, gestionada por el **Product Owner**, y un **proceso de control de cambios** para realizar un **seguimiento** eficaz del **progreso** del proyecto.
+
+A continuación, se muestra un ejemplo de un **gráfico burndown**.
+
+![Ejemplo Burndown Chart](../images/ejemplo-burndown-chart.jpg)
+
+> Como puedes ver, la línea de trabajo real es ligeramente diferente a la del trabajo ideal. El esfuerzo de trabajo real fue mayor de lo previsto al principio, pero menor de lo esperado al final. Por lo tanto, aunque el camino fue ligeramente diferente, el resultado final fue el mismo.
+
+#### Beneficios de usar un burndown chart
+
+Un **gráfico burndown** es una excelente herramienta para **visualizar** el **trabajo que se debe realizar en comparación con el tiempo que lleva completarlo**. Por lo tanto, es ideal para equipos que trabajan en **Sprints**.
+
+Otros beneficios de usar un **gráfico burndown** incluyen:
+
+* **Comparación directa**: el **gráfico burndown** muestra una comparación directa entre el trabajo que se necesita realizar y el esfuerzo requerido para completar el sprint. Esta información ayuda a los equipos a conectar las tareas con los objetivos más grandes y avanzar para cumplir los objetivos del sprint. 
+
+* **Mantiene sintonía**: los miembros del equipo tienen información a la que pueden acceder para visualizar el trabajo necesario y el esfuerzo diario estimado, lo que les permite dar seguimiento y estar al día con el trabajo.
+
+* **Información sobre la productividad del equipo**: un **burndown chart** no solo es una excelente herramienta para visualizar el trabajo, sino que también puede darte información sobre la productividad de tu equipo y la velocidad con la que se finalizan los trabajos.
+
+Todos estos beneficios hacen que los **gráficos burndown** sean una herramienta excelente para dar **seguimiento a la gestión de recursos** del equipo, al esfuerzo y la productividad.
+
+#### 2.5.2. Burnup chat
+
+Un **gráfico burnup** es una hoja de ruta que representa el trabajo en dos líneas a lo largo de un eje vertical. Una línea indica la carga de trabajo total del proyecto. La otra muestra el trabajo completado hasta el momento. Cuando se termina el proyecto, las dos líneas se unen.
+
+![Ejemplo Burnup Chart](../images/ejemplo-burnup-chart.png)
+
+##### Cómo interpretar un gráfico burnup
+
+Un **Burndown chart** suele incluir lo siguiente:
+
+* **Eje X**: Representa la línea temporal de todo el proyecto. Permite ver el tiempo que se tarda en completar las tareas y ayuda a representar gráficamente los **Sprints**.
+* **Eje Y**: Representa el trabajo completado. Esta medida puede ser puntos de historia en los incrementos que se consideren adecuados.
+
+##### Beneficios de usar un burndown chart
+
+Estas son algunas de las ventajas de utilizar un gráfico de avance en proyectos ágiles y Scrum:
+
+* **Indica claramente el progreso:** una ventaja respecto a los **diagramas de Gantt** es que los **gráficos burnup** se pueden leer de un solo vistazo. No son tan complejos ni confusos como un diagrama de Gantt. Y, a diferencia de un **gráfico burndown**, un **gráfico burnup** muestra el trabajo completado en una gráfica ascendente con mayor detalle. Muestra tanto el trabajo total como el trabajo completado.
+
+* **Facilita la previsión:** los **gráficos burnup** permiten a tu equipo determinar una fecha aproximada de finalización. Es posible trabajar hacia atrás para establecer métricas o puntos de referencia de **Scrum**.
+
+* **Destaca los cambios en el alcance y gestiona la desviación del alcance:** a diferencia de un **gráfico burndown**, es posible marcar fácilmente cualquier cambio en el alcance y relacionarlo con el progreso del equipo. Esto ayuda a **mitigar** cualquier **desviación del alcance** antes de que se vaya de las manos.
+
+* **Permite la detección temprana de problemas:** los **gráficos burnup** permiten mitigar los problemas antes de que se conviertan en grandes quebraderos de cabeza.
+
+* **Aporta transparencia para todos:** los **gráficos burnup** son más fáciles de leer y facilitan una transparencia total entre el equipo, lo que ayuda a tomar mejores decisiones sobre el proyecto.
+
+#### 2.5.3. Comparativa entre Burdown and Burnup charts
+
+En ambos casos, la abscisa del gráfico representa el tiempo; realizando un gráfico por sprint, se puede utilizar como unidad el día, pero esto se puede adaptar a la temporalidad del producto. La ordenada representa el trabajo realizado en el caso del **Burnup**, o el trabajo que queda por hacer en el caso del **Burndown**.
+
+Los dos tipos de gráficos satisfacen la misma necesidad pero ofrecen diferentes ventajas.
+
+![Comparativas Burndown vs Burnup Charts](../images/comparativa-burndown-vs-burnup-charts.png)
+
+El **gráfico burndown**, que se usa a menudo a nivel de **Sprint**, permite al equipo **visualizar** mejor el **trabajo que queda por hacer en un periodo corto de tiempo**.
+
+El **gráfico burnup** permite **representar** mejor los **cambios en el alcance del Sprint o del producto completo** al distinguir dos líneas:
+
+* Una línea (en azul arriba) que representa el alcance del producto o una liberación del producto. Esta línea crece cuando agregamos elementos del backlog.
+* La otra línea representa el trabajo ya realizado.
+
+El **gráfico burnup** a menudo brinda una visión precisa del ritmo de desarrollo: en el siguiente caso, el **gráfico burndown** da la impresión de un equipo que no está progresando, mientras que el **gráfico burnup** muestra que en realidad el alcance esperado evoluciona tan rápido como la capacidad de producción del equipo.
+
+> Una versión mejorada consiste en agregar otra línea que represente el ritmo «ideal» de trabajo, haciendo posible determinar visualmente cada día si el desarrollo está delante o detrás del ritmo teórico.
+
 ## 3. Pruebas Funcionales y Metodologías Dirigidas por Pruebas
 
 **Tipos y niveles de prueba (marco general, examinable):**
@@ -399,17 +615,20 @@ Técnica de priorización de requisitos característica de DSDM (aunque usada ta
 
 Las pruebas deben planificarse en función de los requisitos, los riesgos y los objetivos de calidad. Un caso de prueba debe permitir identificar las condiciones de entrada, los datos necesarios, las acciones o pasos de ejecución y los resultados esperados.
 
-Las pruebas funcionales pueden diseñarse utilizando técnicas de especificación, entre ellas:
+El diseño de casos de prueba debe apoyarse en la **clasificación formal de técnicas (caja negra y caja blanca)**, tal como establecen ISTQB y la norma ISO 29119-4.
 
+**Técnicas de Caja Negra (Basadas en especificación):** No consideran la estructura interna del código.
 * **Particiones de equivalencia:** divide el dominio de entrada o salida en clases cuyos elementos se consideran equivalentes a efectos de prueba, seleccionando representantes de cada clase.
 * **Análisis de valores límite:** selecciona valores situados en los límites de las clases de equivalencia, donde es frecuente encontrar defectos.
 * **Tablas de decisión:** representan combinaciones de condiciones y las acciones asociadas a cada combinación. Son apropiadas para reglas de negocio complejas.
 * **Pruebas de transición de estados:** verifican el comportamiento del sistema ante eventos que provocan transiciones entre estados.
 * **Pruebas basadas en casos de uso:** derivan escenarios de prueba de los flujos principales, alternativos y de excepción de los casos de uso.
 
+**Técnicas de Caja Blanca (Basadas en estructura):** Analizan el código interno. Incluyen la **cobertura de sentencias**, la **cobertura de ramas (branch coverage)** y la **cobertura de caminos**.
+
 La **cobertura de requisitos** permite determinar qué requisitos han sido objeto de pruebas. La trazabilidad entre requisitos y pruebas facilita demostrar que los requisitos han sido verificados y permite identificar el impacto de los cambios.
 
-Las pruebas pueden ser **estáticas**, cuando se examinan productos de trabajo sin ejecutar el software, o **dinámicas**, cuando se ejecuta el software o sistema objeto de prueba. Las revisiones son una forma de prueba estática; las pruebas funcionales ejecutadas sobre el sistema son pruebas dinámicas.
+Las pruebas pueden ser **estáticas**, cuando se examinan productos de trabajo sin ejecutar el software, o **dinámicas**, cuando se ejecuta el software o sistema objeto de prueba. Las revisiones son una forma de prueba estática; las pruebas funcionales ejecutadas sobre el sistema son pruebas dinámicas. Dentro de las estáticas, encontramos técnicas formales como las **Inspecciones** y técnicas informales como los *Walkthroughs* (Revisiones guiadas).
 
 La serie **ISO/IEC/IEEE 29119** establece un marco internacional para las pruebas de software. Incluye conceptos generales, procesos de prueba, documentación de pruebas y técnicas de diseño de pruebas.
 
@@ -456,7 +675,10 @@ BDD nació de la mano de Dan North como refinamiento de TDD, trasladando el foco
 
 ## 4. Enfoque CMMI (Capability Maturity Model Integration)
 
+![Niveles Madurez CCMI](../images/niveles-madurez-cmmi.jpg)
+
 CMMI es un modelo para evaluar la madurez de los procesos de desarrollo de software de una organización. Identifica 5 niveles de madurez:
+
 1.  **Inicial:** Procesos impredecibles, reactivos y caóticos. Depende del heroísmo individual.
 2.  **Gestionado (Managed):** Proyectos planificados, medidos y controlados a nivel básico.
 3.  **Definido:** Procesos estandarizados y documentados a nivel de toda la organización.
@@ -465,9 +687,10 @@ CMMI es un modelo para evaluar la madurez de los procesos de desarrollo de softw
 
 **Origen y titularidad:** CMMI fue desarrollado originalmente por el **Software Engineering Institute (SEI)** de la Universidad Carnegie Mellon, y actualmente su mantenimiento corresponde al **CMMI Institute** (integrado en ISACA). Es un modelo de referencia para la mejora de procesos, aplicable a desarrollo (CMMI-DEV), adquisición (CMMI-ACQ) y servicios (CMMI-SVC).
 
-**Dos representaciones posibles de CMMI (distinción muy preguntada):**
-*   **Representación por Etapas (*Staged*):** la organización avanza por los 5 **niveles de madurez** de forma secuencial y global (los descritos arriba). Es la más citada en oposición.
-*   **Representación Continua (*Continuous*):** la organización mejora **áreas de proceso individuales**, cada una con su propio **nivel de capacidad** (0 a 3: Incompleto, Realizado, Gestionado, Definido), sin necesidad de seguir un orden global.
+** Representaciones CMMI:**
+
+*   **Representación por Etapas** (*Staged*): la organización avanza por los 5 **niveles de madurez** de forma secuencial y global (los descritos arriba). Es la más citada en oposición.
+*   **Representación Continua** (*Continuous*): la organización mejora **áreas de proceso individuales**, cada una con su propio **nivel de capacidad** (0 a 3: Incompleto, Realizado, Gestionado, Definido), sin necesidad de seguir un orden global.
 
 **Áreas de proceso (Process Areas) relacionadas directamente con el análisis funcional (CMMI-DEV):**
 *   **Requirements Management (REQM)** — Gestión de Requisitos: área de **Nivel de madurez 2**. Su propósito es gestionar los requisitos del proyecto y sus productos, e identificar inconsistencias entre esos requisitos y los planes/productos de trabajo del proyecto.
@@ -475,13 +698,57 @@ CMMI es un modelo para evaluar la madurez de los procesos de desarrollo de softw
 
 #### 4.1. Representaciones de CMMI y Áreas de Proceso para Análisis de Requisitos
 Es habitual que en el examen tipo test de la AGE pregunten sobre la distinción entre las dos representaciones de CMMI:
-*   **Representación por Etapas (*Staged*):** Mide la madurez global de la **organización**. Se evalúa en **5 Niveles de Madurez** (1. Inicial, 2. Gestionado, 3. Definido, 4. Gestionado Cuantitativamente, 5. En Optimización).
-*   **Representación Continua (*Continuous*):** Mide la capacidad de un **Área de Proceso individual**. Se evalúa en **Niveles de Capacidad** (0. Incompleto, 1. Realizado, 2. Gestionado, 3. Definido).
+*   **Representación por Etapas** (*Staged*): Mide la madurez global de la **organización**. Se evalúa en **5 Niveles de Madurez** (1. Inicial, 2. Gestionado, 3. Definido, 4. Gestionado Cuantitativamente, 5. En Optimización).
+*   **Representación Continua** (*Continuous*): Mide la capacidad de un **Área de Proceso individual**. Se evalúa en **Niveles de Capacidad** (0. Incompleto, 1. Realizado, 2. Gestionado, 3. Definido).
 *   **Desglose de Áreas de Proceso (CMMI-DEV v1.3):**
     *   **Requirements Management (REQM - Gestión de Requisitos):** Situada en el **Nivel de Madurez 2 (Gestionado)**. Se centra en gestionar los cambios, mantener la trazabilidad e identificar inconsistencias entre los requisitos y los planes del proyecto.
     *   **Requirements Development (RD - Desarrollo de Requisitos):** Situada en el **Nivel de Madurez 3 (Definido)**. Se centra en elicitar, analizar, definir y validar los requisitos de cliente, producto y componentes.
  Su propósito es **elicitar, analizar y establecer** los requisitos de cliente, producto y componentes de producto, mediante tres metas específicas: 1) Desarrollar los Requisitos del Cliente, 2) Desarrollar los Requisitos del Producto, y 3) Analizar y Validar los Requisitos.
-*   *(Nota: en CMMI v2.0, ambas áreas se han unificado conceptualmente en la práctica **Requirements Development and Management — RDM**.)*
+
+ Cada área incluye una serie de prácticas genéricas y específicas que deben implementarse y evidenciarse para alcanzar los niveles deseados. En el enfoque por etapas (niveles de madurez) las áreas de proceso están agrupadas según el nivel de madurez -según el nivel, se debe poner el foco en una u otra cosa-:
+
+| Nivel de madurez | Foco del nivel | Ejemplos de áreas de proceso y prácticas |
+| :--- | :--- | :--- |
+| Nivel 2 – *Gestionado* | Gestión básica de proyectos | Gestión de requisitos, planificación del proyecto, seguimiento y control, aseguramiento de la calidad, gestión de la configuración |
+| Nivel 3 – *Definido* | Procesos organizativos estandarizados | Definición de procesos, formación, gestión del conocimiento, coordinación entre grupos, ingeniería de producto |
+| Nivel 4 – *Cuantitativamente gestionado* | Control estadístico de procesos | Medición y análisis avanzado, gestión cuantitativa de proyectos, gestión de calidad |
+| Nivel 5 – *Optimizado* | Mejora continua basada en datos | Análisis causal, innovación, mejora continua del proceso |
+
+
+Mientras que el enfoque por etapas (o escalonado) evalúa a la organización en su conjunto y le asigna un nivel de madurez global (del 1 al 5), el enfoque continuo evalúa **cada área de proceso por separado**, asignándole un nivel de capacidad (del 0 al 5).
+
+> Mientras que en el anterior se hablaba de “madurez organizativa”, aquí se habla de “capacidad”.
+
+En el enfoque continuo, se definen **6 niveles de capacidad**, que indican la madurez de cada área de proceso individual:
+
+| Nivel | Nombre | Qué significa... |
+| :--- | :--- | :--- |
+| 0 | Incompleto | El proceso no está implementado o no cumple su propósito. |
+| 1 | Ejecutado | El proceso se lleva a cabo y produce los resultados previstos. |
+| 2 | Gestionado | El proceso es planificado, supervisado y se gestiona adecuadamente. |
+| 3 | Definido | El proceso está estandarizado y adaptado a la organización. |
+| 4 | Cuantitativamente gestionado | Se controla mediante análisis estadístico y métricas. |
+| 5 | Optimizando | Se mejora de forma continua mediante innovación y retroalimentación. |
+
+Los niveles son “acumulativos”: si el proceso está gestionado, también está ejecutado.
+
+En el enfoque continuo, cada área de proceso puede ir madurando de forma independiente. Por ejemplo, una empresa podría tener:
+
+* **Nivel 3** en “Gestión de requisitos” (porque lo tiene bien definido y documentado),
+* **Nivel 2** en “Planificación y seguimiento de proyectos” (todavía no está estandarizado a nivel organizativo),
+* **Nivel 1** en “Medición y análisis” (solo se recopilan datos básicos, sin gestión ni análisis profundo).
+
+**Comparativa**
+
+| ----- | Enfoque por etapas | Enfoque continuo |
+| :--- | :--- | :--- |
+| **Resultado final** | Nivel de madurez organizativo (1-5) | Nivel de capacidad por área de proceso |
+| **Enfoque** | Global, estructurado | Flexible, progresivo |
+| **Aplicación** | Todas las áreas de un nivel | Cada área puede avanzar a su ritmo |
+| **Adecuado para** | Organizaciones grandes o maduras | Organizaciones |
+| **Objetivo** | Estabilidad y coherencia organizativa | Priorización de mejoras en áreas de proceso |
+
+>   En CMMI v2.0, ambas áreas se han unificado conceptualmente en la práctica **Requirements Development and Management — RDM**.
 
 **Relación CMMI ↔ Ágil:** aunque tradicionalmente se percibían como incompatibles (CMMI = documentación exhaustiva vs. Ágil = documentación mínima), el propio SEI reconoce que se pueden combinar: los niveles de madurez CMMI valoran *qué* procesos deben existir y ser medibles, no *cómo* se ejecutan; Scrum o XP pueden ser el "cómo" que satisface las metas de REQM/RD exigidas por CMMI (enfoque conocido como "Agile + CMMI" o, en investigación académica, propuestas como "xScrum").
 
@@ -546,43 +813,3 @@ CMMI puede aplicarse junto con enfoques ágiles. El modelo define prácticas de 
 | **CMMI** | "5 niveles de madurez", "Requirements Management = Nivel 2", "Requirements Development = Nivel 3", "SEI/CMMI Institute". |
 | **Casos de uso** | "Actor", "flujo principal/alternativo/excepción", "include/extend". |
 | **Historias de usuario** | "Como... quiero... para...", "INVEST", "criterios de aceptación". |
-
-### 7.1. Simulacro de Test
-
-**Pregunta:**
-*En el marco de trabajo Scrum, ¿quién es el único responsable de decidir qué elementos del Product Backlog tienen mayor prioridad para el negocio y, por tanto, deben desarrollarse primero?*
-a) El Scrum Master, ya que gestiona el proceso.
-b) El Director del Proyecto.
-c) El Product Owner.
-d) El Equipo de Desarrollo de forma consensuada.
-
-**Razonamiento Estructurado:**
-1.  **Busca la palabra chivata:** El enunciado pregunta por el "único responsable de decidir qué elementos tienen mayor prioridad para el negocio" en Scrum.
-2.  **Aplica el patrón:**
-    *   El equipo de desarrollo (D) construye.
-    *   El Scrum Master (A) facilita y quita estorbos, no decide prioridades de negocio.
-    *   El Director de Proyecto (B) es un rol de metodologías clásicas (como Métrica v3), pero en Scrum puro **no existe** la figura del Director de Proyecto como tal que dicte prioridades de negocio.
-    *   El **Product Owner** (C) es literalmente "la voz del cliente" y el dueño del producto. Su única función clave es ordenar el Backlog.
-3.  **Respuesta correcta:** C.
-
-**Pregunta:**
-*Según CMMI-DEV, ¿en qué nivel de madurez se sitúa el área de proceso "Requirements Development" (Desarrollo de Requisitos)?*
-a) Nivel 1 (Inicial).
-b) Nivel 2 (Gestionado).
-c) Nivel 3 (Definido).
-d) Nivel 5 (En Optimización).
-
-**Razonamiento Estructurado:**
-1.  **Distingue REQM de RD:** "Requirements **Management**" (gestionar inconsistencias entre requisitos y planes) es Nivel 2; "Requirements **Development**" (elicitar, analizar y establecer los requisitos) es Nivel 3.
-2.  **Respuesta correcta:** C.
-
-**Pregunta:**
-*¿Cuál de las siguientes NO es uno de los 8 principios oficiales de DSDM?*
-a) Centrarse en la necesidad del negocio.
-b) Nunca comprometer la calidad.
-c) Priorizar siempre el coste sobre el plazo.
-d) Comunicarse de forma continua y clara.
-
-**Razonamiento Estructurado:**
-1.  Los 8 principios de DSDM giran en torno a negocio, plazo, colaboración, calidad, construcción incremental, iteración, comunicación y control; en ningún caso se prioriza "el coste sobre el plazo" como principio explícito.
-2.  **Respuesta correcta:** C.
