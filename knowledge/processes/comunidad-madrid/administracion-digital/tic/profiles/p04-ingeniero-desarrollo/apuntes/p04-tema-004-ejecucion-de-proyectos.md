@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-004-ejecucion-proyectos"
 title: "Ejecución de proyectos"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -22,13 +22,13 @@ tags:
   - "pmbok"
   - "iso-21502"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 4. Ejecución de proyectos
@@ -270,64 +270,3 @@ La **Adaptación** (*Tailoring*) es un principio obligatorio y universal en **PR
 * **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*.
 * **Ministerio de Administraciones Públicas**, *MÉTRICA Versión 3: Estructura de Organización y Gestión de Proyectos (GP)*.
 
-## 10. Simulacro de Test
-
-**Pregunta 1:**
-*En una organización donde el Director de Proyecto actúa con dedicación a tiempo parcial, ejerciendo fundamentalmente un rol de coordinador de tareas o facilitador de comunicaciones y sin control sobre el presupuesto del proyecto, ¿qué estructura organizativa está implementada?*
-a) Organización Matricial Fuerte.
-b) Organización Orientada a Proyectos (Proyectizada).
-c) Organización Matricial Débil.
-d) Organización Matricial Equilibrada.
-
-**Razonamiento Estructurado:**
-1.  **Palabras clave:** "Dedicación parcial", "rol de coordinador o facilitador", "sin control del presupuesto".
-2.  **Descarte:** En la Proyectizada (b) y Matricial Fuerte (a) el Director de Proyecto controla el presupuesto y tiene dedicación completa. En la Equilibrada (d) el poder es compartido. La figura del coordinador/expedidor con control del gerente funcional define a la **Matricial Débil**.
-3.  **Respuesta correcta: C.**
-
-**Pregunta 2:**
-*Según la metodología PRINCE2, ¿cuál de las siguientes opciones define con exactitud la responsabilidad del rol de Senior User dentro del Project Board?*
-a) Garantizar la rentabilidad financiera y la justificación continua del Business Case.
-b) Asegurar la integridad técnica y la calidad metodológica de los componentes desarrollados.
-c) Especificar los requisitos funcionales, validar los criterios de aceptación y rendir cuentas de la obtención efectiva de los beneficios esperados.
-d) Asignar y dirigir operativamente los paquetes de trabajo del equipo de programación.
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** (a) corresponde al *Executive*; (b) corresponde al *Senior Supplier*; (d) corresponde al *Team Manager*.
-2.  (c) define de manera literal las obligaciones del **Senior User** en el marco de gobierno de PRINCE2.
-3.  **Respuesta correcta: C.**
-
-**Pregunta 3:**
-*Durante la ejecución de un proyecto bajo PRINCE2, el Project Manager calcula que una desviación en las pruebas de integración retrasará la entrega del hito principal en 4 semanas, rebasando el límite de tolerancia de tiempo de 2 semanas fijado por el Project Board. ¿Cuál es la actuación metodológica obligatoria que debe seguir el Project Manager?*
-a) Rediseñar el cronograma y aprobar unilateralmente la extensión del plazo al tratarse de un problema técnico.
-b) Emitir de inmediato un Exception Report al Project Board informando del pronóstico y esperar directrices para la elaboración de un Exception Plan.
-c) Cancelar inmediatamente el proyecto al haberse vulnerado una de las seis tolerancias directivas.
-d) Transferir el impacto al registro de riesgos sin elevar la incidencia hasta la reunión de cierre de fase.
-
-**Razonamiento Estructurado:**
-1.  **Principio aplicable:** Principio de **Gestión por Excepción**.
-2.  **Procedimiento:** Al prever la superación de una tolerancia, el Director de Proyecto no tiene autoridad para autoaprobar el retraso ni cancelar el proyecto; debe emitir formalmente un **Exception Report** al Project Board.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 4:**
-*En el marco de la metodología Métrica v3, si un nuevo requerimiento legal exige una modificación sustancial del alcance durante las actividades de Seguimiento y Control (GPS), ¿a qué órgano corresponde la aprobación formal de dicha Petición de Cambio de Requisitos?*
-a) Al Comité de Dirección.
-b) Al Jefe de Proyecto.
-c) Al Comité de Seguimiento.
-d) Al Equipo de Aseguramiento de la Calidad (CAL).
-
-**Razonamiento Estructurado:**
-1.  **Gobernanza Métrica v3:** El Jefe de Proyecto evalúa el impacto en tiempo/coste pero no decide. El Comité de Dirección aprueba procesos mayores de fase.
-2.  La aprobación formal de cambios en los requisitos del sistema es potestad reglada del **Comité de Seguimiento**.
-3.  **Respuesta correcta: C.**
-
-**Pregunta 5:**
-*Al aplicar el principio de Adaptación (Tailoring) en un proyecto público gestionado bajo PRINCE2 o PMBOK, ¿cuál de las siguientes actuaciones se considera contraria a las buenas prácticas metodológicas?*
-a) Fusionar la documentación de inicio y planificación en un único artefacto formal para un proyecto pequeño.
-b) Eliminar el principio de justificación comercial continua al considerar que el proyecto es de obligado cumplimiento normativo.
-c) Ajustar la frecuencia de los informes de seguimiento pasando de entregas semanales a quincenales.
-d) Delegar la función de Team Manager en el propio Project Manager en un equipo de desarrollo reducido.
-
-**Razonamiento Estructurado:**
-1.  **Regla de oro:** El *tailoring* permite simplificar documentos, procesos, herramientas e integrar roles, pero **nunca permite eliminar principios universales**.
-2.  Omitir la Justificación Comercial Continua (b) viola las bases del método, siendo la respuesta contraria a la norma.
-3.  **Respuesta correcta: B.**

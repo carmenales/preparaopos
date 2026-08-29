@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-003-evaluacion-seleccion"
 title: "Evaluación y selección de proyectos"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -22,13 +22,13 @@ tags:
   - "bcr"
   - "iso-21504"
 created_at: "2026-08-09"
-last_reviewed: "2026-08-09"
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 3. Evaluación y selección de proyectos
@@ -236,64 +236,3 @@ Donde $P_i$ es la probabilidad del escenario $i$ e $I_i$ es el impacto económic
 * **Ley 9/2017 (LCSP)**, de 8 de noviembre, de Contratos del Sector Público (especialmente art. 148 sobre Coste del Ciclo de Vida).
 * **HM Treasury**, *The Green Book: Central Government Guidance on Appraisal and Evaluation*.
 
-## 7. Simulacro de Test
-
-**Pregunta 1:**
-*Un comité de dirección evalúa dos proyectos tecnológicos mutuamente excluyentes para una infraestructura de almacenamiento. El Proyecto Alfa presenta un VAN de 320.000 € y una TIR del 14 %. El Proyecto Beta presenta un VAN de 210.000 € y una TIR del 22 %. Si el coste de capital de la organización es del 7 %, ¿cuál es la decisión financieramente correcta?*
-a) Seleccionar el Proyecto Beta porque su rentabilidad porcentual (TIR) es netamente superior.
-b) Seleccionar el Proyecto Alfa porque genera mayor valor absoluto (VAN), primando este criterio en proyectos mutuamente excluyentes.
-c) Rechazar ambos proyectos porque la TIR supera excesivamente el coste de capital.
-d) Seleccionar el Proyecto Beta únicamente si su periodo de recuperación simple es superior a 5 años.
-
-**Razonamiento Estructurado:**
-1.  **Identifica el conflicto:** En proyectos mutuamente excluyentes donde $VAN$ y $TIR$ discrepan, el criterio de decisión universal y jerárquicamente superior es el **Valor Actual Neto (VAN)**.
-2.  **Descarte:** La $TIR$ mide eficiencia relativa, pero el $VAN$ mide el incremento de riqueza o valor absoluto generado para la organización (Alfa aporta 320.000 € frente a los 210.000 € de Beta).
-3.  **Respuesta correcta: B.**
-
-**Pregunta 2:**
-*¿En qué categoría de métodos de selección de proyectos se engloban técnicas como la programación entera binaria (0-1), la programación lineal y la programación dinámica utilizadas para optimizar una cartera de proyectos sujeta a límites presupuestarios?*
-a) Métodos de Medición de Beneficios.
-b) Métodos de Optimización Restringida.
-c) Modelos Cualitativos de Consenso.
-d) Análisis de Reducción de Costes Operativos.
-
-**Razonamiento Estructurado:**
-1.  **Palabra chivata:** "Programación entera, lineal, dinámica", "optimizar cartera sujeta a límites presupuestarios".
-2.  **Descarte:** Los métodos comparativos como scoring o Delphi pertenecen a Medición de Beneficios (a). Los modelos matemáticos basados en restricciones corresponden formalmente a la familia de **Optimización Restringida** (b).
-3.  **Respuesta correcta: B.**
-
-**Pregunta 3:**
-*Un organismo público ha invertido 180.000 € en el desarrollo de un módulo de software que ha quedado obsoleto antes de desplegarse debido a un cambio normativo. Para adaptarlo a la nueva ley se requieren 40.000 € adicionales, estimándose que el valor de los beneficios que aportará asciende a 70.000 €. ¿Cómo debe calificarse el gasto inicial de 180.000 € y cuál debe ser la decisión?*
-a) Coste de Oportunidad; debe cancelarse el proyecto al superar el coste total acumulado a los beneficios.
-b) Coste Hundido; el gasto previo debe ignorarse y el proyecto debe continuar porque el beneficio futuro (70.000 €) supera al coste pendiente (40.000 €).
-c) Coste Amortizable; debe sumarse a la inversión restante obligando a rehacer el análisis de TIR.
-d) Coste Marginal; debe descontarse íntegramente del Valor Monetario Esperado.
-
-**Razonamiento Estructurado:**
-1.  **Identifica el concepto:** El dinero ya gastado e irrecuperable es un **Coste Hundido (*Sunk Cost*)**.
-2.  **Aplica la regla de oro:** Los costes hundidos son irrelevantes para decisiones futuras. Se evalúa exclusivamente lo que queda por gastar (40.000 €) frente a lo que se va a obtener (70.000 €). Como $70.000 > 40.000$, la continuación es favorable.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 4:**
-*Al evaluar ofertas en una licitación de servicios cloud según el artículo 148 de la Ley 9/2017 de Contratos del Sector Público (LCSP), ¿qué enfoque de evaluación económica abarca no solo el precio de adquisición sino también los costes de utilización, mantenimiento y final de vida útil?*
-a) Análisis Coste-Efectividad Simple.
-b) Valor Monetario Esperado (VME).
-c) Coste del Ciclo de Vida (LCC / TCO).
-d) Retorno de la Inversión Contable (ROI).
-
-**Razonamiento Estructurado:**
-1.  **Referencia legal:** El art. 148 LCSP define expresamente el cálculo del **Coste del Ciclo de Vida** (*Life Cycle Costing*).
-2.  **Definición:** Integra costes de adquisición, utilización (energía, recursos), mantenimiento y desmantelamiento/reciclaje.
-3.  **Respuesta correcta: C.**
-
-**Pregunta 5:**
-*Si un proyecto tecnológico tiene un 30 % de probabilidad de sufrir una sanción de seguridad de 100.000 € por fuga de datos y un 70 % de probabilidad de operar sin incidentes con un impacto de 0 €, ¿cuál es el Valor Monetario Esperado (VME) del riesgo considerado?*
-a) -100.000 €
-b) -30.000 €
-c) 70.000 €
-d) -70.000 €
-
-**Razonamiento Estructurado:**
-1.  **Aplica la fórmula:** $VME = \sum (P_i \times I_i)$.
-2.  **Cálculo:** $VME = (0{,}30 \times (-100.000\text{ \euro})) + (0{,}70 \times 0\text{ \euro}) = -30.000\text{ \euro}$.
-3.  **Respuesta correcta: B.**

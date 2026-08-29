@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-002-fundamentos-gestion-proyectos"
 title: "Fundamentos y principios de la Gestión de Proyectos"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -23,13 +23,13 @@ tags:
   - "itil-v4"
   - "tipologia-proyectos"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 2. Fundamentos y principios de la Gestión de Proyectos
@@ -280,51 +280,3 @@ Tras la puesta en producción, los cambios operativos se canalizan mediante **IT
 * **Ministerio de Hacienda y Función Pública**, *MÉTRICA Versión 3: Interfaz de Gestión de Proyectos (GP)*.
 * **AXELOS**, *ITIL® 4: Create, Deliver and Support / Change Enablement Practice*.
 
-## 12. Simulacro de Test Examen
-
-**Pregunta 1:**
-*Según la Guía PMBOK del PMI, ¿qué tipo de Oficina de Dirección de Proyectos (PMO) se caracteriza por tener un rol consultivo, suministrar plantillas, mejores prácticas y formación, ejerciendo un grado de control bajo sobre los proyectos?*
-a) PMO Directiva.
-b) PMO de Control.
-c) PMO de Apoyo (*Supportive*).
-d) PMO Estratégica / EPMO.
-
-**Razonamiento Estructurado:**
-1.  **Palabra chivata:** "Rol consultivo", "suministra plantillas", "grado de control bajo".
-2.  **Descarte:** La PMO de Control (b) ejerce control moderado exigiendo marcos. La Directiva (a) ejerce control alto dirigiendo los proyectos.
-3.  **Respuesta correcta:** **C**.
-
-**Pregunta 2:**
-*¿Cuál es la principal diferencia conceptual entre un proyecto y una operación en el ámbito de las tecnologías de la información?*
-a) El proyecto busca mantener la continuidad del servicio, mientras que la operación genera un entregable único.
-b) El proyecto se financia con OPEX recurrente, mientras que la operación se imputa como inversión de capital (CAPEX).
-c) El proyecto es un esfuerzo temporal con inicio y fin orientados a un resultado único, mientras que la operación es un esfuerzo continuo y repetitivo.
-d) El proyecto no asume riesgos ni incertidumbre, a diferencia de las operaciones de explotación.
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** (a) y (b) tienen los términos invertidos. (d) es falsa porque los proyectos concentran mayor incertidumbre.
-2.  (c) define de manera formal y literal la distinción según PMBOK e ISO 21502.
-3.  **Respuesta correcta:** **C**.
-
-**Pregunta 3:**
-*En el marco de la metodología Métrica v3, si durante la ejecución de las actividades de Seguimiento y Control (GPS) el equipo detecta una desviación en el alcance y formula una Petición de Cambio de Requisitos, ¿qué órgano tiene la potestad formal de autorizar o rechazar dicha modificación?*
-a) El Jefe de Proyecto de forma unilateral.
-b) El Comité de Seguimiento del proyecto.
-c) El Grupo de Aseguramiento de la Calidad (CAL).
-d) El Director de Sistemas de Información.
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** El Jefe de Proyecto analiza el impacto y propone la solución, pero en la interfaz GP de Métrica v3 la gobernanza y aprobación final recaen en el Comité de Seguimiento.
-2.  **Respuesta correcta:** **B**.
-
-**Pregunta 4:**
-*En la gestión del ciclo de vida bajo ITIL v4, ¿qué elemento es un requisito obligatorio que acompaña a una Solicitud de Cambio Normal (RFC) para garantizar la restauración del servicio si el despliegue falla?*
-a) Acta de Constitución del Cambio.
-b) Plan de Back-out (Reversión).
-c) Diagrama de flujo acumulado.
-d) Estimación por Puntos de Función.
-
-**Razonamiento Estructurado:**
-1.  **Palabra chivata:** "Restauración del servicio si el despliegue falla".
-2.  El Plan de Back-out (marcha atrás) es la salvaguarda obligatoria exigida por el CAB para autorizar un cambio normal.
-3.  **Respuesta correcta:** **B**.

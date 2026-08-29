@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-006-herramientas-tecnicas"
 title: "Herramientas y Técnicas de Gestión"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -24,13 +24,13 @@ tags:
   - "iso-21508"
   - "iso-21511"
 created_at: "2026-08-08"
-last_reviewed: null
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 6. Herramientas y Técnicas de Gestión
@@ -276,69 +276,3 @@ $$\text{Disponibilidad } (A) = \frac{\text{MTBF}}{\text{MTBF} + \text{MTTR}}$$
 * **PMI**, *Practice Standard for Work Breakdown Structures* & *Practice Standard for Earned Value Management*.
 * **AXELOS / PeopleCert**, *ITIL® 4: Service Management Framework / Change Enablement Practice*.
 * **Ministerio de Hacienda y Función Pública**, *MÉTRICA Versión 3: Interfaz de Gestión de Proyectos (GP)*.
-
-
-## 7. Simulacro de Test
-
-**Pregunta 1:**
-*En el análisis del desempeño de un proyecto TIC mediante la técnica del Valor Ganado (EVM), se obtienen los siguientes datos a la fecha de control: Valor Planificado (PV) = 100.000 €, Valor Ganado (EV) = 80.000 € y Coste Real (AC) = 100.000 €. ¿Cuál es la situación exacta del proyecto respecto al cronograma y al presupuesto?*
-a) Va adelantado en plazo ($SV > 0$) y en línea con el presupuesto planificado ($CV = 0$).
-b) Va con retraso respecto al cronograma ($SV < 0$) y presenta un sobrecoste presupuestario ($CV < 0$).
-c) Presenta un índice $CPI = 1{,}25$, generando un ahorro neto de costes.
-d) Va en tiempo ($SPI = 1{,}0$) pero con una desviación negativa de costes.
-
-**Razonamiento Estructurado:**
-1.  **Cálculo de variaciones:**
-    *   $SV = EV - PV = 80.000\text{ \euro} - 100.000\text{ \euro} = -20.000\text{ \euro}$ ($SV < 0 \rightarrow$ Retraso en plazo).
-    *   $CV = EV - AC = 80.000\text{ \euro} - 100.000\text{ \euro} = -20.000\text{ \euro}$ ($CV < 0 \rightarrow$ Sobrecoste).
-2.  **Cálculo de índices:**
-    *   $SPI = \frac{EV}{PV} = \frac{80.000}{100.000} = 0{,}80$ ($SPI < 1 \rightarrow$ Ineficiencia temporal).
-    *   $CPI = \frac{EV}{AC} = \frac{80.000}{100.000} = 0{,}80$ ($CPI < 1 \rightarrow$ Ineficiencia de costes).
-3.  **Respuesta correcta: B.**
-
-**Pregunta 2:**
-*Al estimar la duración de una actividad crítica mediante la técnica PERT de tres puntos, el equipo determina una estimación optimista de 4 días, una más probable de 7 días y una pesimista de 16 días. ¿Cuál es la duración esperada y la varianza de dicha actividad?*
-a) Duración esperada = 9 días; Varianza = 4 días².
-b) Duración esperada = 8 días; Varianza = 4 días².
-c) Duración esperada = 7 días; Varianza = 2 días².
-d) Duración esperada = 8 días; Varianza = 2 días².
-
-**Razonamiento Estructurado:**
-1.  **Fórmula de duración esperada:** $\mu_E = \frac{O + 4M + P}{6} = \frac{4 + (4 \times 7) + 16}{6} = \frac{4 + 28 + 16}{6} = \frac{48}{6} = 8\text{ días}$.
-2.  **Fórmula de varianza:** $\sigma^2 = \left( \frac{P - O}{6} \right)^2 = \left( \frac{16 - 4}{6} \right)^2 = \left( \frac{12}{6} \right)^2 = 2^2 = 4\text{ días}^2$.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 3:**
-*En el marco de la metodología de desarrollo Métrica v3, si durante la ejecución de las actividades de Seguimiento y Control (GPS) un departamento usuario solicita una modificación técnica en la base de datos que altera los requisitos acordados, ¿qué procedimiento reglado debe seguirse?*
-a) El Jefe de Proyecto aprueba directamente el cambio si el impacto es inferior a 10 días/persona.
-b) El Jefe de Proyecto realiza el análisis de impacto técnico y económico y eleva la petición de cambio para su aprobación o rechazo al Comité de Seguimiento.
-c) El cambio es aprobado unilateralmente por el equipo de Aseguramiento de la Calidad (CAL).
-d) La solicitud se transfiere a la fase de Mantenimiento de Sistemas de Información (MSI) denegándose en la fase actual.
-
-**Razonamiento Estructurado:**
-1.  **Gobernanza en Métrica v3:** El Jefe de Proyecto tiene la obligación de registrar y evaluar el impacto, pero carece de potestad para aprobar variaciones de alcance en la línea base.
-2.  La aprobación formal corresponde reglamentariamente al **Comité de Seguimiento**.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 4:**
-*Según la norma ISO 21511 sobre Estructuras de Desglose del Trabajo (WBS/EDT), ¿cuál es la definición formal de la "Regla del 100%"?*
-a) La WBS debe completarse en el 100% de los proyectos independientemente de su presupuesto.
-b) La WBS debe contener el 100% del trabajo definido en el alcance del proyecto, incluyendo el trabajo de gestión, sin omitir ni añadir nada.
-c) Cada paquete de trabajo debe representar exactamente el 100% de una tarea individual.
-d) El cronograma debe ejecutarse al 100% sin permitir holguras en ninguna actividad.
-
-**Razonamiento Estructurado:**
-1.  **Definición normativa:** La regla del 100% establece que la WBS captura la totalidad del trabajo acordado (alcance y dirección), garantizando que la suma de los niveles inferiores refleje íntegramente el nivel superior sin excederlo.
-2.  **Respuesta correcta: B.**
-
-**Pregunta 5:**
-*Bajo las mejores prácticas de ITIL v4, ¿cómo debe tramitarse el despliegue de un parche mayor de seguridad en el servidor de base de datos corporativo de una Consejería que requiere una ventana de parada de servicio planificada?*
-a) Como un Cambio Estándar preautorizado.
-b) Como un Cambio Normal, requiriendo registro RFC, análisis de riesgos, Plan de Back-out y aprobación del CAB/CAC.
-c) Como un Cambio de Emergencia sin evaluación previa.
-d) Mediante una solicitud directa al Centro de Atención a Usuarios (CAU).
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** Es un cambio no recurrente y con impacto potencial en la disponibilidad.
-2.  No es estándar (requiere evaluación) ni de emergencia inmediata (es planificado). Por tanto, es un **Cambio Normal** que exige solicitud RFC, plan de reversión (Back-out) y visto bueno del CAB/CAC.
-3.  **Respuesta correcta: B.**

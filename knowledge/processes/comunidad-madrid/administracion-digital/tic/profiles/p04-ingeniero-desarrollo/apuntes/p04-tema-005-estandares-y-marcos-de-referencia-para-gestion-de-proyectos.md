@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-005-estandares-marcos"
 title: "Estándares y Marcos de Referencia para la Gestión de Proyecto"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -21,13 +21,13 @@ tags:
   - "iso-21502"
   - "itil"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 5. Estándares y Marcos de Referencia para la Gestión de Proyecto
@@ -249,67 +249,3 @@ La finalización de un proyecto TIC implica transferir los entregables a los equ
 * **ISO 21500:2021**, *Project, programme and portfolio management — Context and concepts*.
 * **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*.
 * **AXELOS**, *ITIL® 4: Create, Deliver and Support / Service Management Framework*.
-
-
-## 8. Simulacro de Test
-
-**Pregunta 1:**
-*Un equipo de desarrollo ágil utiliza un tablero visual Kanban y establece una regla estricta que prohíbe tener más de 3 tareas simultáneas en la columna de "Pruebas de Integración". ¿Qué práctica fundamental de Kanban se está aplicando?*
-a) Definición del Sprint Backlog.
-b) Limitación del Trabajo en Curso (WIP - Work in Progress).
-c) Control de la Velocidad mediante Burndown Chart.
-d) Estimación por Planning Poker.
-
-**Razonamiento Estructurado:**
-1.  **Palabra chivata:** "Prohíbe tener más de X tareas simultáneas en una columna".
-2.  **Descarte:** Scrum limita por tiempo en Sprints (a); Kanban se basa en el flujo continuo y limita explícitamente el WIP por fase para evitar cuellos de botella.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 2:**
-*¿Cuál de las siguientes afirmaciones describe con precisión la evolución estructural de la Guía PMBOK publicada por el PMI en su 8ª Edición (noviembre de 2025) frente a la 7ª Edición (2021)?*
-a) La 8ª Edición restaura íntegramente las 10 Áreas de Conocimiento y 49 procesos rígidos de la 6ª Edición.
-b) La 8ª Edición simplifica la estructura a 6 Principios Fundamentales, 7 Dominios de Desempeño y 5 Áreas de Enfoque con 40 procesos no prescriptivos, incorporando IA y sostenibilidad.
-c) La 8ª Edición suprime todos los dominios de desempeño adoptando el modelo estricto de PRINCE2.
-d) Ambas ediciones comparten idéntica cantidad de 12 principios y 8 dominios sin cambios.
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** La 8ª Edición no vuelve a la 6ª Edición (a), sino que evoluciona el modelo a 6 principios, 7 dominios y 5 áreas de enfoque (*Focus Areas*) con orientación de procesos no prescriptiva y foco en IA/ESG.
-2.  **Respuesta correcta: B.**
-
-**Pregunta 3:**
-*En el marco de la norma internacional ISO 21502:2020 sobre gestión de proyectos, ¿cuál de las siguientes afirmaciones es correcta respecto a su naturaleza y alcance?*
-a) Es una norma certificable por entidades acreditadas externas mediante auditoría de conformidad formal.
-b) Establece directrices de gestión de proyectos de alto nivel, no es certificable y resulta agnóstica respecto al ciclo de vida o enfoque de desarrollo adoptado.
-c) Regula de forma exclusiva y exhaustiva la gestión de programas y portafolios estratégicos.
-d) Impone obligatoriamente un ciclo de vida en cascada con 5 fases secuenciales estrictas.
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** ISO 21502 es una guía de directrices no certificable (a falsa); se centra en proyectos y no en programas/portafolios (c falsa); admite cualquier enfoque de ciclo de vida predictivo o adaptativo (d falsa).
-2.  (b) recoge con total rigor sus características fundamentales.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 4:**
-*Según la Guía Scrum oficial (edición 2020), ¿cuál es el compromiso formal asociado al artefacto del Product Backlog?*
-a) El Sprint Goal.
-b) La Definition of Done (DoD).
-c) El Product Goal (Objetivo del Producto).
-d) La Matriz de Trazabilidad de Requisitos.
-
-**Razonamiento Estructurado:**
-1.  **Correspondencias oficiales:**
-    *   Product Backlog $\rightarrow$ **Product Goal**.
-    *   Sprint Backlog $\rightarrow$ **Sprint Goal**.
-    *   Incremento $\rightarrow$ **Definition of Done**.
-2.  **Respuesta correcta: C.**
-
-**Pregunta 5:**
-*Para desplegar en el entorno de producción de una Consejería una actualización mayor del sistema de nóminas que requiere parada de servicio programada, ¿cómo debe tramitarse el cambio bajo el marco ITIL v4?*
-a) Como un Cambio Estándar preautorizado.
-b) Como un Cambio Normal, requiriendo solicitud RFC, evaluación de riesgos, Plan de Back-out y aprobación del CAB/CAC.
-c) Como una Excepción no planificada de PRINCE2.
-d) Mediante un Cambio de Emergencia sin documentación técnica previa.
-
-**Razonamiento Estructurado:**
-1.  **Análisis:** Los cambios mayores no rutinarios con impacto en el servicio son **Cambios Normales**.
-2.  Requieren registro formal (RFC), análisis de impacto, ventana de parada, Plan de Back-out de reversión y autorización del CAB/CAC.
-3.  **Respuesta correcta: B.**

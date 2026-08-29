@@ -2,7 +2,7 @@
 id: "cm-ad-tic-p04-tema-007-tendencias-gestion"
 title: "Tendencias en la Gestión de Proyectos"
 type: "apunte"
-status: "borrador"
+status: "revisado"
 processes:
   - "comunidad-madrid/administracion-digital/tic"
 profiles:
@@ -23,13 +23,13 @@ tags:
   - "ai-act"
   - "ens"
 created_at: "2026-08-08"
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-08-29"
 ai_generated: true
 ai_sources:
   - "chatgpt"
   - "gemini"
   - "perplexity"
-needs_human_review: true
+needs_human_review: false
 ---
 
 # Tema 7. Tendencias en la Gestión de Proyectos
@@ -271,69 +271,3 @@ graph TD
 * **Reglamento (UE) 2016/679 (RGPD)** y **Ley Orgánica 3/2018 (LOPDGDD)** (especialmente arts. 25 y 35).
 * **Reglamento (UE) 2024/1689 (AI Act)**, por el que se establecen normas armonizadas en materia de inteligencia artificial.
 * **Real Decreto 1112/2018**, sobre accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público.
-
-## 10. Simulacro de Test
-
-**Pregunta 1:**
-*En un proyecto de administración digital gestionado con un enfoque híbrido, la dirección identifica a un alto cargo institucional con un elevado nivel de autoridad y poder de decisión sobre el presupuesto, pero con muy escaso interés en los detalles técnicos de los desarrollos diarios. Según la matriz de Poder/Interés de Mendelow, ¿cuál es la estrategia de comunicación adecuada?*
-a) Gestionar estrechamente mediante reuniones diarias de seguimiento técnico.
-b) Mantenerle satisfecho a través de resúmenes ejecutivos e informes de hitos periódicos.
-c) Informarle exclusivamente si se produce una parada total del servicio en producción.
-d) Monitorizarle con el mínimo esfuerzo sin remitirle comunicación formal.
-
-**Razonamiento Estructurado:**
-1.  **Clasificación en la matriz:** El interesado posee **Alto Poder** y **Bajo Interés**.
-2.  **Descarte:**
-    *   *Gestionar estrechamente* (a) es para Alto Poder y Alto Interés.
-    *   *Monitorizar* (d) es para Bajo Poder y Bajo Interés.
-    *   *Mantener informado* es para Bajo Poder y Alto Interés.
-3.  La estrategia formal de Mendelow para este cuadrante es **Mantener Satisfecho** (b), facilitando información de alto nivel para asegurar su respaldo sin sobrecargarle con detalles operativos.
-4.  **Respuesta correcta: B.**
-
-**Pregunta 2:**
-*Según los estándares de gestión de interesados de la Guía PMBOK, ¿en qué proceso se elabora por primera vez el Registro de Interesados (*Stakeholder Register*), donde se documenta la clasificación inicial de los agentes como favorables, neutrales u opositores?*
-a) Planificar el Involucramiento de los Interesados.
-b) Identificar a los Interesados.
-c) Gestionar el Involucramiento de los Interesados.
-d) Monitorear el Involucramiento de los Interesados.
-
-**Razonamiento Estructurado:**
-1.  **Artefacto evaluado:** El **Registro de Interesados**.
-2.  **Secuencia metodológica:** Se crea formalmente durante el primer proceso (**Identificar a los Interesados**). Los procesos posteriores (Planificar, Gestionar y Monitorear) utilizan, enriquecen y actualizan este registro, pero su generación original corresponde al proceso de identificación.
-3.  **Respuesta correcta: B.**
-
-**Pregunta 3:**
-*¿Cómo se denomina la filosofía de liderazgo adoptada en los marcos ágiles (Scrum) y reconocida en las 'Power Skills' del PMI, en la que el responsable del proyecto enfoca su labor en remover bloqueos técnicos, facilitar recursos y proteger al equipo de interferencias externas, en lugar de dirigir mediante jerarquía y órdenes directivas?*
-a) Liderazgo Autocrático.
-b) Liderazgo Transaccional.
-c) Liderazgo Siervo (*Servant Leadership*).
-d) Liderazgo Pasivo (*Laissez-Faire*).
-
-**Razonamiento Estructurado:**
-1.  **Definición evaluada:** Líder enfocado en la facilitación, eliminación de impedimentos y servicio al equipo para potenciar su autogestión.
-2.  Corresponde literalmente al **Liderazgo Siervo (*Servant Leadership*)**, rol nuclear del *Scrum Master* e integrado en el PMBOK 7/8.
-3.  **Respuesta correcta: C.**
-
-**Pregunta 4:**
-*En un proyecto de desarrollo software para una Consejería, los análisis estáticos de código (SAST), la comprobación de dependencias (SCA) y las auditorías de conformidad con el Esquema Nacional de Seguridad (ENS) se integran y ejecutan de forma automatizada en el pipeline de despliegue continuo desde el inicio del proyecto. ¿Qué tendencia técnica define esta práctica?*
-a) Bimodal IT.
-b) Agile-fall.
-c) DevSecOps (*Shift-Left Security*).
-d) PRiSM Management.
-
-**Razonamiento Estructurado:**
-1.  **Patrón identificado:** Integración de la seguridad de forma automatizada, continua y temprana (*Shift-Left*) dentro de las cadenas CI/CD de desarrollo y operaciones.
-2.  Define el paradigma **DevSecOps** (b/c/d descartadas).
-3.  **Respuesta correcta: C.**
-
-**Pregunta 5:**
-*De acuerdo con el Reglamento (UE) 2024/1689 (AI Act), ¿qué requisitos técnicos esenciales establece el artículo 15 para los proyectos que desarrollen o implanten sistemas de inteligencia artificial clasificados como de alto riesgo?*
-a) Garantizar un VAN positivo y un periodo de recuperación inferior a 2 años.
-b) Diseñar los sistemas de modo que alcancen niveles adecuados de precisión, robustez y ciberseguridad a lo largo de su ciclo de vida.
-c) Exclusividad en el uso de modelos de lenguaje de código abierto no supervisados.
-d) Delegación íntegra de la toma de decisiones sin supervisión humana obligatoria.
-
-**Razonamiento Estructurado:**
-1.  **Referencia legal:** Artículo 15 del Reglamento de Inteligencia Artificial (AI Act).
-2.  **Exigencia normativa:** Exige explícitamente que los sistemas de IA de alto riesgo mantengan niveles adecuados de **precisión, robustez y ciberseguridad** durante todo su ciclo de vida, acompañados de supervisión humana (descartando la opción d).
-3.  **Respuesta correcta: B.**
