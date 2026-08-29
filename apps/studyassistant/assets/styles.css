@@ -590,7 +590,6 @@ tr:nth-child(even) td {
     background: #1d4ed8;
 }
 
-/* --- ÍNDICE DE NAVEGACIÓN ANIDADO (TOC) --- */
 .note-toc-container {
     margin-top: 24px;
     padding-top: 20px;
@@ -613,11 +612,10 @@ tr:nth-child(even) td {
 
 .nested-toc-list {
     list-style: none;
-    padding-left: 16px; /* Indentación para subtítulos */
+    padding-left: 16px;
     margin: 4px 0;
 }
 
-/* El primer nivel no tiene indentación */
 .note-toc > .nested-toc-list {
     padding-left: 0;
 }
@@ -634,12 +632,10 @@ tr:nth-child(even) td {
     user-select: none;
 }
 
-/* Ocultar flecha nativa del navegador */
 .toc-summary::-webkit-details-marker {
     display: none;
 }
 
-/* Flecha personalizada */
 .toc-summary::before {
     content: '▼';
     display: inline-block;
@@ -650,7 +646,6 @@ tr:nth-child(even) td {
     transition: transform 0.2s ease-in-out;
 }
 
-/* Rotar flecha si está cerrado */
 .toc-details:not([open]) > .toc-summary::before {
     transform: rotate(-90deg);
 }
@@ -660,7 +655,6 @@ tr:nth-child(even) td {
     align-items: flex-start;
 }
 
-/* Espaciador para alinear elementos que no tienen hijos (no tienen flecha) */
 .toc-link-wrapper::before {
     content: '';
     display: inline-block;
@@ -682,7 +676,6 @@ tr:nth-child(even) td {
     text-decoration: underline;
 }
 
-/* Negrita para el nivel principal H2 */
 .toc-item.level-2 > .toc-summary > a,
 .toc-item.level-2 > .toc-link-wrapper > a {
     font-weight: 600;
@@ -696,4 +689,72 @@ tr:nth-child(even) td {
 .process-group__title {
     margin: 0 0 1rem;
     font-size: 1.25rem;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+    zoom: 0.8; 
+  }
+
+  .topbar {
+    display: none !important;
+  }
+
+  .note-sidebar,
+  .mobile-only,
+  .note-meta-container {
+    display: none !important;
+  }
+
+  .note-layout {
+    display: block !important;
+  }
+
+  .note-content {
+    max-width: none;
+    width: 100%;
+    padding: 0;
+  }
+
+  /* Evitar cortes dentro de bloques que contienen imágenes o diagramas */
+  .note-content p,
+  .note-content figure,
+  .note-content .mermaid,
+  .note-content .note-body {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .note-content img,
+  .note-content svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .note-content .mermaid svg {
+    max-width: 100%;
+    height: auto;
+    transform: scale(0.7);      /* ajusta factor según lo que veas */
+    transform-origin: top left;
+  }
+
+  /* Opcional: añadir margen antes y después para que no queden pegados al salto */
+  .note-content .mermaid {
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin: 1rem 0;
+  }
+
+  .container {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+  }
+
+  a {
+    text-decoration: none;
+    color: #000000;
+  }
 }

@@ -150,7 +150,18 @@ require __DIR__ . '/includes/header.php';
                         📝 Ponerme a prueba
                     </a>
                 </div>
+                
             <?php endif; ?>
+            <div class="note-actions" style="margin: 0.8rem 0;">
+                <button
+                    type="button"
+                    class="button-secondary"
+                    style="width: 100%; text-align: center; display: block;"
+                    onclick="window.print()"
+                >
+                    🖨️ Imprimir
+                </button>
+            </div>
 
             <?php if (!empty($nestedTocTree)): ?>
                 <div class="note-toc-container desktop-only">
