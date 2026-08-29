@@ -20,6 +20,8 @@ tags:
   - "soft-skills"
   - "sostenibilidad"
   - "pmi-talent-triangle"
+  - "ai-act"
+  - "ens"
 created_at: "2026-08-08"
 last_reviewed: "2026-08-08"
 ai_generated: true
@@ -32,457 +34,306 @@ needs_human_review: true
 
 # Tema 7. Tendencias en la Gestión de Proyectos
 
-Este tema cubre los enfoques modernos que complementan la gestión tradicional. Como ingeniero, debes ver esto como la capa de optimización y gobernanza sobre el proceso técnico, alineando la entrega de valor con los marcos regulatorios y tecnológicos actuales.
+La evolución de la dirección de proyectos responde a la necesidad de gestionar la complejidad técnica, la volatilidad de los requisitos, las exigencias regulatorias y la demanda de valor continuo en los servicios digitales públicos. La gestión moderna complementa los marcos tradicionales con enfoques híbridos, automatización avanzada, inteligencia artificial, ciberseguridad desde el diseño (*Security by Design*), criterios ESG de sostenibilidad y competencias interpersonales (*Power Skills*).
 
 ## 1. Hibridación de Metodologías (Predictivo + Agile)
 
-La tendencia actual no es elegir entre "predictivo" (cascada) y "agile", sino **hibridar**.
-*   **Predictivo:** Se mantiene para el control de alto nivel (gestión de presupuestos, cumplimiento normativo, plazos fijos, gestión de riesgos de nivel ejecutivo).
-*   **Agile:** Se utiliza en la ejecución (sprints, desarrollo continuo, integración de valor).
-*   **Patrón:** El PMBOK 7ª y 8ª edición y el enfoque corporativo proponen marcos donde los **hitos de negocio son predictivos** (fecha de lanzamiento comercial) y la **ejecución es ágil**.
+La práctica actual en la Administración Pública y la industria TIC no plantea una disyuntiva excluyente entre enfoques predictivos (en cascada) y adaptativos (ágiles), sino su integración estructurada mediante **modelos híbridos**.
 
-Esta hibridación se sustenta formalmente en el dominio de desempeño "Enfoque de Desarrollo y Ciclo de Vida" del PMBOK 7/8, que reconoce explícitamente un espectro continuo entre predictivo puro y adaptativo puro, con múltiples combinaciones híbridas intermedias. Un patrón habitual de hibridación en la Administración Pública es el llamado **"agile-fall" o cascada con sprints internos**: el proyecto mantiene fases contractuales y de gobierno predictivas (viabilidad, contratación, aceptación formal, cumplimiento normativo) exigidas por la normativa de contratación pública, mientras que dentro de la fase de desarrollo el equipo trabaja con Scrum o Kanban. La decisión de cuánto hibridar depende de factores de adaptación (Tailoring) como el nivel de incertidumbre de los requisitos, la criticidad regulatoria, el tamaño del equipo y la cultura de la organización.
+```mermaid
+graph LR
+    classDef pred fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef hyb fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef agile fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
 
-**Marcos Oficiales Híbridos (Muy examinables):**
-*   **PRINCE2 Agile:** Extensión oficial de AXELOS que combina la gobernanza, justificación comercial y control de PRINCE2 con marcos de entrega ágil (Scrum, Kanban). Define qué, por qué y cuándo (PRINCE2), dejando el "cómo" a la agilidad.
-*   **Disciplined Agile (DA):** Adquirido por el PMI, es un kit de herramientas que ayuda a las organizaciones a elegir su "forma de trabajar" (*Way of Working - WoW*) en función del contexto del equipo, ofreciendo una guía para hibridar con éxito.
-*   **Bimodal IT (Gartner):** Tendencia organizativa que divide la gestión en dos modos: Modo 1 (Predictivo, enfocado en la estabilidad, seguridad y sistemas core o *legacy*) y Modo 2 (Ágil, enfocado en la innovación, exploración y *time-to-market* rápido).
+    A["<b>PREDICTIVO PURO</b><br>• Alcance fijo y cerrado<br>• Planificación inicial exhaustiva<br>• Baja tolerancia al cambio"]:::pred
+    
+    B["<b>MODELOS HÍBRIDOS</b><br>• Gobernanza y contratos: Predictivo<br>• Ejecución y entrega: Ágil<br>• Gestión por valor e hitos"]:::hyb
+    
+    C["<b>ADAPTATIVO PURO</b><br>• Alcance dinámico y evolutivo<br>• Sprints e iteraciones cortas<br>• Alta tolerancia al cambio"]:::agile
 
-### 1.1. Criterios para seleccionar un enfoque híbrido
+    A <---> B <---> C
+```
 
-La selección de un enfoque híbrido debe realizarse atendiendo a las características del proyecto. Entre los factores que pueden justificar la combinación de enfoques se encuentran:
+### 1.1. Fundamentos de la Hibridación y Patrones de Aplicación
 
-* estabilidad o variabilidad de los requisitos;
-* criticidad del producto o servicio;
-* exigencias regulatorias y contractuales;
-* necesidad de entregas frecuentes;
-* disponibilidad y distribución del equipo;
-* complejidad técnica;
-* dependencia de proveedores o de infraestructuras externas;
-* madurez de la organización para trabajar con enfoques ágiles;
-* necesidad de establecer hitos y puntos de decisión formales.
+*   **Espectro de Desarrollo (PMBOK 7ª y 8ª Edición):** El dominio de desempeño de *Enfoque de Desarrollo y Ciclo de Vida* establece que los proyectos se sitúan en un espectro continuo entre predictivo y adaptativo.
+*   **Patrón Agile-Fall (Cascada con Sprints Internos):** Modelo predominante en el sector público. La gobernanza de alto nivel, la contratación (**Ley 9/2017 LCSP**), la consignación presupuestaria, la justificación normativa y la aceptación formal se gestionan de forma predictiva mediante hitos de control (*gates*), mientras que la construcción técnica del software se ejecuta mediante iteraciones ágiles (Scrum o Kanban).
+*   **Criterios de Adaptación** (*Tailoring*): La decisión de hibridación depende de factores como la volatilidad de requisitos, criticidad del servicio, exigencias regulatorias, tamaño y dispersión del equipo, y la madurez organizativa.
 
-Un enfoque híbrido no consiste simplemente en aplicar simultáneamente dos metodologías. Debe definirse cómo se integran la planificación, la gobernanza, la gestión de cambios, los ciclos de entrega, las responsabilidades y los mecanismos de control.
+### 1.2. Marcos y Modelos Híbridos Oficiales
 
-PRINCE2 Project Management (Version 7) está diseñado para poder adaptarse y combinarse con enfoques ágiles y otros métodos de entrega. La metodología mantiene los elementos de gobierno y dirección del proyecto, mientras que el enfoque concreto de desarrollo puede adaptarse al contexto. citeturn127999search0turn127999search3
+*   **PRINCE2 Agile (PeopleCert):** Extensión que combina la estructura de gobernanza, justificación comercial continua (*Business Case*) y tolerancias de **PRINCE2** con marcos de entrega ágil (*Scrum, Kanban, Lean*). **PRINCE2** define la dirección, el control y los productos comprometidos, mientras que el marco ágil gestiona el desarrollo de los paquetes de trabajo.
+*   **Disciplined Agile (DA - PMI):** Kit de herramientas (*toolkit*) orientado a procesos que ayuda a los equipos a elegir y evolucionar su propia "forma de trabajar" (*Way of Working - WoW*) en función del contexto técnico y organizativo.
+*   **Bimodal IT (Gartner):** Modelo de gestión organizativa TIC estructurado en dos velocidades:
+    *   *Modo 1 (Predictivo / Tradicional):* Enfocado en la estabilidad, seguridad, fiabilidad y mantenimiento de sistemas troncales (*core* o *legacy*).
+    *   *Modo 2 (Ágil / Exploratorio):* Enfocado en la innovación, experimentación, rapidez de despliegue (*time-to-market*) y nuevos canales digitales.
 
-### 1.2. Integración entre gobierno predictivo y entrega adaptativa
+## 2. Automatización y Herramientas Digitales de Gestión
 
-En un proyecto híbrido pueden coexistir:
+La dirección de proyectos se apoya en ecosistemas digitales interconectados que sustituyen la gestión manual por flujos de información centralizados y automatizados.
 
-* **Gobierno predictivo:** presupuesto, contratos, requisitos legales, hitos, autorizaciones y criterios formales de aceptación.
-* **Planificación adaptativa:** priorización incremental del trabajo y revisión periódica de requisitos.
-* **Entrega iterativa:** desarrollo y validación mediante iteraciones o incrementos.
-* **Control integrado:** seguimiento conjunto de coste, plazo, riesgos, calidad, alcance y beneficios.
+```mermaid
+graph TD
+    classDef pmis fill:#e8eaf6,stroke:#283593,stroke-width:2px,color:#000
+    classDef auto fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef gov fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
 
-La combinación debe mantener trazabilidad entre los objetivos de alto nivel, los productos comprometidos y los incrementos entregados.
+    PMIS["<b>PMIS (Project Management Information System)</b><br>Fuente Única de la Verdad (SSOT)<br>Jira, MS Project, Redmine, GitLab"]:::pmis
+    
+    PMIS --> A1["Automatización de Tareas Repetitivas (RPA)"]:::auto
+    PMIS --> A2["Pipelines CI/CD y Transiciones de Estado"]:::auto
+    PMIS --> A3["Cálculo Automatizado de Líneas Base y EVM"]:::auto
+    
+    A1 --> GOV["<b>GOBERNANZA DE LA AUTOMATIZACIÓN</b><br>• Trazabilidad y logs de ejecución<br>• Supervisión humana (Human-in-the-Loop)<br>• Gestión de permisos y marcha atrás"]:::gov
+    A2 --> GOV
+    A3 --> GOV
+```
 
-### 1.3. Hibridación y contratación pública
+### 2.1. Sistemas de Información para la Dirección de Proyectos (PMIS)
+El **PMIS** es el conjunto de herramientas de software y procesos integrados que centralizan la recopilación, almacenamiento, análisis y distribución de los datos del proyecto, actuando como **fuente única de la verdad** (*Single Source of Truth - SSOT*):
+*   Integra cronogramas, costes, presupuestos, registros de riesgos, flujos de cambios, incidencias, gestión documental y tableros Kanban interactivos.
 
-En proyectos sujetos a contratación pública pueden coexistir obligaciones contractuales y un modelo ágil de ejecución. El contrato, los pliegos, los hitos de aceptación, los niveles de servicio y los requisitos normativos deben integrarse con la dinámica de iteraciones, priorización y entrega incremental.
+### 2.2. Automatización de Flujos y RPA en la Gobernanza
+*   **Automatización de Procesos Robóticos (RPA):** Aplicación de scripts y bots a la gestión de proyectos para tareas mecánicas: generación desatendida de informes de estado **EVM**, sincronización periódica de inventarios en la **CMDB** y actualización automática de registros de riesgos tras alertas críticas.
+*   **Transiciones de Estado Automatizadas:** Integración de herramientas de seguimiento (*Jira, GitLab*) con cadenas de despliegue continuo (**CI/CD**). Al completarse una tarea de desarrollo o cerrarse un *pull request*, se desencadenan automáticamente pruebas unitarias, análisis de código o notificaciones a los responsables de validación.
+*   **Gobernanza de la Automatización:** Exige control de accesos, registro inmutable de auditoría (trazabilidad de ejecuciones), reglas claras de escalado y supervisión humana obligatoria (*Human-in-the-Loop*) para validar decisiones críticas.
 
-El enfoque de ejecución debe garantizar en todo momento la trazabilidad de las decisiones, la aceptación de los entregables y el cumplimiento de las obligaciones legales y contractuales.
+## 3. Gestión de Interesados en el Proyecto (*Stakeholders*)
 
-## 2. Automatización y Herramientas Digitales
+Un interesado es cualquier individuo, grupo u organización que puede influir, verse afectado o percibirse a sí mismo como afectado por una decisión, actividad o resultado del proyecto.
 
-La gestión de proyectos ha dejado de depender de hojas de cálculo manuales para integrarse en ecosistemas digitales interconectados conocidos como **PMIS** (*Project Management Information Systems*).
+### 3.1. Los 4 Procesos de Gestión de Interesados (PMBOK)
 
-*   **PMIS (Sistemas de Información para la Dirección de Proyectos):** Herramientas como Jira, Microsoft Project Server, Asana o Trello, que centralizan el cronograma, la asignación de recursos y el seguimiento de incidencias, proporcionando la "fuente única de la verdad" (*Single Source of Truth*).
-*   **Automatización RPA en la Gobernanza:** La *Robotic Process Automation* (RPA) no solo se aplica a los procesos de negocio (como vimos en el Plan de Digitalización de la AGE), sino a la propia gestión del proyecto. Ejemplos: generación y envío automático de informes de estado EVM los viernes a las 15:00, actualización automática del registro de riesgos al detectar un ticket crítico, o el cálculo automatizado de la línea base.
-*   **Kanban Digital y Flujos de Trabajo:** La automatización de las transiciones de estado (ej. al pasar una tarea a "Hecho" en Jira, se lanza automáticamente un pipeline de integración continua CI/CD o se notifica al usuario clave para su validación).
 
-### 2.1. Sistemas de Información para la Dirección de Proyectos
+![Procesos de Gestión de Interesados - PMBOK](../images/procesos-secuenciales-gestion-interesados-pmbok.jpg)
 
-Un **PMIS (Project Management Information System)** es el conjunto de sistemas y herramientas utilizados para recopilar, almacenar, procesar, distribuir y visualizar la información necesaria para dirigir un proyecto.
+### 3.2. Modelos de Clasificación y Análisis de Interesados
 
-Puede integrar información de:
+#### A) Matriz de Poder vs. Interés (Matriz de Mendelow)
 
-* planificación y cronograma;
-* costes y presupuesto;
-* riesgos;
-* incidencias y cuestiones;
-* cambios;
-* recursos;
-* documentación;
-* entregables;
-* métricas de desempeño;
-* comunicaciones y decisiones.
+Clasifica a los interesados en cuatro cuadrantes para asignar el nivel de esfuerzo de comunicación:
 
-La integración de estos datos permite disponer de información coherente y trazable para la toma de decisiones.
+![Matriz Mendelow](../images/matriz-mendelow.jpg)
 
-### 2.2. Automatización y flujos de trabajo
+| Nivel de Poder / Interés | Bajo Interés | Alto Interés |
+| :--- | :--- | :--- |
+| **Alto Poder** | **Mantener Satisfecho**<br>• Resúmenes ejecutivos e informes periódicos.<br>• Evitar que se conviertan en detractores. | **Gestionar Estrechamente** (*Key Players*)<br>• Máxima implicación y colaboración directa.<br>• Socios clave en la toma de decisiones. |
+| **Bajo Poder** | **Monitorizar** (*Mínimo Esfuerzo*)<br>• Supervisión periódica sin saturar recursos.<br>• Comprobación de posibles cambios de estado. | **Mantener Informado**<br>• Canales de retroalimentación y boletines.<br>• Actúan como facilitadores o evangelizadores. |
 
-La automatización puede aplicarse a actividades repetitivas de gestión, como:
+#### B) Modelo de Prominencia (*Salience Model* - Mitchell, Agle y Wood)
+Clasifica a los interesados analizando la interacción de tres variables clave:
 
-* generación y distribución de informes;
-* actualización de indicadores;
-* creación o asignación de tareas;
-* notificaciones y recordatorios;
-* validaciones y aprobaciones;
-* recopilación de evidencias;
-* sincronización entre herramientas;
-* actualización de registros;
-* ejecución de flujos de integración y despliegue.
+![Modelo de Prominencia](../images/modelo-prominencia.jpg) 
 
-La automatización debe controlarse mediante reglas explícitas, mecanismos de autorización, registro de actividad y supervisión de los resultados.
+*   **Poder:** Capacidad de imponer su voluntad o influir en las decisiones del proyecto.
+*   **Legitimidad:** Adecuación o derecho legal/moral de su participación en el proyecto.
+*   **Urgencia:** Necesidad o exigencia de atención inmediata a sus demandas.
+*   *Interesado Definitivo (*Definitive Stakeholder*):* Se sitúa en la intersección simultánea de **Poder, Legitimidad y Urgencia**, requiriendo atención prioritaria inmediata por parte de la dirección del proyecto.
 
-### 2.3. Inteligencia artificial aplicada a la gestión de proyectos
+#### C) Clasificación por Dirección de Influencia
+*   *Ascendente:* Alta dirección, patrocinador (*Sponsor*), comités de gobierno.
+*   *Descendente:* Equipo del proyecto y especialistas técnicos.
+*   *Horizontal:* Pares del Director de Proyecto, otros jefes de área funcional.
+*   *Externa:* Ciudadanía, proveedores, contratistas, órganos reguladores y de auditoría.
 
-La IA puede utilizarse como herramienta de apoyo en actividades de dirección de proyectos, entre ellas:
+## 4. Ciberseguridad y Cumplimiento Normativo en Proyectos TIC
 
-* análisis de datos históricos para estimar duración, coste o probabilidad de retraso;
-* clasificación y priorización de riesgos o incidencias;
-* identificación de patrones de desviación;
-* generación de borradores de documentación;
-* extracción y resumen de información;
-* asistencia en la elaboración de informes;
-* optimización de asignación de recursos;
-* análisis de grandes volúmenes de comunicaciones y documentación.
-
-Las salidas de sistemas de IA deben considerarse resultados de apoyo y someterse a controles adecuados de calidad, seguridad, trazabilidad y supervisión humana según el uso y el nivel de riesgo.
-
-### 2.4. Gobernanza de la automatización
-
-La automatización de decisiones o actividades de gestión debe contemplar:
-
-* identificación del responsable de la decisión;
-* control de permisos;
-* trazabilidad de las ejecuciones;
-* registro de entradas y salidas relevantes;
-* validación de reglas y modelos;
-* gestión de errores y excepciones;
-* mecanismos de revisión humana;
-* continuidad y recuperación.
-
-En sistemas críticos, la automatización debe incorporar mecanismos que permitan detectar resultados anómalos y revertir o detener procesos cuando se superen las condiciones autorizadas.
-
-## 3. Gestión de Interesados en el Proyecto (Stakeholders)
-
-Es la identificación y gestión de las expectativas de todas las personas/organizaciones afectadas por el proyecto.
-*   **Matriz de Poder/Interés (Mendelow):**
-    *   **Alto Poder/Alto Interés:** Gestionar estrechamente (aliados clave).
-    *   **Alto Poder/Bajo Interés:** Mantener satisfechos (evitar que se vuelvan detractores).
-    *   **Bajo Poder/Alto Interés:** Mantener informados (pueden ser buenos evangelizadores).
-    *   **Bajo Poder/Bajo Interés:** Monitorizar (sin dedicar excesivos recursos).
-
-Según el PMBOK, la gestión de interesados se articula en **4 procesos secuenciales** que conviene memorizar porque es habitual que el examen pregunte por su orden o por el entregable de cada uno:
-1.  **Identificar a los Interesados:** se reconocen todas las personas, grupos u organizaciones que pueden afectar o verse afectados por el proyecto. Entregable clave: el **Registro de Interesados** (nombre, rol, organización, ubicación, requisitos, expectativas, nivel de poder/interés/influencia y clasificación interno/externo, favorable/neutral/opositor).
-2.  **Planificar el Involucramiento de los Interesados:** se desarrollan enfoques para involucrar eficazmente a cada interesado según sus necesidades, expectativas e impacto potencial. Entregable clave: el **Plan de Involucramiento/Compromiso de los Interesados** (*Stakeholder Engagement Plan*).
-3.  **Gestionar el Involucramiento de los Interesados:** se comunica y trabaja con los interesados para satisfacer sus necesidades y expectativas, abordar incidentes y fomentar su participación adecuada durante todo el ciclo de vida del proyecto.
-4.  **Monitorear el Involucramiento de los Interesados:** se hace seguimiento de las relaciones con los interesados y se ajustan las estrategias y planes para involucrarlos, adaptándose a cambios en su nivel de poder, interés o posición frente al proyecto.
-
-Además de la matriz de Mendelow, existen otros modelos de clasificación de interesados que pueden aparecer como distractor o alternativa en examen:
-*   **Modelo de Prominencia (Salience Model):** Clasifica a los interesados basándose en tres variables: **Poder** (capacidad para imponer su voluntad), **Legitimidad** (si su involucramiento es apropiado) y **Urgencia** (necesidad de atención inmediata). La intersección de las tres crea el *Interesado Definitivo* (Definitive Stakeholder), que requiere máxima atención.
-*   **Dirección de influencia:** Ascendente (alta dirección); Descendente (el equipo); Horizontal (pares del jefe de proyecto); Externa (proveedores, reguladores, sociedad).
-
-### 3.1. Identificación y análisis de interesados
-
-Los interesados pueden clasificarse atendiendo a su relación con el proyecto, influencia, expectativas, impacto y posición respecto de los objetivos.
-
-El análisis debe actualizarse durante todo el proyecto porque el poder, interés, influencia y posición de un interesado pueden cambiar.
-
-La gestión de interesados debe integrarse con la gestión de comunicaciones, riesgos, cambios y decisiones.
-
-### 3.2. Plan de involucramiento y comunicación
-
-El plan de involucramiento determina las estrategias y acciones necesarias para conseguir una participación adecuada.
-
-La comunicación debe adaptarse al destinatario, considerando:
-
-* información que necesita;
-* frecuencia;
-* canal;
-* nivel de detalle;
-* responsable de comunicar;
-* momento de la comunicación;
-* mecanismos de retroalimentación.
-
-Una comunicación eficaz no consiste únicamente en transmitir información, sino también en obtener retroalimentación, gestionar expectativas y facilitar decisiones.
-
-### 3.3. Conflictos y negociación
-
-Los conflictos pueden surgir por diferencias de objetivos, recursos, prioridades, responsabilidades, requisitos o interpretaciones.
-
-La dirección del proyecto debe identificar las causas del conflicto, facilitar la comunicación entre las partes y buscar soluciones compatibles con los objetivos y restricciones del proyecto.
-
-La negociación permite alcanzar acuerdos sobre alcance, prioridades, recursos, plazos, responsabilidades y condiciones de entrega.
-
-## 4. Ciberseguridad y Cumplimiento Normativo en Proyectos
-
-*   **Security by Design:** La seguridad debe ser un requisito desde la fase de análisis inicial.
-*   **DevSecOps:** Evolución del tradicional DevOps. Es la tendencia que integra las prácticas y herramientas de seguridad en el ciclo de vida del desarrollo ágil desde el primer sprint, rompiendo el silo de auditar la seguridad solo al final del proyecto.
-
-En proyectos TIC de la Administración Pública española, el cumplimiento normativo no es un anexo opcional sino un conjunto de restricciones que condicionan el alcance y la planificación desde el Acta de Constitución:
-*   **Esquema Nacional de Seguridad (ENS - RD 311/2022):** Obliga a categorizar el sistema (Básico, Medio, Alto) en la fase de iniciación y a aplicar las medidas de seguridad correspondientes desde el diseño. El proyecto debe generar entregables específicos como la **Declaración de Aplicabilidad**.
-*   **RGPD y LOPDGDD:** Exigen Privacidad desde el Diseño y por Defecto (art. 25 RGPD) y, en tratamientos de alto riesgo o uso de nuevas tecnologías, la ejecución de una **Evaluación de Impacto en la Protección de Datos (EIPD / DPIA)** como hito bloqueante del proyecto.
-*   **Esquema Nacional de Interoperabilidad (ENI):** Condiciona el diseño de sistemas que deban intercambiar información entre Administraciones, forzando el uso de estándares abiertos.
-La gestión de proyectos moderna integra estos requisitos como parte del **Plan de Gestión de Riesgos y de Calidad**, no como una fase separada de auditoría final.
-
-### 4.1. Seguridad durante el ciclo de vida
-
-La ciberseguridad debe integrarse desde el análisis hasta la operación y retirada del sistema.
-
-Entre las actividades de seguridad que pueden incorporarse al proyecto se encuentran:
-
-* identificación y análisis de riesgos de seguridad;
-* definición de requisitos de seguridad;
-* modelado de amenazas;
-* análisis de vulnerabilidades;
-* revisión de arquitectura;
-* análisis estático y dinámico de código;
-* pruebas de penetración cuando proceda;
-* gestión de secretos y credenciales;
-* gestión de dependencias;
-* registro y monitorización;
-* pruebas de recuperación;
-* preparación para la respuesta ante incidentes.
-
-El enfoque **Security by Design** integra la seguridad desde las fases iniciales. **DevSecOps** extiende este enfoque incorporando controles de seguridad en las cadenas automatizadas de desarrollo, integración, pruebas y despliegue.
-
-### 4.2. Esquema Nacional de Seguridad
-
-El **Real Decreto 311/2022**, por el que se regula el Esquema Nacional de Seguridad, establece los principios básicos y requisitos mínimos aplicables al sector público y a los sistemas de información comprendidos en su ámbito.
-
-La seguridad debe gestionarse mediante un enfoque basado en riesgos y debe integrarse en el ciclo de vida de los sistemas.
-
-La categorización del sistema se basa en el impacto que un incidente tendría sobre las dimensiones de **confidencialidad, integridad, trazabilidad, autenticidad y disponibilidad**, y determina la aplicación de las medidas de seguridad correspondientes.
-
-### 4.3. Protección de datos personales
-
-Cuando el proyecto trate datos personales, deben integrarse desde las fases iniciales los principios del RGPD, incluyendo:
-
-* licitud, lealtad y transparencia;
-* limitación de la finalidad;
-* minimización de datos;
-* exactitud;
-* limitación del plazo de conservación;
-* integridad y confidencialidad;
-* responsabilidad proactiva.
-
-El artículo 25 del RGPD establece la **protección de datos desde el diseño y por defecto**. Cuando un tratamiento pueda entrañar un alto riesgo para los derechos y libertades, el artículo 35 establece la obligación de realizar, antes del tratamiento, una **Evaluación de Impacto relativa a la Protección de Datos (EIPD/DPIA)**. citeturn421829search4
-
-### 4.4. Cumplimiento normativo como requisito de proyecto
-
-Los requisitos legales y reglamentarios pueden constituir restricciones del alcance, arquitectura, calendario, contratación, pruebas y aceptación.
-
-El cumplimiento debe gestionarse mediante requisitos trazables, responsables definidos, evidencias de conformidad y controles durante el ciclo de vida, evitando que se concentre únicamente en una auditoría final.
-
-### 4.5. Seguridad de la cadena de suministro
-
-Los proyectos TIC pueden depender de software de terceros, servicios en la nube, proveedores, componentes de código abierto y cadenas de suministro digitales.
-
-El análisis debe considerar la procedencia y mantenimiento de componentes, vulnerabilidades conocidas, gestión de versiones, dependencias, acceso de proveedores, protección de secretos y capacidad de respuesta ante incidentes.
-
-## 5. Gestión de Proyectos en el ámbito de la IA y Gestión Basada en Datos (Data-Driven)
-
-*   Uso de **IA para predecir** desviaciones de plazos (EVM predictivo).
-*   Automatización de informes y dashboards en tiempo real (evitando el reporting manual).
-*   Gestión de la calidad del dato: El éxito de la IA en proyectos depende de la fiabilidad de los datos alimentados (GIGO - *Garbage In, Garbage Out*).
-
-Ampliando los casos de uso concretos de IA en dirección de proyectos, que cada vez aparecen más en manuales actualizados (PMBOK 8ª edición incorpora contenido explícito sobre IA):
-*   **IA Generativa en Documentación:** Uso de modelos de lenguaje (LLM) integrados en el PMIS para redactar borradores del Acta de Constitución, historias de usuario, actas de reunión o generar el Registro de Riesgos preliminar a partir de las notas del equipo.
-*   **Análisis Predictivo (Machine Learning):** Modelos que, entrenados con datos históricos de proyectos similares, estiman la probabilidad de retraso o sobrecoste antes de que ocurra, complementando al EVM tradicional (que es descriptivo, no predictivo).
-*   **Optimización de Recursos:** Algoritmos que sugieren la mejor distribución del equipo entre tareas según carga de trabajo, competencias y disponibilidad.
-*   **Chatbots y Asistentes Virtuales:** Para resolver dudas frecuentes de los *stakeholders* o automatizar el triaje de incidencias (Service Desk de Nivel 0).
-
-El concepto **GIGO** se complementa con el de **Gobernanza del Dato** (*Data Governance*): antes de automatizar decisiones con IA, el proyecto debe garantizar la trazabilidad, calidad y origen legítimo de los datos usados. Esto conecta directamente con la nueva normativa europea (**IA Act / Reglamento UE 2024/1689**), que exige a los proyectos de IA clasificados como "de alto riesgo" estrictos sistemas de gestión de calidad, evaluación de sesgos y supervisión humana.
-
-### 5.1. Gestión de proyectos de inteligencia artificial
-
-Los proyectos de IA requieren controles específicos sobre datos, modelos, infraestructura, resultados y uso previsto.
-
-Entre los aspectos que deben gestionarse se encuentran:
-
-* definición del propósito y uso previsto;
-* calidad, representatividad, procedencia y gobernanza de los datos;
-* trazabilidad de datos y versiones de modelos;
-* validación y pruebas;
-* precisión y robustez;
-* seguridad frente a ataques y manipulaciones;
-* sesgos y discriminación;
-* explicabilidad y transparencia cuando proceda;
-* supervisión humana;
-* monitorización durante la explotación;
-* gestión de cambios y deriva del modelo;
-* documentación técnica y evidencias de cumplimiento.
-
-### 5.2. Reglamento Europeo de Inteligencia Artificial
-
-El **Reglamento (UE) 2024/1689 (AI Act)** establece un marco armonizado para la inteligencia artificial basado en un enfoque de riesgo.
-
-Para determinados sistemas de **alto riesgo**, el Reglamento establece requisitos relacionados, entre otros, con gestión de riesgos, gobernanza de datos, documentación y registros, transparencia, supervisión humana, precisión, robustez y ciberseguridad. En particular, el artículo 15 exige niveles adecuados de precisión, robustez y ciberseguridad durante el ciclo de vida de los sistemas de IA de alto riesgo. citeturn421829search0
-
-En consecuencia, la clasificación del sistema y su finalidad prevista deben incorporarse al análisis inicial del proyecto cuando este desarrolle o implante IA.
-
-### 5.3. Gestión basada en datos
-
-La gestión basada en datos utiliza información objetiva para apoyar la planificación, el seguimiento, la predicción y la toma de decisiones.
-
-Requiere:
-
-* datos completos y de calidad adecuada;
-* definiciones comunes de indicadores;
-* trazabilidad del origen del dato;
-* control de calidad;
-* gestión de metadatos;
-* seguridad y control de acceso;
-* mecanismos de integración;
-* gobernanza y responsabilidades sobre los datos.
-
-El principio **Garbage In, Garbage Out (GIGO)** expresa que resultados obtenidos a partir de datos incorrectos, incompletos o sesgados pueden ser igualmente incorrectos aunque el procesamiento sea técnicamente adecuado.
-
-### 5.4. Indicadores y analítica predictiva
-
-Los cuadros de mando pueden utilizar análisis descriptivo para conocer el estado actual, análisis diagnóstico para estudiar causas, análisis predictivo para estimar comportamientos futuros y análisis prescriptivo para apoyar la elección de actuaciones.
-
-La analítica predictiva debe acompañarse de evaluación de incertidumbre y de supervisión de los supuestos utilizados por el modelo. Una predicción no constituye una garantía del resultado futuro.
-
-## 6. Sostenibilidad y Responsabilidad Social en los Proyectos
-
-*   **Sostenibilidad (ESG):** Los proyectos (tanto públicos como privados) deben evaluar su huella de carbono y su impacto social (criterios ESG: *Environmental, Social, and Governance*). Ya no es una opción, es una métrica clave del proyecto y un factor de evaluación en los pliegos de contratación pública.
-*   **Green Project Management (GPM):** Metodologías como **PRiSM** (*Projects integrating Sustainable Methods*) que extienden el enfoque del proyecto para medir el ciclo de vida completo del producto creado, garantizando la reducción del impacto ambiental.
-*   **Green IT:** Aplicado a las TIC públicas, incluye el diseño de arquitecturas eficientes energéticamente, la consolidación en la nube para reducir la huella de carbono del CPD, y la economía circular en la adquisición de hardware.
-
-La propia norma **ISO 21502:2020** reconoce que los objetivos de sostenibilidad deben considerarse durante todo el ciclo de vida del proyecto, alineándose con marcos como los **Objetivos de Desarrollo Sostenible (ODS - Agenda 2030)** de Naciones Unidas. En la práctica, esto se traduce en indicadores de proyecto tan concretos como el PUE (*Power Usage Effectiveness*) de la infraestructura desplegada, la accesibilidad digital obligatoria de las soluciones (Real Decreto 1112/2018 para garantizar la inclusión social) y el impacto social del proyecto sobre la brecha digital.
-
-### 6.1. Sostenibilidad en la gestión de proyectos
-
-La sostenibilidad debe considerarse durante todo el ciclo de vida del proyecto, desde la selección de alternativas hasta la operación y retirada del producto o servicio.
-
-En proyectos TIC puede afectar a:
-
-* consumo energético;
-* infraestructura y centros de datos;
-* eficiencia de recursos;
-* ciclo de vida del hardware;
-* reutilización y reciclaje;
-* desplazamientos;
-* diseño y eficiencia de software;
-* accesibilidad;
-* impacto social;
-* contratación y cadena de suministro.
-
-PRINCE2 Project Management (Version 7) incorpora la **sostenibilidad** como aspecto del desempeño del proyecto y contempla tanto la sostenibilidad del trabajo del proyecto como la sostenibilidad durante el ciclo de vida del producto resultante. citeturn127999search1turn127999search2
-
-### 6.2. Responsabilidad social y grupos de interés
-
-La responsabilidad social implica considerar los efectos del proyecto sobre personas, organizaciones y comunidades afectadas.
-
-Pueden incluirse aspectos relacionados con:
-
-* accesibilidad e inclusión;
-* igualdad de oportunidades;
-* condiciones laborales;
-* protección de derechos;
-* impacto sobre colectivos vulnerables;
-* brecha digital;
-* transparencia;
-* ética;
-* impacto ambiental y social.
-
-En el sector público, estos aspectos deben integrarse con los objetivos de servicio público y con las obligaciones legales y reglamentarias.
-
-## 7. Habilidades Blandas (Soft Skills) en la Gestión de Proyectos
-
-Las competencias interpersonales permiten integrar la ejecución técnica con los objetivos del proyecto y las necesidades de las partes interesadas.
-*   **Inteligencia Emocional:** Gestión del estrés en hitos de entrega críticos y empatía con las presiones de los *stakeholders*.
-*   **Negociación:** Fundamental para gestionar el alcance (Scope Creep) cuando el cliente quiere "añadir una funcionalidad más" a mitad del proyecto sin ampliar el presupuesto.
-*   **Gestión de Conflictos:** Capacidad de arbitrar entre el equipo técnico y las demandas del negocio.
-*   **Liderazgo Siervo (Servant Leadership):** Enfoque clave en los marcos ágiles (ej. Scrum Master) y adoptado por PMBOK 7. El líder no manda desde arriba, sino que se pone "al servicio del equipo" para eliminar impedimentos (*blockers*), facilitar recursos, protegerlos de interrupciones y fomentar su auto-organización.
-
-El PMI formaliza estas competencias en el **Talent Triangle (Triángulo del Talento)**, marco de referencia oficial para la formación continua de sus certificados, actualizado recientemente con esta terminología:
-1.  **Ways of Working (Formas de Trabajar)**, antes llamado "Gestión de Proyectos Técnica": competencias metodológicas como saber aplicar marcos predictivos, ágiles, híbridos, técnicas EVM, y gestión del alcance.
-2.  **Power Skills (Habilidades de Poder)**, antes llamado "Liderazgo": las habilidades blandas propiamente dichas — liderazgo colaborativo (siervo/transformacional), escucha activa, comunicación, adaptabilidad, gestión de conflictos e inteligencia emocional.
-3.  **Business Acumen (Visión de Negocio)**, antes llamado "Gestión Estratégica y de Negocio": comprensión del sector, gestión de beneficios, cumplimiento normativo (ENS, RGPD) y alineación con los objetivos estratégicos.
-
-Este marco es relevante para el examen porque consolida la visión de que el éxito de un proyecto no depende solo del dominio técnico ("Ways of Working"), sino de una combinación equilibrada de las tres dimensiones.
-
----
-
-## 8. Referencias normativas y técnicas
-
-* **Project Management Institute (PMI)**, *PMBOK® Guide — Eighth Edition*, 2025.
-* **PeopleCert**, *PRINCE2 Project Management (Version 7)*.
-* **PeopleCert**, documentación oficial de PRINCE2 7 sobre sostenibilidad, gestión de personas, digitalización y datos.
-* **Ken Schwaber y Jeff Sutherland**, *The Scrum Guide*, versión oficial de noviembre de 2020.
-* **Real Decreto 311/2022**, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad.
-* **Reglamento (UE) 2016/679 (RGPD)**, especialmente artículos 5, 25 y 35.
-* **Reglamento (UE) 2024/1689**, por el que se establecen normas armonizadas en materia de inteligencia artificial.
-* **Real Decreto 1112/2018**, sobre accesibilidad de los sitios web y aplicaciones para dispositivos móviles.
-* **PMI Talent Triangle**, marco oficial de desarrollo de competencias de profesionales de proyectos.
-
-## 9. Síntesis de conceptos
-
-| Concepto | Conceptos clave |
+En el sector público, la seguridad y el cumplimiento legal no constituyen una fase final de auditoría, sino requisitos funcionales y restricciones del sistema integrados desde el diseño (*Security by Design*).
+
+```mermaid
+graph LR
+    classDef dev fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef sec fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    classDef ops fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+
+    DEV["<b>DESARROLLO (Dev)</b><br>• Requisitos de seguridad<br>• Modelado de amenazas"]:::dev
+    
+    SEC["<b>SEGURIDAD INTEGRADA (Sec)</b><br>• Análisis estático (SAST)<br>• Análisis dinámico (DAST)<br>• Gestión de dependencias (SCA)"]:::sec
+    
+    OPS["<b>OPERACIONES (Ops)</b><br>• Monitorización continua<br>• Trazabilidad y respuesta"]:::ops
+
+    DEV -->|Shift-Left| SEC -->|CI/CD Seguro| OPS
+```
+
+### 4.1. Paradigmas de Seguridad en el Desarrollo
+*   **Seguridad desde el Diseño** (*Security by Design*): Incorporación de salvaguardas y modelado de amenazas en las fases de análisis y arquitectura, evitando parches correctivos a posteriori.
+*   **DevSecOps** (*Shift-Left Security*): Integración de controles automáticos de seguridad dentro del ciclo de vida ágil y los pipelines **CI/CD** desde el primer **Sprint**:
+    *   *SAST (Static Application Security Testing):* Análisis estático del código fuente en busca de vulnerabilidades.
+    *   *DAST (Dynamic Application Security Testing):* Pruebas dinámicas de penetración sobre la aplicación en ejecución.
+    *   *SCA (Software Composition Analysis):* Análisis de librerías de terceros y componentes de código abierto para mitigar riesgos en la cadena de suministro de software.
+
+### 4.2. Marco Regulatorio Obligatorio en el Sector Público Español
+
+*   **Esquema Nacional de Seguridad (ENS - Real Decreto 311/2022):**
+    *   Regula los principios básicos y requisitos mínimos para garantizar la seguridad de los sistemas de información en el sector público.
+    *   *Dimensiones de Seguridad:* **Confidencialidad, Integridad, Trazabilidad, Autenticidad y Disponibilidad** (C-I-T-A-D).
+    *   *Categorización del Sistema:* Determina el nivel (**Básico, Medio o Alto**) en función del impacto potencial de un incidente sobre dichas dimensiones, exigiendo la elaboración formal de la **Declaración de Aplicabilidad** de medidas de seguridad.
+*   **Protección de Datos (RGPD UE 2016/679 y LOPDGDD 3/2018):**
+    *   **Art. 25 RGPD:** **Protección de datos desde el diseño y por defecto** (minimización, limitación de plazo y seudonimización obligatorias).
+    *   **Art. 35 RGPD:** Obligación de realizar una **Evaluación de Impacto en la Protección de Datos (EIPD / DPIA)** antes del tratamiento cuando este entrañe un alto riesgo para los derechos y libertades (*ej. uso masivo de nuevas tecnologías o datos biométricos*).
+*   **Esquema Nacional de Interoperabilidad (ENI - Real Decreto 4/2010):** Condiciones para el intercambio seguro y normalizado de datos y servicios entre Administraciones Públicas mediante estándares abiertos.
+
+## 5. Gestión de Proyectos en IA y Gestión Basada en Datos (*Data-Driven*)
+
+### 5.1. Ciclo de Vida y Gobierno de Proyectos de Inteligencia Artificial
+La implantación de soluciones de IA exige una gestión técnica específica centrada en los datos, los algoritmos y la supervisión humana:
+
+*   **Principio GIGO** (*Garbage In, Garbage Out*): Si los datos de entrenamiento o inferencia son defectuosos, sesgados o incompletos, los resultados del modelo carecerán de validez con independencia de la calidad técnica del algoritmo.
+*   **Gobernanza del Dato** (*Data Governance*): Garantiza la procedencia legítima, calidad, completitud, metadatos, control de acceso y trazabilidad de los conjuntos de datos.
+*   **Gestión de la Deriva del Modelo** (*Model Drift*): Monitorización continua del rendimiento del modelo en explotación para detectar la degradación de su precisión frente a cambios en los datos reales del entorno.
+
+### 5.2. Marco Regulatorio: Reglamento Europeo de Inteligencia Artificial (AI Act - Reglamento UE 2024/1689)
+Establece un marco jurídico armonizado basado en un **enfoque de riesgo** (Riesgo Inaceptable, Alto Riesgo, Riesgo Específico de Transparencia, Riesgo Mínimo).
+
+*   **Requisitos para Sistemas de IA de Alto Riesgo (Art. 15):** Exigencia legal de garantizar niveles adecuados de **precisión, robustez y ciberseguridad** a lo largo de todo el ciclo de vida del sistema.
+*   **Obligaciones de Gestión en Proyectos de IA:**
+    *   Implantación de un sistema formal de gestión de riesgos durante todo el ciclo de vida.
+    *   Gobernanza estricta de los datos de entrenamiento, validación y prueba para mitigar sesgos discriminatorios.
+    *   Supervisión humana efectiva (*Human Oversight*) y transparencia/explicabilidad técnica hacia los usuarios.
+    *   Registro continuo de eventos (*logging*) para asegurar la trazabilidad del funcionamiento del modelo.
+
+### 5.3. Tipología de Analítica en la Gestión de Proyectos TIC
+
+| Tipo de Analítica | Pregunta Clave | Aplicación Práctica en Dirección de Proyectos |
+| :--- | :--- | :--- |
+| **Descriptiva** | *¿Qué ocurrió?* | Informes de estado, avance de tareas e histórico de costes reales ($AC$). |
+| **Diagnóstica** | *¿Por qué ocurrió?* | Análisis de causa raíz de desviaciones ($CV$, $SV$) y cuellos de botella en Kanban. |
+| **Predictiva** | *¿Qué pasará?* | Estimación de probabilidad de retraso o sobrecoste mediante modelos de Machine Learning y EVM predictivo. |
+| **Prescriptiva** | *¿Qué debemos hacer?* | Algoritmos de optimización para reasignación automática de recursos y mitigación de riesgos. |
+
+## 6. Sostenibilidad y Responsabilidad Social (ESG y Green IT)
+
+La sostenibilidad se ha consolidado como un dominio de desempeño explícito en el **PMBOK 8ª Edición** y una dimensión transversal en **PRINCE2 7** e **ISO 21502:2020**.
+
+![Dimensiones ESG en Proyectos TIC Públicos](../images/dimensiones-esg-proyectos-tic-publicos.jpg) 
+
+*   **Green Project Management (GPM) y Metodología PRiSM:** *Projects integrating Sustainable Methods* es un marco estructurado que extiende el ciclo de vida del proyecto para evaluar y reducir el impacto ambiental y social del producto resultante.
+*   **Accesibilidad Web y Móvil (Real Decreto 1112/2018):** Obligación legal en el sector público de garantizar que todos los desarrollos cumplan los estándares de accesibilidad (norma **UNE-EN 301549** / directrices **WCAG**).
+*   **Alineación con los ODS:** Integración de los Objetivos de Desarrollo Sostenible de la **Agenda 2030** (especialmente **ODS 9**: Innovación e Infraestructuras, **ODS 12**: Producción y Consumo Responsables, y **ODS 13**: Acción por el Clima) como criterios de éxito del proyecto.
+
+## 7. Habilidades Blandas (*Power Skills*) y el Triángulo del Talento del PMI
+
+El éxito en la dirección técnica de proyectos depende de un equilibrio entre la competencia metodológica, el liderazgo interpersonal y la visión estratégica.
+
+```mermaid
+graph TD
+    classDef wow fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef pwr fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+    classDef bus fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#000
+
+    subgraph TALENT_TRIANGLE ["PMI TALENT TRIANGLE (Triángulo del Talento)"]
+        direction TB
+        WOW["<b>WAYS OF WORKING (Formas de Trabajar)</b><br>• Marcos predictivos, ágiles e híbridos<br>• Técnicas EVM, WBS y cronogramas"]:::wow
+        
+        PWR["<b>POWER SKILLS (Habilidades de Poder)</b><br>• Liderazgo Siervo (Servant Leadership)<br>• Inteligencia Emocional y Empatía<br>• Comunicación activa y Negociación"]:::pwr
+        
+        BUS["<b>BUSINESS ACUMEN (Visión de Negocio)</b><br>• Alineación estratégica y gobernanza<br>• Cumplimiento legal (ENS, RGPD, AI Act)<br>• Gestión y materialización de beneficios"]:::bus
+        
+        WOW --- PWR --- BUS --- WOW
+    end
+```
+
+1.  **Ways of Working** (Formas de Trabajar - antes *Technical Project Management*): Dominio y aplicación de marcos predictivos, ágiles (Scrum, Kanban) e híbridos, técnicas de estimación, diagramas de red, análisis EVM y gestión de riesgos.
+2.  **Power Skills** (Habilidades de Poder - antes *Leadership*): Habilidades interpersonales y de comportamiento que permiten influir positivamente, inspirar al equipo y resolver conflictos:
+    *   *Liderazgo Siervo (Servant Leadership):* Paradigma central en marcos ágiles (Scrum Master) y adoptado por PMBOK 7/8, donde el líder actúa como facilitador al servicio del equipo, eliminando impedimentos, protegiendo de distracciones externas y fomentando la autogestión.
+    *   *Inteligencia Emocional y Empatía:* Gestión de la presión en hitos críticos y comprensión de las expectativas de los interesados.
+    *   *Negociación y Gestión de Conflictos:* Prevención y arbitraje ante desviaciones de alcance (*scope creep*) y competencia por recursos escasos.
+3.  **Business Acumen** (Visión de Negocio - antes *Strategic and Business Management*): Comprensión del contexto institucional o empresarial, gestión orientada a la materialización de beneficios, alineación estratégica y cumplimiento estricto del marco legal aplicable.
+
+## 8. Resumen
+
+| Concepto | Términos Clave |
 | :--- | :--- |
-| **Hibridación** | "Adaptación", "Tailoring", "Agile-fall", "PRINCE2 Agile", "Bimodal IT". |
-| **Stakeholders (Mendelow)** | "Matriz Poder/Interés", "Mantener satisfecho (Alto Poder/Bajo Interés)". |
-| **Modelo de Prominencia** | "Poder, Legitimidad y Urgencia", "Interesado Definitivo". |
-| **Procesos Interesados (PMBOK)**| "Identificar → Planificar → Gestionar → Monitorear". |
-| **Ciberseguridad y Cumplimiento**| "Security by Design", "DevSecOps", "ENS (Categorización/DA)", "EIPD". |
-| **IA y Data-Driven** | "Predicción", "GIGO", "AI Act", "Automatización de informes". |
-| **Sostenibilidad/ESG** | "Ambiental, Social, Gobernanza", "PRiSM", "Green IT", "ODS". |
-| **PMI Talent Triangle** | "Ways of Working + Power Skills + Business Acumen". |
-| **Liderazgo Siervo** | "Servant Leadership", "Eliminar impedimentos", "Líder como facilitador". |
+| **Modelos Híbridos** | "Gobernanza predictiva + Ejecución ágil", "Agile-fall", "Espectro continuo". |
+| **PRINCE2 Agile** | "Gobernanza de PRINCE2 + Entrega con Scrum/Kanban", "PeopleCert". |
+| **Disciplined Agile (DA)** | "Kit de herramientas del PMI", "Elegir la forma de trabajar (*Way of Working - WoW*)". |
+| **Bimodal IT (Gartner)** | "Modo 1 (Estabilidad/Predictivo) vs. Modo 2 (Innovación/Ágil)". |
+| **PMIS** | "Sistema de Información para la Dirección de Proyectos", "Fuente única de verdad (SSOT)". |
+| **Matriz de Mendelow** | "Poder vs. Interés", "Alto Poder/Bajo Interés = Mantener Satisfecho". |
+| **Modelo de Prominencia** | "Poder, Legitimidad y Urgencia", "Interesado Definitivo (intersección de las 3)". |
+| **Procesos Interesados** | "Identificar $\rightarrow$ Planificar involucramiento $\rightarrow$ Gestionar $\rightarrow$ Monitorear". |
+| **DevSecOps** | "Seguridad integrada en CI/CD", "Shift-Left", "SAST / DAST / SCA". |
+| **ENS (RD 311/2022)** | "Dimensiones: C-I-T-A-D", "Categorías: Básica, Media, Alta", "Declaración de Aplicabilidad". |
+| **AI Act (Reg. UE 2024/1689)** | "Enfoque basado en riesgos", "Alto Riesgo (Art. 15): Precisión, Robustez, Ciberseguridad". |
+| **Principio GIGO** | "*Garbage In, Garbage Out*", "Datos de mala calidad generan resultados inválidos". |
+| **Sostenibilidad / ESG** | "Criterios Ambientales, Sociales y de Gobernanza", "PRiSM / Green IT", "PUE", "RD 1112/2018". |
+| **PMI Talent Triangle** | "*Ways of Working* + *Power Skills* + *Business Acumen*". |
+| **Liderazgo Siervo** | "*Servant Leadership*", "Eliminar impedimentos", "Facilitador al servicio del equipo". |
 
-### 9.1. Ejercicios de aplicación
+## 9. Referencias Normativas y Técnicas
+
+* **Project Management Institute (PMI)**, *A Guide to the Project Management Body of Knowledge (PMBOK® Guide)* — 7ª y 8ª Edición (Noviembre 2025).
+* **PMI**, *PMI Talent Triangle® Competency Framework*.
+* **PeopleCert / AXELOS**, *PRINCE2® Agile Guidance* & *PRINCE2® 7 Management Framework*.
+* **ISO 21502:2020**, *Project, programme and portfolio management — Guidance on project management*.
+* **Real Decreto 311/2022**, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad (ENS).
+* **Reglamento (UE) 2016/679 (RGPD)** y **Ley Orgánica 3/2018 (LOPDGDD)** (especialmente arts. 25 y 35).
+* **Reglamento (UE) 2024/1689 (AI Act)**, por el que se establecen normas armonizadas en materia de inteligencia artificial.
+* **Real Decreto 1112/2018**, sobre accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público.
+
+## 10. Simulacro de Test
 
 **Pregunta 1:**
-*En un proyecto híbrido, si un Stakeholder tiene alto poder de decisión pero poco interés en los detalles técnicos del desarrollo diario, ¿cuál es la estrategia recomendada según la matriz de Mendelow?*
-a) Gestionar estrechamente y convocarle a reuniones diarias.
-b) Mantenerle satisfecho con resúmenes ejecutivos.
-c) Informarle puntualmente solo cuando haya fallos.
-d) Ignorarle, ya que no tiene interés.
+*En un proyecto de administración digital gestionado con un enfoque híbrido, la dirección identifica a un alto cargo institucional con un elevado nivel de autoridad y poder de decisión sobre el presupuesto, pero con muy escaso interés en los detalles técnicos de los desarrollos diarios. Según la matriz de Poder/Interés de Mendelow, ¿cuál es la estrategia de comunicación adecuada?*
+a) Gestionar estrechamente mediante reuniones diarias de seguimiento técnico.
+b) Mantenerle satisfecho a través de resúmenes ejecutivos e informes de hitos periódicos.
+c) Informarle exclusivamente si se produce una parada total del servicio en producción.
+d) Monitorizarle con el mínimo esfuerzo sin remitirle comunicación formal.
 
-**Razonamiento:**
-1.  **Busca el patrón:** Stakeholder = Alto Poder / Bajo Interés.
-2.  **Desmontando:**
-    *   (A) Gestionar estrechamente es para quien tiene alto poder Y alto interés.
-    *   (D) Ignorar a alguien con alto poder es un error crítico.
-    *   (C) Informar solo de fallos es reactivo y peligroso.
-    *   (B) **Mantenerle satisfecho** (con reportes ejecutivos que le den seguridad sin aburrirle) es la respuesta de libro de Mendelow.
-3.  **Respuesta correcta: B.**
+**Razonamiento Estructurado:**
+1.  **Clasificación en la matriz:** El interesado posee **Alto Poder** y **Bajo Interés**.
+2.  **Descarte:**
+    *   *Gestionar estrechamente* (a) es para Alto Poder y Alto Interés.
+    *   *Monitorizar* (d) es para Bajo Poder y Bajo Interés.
+    *   *Mantener informado* es para Bajo Poder y Alto Interés.
+3.  La estrategia formal de Mendelow para este cuadrante es **Mantener Satisfecho** (b), facilitando información de alto nivel para asegurar su respaldo sin sobrecargarle con detalles operativos.
+4.  **Respuesta correcta: B.**
 
 **Pregunta 2:**
-*Según el enfoque de gestión de interesados del PMBOK, ¿en qué proceso se elabora por primera vez el documento que clasifica si la postura de un interesado es favorable, neutral u opositora frente al proyecto?*
+*Según los estándares de gestión de interesados de la Guía PMBOK, ¿en qué proceso se elabora por primera vez el Registro de Interesados (*Stakeholder Register*), donde se documenta la clasificación inicial de los agentes como favorables, neutrales u opositores?*
 a) Planificar el Involucramiento de los Interesados.
 b) Identificar a los Interesados.
 c) Gestionar el Involucramiento de los Interesados.
 d) Monitorear el Involucramiento de los Interesados.
 
-**Razonamiento:**
-1.  Esta clasificación forma parte del "Registro de Interesados", que documenta quiénes son, su rol, poder y actitud inicial frente al proyecto.
-2.  El Registro de Interesados es el entregable principal y exclusivo del primer proceso: "Identificar a los Interesados". Los procesos de planificar (A), gestionar (C) y monitorear (D) utilizan y actualizan ese registro, pero no lo crean por primera vez.
+**Razonamiento Estructurado:**
+1.  **Artefacto evaluado:** El **Registro de Interesados**.
+2.  **Secuencia metodológica:** Se crea formalmente durante el primer proceso (**Identificar a los Interesados**). Los procesos posteriores (Planificar, Gestionar y Monitorear) utilizan, enriquecen y actualizan este registro, pero su generación original corresponde al proceso de identificación.
 3.  **Respuesta correcta: B.**
 
 **Pregunta 3:**
-*¿Cómo se denomina la filosofía de liderazgo, fuertemente adoptada por los enfoques ágiles y reconocida dentro de las 'Power Skills' del PMI, en la que el Director de Proyecto enfoca su esfuerzo en eliminar obstáculos, proveer recursos y proteger al equipo de interrupciones externas en lugar de impartir órdenes directivas?*
-a) Liderazgo Transaccional.
-b) Microgestión (Micromanagement).
-c) Liderazgo Laissez-Faire.
-d) Liderazgo Siervo (Servant Leadership).
+*¿Cómo se denomina la filosofía de liderazgo adoptada en los marcos ágiles (Scrum) y reconocida en las 'Power Skills' del PMI, en la que el responsable del proyecto enfoca su labor en remover bloqueos técnicos, facilitar recursos y proteger al equipo de interferencias externas, en lugar de dirigir mediante jerarquía y órdenes directivas?*
+a) Liderazgo Autocrático.
+b) Liderazgo Transaccional.
+c) Liderazgo Siervo (*Servant Leadership*).
+d) Liderazgo Pasivo (*Laissez-Faire*).
 
-**Razonamiento:**
-1.  **Busca el patrón:** "Eliminar obstáculos", "proteger al equipo", "en lugar de impartir órdenes".
-2.  **Desmontando:**
-    *   (A) Transaccional se basa en recompensas y castigos.
-    *   (B) Microgestión es el extremo opuesto a la auto-organización ágil.
-    *   (C) Laissez-Faire es una ausencia de liderazgo o intervención nula, lo cual no encaja con la actitud proactiva de "eliminar obstáculos".
-    *   (D) El Liderazgo Siervo (*Servant Leadership*) es exactamente la definición descrita, característica principal del rol del Scrum Master y muy valorado en el nuevo PMBOK.
-3.  **Respuesta correcta: D.**
+**Razonamiento Estructurado:**
+1.  **Definición evaluada:** Líder enfocado en la facilitación, eliminación de impedimentos y servicio al equipo para potenciar su autogestión.
+2.  Corresponde literalmente al **Liderazgo Siervo (*Servant Leadership*)**, rol nuclear del *Scrum Master* e integrado en el PMBOK 7/8.
+3.  **Respuesta correcta: C.**
 
 **Pregunta 4:**
-*Un proyecto de desarrollo software en la Administración adopta un enfoque en el que la seguridad no se evalúa en una fase final de auditoría, sino que las pruebas de vulnerabilidad, análisis de código estático (SAST) y cumplimiento del ENS se automatizan y ejecutan continuamente dentro de las iteraciones ágiles de desarrollo y despliegue. ¿A qué tendencia tecnológica se refiere esta práctica?*
-a) Agile-fall.
-b) DevSecOps.
-c) Bimodal IT.
-d) Data-Driven Management.
+*En un proyecto de desarrollo software para una Consejería, los análisis estáticos de código (SAST), la comprobación de dependencias (SCA) y las auditorías de conformidad con el Esquema Nacional de Seguridad (ENS) se integran y ejecutan de forma automatizada en el pipeline de despliegue continuo desde el inicio del proyecto. ¿Qué tendencia técnica define esta práctica?*
+a) Bimodal IT.
+b) Agile-fall.
+c) DevSecOps (*Shift-Left Security*).
+d) PRiSM Management.
 
-**Razonamiento:**
-1.  **Busca el patrón:** "Seguridad no se evalúa al final", "pruebas automatizadas dentro de iteraciones continuas".
-2.  **Desmontando:**
-    *   (A) Agile-fall es hibridar fases cascada con ejecución ágil, pero no especifica la integración de seguridad técnica continua.
-    *   (C) Bimodal IT es tener dos velocidades/modos de gestión en la organización (Gartner).
-    *   (D) Data-Driven se refiere al uso de IA y métricas, no a pruebas de seguridad.
-    *   (B) DevSecOps (Development, Security, Operations) es la metodología que integra de forma automatizada y temprana ("Shift Left") las prácticas de seguridad dentro del pipeline de integración/entrega continua.
+**Razonamiento Estructurado:**
+1.  **Patrón identificado:** Integración de la seguridad de forma automatizada, continua y temprana (*Shift-Left*) dentro de las cadenas CI/CD de desarrollo y operaciones.
+2.  Define el paradigma **DevSecOps** (b/c/d descartadas).
+3.  **Respuesta correcta: C.**
+
+**Pregunta 5:**
+*De acuerdo con el Reglamento (UE) 2024/1689 (AI Act), ¿qué requisitos técnicos esenciales establece el artículo 15 para los proyectos que desarrollen o implanten sistemas de inteligencia artificial clasificados como de alto riesgo?*
+a) Garantizar un VAN positivo y un periodo de recuperación inferior a 2 años.
+b) Diseñar los sistemas de modo que alcancen niveles adecuados de precisión, robustez y ciberseguridad a lo largo de su ciclo de vida.
+c) Exclusividad en el uso de modelos de lenguaje de código abierto no supervisados.
+d) Delegación íntegra de la toma de decisiones sin supervisión humana obligatoria.
+
+**Razonamiento Estructurado:**
+1.  **Referencia legal:** Artículo 15 del Reglamento de Inteligencia Artificial (AI Act).
+2.  **Exigencia normativa:** Exige explícitamente que los sistemas de IA de alto riesgo mantengan niveles adecuados de **precisión, robustez y ciberseguridad** durante todo su ciclo de vida, acompañados de supervisión humana (descartando la opción d).
 3.  **Respuesta correcta: B.**
