@@ -525,6 +525,12 @@ Un **Burndown chart** suele incluir lo siguiente:
 
 * **Objetivo del sprint**: por último, para que un gráfico burndown sea eficaz, debe incluir el objetivo general del sprint. Por ejemplo, tu objetivo de sprint podría ser una línea recta que represente el 50 % del esfuerzo durante 12 días. Si bien es posible que tu trabajo real no cumpla con este objetivo de manera exacta, siempre es bueno tener un objetivo a alcanzar para que las tareas sigan avanzando. 
 
+* **Interpretación normal**:Línea descendente (se quema trabajo hasta llegar a cero).
+
+* **Línea plana**:**: El equipo está bloqueado (impedimentos) o las tareas son demasiado grandes para cerrarse en un día.
+
+* **Tendencia ascendente (Pico hacia arriba)**: Significa que el trabajo total pendiente ha aumentado. Esto ocurre porque el **Product Owner** ha añadido nuevo alcance (**scope creep**) al **Sprint Backlog**, o porque el equipo ha descubierto complejidad oculta y ha reestimado al alza las tareas restantes.
+
 Los **burndown charts** son excelentes para **visualizar** rápidamente el **trabajo pendiente y el tiempo que se necesita para completar ese trabajo**. Sin embargo, no brindan información sobre la trayectoria de un proyecto, como por ejemplo, los cambios realizados. Esto hace que sea difícil saber si los cambios se deben a que se finalizaron tareas de la lista de trabajos pendientes o a un cambio en los puntos de historia.
 
 Este es el motivo por el cual **los gráficos burndown suelen combinarse** con una **lista del trabajo pendiente** del producto, gestionada por el **Product Owner**, y un **proceso de control de cambios** para realizar un **seguimiento** eficaz del **progreso** del proyecto.
