@@ -21,8 +21,9 @@ tags:
   - "responsable-tratamiento"
   - "encargado-tratamiento"
   - "derechos-digitales"
+  - "regimen-sancionador"
 created_at: "2026-09-03"
-last_reviewed: null
+last_reviewed: "2026-09-09"
 ai_generated: true
 ai_sources:
   - "perplexity"
@@ -40,12 +41,14 @@ La Ley Orgánica 3/2018 tiene un doble objeto:
 *   Adaptar el ordenamiento jurídico español al Reglamento (UE) 2016/679 (RGPD) y completar sus disposiciones, amparando el derecho fundamental a la protección de datos personales consagrado en el artículo 18.4 de la Constitución.
 *   Garantizar los derechos digitales de la ciudadanía conforme al citado mandato constitucional.
 
+La ley fue publicada en el BOE núm. 294, de 6 de diciembre de 2018, y entró en vigor al día siguiente de su publicación, esto es, el 7 de diciembre de 2018. Deroga expresamente la anterior Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter Personal, así como el Real Decreto-ley 5/2018, de 27 de julio, de medidas urgentes para la adaptación del Derecho español a la normativa de la Unión Europea en materia de protección de datos.
+
 **Ámbito de aplicación**
 Se aplica a cualquier tratamiento total o parcialmente automatizado de datos personales, así como al tratamiento no automatizado de datos contenidos o destinados a ser incluidos en un fichero.
 Quedan excluidos del ámbito de aplicación de la ley:
 *   Los tratamientos excluidos por el artículo 2.2 del RGPD.
 *   Los tratamientos sometidos a la normativa sobre protección de materias clasificadas.
-*   Los tratamientos de datos de personas fallecidas, sin perjuicio de las facultades reconocidas a sus allegados. 
+*   Los tratamientos de datos de personas fallecidas, sin perjuicio de las facultades reconocidas a sus allegados.
 
 Respecto a las **personas fallecidas**, las personas vinculadas al fallecido por razones familiares o de hecho, sus herederos, o personas/instituciones designadas expresamente, podrán solicitar el acceso, rectificación o supresión de los datos, salvo que el causante lo hubiese prohibido expresamente o lo establezca una ley.
 
@@ -65,6 +68,9 @@ En menores de edad, el tratamiento únicamente podrá fundarse en su consentimie
 **Categorías especiales de datos**
 El solo consentimiento del afectado no bastará para levantar la prohibición del tratamiento de datos cuya finalidad principal sea identificar su ideología, afiliación sindical, religión, orientación sexual, creencias u origen racial o étnico, con el objeto de evitar situaciones discriminatorias.
 
+**Tratamientos con fines de investigación, archivo y estadística**
+La ley regula también tratamientos amparados en el artículo 89 del RGPD, que permite excepciones a determinados derechos de los interesados cuando el tratamiento se realice con fines de archivo en interés público, fines de investigación científica o histórica, o fines estadísticos, siempre que se apliquen garantías adecuadas, en particular medidas técnicas y organizativas orientadas a la minimización de datos, incluida la seudonimización cuando resulte posible.
+
 ## 3. Derechos de los ciudadanos.
 
 **Transparencia e información**
@@ -77,19 +83,31 @@ Las actuaciones para atender las solicitudes de ejercicio de derechos serán gra
 *   **Derecho de supresión:** Cuando derive del ejercicio del derecho de oposición para fines de mercadotecnia directa, el responsable podrá conservar datos identificativos para impedir tratamientos futuros.
 *   **Derecho a la limitación del tratamiento:** Deberá constar claramente en los sistemas de información del responsable.
 
+Los derechos regulados por la LOPDGDD (acceso, rectificación, supresión, limitación del tratamiento, portabilidad y oposición) se ejercitan directamente ante el responsable del tratamiento y deben resolverse en el plazo de un mes desde la recepción de la solicitud, plazo que podrá prorrogarse otros dos meses en atención a la complejidad y número de solicitudes, conforme a lo previsto en el artículo 12 del RGPD, al que la LOPDGDD se remite expresamente en cuanto a plazos generales de respuesta.
+
 ## 4. Responsable y encargado del tratamiento.
 
 **Responsabilidad activa**
 Los responsables y encargados determinarán las medidas técnicas y organizativas apropiadas para garantizar y acreditar que el tratamiento es conforme a la normativa. Valorarán los mayores riesgos en supuestos de elaboración de perfiles, tratamientos de categorías especiales, grupos vulnerables (menores), tratamientos masivos o transferencias a terceros Estados sin nivel adecuado.
 
+**Encargado del tratamiento**
+La relación entre responsable y encargado del tratamiento debe regularse mediante un contrato o acto jurídico que vincule al encargado respecto del responsable, con el contenido mínimo exigido por el artículo 28 del RGPD. El encargado del tratamiento podrá subcontratar con un tercero la realización de tratamientos por cuenta del responsable, previa autorización de este, ya sea específica o general. En caso de autorización general, el encargado deberá informar al responsable de cualquier cambio previsto en la incorporación o sustitución de otros encargados, dando al responsable la oportunidad de oponerse a dichos cambios.
+
 **Registro de actividades de tratamiento**
-Deben mantener un registro de las actividades de tratamiento. Las entidades del sector público harán público un inventario de sus actividades de tratamiento accesible por medios electrónicos.
+Deben mantener un registro de las actividades de tratamiento. El registro, que podrá organizarse en torno a conjuntos estructurados de datos, deberá especificar, según sus finalidades, las actividades de tratamiento llevadas a cabo y las demás circunstancias establecidas en el artículo 30 del RGPD. Las entidades del sector público harán público un inventario de sus actividades de tratamiento accesible por medios electrónicos, en el que constará la información establecida en dicho artículo 30 del RGPD y su base legal.
 
 **Bloqueo de los datos**
 El responsable está obligado a bloquear los datos al proceder a su rectificación o supresión. Consiste en la identificación y reserva para impedir su tratamiento, excepto para su puesta a disposición ante jueces, tribunales, Ministerio Fiscal o Administraciones Públicas, durante el plazo de prescripción de las posibles responsabilidades. Transcurrido dicho plazo, se procederá a su destrucción.
 
 **Delegado de Protección de Datos (DPD)**
-Su designación es obligatoria en los supuestos del RGPD y para entidades específicas como centros docentes, entidades financieras, aseguradoras, centros sanitarios (salvo profesionales a título individual), empresas de seguridad privada y distribuidores de energía, entre otros. El DPD actúa como interlocutor ante la autoridad de control, goza de independencia funcional, no puede ser removido ni sancionado por desempeñar sus funciones (salvo dolo o negligencia grave) y tiene acceso irrestricto a los datos personales.
+Su designación es obligatoria en los supuestos del artículo 37.1 del RGPD y, en todo caso, cuando se trate de las siguientes entidades: colegios profesionales y sus consejos generales; centros docentes que ofrezcan enseñanzas en cualquiera de los niveles establecidos en la legislación reguladora del derecho a la educación, así como las universidades públicas y privadas; entidades que exploten redes y presten servicios de comunicaciones electrónicas cuando traten habitual y sistemáticamente datos personales a gran escala; prestadores de servicios de la sociedad de la información cuando elaboren a gran escala perfiles de los usuarios del servicio; entidades incluidas en el artículo 1 de la Ley 10/2014, de ordenación, supervisión y solvencia de entidades de crédito; establecimientos financieros de crédito; entidades aseguradoras y reaseguradoras; empresas de servicios de inversión; distribuidores y comercializadores de energía eléctrica y gas natural; entidades responsables de ficheros comunes para la evaluación de la solvencia patrimonial y crédito, o de los ficheros para la gestión del fraude; entidades que desarrollen actividades de publicidad y prospección comercial que traten datos a gran escala; centros sanitarios legalmente obligados al mantenimiento de historias clínicas, salvo profesionales que ejerzan la actividad a título individual; y entidades que tengan como uno de sus objetos la emisión de informes comerciales.
+
+Los responsables y encargados del tratamiento no incluidos en dicha relación podrán designar de manera voluntaria un delegado de protección de datos, que quedará sometido al mismo régimen que el delegado de designación obligatoria. Los responsables y encargados del tratamiento deberán comunicar a la Agencia Española de Protección de Datos, o en su caso a las autoridades autonómicas de protección de datos, en el plazo de diez días, las designaciones, nombramientos y ceses de los delegados de protección de datos, tanto en los supuestos de designación obligatoria como voluntaria. La Agencia Española de Protección de Datos y las autoridades autonómicas mantendrán una lista actualizada de delegados de protección de datos, accesible por medios electrónicos.
+
+El DPD actúa como interlocutor ante la autoridad de control, goza de independencia funcional, no puede ser removido ni sancionado por desempeñar sus funciones (salvo dolo o negligencia grave) y tiene acceso irrestricto a los datos personales. Su dedicación podrá ser completa o a tiempo parcial, en función de criterios como el volumen de los tratamientos, la categoría especial de los datos tratados o los riesgos para los derechos y libertades de los interesados.
+
+**Tratamientos de datos de personal del sector público**
+Los tratamientos de los registros de personal del sector público se entenderán realizados en el ejercicio de poderes públicos conferidos a sus responsables, conforme al artículo 6.1.e) del RGPD. Los registros de personal del sector público podrán tratar datos personales relativos a infracciones y condenas penales e infracciones y sanciones administrativas, limitándose a los datos estrictamente necesarios para el cumplimiento de sus fines.
 
 ## 5. Derechos digitales.
 
@@ -98,10 +116,32 @@ La LOPDGDD consagra una serie de derechos predicables al entorno digital:
 *   **Seguridad y Educación:** Derecho a la seguridad de las comunicaciones y a la educación digital en el sistema educativo.
 *   **Protección de menores:** Los responsables procurarán el uso equilibrado de dispositivos. El Ministerio Fiscal intervendrá frente a usos de imágenes o información que impliquen una intromisión ilegítima.
 *   **Rectificación y Actualización:** Derecho de rectificación en Internet y derecho a la actualización de informaciones en medios de comunicación digitales.
-*   **Ámbito laboral:** 
+*   **Ámbito laboral:**
     *   Derecho a la intimidad en el uso de dispositivos digitales puestos a disposición por el empleador.
     *   Derecho a la desconexión digital para garantizar el respeto del tiempo de descanso.
     *   Derecho a la intimidad frente al uso de dispositivos de videovigilancia y grabación de sonidos (estando prohibida su instalación en vestuarios, aseos o comedores).
     *   Derecho a la intimidad ante sistemas de geolocalización.
 *   **Olvido y Portabilidad:** Derecho al olvido en búsquedas de Internet y en servicios de redes sociales. Derecho de portabilidad en servicios de redes sociales.
 *   **Testamento digital:** Regulación del acceso a contenidos gestionados por prestadores de servicios de la sociedad de la información sobre personas fallecidas.
+
+Estos derechos digitales se recogen en el Título X de la LOPDGDD, bajo la rúbrica "Garantía de los derechos digitales", y constituyen un desarrollo del mandato constitucional del artículo 18.4 de la Constitución Española proyectado al ámbito de las nuevas tecnologías. El derecho a la intimidad en el uso de dispositivos digitales en el ámbito laboral se articula sin perjuicio de la posibilidad del empleador de acceder a los contenidos derivados del uso de medios digitales facilitados a las personas trabajadoras a los solos efectos de controlar el cumplimiento de las obligaciones laborales o estatutarias, debiendo establecerse previamente criterios de utilización de tales dispositivos respetando en todo caso los estándares mínimos de protección de la intimidad.
+
+## 6. Régimen sancionador.
+
+El Título IX de la LOPDGDD desarrolla el régimen sancionador en materia de protección de datos, complementando el artículo 83 del RGPD, que establece los tramos de las sanciones administrativas.
+
+**Tipología de infracciones**
+La ley clasifica las infracciones en tres categorías, cada una con un plazo de prescripción propio:
+*   **Infracciones muy graves (artículo 72 LOPDGDD):** entre otras, tratar datos personales vulnerando los principios y garantías establecidos en el artículo 5 del RGPD; tratar datos personales sin que concurra alguna de las condiciones de licitud del tratamiento previstas en los artículos 6, 7 y 9 del RGPD; el impedimento o la obstaculización o la no atención reiterada del ejercicio de los derechos de los afectados; y la realización de una transferencia internacional de datos a un destinatario que se encuentre en un tercer país u organización internacional sin que concurran las garantías, requisitos o excepciones exigidos por los artículos 44 a 49 del RGPD. Prescriben a los **tres años**.
+*   **Infracciones graves (artículo 73 LOPDGDD):** entre otras, proceder al tratamiento de datos personales sin atender los principios y garantías establecidos en el artículo 25 del RGPD (protección de datos desde el diseño y por defecto); no facilitar el acceso del delegado de protección de datos a los datos y procesos de la organización; y el incumplimiento de la obligación de designar un delegado de protección de datos cuando sea exigible. Prescriben a los **dos años**.
+*   **Infracciones leves (artículo 74 LOPDGDD):** entre otras, el incumplimiento del principio de transparencia de la información o del derecho de información del afectado por no facilitar toda la información exigida por los artículos 13 y 14 del RGPD; y aquellas infracciones de carácter meramente formal de los artículos mencionados en los apartados 4 y 5 del artículo 83 del RGPD que no tengan la consideración de graves o muy graves. Prescriben al **año**.
+
+**Cuantía de las sanciones**
+Las sanciones económicas se rigen por el artículo 83 del RGPD: hasta 20 millones de euros o el 4% del volumen de negocio total anual global del ejercicio financiero anterior, si esta cifra fuera superior, para las infracciones más graves (tratamiento sin base jurídica, vulneración de las condiciones relativas al consentimiento, tratamiento de categorías especiales de datos, o transferencias internacionales indebidas); y hasta 10 millones de euros o el 2% del citado volumen de negocio para el resto de infracciones sujetas a este régimen (entre ellas, el incumplimiento de las obligaciones del responsable y del encargado, o de los organismos de certificación). Las Administraciones Públicas están sujetas a un régimen sancionador específico, en el que las infracciones se sancionan conforme a lo previsto en la legislación reguladora del régimen disciplinario que resulte aplicable, sin perjuicio de otras medidas correctoras que pueda adoptar la autoridad de control.
+
+## 7. Referencias normativas
+
+*   Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (BOE núm. 294, de 6 de diciembre de 2018).
+*   Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016, relativo a la protección de las personas físicas en lo que respecta al tratamiento de datos personales y a la libre circulación de estos datos (RGPD).
+*   Constitución Española, artículo 18.4.
+*   Ley Orgánica 15/1999, de 13 de diciembre, de Protección de Datos de Carácter Personal (derogada por la LOPDGDD).
