@@ -40,55 +40,92 @@ needs_human_review: true
 ## 1. Data Governance Act (Reglamento UE 2022/868).
 
 **Naturaleza y Objeto**
-El Reglamento (UE) 2022/868, conocido como la Ley de Gobernanza de Datos (Data Governance Act), establece un marco normativo armonizado a nivel europeo destinado a fomentar la disponibilidad de los datos y a crear un entorno de confianza que facilite su intercambio. Es aplicable a partir del 24 de septiembre de 2023.
+El Reglamento (UE) 2022/868, conocido como la Ley de Gobernanza de Datos (Data Governance Act - DGA), establece un marco normativo armonizado a nivel europeo destinado a fomentar la disponibilidad de los datos y a crear un entorno de confianza que facilite su intercambio sectorial e intersectorial. Es aplicable en todos los Estados miembros desde el 24 de septiembre de 2023.
 
 **Ejes principales de regulación**
-*   **Reutilización de categorías protegidas de datos del sector público:** Establece las condiciones para la reutilización de datos en poder de organismos públicos que están protegidos por motivos de confidencialidad comercial, secreto estadístico, protección de los derechos de propiedad intelectual de terceros, o protección de datos personales. Esta reutilización no otorga un derecho de acceso absoluto, sino que regula el procedimiento seguro para su uso (ej. entornos de tratamiento seguro o anonimización).
-*   **Servicios de intermediación de datos:** Regula la figura de los proveedores de servicios de intermediación de datos (incluidas las cooperativas de datos). Impone un régimen de notificación y un estricto deber de neutralidad estructural: los proveedores no pueden utilizar los datos compartidos para otros fines distintos a la propia intermediación.
-*   **Altruismo de datos:** Fomenta la cesión voluntaria de datos por parte de personas físicas o jurídicas para fines de interés general (investigación científica, mejora de servicios públicos, salud, etc.). Crea la figura de "organización reconocida de altruismo de datos", que exige su inscripción en un registro público transparente.
-*   **Comité Europeo de Innovación de Datos:** Crea un grupo formal de expertos que asesora a la Comisión Europea en el desarrollo de directrices coherentes para el intercambio de datos, la interoperabilidad y el registro de organizaciones de altruismo.
+*   **Reutilización de categorías protegidas de datos del sector público:** Establece un marco para la reutilización de datos en poder de organismos del sector público que están sujetos a derechos de terceros (protegidos por confidencialidad comercial, secreto estadístico, derechos de propiedad intelectual o protección de datos personales). Esta regulación no otorga un derecho de acceso absoluto, sino que articula los mecanismos técnicos y jurídicos seguros para su uso (por ejemplo, entornos de tratamiento seguro o técnicas de anonimización y seudonimización).
+*   **Servicios de intermediación de datos:** Regula la figura de los proveedores de servicios de intermediación de datos (incluidas las cooperativas de datos). Impone un régimen de notificación a la autoridad competente y un estricto deber de neutralidad estructural: los proveedores no pueden utilizar los datos compartidos para otros fines distintos a la propia intermediación, debiendo existir separación estructural entre el servicio de intermediación y cualquier otro servicio prestado.
+*   **Altruismo de datos:** Fomenta la cesión voluntaria de datos por parte de personas físicas (consentimiento) o jurídicas (permiso) para fines de interés general (investigación científica, mejora de servicios públicos, salud, lucha contra el cambio climático, etc.). Crea la figura de "organización reconocida de altruismo de datos", que exige su inscripción en un registro público transparente y el cumplimiento de estrictos requisitos de transparencia y salvaguarda de derechos.
+*   **Comité Europeo de Innovación de Datos (EDIB):** Crea un grupo formal de expertos que asiste y asesora a la Comisión Europea en el desarrollo de directrices coherentes para el intercambio de datos, la interoperabilidad intersectorial y la adopción de normas relativas a los servicios de intermediación y el altruismo de datos.
 
 ## 2. Reutilización de la información del sector público (RDL 24/2021).
 
 **Naturaleza y Objeto**
-El Real Decreto-ley 24/2021, de 2 de noviembre, transpone al ordenamiento jurídico español la Directiva (UE) 2019/1024 (Directiva de Datos Abiertos). Su objeto es promover el uso de datos abiertos (open data) y estimular la reutilización de la información generada, conservada o financiada por el sector público.
+El Real Decreto-ley 24/2021, de 2 de noviembre, transpone al ordenamiento jurídico español la Directiva (UE) 2019/1024 (Directiva de Datos Abiertos). Su objeto es promover el uso de datos abiertos (open data) y estimular la reutilización de la información generada, conservada o financiada por el sector público, potenciando el desarrollo de servicios de valor añadido.
 
 **Disposiciones clave**
-*   **Diseño por defecto y desde el diseño (Open by default):** Obligación de las Administraciones Públicas de que los documentos y datos estén disponibles desde su origen en formatos abiertos, legibles por máquina, accesibles y reutilizables, junto con sus metadatos.
-*   **Conjuntos de datos de alto valor (High Value Datasets):** Introduce esta categoría jurídica referida a datos cuya reutilización se asocia a importantes beneficios para la sociedad, el medio ambiente y la economía (ej. datos geoespaciales, meteorológicos, estadísticos, de movilidad). Deben estar disponibles gratuitamente, en formatos legibles por máquina, a través de interfaces de programación de aplicaciones (APIs) estandarizadas y, cuando proceda, como descarga masiva.
-*   **Datos de investigación:** Extiende la aplicación de la normativa a los datos de investigación financiados con fondos públicos. Rige el principio "tan abierto como sea posible, tan cerrado como sea necesario", salvaguardando la propiedad intelectual, los secretos comerciales y la seguridad.
-*   **Tarifas:** Como norma general, la reutilización será gratuita. Excepcionalmente, se permite la recuperación de costes marginales derivados de la reproducción, puesta a disposición y difusión, o costes específicos si se asumen exigencias sustanciales.
+*   **Diseño por defecto y desde el diseño (Open by default):** Consagra la obligación de las Administraciones Públicas y entes del sector público de garantizar que los documentos y datos estén disponibles desde su origen en formatos abiertos, legibles por máquina, accesibles, localizables y reutilizables, acompañados de sus respectivos metadatos.
+*   **Conjuntos de datos de alto valor (High Value Datasets):** Introduce esta categoría jurídica referida a conjuntos de datos cuya reutilización se asocia a beneficios sistémicos para la sociedad, el medio ambiente y la economía. Se estructuran en seis categorías temáticas:
+    1. Geoespaciales.
+    2. Observación de la Tierra y medio ambiente.
+    3. Meteorológicos.
+    4. Estadística.
+    5. Sociedades y propiedad de sociedades.
+    6. Movilidad.
+    Estos datos deben estar disponibles de forma gratuita, en formatos legibles por máquina, a través de interfaces de programación de aplicaciones (APIs) estandarizadas y, cuando proceda, mediante descarga masiva.
+*   **Datos dinámicos:** Los datos sujetos a actualizaciones frecuentes o en tiempo real (datos dinámicos) deberán ponerse a disposición para su reutilización inmediatamente después de su recopilación mediante APIs adecuadas y, si procede, como descarga masiva.
+*   **Datos de investigación:** Extiende el ámbito de aplicación a los datos de investigación financiados con fondos públicos. Rige el principio "tan abierto como sea posible, tan cerrado como sea necesario", salvaguardando la privacidad, los secretos comerciales, la seguridad nacional y la propiedad intelectual.
+*   **Régimen de tarifas:** Como norma general, la reutilización será gratuita. Excepcionalmente, se permite la recuperación de costes marginales directamente derivados de la reproducción, puesta a disposición y difusión. Solo en supuestos muy tasados (organismos que deban generar ingresos para cubrir una parte sustancial de sus costes) se permite el cobro de tarifas superiores, que deberán calcularse con arreglo a criterios objetivos, transparentes y verificables.
 
 ## 3. Normas UNE:
 
-El marco de estandarización español, impulsado por la Oficina del Dato, ha publicado un conjunto de especificaciones (Familia UNE 0077-0085) que asientan las bases técnicas y organizativas del gobierno, la gestión y la calidad del dato en las organizaciones.
+El marco de estandarización español, impulsado institucionalmente a través de la Oficina del Dato (dependiente de la Secretaría de Estado de Digitalización e Inteligencia Artificial), ha publicado la familia de Especificaciones UNE 0077, 0078, 0079 y 0085. Estas especificaciones asientan las bases técnicas, semánticas y organizativas del gobierno, la gestión y la calidad del dato en las organizaciones.
 
 ### 3.1. UNE 0077: gobierno del dato
-*   **Objeto:** Establece un modelo para el Gobierno del Dato en las organizaciones. Proporciona las directrices operativas y directivas necesarias para transformar el dato en un activo estratégico.
-*   **Alcance:** Define los principios fundamentales, la estructura organizativa requerida, así como los roles y responsabilidades críticos (Sponsor, Chief Data Officer - CDO, Propietarios de los datos, Administradores). Su fin es garantizar que los datos satisfagan los requisitos y reglas de negocio, promoviendo la seguridad, privacidad y el cumplimiento regulatorio.
+*   **Objeto:** Establece un modelo de referencia para el Gobierno del Dato en las organizaciones, proporcionando las directrices operativas y directivas necesarias para transformar el dato en un activo estratégico, maximizando su valor y mitigando sus riesgos.
+*   **Alcance organizativo:** Define los principios fundamentales y la estructura organizativa requerida, formalizando los roles y responsabilidades críticos:
+    *   *Sponsor:* Patrocinador ejecutivo de la iniciativa.
+    *   *Chief Data Officer (CDO):* Máximo responsable directivo de la estrategia y gobierno de los datos.
+    *   *Propietario del Dato (Data Owner):* Responsable de negocio sobre la definición, calidad y reglas de acceso a un dominio de datos específico.
+    *   *Gestor del Dato (Data Steward):* Enlace operativo encargado de la ejecución de las políticas, gestión de metadatos y resolución de incidencias de calidad.
+*   **Funciones:** Garantiza que los datos satisfagan los requisitos de negocio, promoviendo el cumplimiento regulatorio, la seguridad y la privacidad desde el diseño.
 
 ### 3.2. UNE 0078: gestión del dato
-*   **Objeto:** Describe los procesos operativos tácticos necesarios para la correcta ejecución técnica y funcional de la gestión de datos.
-*   **Alcance:** Establece el marco para gestionar el ciclo de vida completo del dato, desde su adquisición o creación, almacenamiento, transformación y uso, hasta su eventual archivo o eliminación. Regula aspectos como la gestión de metadatos, la arquitectura de los sistemas, la integración y el almacenamiento técnico.
+*   **Objeto:** Describe los procesos operativos y tácticos necesarios para la correcta ejecución técnica y funcional de la gestión de datos, subordinada a las directrices establecidas por el gobierno del dato.
+*   **Alcance:** Establece el marco procedimental para gestionar el ciclo de vida completo del dato (creación/adquisición, almacenamiento, uso/mantenimiento, archivo y destrucción). Regula áreas de conocimiento técnicas fundamentales:
+    *   Arquitectura y modelado de datos.
+    *   Integración e interoperabilidad.
+    *   Gestión de datos maestros y de referencia (MDM).
+    *   Gestión técnica de metadatos.
+    *   Seguridad operativa y almacenamiento.
 
 ### 3.3. UNE 0079: calidad del dato
-*   **Objeto:** Proporciona un marco metodológico estructurado para planificar, evaluar, medir y mejorar la calidad de los datos de manera sistemática en la organización.
-*   **Alcance:** Define las dimensiones estándar de calidad (tales como exactitud, completitud, consistencia, integridad, actualidad y trazabilidad) y establece las métricas, el perfilado de datos y los procesos de auditoría continua necesarios para certificar su idoneidad para el uso previsto.
+*   **Objeto:** Proporciona un marco metodológico estructurado para planificar, evaluar, medir y mejorar la calidad de los datos de manera sistemática y continua en la organización.
+*   **Alcance:** Define un catálogo estandarizado de dimensiones de calidad, entre las que destacan:
+    *   *Exactitud (Accuracy):* Grado en el que el dato representa fielmente la realidad.
+    *   *Completitud (Completeness):* Ausencia de valores nulos o atributos faltantes requeridos.
+    *   *Consistencia (Consistency):* Coherencia del dato a través de distintos sistemas o conjuntos.
+    *   *Integridad (Integrity):* Validez de las relaciones estructurales de los datos.
+    *   *Actualidad (Timeliness):* Disponibilidad del dato en el momento requerido por el proceso de negocio.
+    *   *Trazabilidad (Traceability):* Capacidad de identificar el linaje del dato (origen y transformaciones).
+    Establece las pautas para el perfilado de datos (data profiling), la definición de reglas de validación y la monitorización mediante indicadores clave de calidad (KQI).
 
 ### 3.4. UNE 0085: implantación del gobierno del dato
-*   **Objeto:** Establece una guía de buenas prácticas organizativas y técnicas orientadas a la adopción y despliegue del gobierno del dato.
-*   **Alcance:** Proporciona una hoja de ruta para la implantación progresiva de las capacidades descritas en las normas UNE 0077, 0078 y 0079. Facilita metodologías para evaluar la madurez inicial de la organización y el establecimiento de modelos iterativos de adopción, contemplando la gestión del cambio cultural.
+*   **Objeto:** Establece una guía metodológica y de buenas prácticas organizativas orientada a la adopción, despliegue y evaluación continua del gobierno del dato.
+*   **Alcance:** Proporciona una hoja de ruta para la implantación progresiva de las capacidades descritas en las normas UNE 0077, 0078 y 0079. Facilita metodologías estructuradas para:
+    *   Evaluar el nivel de madurez inicial de la organización en la gestión de la información.
+    *   Definir un modelo iterativo de adopción (roadmap).
+    *   Articular la gestión del cambio cultural necesario para la transición hacia una organización orientada al dato (data-driven).
 
 ## 4. Datos abiertos e interoperabilidad.
 
-**Fundamentos de la apertura de datos**
-La apertura de datos gubernamentales (Open Data) requiere que la información se ponga a disposición del sector privado y la ciudadanía bajo condiciones técnicas y jurídicas que no impongan restricciones indebidas a su reutilización, basándose en la interoperabilidad técnica, semántica, organizativa y legal.
+**Fundamentos de la apertura de datos (Open Data)**
+La apertura de datos del sector público requiere la puesta a disposición de la información bajo condiciones técnicas y jurídicas que no impongan restricciones indebidas a su reutilización. Este paradigma se sustenta en la interoperabilidad en sus dimensiones organizativa, semántica, técnica y legal, garantizando la independencia tecnológica.
 
-**Esquema Nacional de Interoperabilidad (ENI)**
-El marco de aplicación estatal y autonómico descansa sobre el ENI y, en particular, sobre la **Norma Técnica de Interoperabilidad de Reutilización de recursos de información** (NTI). Esta norma establece las pautas comunes sobre localización, descripción e identificación unívoca de los recursos de información puestos a disposición del público.
+**Esquema Nacional de Interoperabilidad (ENI) y NTI de Reutilización**
+En el ámbito de las Administraciones Públicas españolas, la estandarización técnica se rige por la **Norma Técnica de Interoperabilidad (NTI) de Reutilización de recursos de información**. Esta norma establece las directrices comunes sobre localización, descripción e identificación unívoca de los recursos de información puestos a disposición del público.
 
 **Principios técnicos de publicación e interoperabilidad**
-*   **Formatos abiertos y estándares:** La información debe exponerse en formatos no propietarios, independientes de plataforma y estructurados (por ejemplo, CSV, JSON, XML, RDF), evitando formatos de mero volcado visual (como PDF escaneado).
-*   **Gestión de metadatos y vocabularios comunes:** Resulta indispensable describir el contexto, calidad y características técnicas de los datos a través de esquemas de metadatos estandarizados. En España y Europa el estándar de facto es el **DCAT-AP** (Data Catalog Vocabulary Application Profile), que posibilita el descubrimiento semántico y la federación y catalogación automática entre diferentes plataformas institucionales (como el portal *datos.gob.es*).
-*   **Identificadores Uniformes de Recursos (URI):** El diseño del esquema de direccionamiento debe ser persistente en el tiempo (URIs permanentes) y único para garantizar una correcta hipervinculación semántica (Linked Data).
-*   **Licenciamiento y acceso legal:** La interoperabilidad legal exige el uso de licencias estandarizadas y abiertas (como las licencias Creative Commons CC-BY o CC0). Se prohíben las exclusivas o limitaciones discriminatorias, con las salvedades tasadas de protección de datos de carácter personal y salvaguardas de seguridad o propiedad industrial e intelectual.
+*   **Formatos abiertos y estándares:** La información debe exponerse en formatos no propietarios, independientes de plataforma y estructurados (tales como CSV, JSON, XML, RDF), proscribiendo el uso exclusivo de formatos de representación visual cerrados (como PDF no estructurados o imágenes).
+*   **Gestión de metadatos y vocabularios comunes:** La interoperabilidad semántica exige describir el contexto, calidad, estructura y características técnicas de los datos mediante esquemas de metadatos estandarizados. A nivel europeo y nacional, el estándar de referencia es el perfil de aplicación **DCAT-AP** (Data Catalog Vocabulary Application Profile). Su uso permite el descubrimiento semántico, la federación de catálogos y la recolección automática (harvesting) por parte del portal nacional (*datos.gob.es*) y el portal europeo (*data.europa.eu*).
+*   **Identificadores Uniformes de Recursos (URI):** El diseño del esquema de direccionamiento de los recursos de información debe basarse en identificadores únicos y persistentes en el tiempo (URIs permanentes). Esto resulta crítico para garantizar la correcta hipervinculación semántica y la conformación de la web de datos enlazados (Linked Open Data).
+*   **Licenciamiento y acceso legal:** La interoperabilidad legal exige la vinculación explícita de los conjuntos de datos a condiciones de uso estandarizadas y abiertas, preferentemente mediante licencias tipo *Creative Commons* (como CC-BY para requerir atribución, o CC0 para dominio público). Quedan proscritas las cláusulas de exclusividad o las limitaciones discriminatorias, con las únicas excepciones tasadas por la legislación en materia de protección de datos de carácter personal, seguridad nacional, o propiedad industrial e intelectual de terceros.
+### 3.3. UNE 0079: calidad del dato
+*   **Objeto:** Proporciona un marco metodológico estructurado para planificar, evaluar, medir y mejorar la calidad de los datos de manera sistemática y continua en la organización.
+*   **Alcance:** Define un catálogo estandarizado de dimensiones de calidad, entre las que destacan:
+    *   *Exactitud (Accuracy):* Grado en el que el dato representa fielmente la realidad.
+    *   *Completitud (Completeness):* Ausencia de valores nulos o atributos faltantes requeridos.
+    *   *Consistencia (Consistency):* Coherencia del dato a través de distintos sistemas o conjuntos.
+    *   *Integridad (Integrity):* Validez de las relaciones estructurales de los datos.
+    *   *Actualidad (Timeliness):* Disponibilidad del dato en el momento requerido por el proceso de negocio.
+    *   *Trazabilidad (Traceability):* Capacidad de identificar el linaje del dato
