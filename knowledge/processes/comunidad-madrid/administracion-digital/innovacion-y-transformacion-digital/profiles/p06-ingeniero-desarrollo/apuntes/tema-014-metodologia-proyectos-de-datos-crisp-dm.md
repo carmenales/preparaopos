@@ -13,6 +13,11 @@ official_topic: "Tema 14. Metodología de proyectos de datos: CRISP-DM"
 source_ids: []
 tags:
   - "crisp-dm"
+  - "crisp-ml-q"
+  - "kdd"
+  - "semma"
+  - "tdsp"
+  - "asum-dm"
   - "proyectos-ia"
   - "metodologias-agiles"
   - "gestion-ciclo-de-vida-de-modelos"
@@ -26,6 +31,7 @@ ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -89,6 +95,21 @@ El manual metodológico original de CRISP-DM precisa que el modelo de proceso se
 3.  **Tareas especializadas (Specialized Tasks):** el nivel donde se describe cómo se llevan a cabo las acciones de las tareas genéricas en situaciones específicas (por ejemplo, si el problema es de limpieza de datos, si los datos son categóricos o continuos, o si el problema consiste en segmentación frente a clasificación).
 4.  **Instancias de proceso (Process Instances):** el registro concreto de las acciones, decisiones y resultados de un proyecto real de minería de datos concreto, organizado según las fases, tareas y salidas definidas en los niveles anteriores.
 
+**CRISP-ML(Q): la extensión de CRISP-DM para proyectos de Machine Learning**
+CRISP-ML(Q) (*Cross-Industry Standard Process for the development of Machine Learning applications with Quality assurance methodology*) es un modelo de proceso propuesto por Studer et al. en el artículo *"Towards CRISP-ML(Q): A Machine Learning Process Model with Quality Assurance Methodology"* (2021), concebido explícitamente para mantener la compatibilidad conceptual con CRISP-DM subsanando dos carencias que sus autores identifican en el modelo original:
+1.  CRISP-DM se centra en la minería de datos y no cubre el escenario de un modelo de Machine Learning que infiere decisiones en tiempo real de forma sostenida en el tiempo: el modelo debe adaptarse a un entorno cambiante o su rendimiento se degradará, por lo que resulta imprescindible una monitorización y un mantenimiento permanentes tras el despliegue.
+2.  CRISP-DM carece de una metodología de aseguramiento de la calidad explícita para las aplicaciones de Machine Learning desplegadas como parte de un producto o servicio.
+
+CRISP-ML(Q) se estructura en seis fases:
+1.  **Business and Data Understanding** (Comprensión del negocio y de los datos): se ejecutan de forma conjunta, puesto que la disponibilidad real de los datos condiciona con frecuencia la viabilidad del proyecto.
+2.  **Data Engineering** (Ingeniería/Preparación de datos).
+3.  **Machine Learning Model Engineering** (Ingeniería del modelo de Machine Learning).
+4.  **Machine Learning Model Evaluation** (Evaluación del modelo).
+5.  **Deployment** (Despliegue).
+6.  **Monitoring and Maintenance** (Monitorización y mantenimiento): fase añadida ex profeso respecto de CRISP-DM, dado el riesgo de degradación del modelo en un entorno cambiante; incluye el seguimiento continuo del rendimiento en producción para detectar dicha degradación, la actualización o el reentrenamiento del modelo cuando resulte necesario y el mantenimiento de su infraestructura y dependencias.
+
+La aportación diferencial de CRISP-ML(Q) es que, para cada tarea de cada una de las seis fases, exige de forma sistemática: la definición de requisitos y restricciones (rendimiento, calidad del dato, robustez del modelo, etc.), la concreción de las tareas específicas correspondientes, la identificación de los riesgos que puedan perjudicar el éxito o la eficiencia de la aplicación (sesgo, sobreajuste, falta de reproducibilidad, entre otros) y la aplicación de métodos de aseguramiento de la calidad orientados a mitigar dichos riesgos.
+
 ## 2. Aplicación práctica en proyectos de IA
 
 La metodología CRISP-DM, aunque diseñada originalmente para minería de datos tradicional, se ha adaptado al ciclo de vida del *Machine Learning* y la Inteligencia Artificial moderna.
@@ -127,9 +148,36 @@ Elementos de la gestión del ciclo de vida de modelos:
 *   **Registro y Versionado de modelos (Model Registry):** Uso de repositorios centrales (como MLflow o DVC) para almacenar modelos, parámetros, métricas y artefactos con control de versiones.
 *   **Gobernanza de modelos:** Auditoría, control de acceso, validación de sesgos y trazabilidad para el cumplimiento normativo.
 
+## 5. Metodologías afines y comparativa
+
+CRISP-DM no es la única metodología de referencia para estructurar proyectos de datos. Conviene conocer con precisión sus antecedentes, sus alternativas de la industria y sus evoluciones directas, ya que son objeto habitual de comparación.
+
+*   **KDD (*Knowledge Discovery in Databases*):** Es el marco conceptual precedente y más amplio, formulado por Fayyad, Piatetsky-Shapiro y Smith en 1996, que define el descubrimiento de conocimiento como "el proceso no trivial de identificar patrones válidos, novedosos, potencialmente útiles y, en última instancia, comprensibles a partir de los datos". El proceso KDD se estructura clásicamente en cinco etapas: **Selección** (determinación de las fuentes y los datos relevantes), **Preprocesamiento/limpieza** (tratamiento de datos faltantes, ruido e inconsistencias), **Transformación** (reducción y proyección de los datos mediante variables adecuadas), **Minería de datos** (aplicación del algoritmo de extracción de patrones propiamente dicho) y **Evaluación/interpretación** (identificación de los patrones realmente interesantes y representación del conocimiento obtenido). La distinción conceptual clave es que, en la terminología KDD, la "minería de datos" es una única etapa del proceso completo de descubrimiento de conocimiento, mientras que en CRISP-DM esa etapa equivale aproximadamente a la fase de Modelado; KDD, además, ofrece una guía más general del trabajo a realizar en cada fase, frente al mayor grado de detalle operativo de CRISP-DM.
+
+*   **SEMMA (*Sample, Explore, Modify, Model, Assess*):** Metodología desarrollada por el SAS Institute, estrechamente ligada a su herramienta SAS Enterprise Miner, que el propio fabricante describe como una organización lógica del conjunto de funcionalidades de dicho producto más que como una metodología de minería de datos independiente de la tecnología. Se estructura en cinco fases: **Sample** (extracción de una muestra representativa, suficientemente grande para contener información significativa pero manejable), **Explore** (búsqueda visual y estadística de relaciones y anomalías no anticipadas), **Modify** (selección, creación y transformación de variables de cara al modelado), **Model** (aplicación de las técnicas de minería de datos para obtener el modelo predictivo) y **Assess** (evaluación de la fiabilidad y utilidad de los resultados obtenidos). A diferencia de CRISP-DM, SEMMA no contempla de forma explícita ni una fase inicial de comprensión del negocio ni una fase final de despliegue, al estar centrada en el ciclo puramente analítico y técnico.
+
+*   **TDSP (*Team Data Science Process*):** Metodología ágil e iterativa publicada por Microsoft, orientada a maximizar la colaboración y el aprendizaje en equipo en proyectos de analítica predictiva e IA. Estructura el ciclo de vida en cinco etapas: **Business Understanding**, **Data Acquisition and Understanding** (que combina de facto la comprensión y la limpieza de datos de CRISP-DM), **Modeling** (que combina el modelado y la evaluación de CRISP-DM), **Deployment** y una quinta etapa adicional, **Customer Acceptance** (validación explícita por parte del cliente de que la solución satisface las necesidades de negocio), que CRISP-DM no contempla de forma expresa. La aportación diferencial de TDSP frente a CRISP-DM es que define de forma explícita los roles del equipo de proyecto (arquitecto de soluciones, jefe de proyecto, ingeniero de datos, científico de datos, desarrollador de aplicaciones y responsable de proyecto) y una estructura estandarizada de carpetas, plantillas y artefactos de documentación para cada etapa, careciendo CRISP-DM de esta dimensión de organización de equipos.
+
+*   **ASUM-DM (*Analytics Solutions Unified Method for Data Mining/Predictive Analytics*):** Metodología publicada por IBM en 2015 como evolución práctica de CRISP-DM, manteniendo su compatibilidad conceptual. Se estructura en cinco fases (Analyze, Design, Configure and Build, Deploy, y Operate and Optimize), gobernadas por un flujo de trabajo continuo de gestión de proyecto que discurre en paralelo a todas ellas. Su aportación diferencial respecto de CRISP-DM es la incorporación explícita de tareas y actividades de infraestructura, operación, gestión de proyecto y despliegue, junto con plantillas y guías prácticas asociadas a cada tarea, careciendo CRISP-DM original de esta dimensión operativa.
+
+**Cuadro comparativo de metodologías**
+
+| Metodología | Origen | Nº de fases | Fases principales | Rasgo distintivo |
+| --- | --- | --- | --- | --- |
+| **KDD** | Fayyad, Piatetsky-Shapiro y Smith (1996) | 5 | Selección · Preprocesamiento · Transformación · Minería de datos · Evaluación/interpretación | Marco conceptual más amplio; la "minería de datos" es solo una de sus etapas |
+| **SEMMA** | SAS Institute | 5 | Sample · Explore · Modify · Model · Assess | Ligada a una herramienta (SAS Enterprise Miner); sin fases de negocio ni de despliegue |
+| **CRISP-DM** | Consorcio NCR, SPSS/IBM y DaimlerChrysler (1996-2000) | 6 | Comprensión del negocio · Comprensión de los datos · Preparación de datos · Modelado · Evaluación · Despliegue | Estándar de facto, independiente de la tecnología, con jerarquía de 4 niveles |
+| **ASUM-DM** | IBM (2015) | 5 | Analyze · Design · Configure and Build · Deploy · Operate and Optimize | Extiende CRISP-DM con tareas de infraestructura, operación y gestión de proyecto |
+| **TDSP** | Microsoft | 5 | Business Understanding · Data Acquisition and Understanding · Modeling · Deployment · Customer Acceptance | Define roles de equipo y estructura estandarizada de artefactos; añade aceptación del cliente |
+| **CRISP-ML(Q)** | Studer et al. (2021) | 6 | Business and Data Understanding · Data Engineering · ML Model Engineering · ML Model Evaluation · Deployment · Monitoring and Maintenance | Añade una fase de monitorización/mantenimiento y una metodología explícita de aseguramiento de la calidad en cada tarea |
+
 ## Referencias técnicas
 
 *   Chapman, P., Clinton, J., Kerber, R., Khabaza, T., Reinartz, T., Shearer, C. y Wirth, R., *"CRISP-DM 1.0: Step-by-Step Data Mining Guide"*, SPSS Inc., 2000.
 *   IBM, *Guía de CRISP-DM de IBM SPSS Modeler* (documentación oficial del modelo de referencia CRISP-DM).
+*   IBM, *"Analytics Solutions Unified Method for Data Mining/Predictive Analytics (ASUM-DM)"*, 2015.
+*   Fayyad, U., Piatetsky-Shapiro, G. y Smith, P., *"From Data Mining to Knowledge Discovery in Databases"*, AI Magazine, 1996.
+*   Microsoft, *"What is the Team Data Science Process (TDSP)?"*, Azure Architecture Center.
+*   Studer, S. et al., *"Towards CRISP-ML(Q): A Machine Learning Process Model with Quality Assurance Methodology"*, Machine Learning and Knowledge Extraction, 2021 (arXiv:2003.05155).
 *   Google Cloud, *"MLOps: Continuous delivery and automation pipelines in machine learning"*, Cloud Architecture Center.
 *   Reglamento (UE) 2024/1689, por el que se establecen normas armonizadas en materia de inteligencia artificial.
