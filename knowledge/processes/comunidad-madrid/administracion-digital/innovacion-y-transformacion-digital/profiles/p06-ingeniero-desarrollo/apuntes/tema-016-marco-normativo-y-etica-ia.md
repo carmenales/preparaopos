@@ -24,13 +24,18 @@ tags:
   - "alfabetizacion-ia"
   - "oficina-de-ia"
   - "aesia"
+  - "regimen-sancionador"
+  - "gpai"
+  - "digital-omnibus"
+  - "etica-de-la-ia"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-12"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -62,11 +67,11 @@ Quedan expresamente excluidos del ámbito de aplicación:
 **Gobernanza institucional: la Oficina de IA y las autoridades nacionales (Artículo 64 y concordantes)**
 El artículo 64 del Reglamento crea la **Oficina de IA (AI Office)**, adscrita a la Comisión Europea, cuya función es contribuir a la implantación, el seguimiento y la supervisión de los sistemas de IA y modelos de IA de uso general, y a la gobernanza de la IA prevista en la Decisión de la Comisión de 24 de enero de 2024. Las referencias que el Reglamento hace a la Oficina de IA se entienden hechas a la propia Comisión Europea. La Oficina de IA desarrolla, en particular, conocimientos especializados y capacidades de la Unión en materia de IA, y tiene competencias reforzadas de supervisión sobre los modelos de IA de uso general con riesgo sistémico.
 
-A nivel de cada Estado miembro, el Reglamento exige la designación de autoridades nacionales competentes, incluyendo autoridades de vigilancia del mercado. En España, esta función corresponde a la **Agencia Española de Supervisión de la Inteligencia Artificial (AESIA)**, adscrita al departamento ministerial competente en materia de transformación digital, que actúa como autoridad de referencia para la supervisión del cumplimiento del Reglamento y publica guías técnicas de apoyo a las obligaciones que este establece.
+A nivel de cada Estado miembro, el Reglamento exige la designación de autoridades nacionales competentes, incluyendo autoridades de vigilancia del mercado. En España, esta función corresponde a la **Agencia Española de Supervisión de la Inteligencia Artificial (AESIA)**, creada mediante el **Real Decreto 729/2023, de 22 de agosto**, por el que se aprueba su Estatuto (publicado en el BOE de 2 de septiembre de 2023 y en vigor desde el día siguiente). La AESIA se configura como una agencia estatal con personalidad jurídica pública propia, adscrita al Ministerio de Asuntos Económicos y Transformación Digital a través de la Secretaría de Estado de Digitalización e Inteligencia Artificial, con sede en A Coruña. Su creación, anterior a la propia aprobación definitiva del Reglamento europeo, convirtió a España en el primer país de la Unión Europea en disponer de una autoridad de supervisión específica en materia de IA. Entre sus funciones se encuentran la supervisión, inspección, asesoramiento, concienciación y formación de entidades públicas y privadas para la correcta implementación de la normativa de IA, actuando como autoridad de referencia para la supervisión del cumplimiento del Reglamento y publicando guías técnicas de apoyo a las obligaciones que este establece.
 
 ## 2. Clasificación de riesgos en IA.
 
-El Reglamento adopta un enfoque basado en los riesgos, adaptando la carga normativa a la intensidad de los riesgos que generan los sistemas.
+El Reglamento adopta un enfoque basado en los riesgos, adaptando la carga normativa a la intensidad de los riesgos que generan los sistemas. La doctrina representa habitualmente este enfoque como una pirámide de cuatro niveles (riesgo inaceptable, alto, limitado y mínimo), a la que se añade un régimen horizontal específico para los modelos de IA de uso general con riesgo sistémico.
 
 **A) Riesgo Inaceptable (Prácticas de IA prohibidas - Art. 5)**
 Se prohíbe la comercialización, puesta en servicio o uso de sistemas de IA que incurran en las siguientes prácticas:
@@ -92,10 +97,25 @@ El artículo 9 del Reglamento exige que se establezca, implante, documente y man
 *   La evaluación de otros riesgos que puedan surgir, atendiendo a los datos recabados a través del sistema de seguimiento posterior a la comercialización.
 *   La adopción de las correspondientes medidas de gestión de riesgos adecuadas y específicas, dirigidas a abordar los riesgos identificados.
 
-**C) Riesgo Sistémico (Modelos de IA de uso general)**
-Los modelos de IA de uso general (como los grandes modelos de lenguaje o LLM) pueden presentar "riesgos sistémicos" si poseen capacidades de gran impacto. Se presume este riesgo cuando la cantidad acumulada de cálculo utilizado para el entrenamiento del modelo supera un umbral específico de operaciones de coma flotante (FLOPs). Estos modelos requieren evaluaciones rigurosas, simulación de adversarios (red-teaming) y políticas estrictas de ciberseguridad y mitigación de riesgos.
+**C) Riesgo Limitado (Obligaciones de transparencia - Art. 50)**
+Determinados sistemas de IA, con independencia de que se clasifiquen o no como de alto riesgo, quedan sujetos a obligaciones específicas de transparencia frente a las personas físicas, recogidas en el artículo 50 del Reglamento. Estas obligaciones se concretan en cuatro supuestos:
+1.  **Interacción con personas físicas:** los sistemas destinados a interactuar directamente con personas físicas (chatbots, asistentes conversacionales) deben diseñarse de modo que se informe a la persona de que está interactuando con un sistema de IA, salvo que ello resulte evidente por las circunstancias y el contexto de uso.
+2.  **Contenido sintético:** los proveedores de sistemas de IA, incluidos los sistemas de IA de uso general, que generen contenido de audio, imagen, vídeo o texto sintético deben garantizar que los resultados de salida se marquen en un formato legible por máquina y sean detectables como generados o manipulados artificialmente, mediante soluciones técnicas eficaces, interoperables, sólidas y fiables en la medida en que sea técnicamente viable.
+3.  **Reconocimiento de emociones y categorización biométrica:** los responsables del despliegue de un sistema de reconocimiento de emociones o de categorización biométrica deben informar de su funcionamiento a las personas físicas expuestas a él.
+4.  **Ultrasuplantaciones (*deepfakes*) y textos de interés público:** los responsables del despliegue de un sistema que genere o manipule imágenes o contenidos de audio o vídeo que constituyan una ultrasuplantación deben revelar que el contenido ha sido generado o manipulado artificialmente; igualmente, el texto generado o manipulado por IA que se publique con el fin de informar al público sobre asuntos de interés público debe declararse como tal, salvo que exista una revisión humana o un control editorial y una persona física o jurídica asuma la responsabilidad editorial del contenido.
+
+**D) Riesgo Sistémico (Modelos de IA de uso general)**
+Los modelos de IA de uso general (GPAI, como los grandes modelos de lenguaje o LLM) están sujetos a un régimen horizontal propio (Capítulo V del Reglamento), independiente de la clasificación por casos de uso del Anexo III. Conforme al artículo 51, un modelo de IA de uso general se clasifica como **modelo con riesgo sistémico** cuando posee capacidades de gran impacto, esto es, capacidades que igualan o superan las registradas en los modelos de IA de uso general más avanzados en un momento dado. Se **presume** esta capacidad de gran impacto cuando la cantidad acumulada de cálculo empleada en su entrenamiento, medida en operaciones de coma flotante (FLOPs), sea superior a **10^25 FLOPs**; la Comisión puede además designar un modelo como de riesgo sistémico de oficio o a raíz de una alerta cualificada de un panel científico de expertos independientes, atendiendo a otros criterios (número de usuarios, grado de autonomía, acceso a herramientas, alcance de la distribución, entre otros). El proveedor debe notificar a la Comisión, en un plazo de dos semanas, si su modelo alcanza dicho umbral.
+
+Todos los proveedores de modelos de IA de uso general deben, con carácter general, elaborar y mantener actualizada la documentación técnica del modelo, facilitar información y documentación a los proveedores que integren el modelo en sus propios sistemas, establecer una política de cumplimiento de la normativa de propiedad intelectual e industrial y publicar un resumen suficientemente detallado del contenido utilizado para el entrenamiento del modelo. Adicionalmente, los proveedores de modelos con riesgo sistémico deben, entre otras obligaciones: evaluar el modelo con arreglo a metodologías y protocolos normalizados, incluyendo la realización de pruebas de resistencia frente a ataques adversarios (*red-teaming*, simulación de adversarios); evaluar y mitigar los posibles riesgos sistémicos a escala de la Unión; llevar un registro y notificar a la Oficina de IA los incidentes graves y las medidas correctoras adoptadas; y garantizar un nivel adecuado de protección de la ciberseguridad del modelo y de su infraestructura física.
+
+**E) Riesgo Mínimo o nulo**
+El resto de sistemas de IA que no encajan en ninguna de las categorías anteriores (por ejemplo, videojuegos con funciones de IA o filtros de correo no deseado) quedan fuera de las obligaciones específicas del Reglamento, si bien pueden acogerse voluntariamente a códigos de conducta y a los principios de alfabetización en materia de IA del artículo 4.
 
 ## 3. IA responsable: equidad, transparencia y explicabilidad.
+
+**Fundamento ético: las Directrices para una IA fiable**
+Antes de la aprobación del Reglamento, el Grupo independiente de expertos de alto nivel sobre IA (HLEG), constituido por la Comisión Europea, elaboró en 2019 las *"Directrices éticas para una IA fiable"*, que enuncian siete principios no vinculantes que inspiran el enfoque de la Unión y a los que se remiten expresamente los considerandos del Reglamento: (1) acción y supervisión humanas; (2) solidez técnica y seguridad; (3) gestión de la privacidad y de los datos; (4) transparencia; (5) diversidad, no discriminación y equidad; (6) bienestar social y ambiental; y (7) rendición de cuentas. Estos principios, sin fuerza jurídica vinculante por sí mismos, constituyen el fundamento ético que las obligaciones legales de los apartados siguientes desarrollan y concretan en requisitos técnicos exigibles.
 
 Para mitigar los riesgos y garantizar la fiabilidad, los sistemas de IA de alto riesgo deben cumplir una serie de requisitos técnicos y organizativos esenciales.
 
@@ -148,9 +168,40 @@ La estructura de la norma sigue el esquema de alto nivel común a otras normas d
 
 La adopción de este tipo de certificaciones basadas en estándares ISO/IEC como la ISO/IEC 42001 constituye un elemento objetivo para la demostración del cumplimiento normativo en relación con la gobernanza de la inteligencia artificial, la gestión de riesgos tecnológicos y la estructuración ética y auditable del ciclo de vida de los sistemas algorítmicos, pudiendo servir como evidencia complementaria (aunque no sustitutiva) de las obligaciones exigidas por el Reglamento (UE) 2024/1689.
 
+## 6. Régimen sancionador (Artículo 99).
+
+El Reglamento encomienda a cada Estado miembro el establecimiento del régimen de sanciones y demás medidas coercitivas (que pueden incluir advertencias y medidas no pecuniarias) aplicables a las infracciones cometidas por los operadores, exigiendo en todo caso que dichas sanciones sean efectivas, proporcionadas y disuasorias, y que se tengan en cuenta los intereses y la viabilidad económica de las pymes, incluidas las empresas emergentes. El artículo 99 estructura las multas administrativas en tres tramos, en función de la gravedad de la infracción, aplicándose en cada caso la cuantía que resulte superior entre el importe fijo y el porcentaje del volumen de negocios:
+
+| Tramo | Base legal | Infracción | Multa máxima |
+| --- | --- | --- | --- |
+| 1 | Art. 99.3 | Incumplimiento de la prohibición de prácticas de IA del artículo 5 (riesgo inaceptable) | 35.000.000 € o el 7 % del volumen de negocios anual total a escala mundial del ejercicio anterior |
+| 2 | Art. 99.4 | Incumplimiento del resto de obligaciones de los operadores u organismos notificados (sistemas de alto riesgo, transparencia del art. 50, obligaciones de los modelos de IA de uso general de los arts. 53 a 55, gobernanza de datos, etc.) | 15.000.000 € o el 3 % del volumen de negocios anual total a escala mundial del ejercicio anterior |
+| 3 | Art. 99.5 | Facilitar a los organismos notificados o a las autoridades nacionales competentes información incorrecta, incompleta o engañosa | 7.500.000 € o el 1 % del volumen de negocios anual total a escala mundial del ejercicio anterior |
+
+Para las pymes, incluidas las empresas emergentes, cada una de estas multas se limita al menor de los importes o porcentajes señalados para cada tramo. La determinación de la cuantía final atiende, entre otros factores, a la naturaleza y gravedad de la infracción, el tamaño y la cuota de mercado del operador, y la existencia de infracciones anteriores.
+
+## 7. Calendario de aplicación (Artículo 113) y su modificación por el Digital Omnibus.
+
+El Reglamento entró en vigor el **1 de agosto de 2024**, si bien su artículo 113 prevé una aplicación escalonada de sus distintas disposiciones. En 2026, el Parlamento Europeo y el Consejo aprobaron el denominado **"Digital Omnibus sobre IA"**, que modifica precisamente el calendario del artículo 113 para aplazar la entrada en aplicación de las obligaciones relativas a los sistemas de alto riesgo, ante la constatación de que aún no se disponía de las normas armonizadas, especificaciones comunes y orientaciones necesarias, ni se habían constituido a tiempo las autoridades nacionales competentes en todos los Estados miembros. El calendario resultante, tras esta modificación, es el siguiente:
+
+| Fecha | Disposiciones aplicables |
+| --- | --- |
+| 1 de agosto de 2024 | Entrada en vigor general del Reglamento |
+| 2 de febrero de 2025 | Capítulos I y II: disposiciones generales, prácticas de IA prohibidas (art. 5) y alfabetización en materia de IA (art. 4) |
+| 2 de agosto de 2025 | Gobernanza institucional (Oficina de IA y autoridades nacionales), obligaciones de los modelos de IA de uso general (Capítulo V) y régimen sancionador (art. 99) |
+| 2 de agosto de 2026 | Regla general de aplicación del resto del Reglamento, incluidas las obligaciones de transparencia del artículo 50 |
+| 2 de diciembre de 2026 | Plazo transitorio ampliado para el marcado legible por máquina de contenido sintético (art. 50.2) en sistemas de IA generativa ya comercializados antes de agosto de 2026 |
+| 2 de diciembre de 2027 | Sistemas de IA de alto riesgo "independientes" del artículo 6, apartado 2, y el Anexo III (biometría, empleo, educación, migración, acceso a servicios esenciales, etc.) |
+| 2 de agosto de 2028 | Sistemas de IA de alto riesgo integrados como componentes de seguridad de productos regulados por la legislación de armonización de la Unión (art. 6, apartado 1, y Anexo I) |
+
+Conviene precisar que el Digital Omnibus no altera el contenido sustantivo de las obligaciones del Reglamento (la gestión de riesgos del artículo 9, la gobernanza de datos del artículo 10 o la documentación técnica siguen siendo exigibles en los mismos términos), sino únicamente las fechas a partir de las cuales resultan exigibles los requisitos relativos a los sistemas de alto riesgo; las prohibiciones del artículo 5, el régimen sancionador y las obligaciones de transparencia del artículo 50 no se han visto afectadas por este aplazamiento.
+
 ## Referencias normativas y técnicas
 
-*   Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (artículos 3, 4, 5, 6, 9 a 14, 27 y 64).
+*   Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (artículos 3 a 14, 27, 50, 51, 53 a 55, 64, 99 y 113).
+*   Reglamento (UE) 2026/1744 ("Digital Omnibus sobre IA"), por el que se modifica el calendario de aplicación del Reglamento (UE) 2024/1689.
 *   Decisión de la Comisión Europea de 24 de enero de 2024, por la que se crea la Oficina Europea de Inteligencia Artificial.
+*   Real Decreto 729/2023, de 22 de agosto, por el que se aprueba el Estatuto de la Agencia Española de Supervisión de Inteligencia Artificial (BOE de 2 de septiembre de 2023).
+*   Grupo independiente de expertos de alto nivel sobre IA (Comisión Europea), *"Directrices éticas para una IA fiable"*, 2019.
 *   Norma ISO/IEC 42001:2023, Tecnologías de la información — Inteligencia artificial — Sistema de gestión.
 *   Agencia Española de Supervisión de la Inteligencia Artificial (AESIA), guías técnicas de apoyo al cumplimiento del Reglamento (UE) 2024/1689.
