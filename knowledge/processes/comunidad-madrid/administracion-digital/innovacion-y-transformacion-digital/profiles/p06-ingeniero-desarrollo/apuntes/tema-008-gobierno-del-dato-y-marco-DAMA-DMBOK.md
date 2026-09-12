@@ -31,58 +31,103 @@ needs_human_review: true
 
 # Tema 8. Gobierno del dato y marco DAMA-DMBOK
 
-## 1. Concepto de gobierno del dato.
+## 1. Concepto de gobierno del dato
 
 **Definición e implicaciones**
 El Gobierno del Dato (Data Governance) se define como el ejercicio de autoridad, control y toma de decisiones compartida (planificación, monitorización y ejecución) sobre la gestión de los activos de datos de una organización. Su objetivo principal es asegurar que los datos sean fiables, seguros, accesibles, documentados y utilizables, alineando su gestión con los objetivos estratégicos de la entidad.
 
-A diferencia de la *gestión del dato* (que tiene un carácter más técnico y operativo, orientado a la ejecución), el *gobierno del dato* ostenta un carácter estratégico y directivo. Proporciona el marco de políticas, procesos, estándares y métricas que dirigen y evalúan la gestión de la información.
+*   **Gobierno del dato:** Estrategia, políticas, roles, métricas, evaluación y dirección (QUÉ se debe hacer y QUIÉN).
+*   **Gestión del dato:** Ejecución técnica, operativa y ciclo de vida (CÓMO se hace).
 
-Las especificaciones UNE promovidas por la Oficina del Dato precisan esta distinción con una fórmula operativa: se debe asegurar que la definición, creación, almacenamiento, mantenimiento, acceso y uso de los datos (lo que implica la necesidad de la **gestión** de los datos) se hace siguiendo una estrategia de datos alineada con las estrategias organizacionales (lo que implica la necesidad del **gobierno** de los datos), y que los conjuntos de datos a utilizar se adecúan al uso pretendido (lo que implica la necesidad de la **gestión de la calidad**).
+**Especificaciones UNE (Oficina del Dato - España)**
+El ecosistema de estandarización español, promovido por la **Oficina del Dato** (dependiente de la Secretaría de Estado de Digitalización e Inteligencia Artificial - SEDIA), ha creado un corpus normativo fundamental publicado en 2023. En los test suelen cruzar los números con sus descripciones:
 
-**Marco normativo y estandarización**
-El desarrollo del gobierno del dato en las Administraciones Públicas se apoya en un corpus normativo y técnico específico, destacando en el ámbito europeo y nacional:
+*   **UNE 0077:2023 - Gobierno del dato:** Se enfoca en la evaluación, dirección y monitorización. Define el marco estratégico.
+*   **UNE 0078:2023 - Gestión del dato:** Se centra en el ciclo de vida del dato (creación, almacenamiento, uso, archivo y destrucción).
+*   **UNE 0079:2023 - Gestión de la calidad del dato:** Define métricas, procesos de perfilado y aseguramiento para que el dato se adecúe al uso pretendido.
+*   **UNE 0085:2023 - Implantación del gobierno del dato:** Establece un modelo de madurez y los pasos para evaluar e implantar progresivamente el gobierno, gestión y calidad.
 
-*   **Reglamento (UE) 2022/868 del Parlamento Europeo y del Consejo, de 30 de mayo de 2022, relativo a la gobernanza europea de datos (Data Governance Act):** modifica el Reglamento (UE) 2018/1724 y es de aplicación directa desde el 24 de septiembre de 2023. Establece un marco para impulsar el intercambio de datos y aumentar la confianza en la intermediación de datos, regulando la reutilización de datos del sector público, los servicios de intermediación de datos y la cesión altruista de datos. Su artículo 1 recoge cuatro objetos: a) las condiciones para la reutilización, dentro de la Unión, de determinadas categorías de datos que obren en poder de organismos del sector público; b) un marco de notificación y supervisión para la prestación de servicios de intermediación de datos; c) un marco para el registro voluntario de entidades que recopilan y tratan datos puestos a disposición con fines altruistas; y d) un marco para la creación de un Comité Europeo de Innovación en materia de Datos. El Reglamento se estructura en nueve capítulos, entre los que destacan el Capítulo II (reutilización de datos protegidos en poder del sector público), el Capítulo III (requisitos de los servicios de intermediación de datos), el Capítulo IV (cesión altruista de datos) y el Capítulo VI (Comité Europeo de Innovación en materia de Datos).
-*   **Especificaciones UNE:** el ecosistema de estandarización español, promovido por la Oficina del Dato dependiente del Ministerio de Asuntos Económicos y Transformación Digital, define directrices precisas a través de la familia de normas UNE, todas ellas publicadas en 2023 y de descarga libre desde el portal de AENOR:
-    *   *UNE 0077:2023:* Gobierno del dato.
-    *   *UNE 0078:2023:* Gestión del dato.
-    *   *UNE 0079:2023:* Gestión de la calidad del dato.
-    *   *UNE 0085:* Implantación del gobierno del dato.
+**Reglamento (UE) 2022/868: Gobernanza Europea de Datos (Data Governance Act - DGA)**
+*   **Aplicabilidad:** Plenamente aplicable desde el **24 de septiembre de 2023**.
+*   **Objetivos principales (Art. 1):**
+    1.  Reutilización de datos del sector público sujetos a derechos de terceros (secretos comerciales, propiedad intelectual, datos personales).
+    2.  Regulación de los **servicios de intermediación de datos** (exige neutralidad estricta: el intermediario no puede usar los datos para otros fines).
+    3.  Cesión **altruista** de datos (creación de organizaciones de altruismo de datos con registro voluntario).
+    4.  Creación del **Comité Europeo de Innovación en materia de Datos** (European Data Innovation Board).
 
-    Estas especificaciones permiten establecer un conjunto de procesos comunes aplicables a los activos de datos de toda organización a lo largo de su ciclo de vida, maximizando su valor mediante la aplicación de un enfoque estructurado, gestionado, coherente y estandarizado a todas las actividades, operaciones y servicios relacionados con datos.
-
-## 2. Marco DAMA-DMBOK: áreas de conocimiento.
+## 2. Marco DAMA-DMBOK: áreas de conocimiento
 
 El DAMA-DMBOK (Data Management Body of Knowledge), en su segunda edición (DMBOK2), es el marco de referencia internacional estándar desarrollado por **DAMA International (Data Management Association)** para la gestión integral de datos.
 
 El modelo visual de DAMA se representa mediante la **Rueda de DAMA** (DAMA Wheel), que sitúa el Gobierno del Dato en el centro, interactuando de forma radial con otras 10 Áreas de Conocimiento (Knowledge Areas). El propio DMBOK2 define el Gobierno de Datos, en su acepción de área de conocimiento central, como "la planificación, supervisión y control sobre la gestión y el uso de los datos" (*Planning, supervision and control over data management and use*).
 
-1.  **Gobierno de Datos (Data Governance):** Eje central. Define la dirección estratégica, la supervisión, las políticas, las métricas y la toma de decisiones sobre los activos de datos.
-2.  **Arquitectura de Datos (Data Architecture):** Define la estructura global de los datos de la empresa, los modelos de datos a alto nivel y el diseño de la arquitectura tecnológica que soporta el flujo de información (Data Warehouse, Data Lake, Lakehouse).
-3.  **Modelado y Diseño de Datos (Data Modeling & Design):** Proceso de descubrimiento, análisis y especificación de requisitos de datos, representados en modelos conceptuales, lógicos y físicos.
-4.  **Almacenamiento y Operaciones de Datos (Data Storage & Operations):** Diseño, implementación y soporte del almacenamiento de datos, maximizando su valor durante su ciclo de vida y garantizando el rendimiento y la recuperación.
+1.  **Gobierno de Datos** (Data Governance): Eje central. Define la dirección estratégica, la supervisión, las políticas, las métricas y la toma de decisiones sobre los activos de datos.
+2.  **Arquitectura de Datos** (Data Architecture): Define la estructura global de los datos de la empresa, los modelos de datos a alto nivel y el diseño de la arquitectura tecnológica que soporta el flujo de información (Data Warehouse, Data Lake, Lakehouse).
+3.  **Modelado y Diseño de Datos** (Data Modeling & Design): Proceso de descubrimiento, análisis y especificación de requisitos de datos, representados en modelos conceptuales, lógicos y físicos.
+4.  **Almacenamiento y Operaciones de Datos** (Data Storage & Operations): Diseño, implementación y soporte del almacenamiento de datos, maximizando su valor durante su ciclo de vida y garantizando el rendimiento y la recuperación.
 5.  **Seguridad de los Datos (Data Security):** Garantizar la privacidad, la confidencialidad y el acceso adecuado a los datos en cumplimiento con el marco regulatorio (RGPD, ENS).
-6.  **Datos Maestros y de Referencia (Reference & Master Data):** Gestión continua (MDM - Master Data Management) de los datos críticos de la organización (clientes, productos, ciudadanos) para asegurar que conforman una única fuente de la verdad ("Single Source of Truth").
-7.  **Data Warehousing e Inteligencia de Negocios (Data Warehousing & Business Intelligence):** Planificación, implementación y control de procesos que proporcionan datos para la toma de decisiones, análisis y reporting.
-8.  **Integración e Interoperabilidad de Datos (Data Integration & Interoperability):** Procesos de adquisición, extracción, transformación, movimiento, entrega, replicación (ETL/ELT) e intercambio de datos entre sistemas y unidades organizativas.
-9.  **Gestión de Documentos y Contenidos (Document & Content Management):** Almacenamiento, protección, indexación y acceso a datos no estructurados y semiestructurados.
-10. **Metadatos (Metadata):** Planificación, implementación y control de actividades para asegurar el acceso a metadatos integrados, precisos y de alta calidad. Incluye la creación de catálogos de datos y metadatos.
-11. **Calidad de los Datos (Data Quality):** Planificación y ejecución de técnicas de medición, evaluación, mejora y certificación de la aptitud de los datos para su uso previsto.
+6.  **Datos Maestros y de Referencia** (Reference & Master Data): Gestión continua (MDM - Master Data Management) de los datos críticos de la organización (clientes, productos, ciudadanos) para asegurar que conforman una única fuente de la verdad ("Single Source of Truth").
+7.  **Data Warehousing e Inteligencia de Negocios** (Data Warehousing & Business Intelligence): Planificación, implementación y control de procesos que proporcionan datos para la toma de decisiones, análisis y reporting.
+8.  **Integración e Interoperabilidad de Datos** (Data Integration & Interoperability): Procesos de adquisición, extracción, transformación, movimiento, entrega, replicación (ETL/ELT) e intercambio de datos entre sistemas y unidades organizativas.
+9.  **Gestión de Documentos y Contenidos** (Document & Content Management): Almacenamiento, protección, indexación y acceso a datos no estructurados y semiestructurados.
+10. **Metadatos** (Metadata): Planificación, implementación y control de actividades para asegurar el acceso a metadatos integrados, precisos y de alta calidad. Incluye la creación de catálogos de datos y metadatos.
+11. **Calidad de los Datos** (Data Quality): Planificación y ejecución de técnicas de medición, evaluación, mejora y certificación de la aptitud de los datos para su uso previsto.
 
-Según la propia estructura oficial de DAMA International, el orden numerado de las 11 Áreas de Conocimiento del DMBOK2 es: 1) Data Governance; 2) Data Architecture; 3) Data Modeling and Design; 4) Data Storage and Operations; 5) Data Security; 6) Reference and Master Data; 7) Data Warehousing and Business Intelligence; 8) Data Integration and Interoperability; 9) Documents and Content; 10) Metadata; y 11) Data Quality.
+```mermaid
+mindmap
+  root((Gobierno de Datos))
+    Arquitectura de Datos
+    Modelado y Diseño
+    Almacenamiento y Operaciones
+    Seguridad
+    Integración e Interoperabilidad
+    Documentos y Contenidos
+    Datos Maestros y de Referencia
+    Data Warehousing e Inteligencia de Negocios
+    Metadatos
+    Calidad de Datos
+```
+
+
+Según la propia estructura oficial de DAMA International, el orden numerado de las 11 Áreas de Conocimiento del DMBOK2 es: 
+
+1. Data Governance.
+2. Data Architecture.
+3. Data Modeling and Design.
+4. Data Storage and Operations.
+5. Data Security.
+6. Reference and Master Data.
+7. Data Warehousing and Business Intelligence.
+8. Data Integration and Interoperability.
+9. Documents and Content.
+10. Metadata.
+11. Data Quality.
 
 Junto a las 11 Áreas de Conocimiento, el DMBOK2 identifica también los **elementos que rodean cada área** en la representación gráfica de la Rueda de DAMA, comunes a todas ellas: personas, procesos y tecnología, que interactúan de forma transversal con cada área de conocimiento para su correcta implementación.
 
-## 3. Roles y responsabilidades en la gestión del dato.
+## 3. Roles y responsabilidades en la gestión del dato
 
 La estructura organizativa del gobierno del dato exige la definición formal de roles con responsabilidades segregadas. Según las directrices de DMBOK y las mejores prácticas de la industria, destacan las siguientes figuras:
 
-*   **Chief Data Officer (CDO):** Ejecutivo de más alto nivel responsable de definir y liderar la estrategia corporativa de datos. Preside el Consejo de Gobierno del Dato y garantiza la alineación con los objetivos de negocio.
-*   **Comité/Consejo de Gobierno del Dato (Data Governance Council):** Órgano directivo y decisorio interdepartamental. Se encarga de priorizar iniciativas, aprobar políticas, asignar recursos y actuar como última instancia en la resolución de conflictos sobre datos.
-*   **Propietario del Dato (Data Owner):** Figura de negocio (no técnica) responsable en última instancia de la calidad, definición, seguridad y autorización de acceso a un dominio de datos específico (ej. "Datos de Recursos Humanos").
-*   **Gestor del Dato (Data Steward):** Enlace operativo entre negocio y tecnología. Se encarga de la gestión diaria del dato: vela por la calidad, define y valida metadatos, resuelve anomalías y vela por el cumplimiento de las políticas definidas por el Data Owner. Suele dividirse en roles especializados (Business Data Steward, Technical Data Steward).
-*   **Custodio del Dato (Data Custodian):** Rol puramente tecnológico (habitualmente del área de Sistemas o Bases de Datos). Es responsable de la infraestructura técnica (almacenamiento, copias de seguridad, rendimiento, arquitectura). Implementa los controles de seguridad y acceso aprobados por el Data Owner.
+*   **Chief Data Officer** (CDO): Ejecutivo (C-Level) responsable de liderar la estrategia corporativa de datos. Pasa de un enfoque puramente tecnológico (CIO) a uno de valor y negocio.
+*   **Comité/Consejo de Gobierno del Dato** (Data Governance Council): Órgano colegiado directivo interdepartamental. Resuelve conflictos de máximo nivel y aprueba políticas.
+*   **Propietario del Dato** (Data Owner):*Perfil de NEGOCIO (no IT)*. Es el "dueño" del dato (ej. el Director de RRHH es el Owner de los datos de empleados). Es el responsable final (*accountable*) de su calidad, seguridad y de autorizar quién accede a ellos.
+*   **Gestor del Dato** (Data Steward):*Perfil de NEGOCIO/Liaison*. Es la figura operativa del Owner. Vela diariamente por la calidad, resuelve anomalías, documenta los metadatos y glosarios. Actúa como puente entre Negocio y TI.
+*   **Custodio del Dato** (Data Custodian):*Perfil TÉCNICO*. Pertenece a Sistemas/TI (ej. un DBA o un Arquitecto). NO decide quién accede, sino que *implementa* los controles de acceso dictados por el Owner. Gestiona las copias de seguridad, rendimiento de BBDD, etc.
+
+```mermaid
+graph TD
+    A[Data Governance Council / CDO] -->|Estrategia y Políticas| B(Data Owner)
+    B -->|Delega gestión diaria| C(Data Steward)
+    C -->|Especifica reglas técnicas| D[Data Custodian]
+    
+    classDef negocio fill:#d4edda,stroke:#28a745,stroke-width:2px;
+    classDef tecnico fill:#cce5ff,stroke:#007bff,stroke-width:2px;
+    
+    B:::negocio
+    C:::negocio
+    D:::tecnico
+```
 
 En el ámbito específico del Reglamento (UE) 2022/868, aparecen además roles institucionales propios de la gobernanza pública de datos, distintos de los roles corporativos de DAMA pero complementarios a ellos:
 
@@ -91,7 +136,7 @@ En el ámbito específico del Reglamento (UE) 2022/868, aparecen además roles i
 *   **Autoridades competentes para el registro de organizaciones de datos altruistas:** encargadas de la inscripción y supervisión de las entidades que recogen datos con fines de interés general de forma altruista (Capítulo IV).
 *   **Comité Europeo de Innovación en materia de Datos:** órgano de nivel europeo, creado por el propio Reglamento, que asesora y asiste a la Comisión Europea en el desarrollo de una práctica coherente en materia de gobernanza de datos (Capítulo VI).
 
-## 4. Ciclo de vida del dato.
+## 4. Ciclo de vida del dato
 
 El ciclo de vida del dato (Data Lifecycle) aborda las diferentes etapas por las que transita la información desde su concepción hasta su eventual destrucción. A diferencia del ciclo de vida del desarrollo de sistemas (SDLC), el ciclo de vida del dato tiene una persistencia mayor e independiente de los sistemas que lo albergan. DAMA lo estructura en las siguientes fases fundamentales:
 
@@ -106,7 +151,7 @@ En el ámbito analítico avanzado y de Inteligencia Artificial, la gestión del 
 
 La UNE 0079:2023 (Gestión de la calidad del dato), en coherencia con este ciclo de vida, insiste en que la calidad debe medirse y garantizarse en cada una de sus fases, y no únicamente en el momento de la captura, dado que un dato de calidad adecuada en su origen puede degradarse durante su almacenamiento, transformación o uso si no existen controles de calidad continuos a lo largo de todo el ciclo.
 
-## 5. Buenas prácticas en gobierno del dato.
+## 5. Buenas prácticas en gobierno del dato
 
 La implementación exitosa del gobierno del dato exige un enfoque paulatino e integral, que transcienda la dimensión tecnológica para abordar las dimensiones cultural y organizativa.
 
