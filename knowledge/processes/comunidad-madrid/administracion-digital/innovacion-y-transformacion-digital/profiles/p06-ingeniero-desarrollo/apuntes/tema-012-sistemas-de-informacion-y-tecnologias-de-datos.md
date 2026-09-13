@@ -22,13 +22,18 @@ tags:
   - "tendencias-tecnologicas"
   - "teorema-cap"
   - "rfc-9110"
+  - "data-lake"
+  - "data-lakehouse"
+  - "bases-de-datos-vectoriales"
+  - "dataops"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-12"
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -82,6 +87,7 @@ Diseñadas para modelos de datos específicos, esquemas flexibles (schema-less o
 *   **Documentales:** Almacenan datos en formatos semiestructurados como JSON, BSON o XML. Permiten indexación sobre el contenido del documento y estructuras jerárquicas complejas (ej. MongoDB, CouchDB).
 *   **Columnares (Wide-column stores):** Almacenan datos en familias de columnas en lugar de filas. Ideales para analítica de grandes volúmenes de datos distribuidos y escalabilidad masiva (ej. Apache Cassandra, HBase).
 *   **Grafos:** Utilizan estructuras de nodos, aristas (relaciones) y propiedades para representar y consultar redes de información interconectada altamente compleja, utilizando lenguajes específicos como Cypher o Gremlin (ej. Neo4j, Amazon Neptune).
+*   **Vectoriales:** Categoría de bases de datos NoSQL especializada en el almacenamiento e indexación de *embeddings* (vectores numéricos de alta dimensión que representan el significado semántico de textos, imágenes u otros contenidos). A diferencia de una consulta relacional por coincidencia exacta, resuelven consultas por **similitud semántica**, calculada mediante métricas de distancia (coseno, euclídea o producto escalar) sobre índices especializados (como HNSW o IVFFlat). Constituyen la pieza de infraestructura central de las arquitecturas RAG (*Retrieval-Augmented Generation*) y de los motores de búsqueda y recomendación semántica. Se distingue entre bases de datos vectoriales dedicadas (Pinecone, Milvus, Weaviate, Qdrant) y extensiones vectoriales incorporadas a motores relacionales ya existentes, como **pgvector** para PostgreSQL.
 
 **El Teorema CAP y la extensión PACELC**
 El Teorema CAP fue formulado inicialmente por Eric Brewer y demostrado formalmente en 2002 por Seth Gilbert y Nancy Lynch en la publicación *"Brewer's Conjecture and the Feasibility of Consistent, Available, Partition-Tolerant Web Services"*. Demuestra que, en un sistema informático distribuido, resulta imposible garantizar simultáneamente las tres propiedades siguientes:
@@ -131,6 +137,9 @@ El *Business Intelligence* (BI) abarca las estrategias y tecnologías utilizadas
 *   **Data Warehouse (Almacén de Datos):** Repositorio central corporativo orientado a consultas analíticas. Tradicionalmente se diseña bajo dos enfoques principales:
     *   *Enfoque Top-Down (Bill Inmon):* Se construye un Almacén de Datos Corporativo (EDW) central normalizado (3FN), a partir del cual se derivan Data Marts departamentales dependientes.
     *   *Enfoque Bottom-Up (Ralph Kimball):* Se construyen primero los Data Marts individuales modelados dimensionalmente, y el Data Warehouse corporativo surge de la unión de estos mediante el uso de dimensiones conformadas (Bus de Arquitectura Empresarial).
+*   **Data Lake (Lago de Datos):** Repositorio centralizado, cuyo término fue acuñado en 2010 por James Dixon (entonces CTO de Pentaho), que almacena grandes volúmenes de datos estructurados, semiestructurados y no estructurados en su formato nativo u original, sin necesidad de transformarlos ni definir un esquema previo (*schema-on-read*), habitualmente sobre almacenamiento de objetos de bajo coste (como Hadoop HDFS o Amazon S3). Frente a la rigidez del esquema predefinido del Data Warehouse (*schema-on-write*), el Data Lake ofrece mayor flexibilidad y libertad de exploración a analistas y científicos de datos, a costa de un mayor riesgo de degradar su calidad y gobernanza si no se gestiona adecuadamente (fenómeno conocido informalmente como *data swamp* o "pantano de datos").
+*   **Data Lakehouse:** Arquitectura de convergencia, popularizada comercialmente por Databricks a partir de 2020, que combina el almacenamiento de bajo coste y la flexibilidad del Data Lake con las garantías transaccionales, el control de esquema y el rendimiento analítico propios del Data Warehouse. Esta convergencia se hace posible mediante los denominados **formatos de tabla abiertos** (*open table formats*), una capa de metadatos que se sitúa sobre los ficheros del Data Lake (habitualmente en formato Parquet) y les añade transacciones ACID, evolución y validación de esquemas, y capacidades de *time travel* (consulta de versiones anteriores de los datos). Los tres formatos de tabla abiertos de referencia son **Delta Lake** (desarrollado por Databricks), **Apache Iceberg** y **Apache Hudi**.
+
 *   **Modelado Dimensional:** Técnica de diseño de bases de datos orientada a la recuperación de información, compuesta por:
     *   *Tabla de Hechos (Fact Table):* Almacena las métricas cuantitativas del negocio (ej. importes, cantidades) y las claves foráneas a las dimensiones.
     *   *Tablas de Dimensiones (Dimension Tables):* Contienen los atributos descriptivos que dan contexto a los hechos (ej. tiempo, cliente, producto).
@@ -171,6 +180,7 @@ El ecosistema analítico evoluciona hacia modelos distribuidos, gobernados en ti
 *   **Gobernanza para la Inteligencia Artificial (AI Governance):** Condicionada por el reciente Reglamento de Inteligencia Artificial (Reglamento UE 2024/1689). Impone requisitos técnicos obligatorios para los sistemas de alto riesgo respecto a los datos de entrenamiento, validación y prueba, los cuales deben ser pertinentes, representativos, trazables y estar sujetos a controles de mitigación de sesgos.
 *   **Augmented Analytics (Analítica Aumentada):** Uso de algoritmos de Machine Learning y Procesamiento de Lenguaje Natural (NLP) directamente embebidos en plataformas BI para automatizar el perfilado de datos, descubrir patrones anómalos y generar explicaciones narrativas de forma automática.
 *   **Real-Time Stream Processing:** Evolución del análisis por lotes (batch) hacia el procesamiento continuo de eventos de baja latencia. Arquitecturas como **Kappa** (donde todo el procesamiento, histórico y en tiempo real, se maneja mediante un único motor de streaming sobre registros inmutables) consolidan tecnologías como Apache Kafka, Apache Flink y Spark Streaming.
+*   **DataOps:** Conjunto de prácticas y cultura organizativa que traslada los principios de la metodología DevOps (integración y entrega continuas, automatización, colaboración entre equipos) al ciclo de vida de los pipelines de datos. Persigue acortar el tiempo de entrega de nuevos conjuntos de datos y análisis, automatizando las pruebas de calidad del dato, el control de versiones de los pipelines y la monitorización continua de su ejecución, de forma análoga a como MLOps aplica estos mismos principios al ciclo de vida de los modelos de aprendizaje automático.
 
 **Data Mesh: los cuatro principios fundacionales**
 El paradigma Data Mesh, formulado originalmente por Zhamak Dehghani, se articula en torno a cuatro principios que conviene diferenciar con precisión porque suelen preguntarse de forma aislada:
@@ -187,3 +197,5 @@ El paradigma Data Mesh, formulado originalmente por Zhamak Dehghani, se articula
 *   Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad.
 *   Reglamento (UE) 2016/679 (RGPD) y Ley Orgánica 3/2018 (LOPDGDD).
 *   Reglamento (UE) 2024/1689, por el que se establecen normas armonizadas en materia de inteligencia artificial.
+*   Dixon, J., entrada de blog en la que acuña el término *"Data Lake"*, Pentaho, 2010.
+*   Databricks, *"What Is a Lakehouse?"*, enero de 2020; documentación de los formatos de tabla abiertos Delta Lake, Apache Iceberg y Apache Hudi.
