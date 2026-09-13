@@ -21,13 +21,15 @@ tags:
   - "publicidad-activa"
   - "portal-transparencia"
   - "participacion-cuidadana"
+  - "registro-de-transparencia"
 created_at: "2026-09-03"
-last_reviewed: null
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -36,7 +38,7 @@ needs_human_review: true
 ## 1. Objeto y ámbito de aplicación
 
 **Objeto**
-La Ley 10/2019, de 10 de abril, tiene por objeto la regulación, en el ámbito de la Comunidad de Madrid, de la transparencia en su doble vertiente de publicidad activa y de derecho de acceso a la información pública, así como la participación y colaboración ciudadana en los asuntos públicos.
+La Ley 10/2019, de 10 de abril, tiene por objeto la regulación, en el ámbito de la Comunidad de Madrid, de la transparencia en su doble vertiente de publicidad activa y de derecho de acceso a la información pública, así como la participación y colaboración ciudadana en los asuntos públicos (artículo 1).
 
 La Ley no regula únicamente la publicación de información. Su objeto combina:
 
@@ -46,6 +48,20 @@ La Ley no regula únicamente la publicación de información. Su objeto combina:
 - Registro de Transparencia y relaciones con los grupos de interés;
 - órganos de garantía y control;
 - responsabilidades y régimen sancionador en los términos vigentes.
+
+**Estructura sistemática de la Ley**
+La Ley 10/2019 se estructura en **seis títulos** y una parte final integrada por doce disposiciones adicionales, dos disposiciones transitorias, una disposición derogatoria, tres disposiciones finales y dos anexos:
+
+*   **Título I. Disposiciones generales** (arts. 1 a 6): objeto, ámbito de aplicación, personas obligadas a suministrar información (artículo 4), definiciones (artículo 5) y principios técnicos de interpretación y aplicación (artículo 6).
+*   **Título II. Publicidad activa** (arts. 7 a 29), dividido en dos capítulos: el Capítulo I contiene las disposiciones generales sobre publicidad de la información (artículo 7), la obligación de transparencia (artículo 8) y la protección de datos de carácter personal en la publicidad activa (artículo 9); el Capítulo II regula, en su Sección 1.ª, la información sujeta a publicación por materias (artículos 10 a 27) y, en su Sección 2.ª, la organización y coordinación de la transparencia, con los órganos responsables de la información pública (artículo 28) y el Portal de Transparencia (artículo 29).
+*   **Título III. Derecho de acceso a la información pública**, dividido en tres capítulos: disposiciones generales, procedimiento, y régimen de impugnación.
+*   **Título IV. Participación y colaboración ciudadana y Registro de Transparencia**: regula, de un lado, el concepto de participación (artículo 55), los instrumentos específicos de participación ciudadana (artículo 56) y los ficheros de participación y colaboración ciudadana (artículo 57); y, de otro, en su Capítulo II, el Registro de Transparencia (artículos 65 a 71).
+*   **Título V. Consejo de Transparencia y Protección de Datos**: regula su creación (artículo 72), composición (artículo 73), la Comisión de Transparencia y Participación (artículo 74), la Comisión de Protección de Datos (artículo 75), la Presidencia del Consejo (artículo 76) y, entre otros aspectos, las relaciones con la Asamblea de Madrid (artículo 79).
+*   **Título VI. Infracciones y sanciones en materia de transparencia y participación** (a partir del artículo 80).
+
+Entre las disposiciones adicionales destacan, por su relevancia para el ámbito subjetivo de la Ley, la disposición adicional sexta, relativa a la transparencia de la Asamblea de Madrid; la disposición adicional séptima, relativa a la transparencia de la Cámara de Cuentas; y la disposición adicional octava, relativa a las normas aplicables a las entidades locales y a las universidades públicas.
+
+La Ley fue publicada en el Boletín Oficial de la Comunidad de Madrid núm. 94, de 22 de abril de 2019, y en el BOE núm. 163, de 9 de julio de 2019, entrando en vigor el **1 de enero de 2020**.
 
 **Ámbito de aplicación subjetivo**
 Las disposiciones de la Ley son aplicables a:
@@ -97,7 +113,7 @@ Por tanto, no es necesario que concurran simultáneamente los 60.000 euros y el 
 
 Las obligaciones de publicidad se aplican a la información relacionada con las ayudas o subvenciones y con la actividad financiada en los términos legales; no convierten necesariamente a la entidad privada en Administración pública ni le atribuyen potestades administrativas.
 
-**Personas obligadas a suministrar información**
+**Personas obligadas a suministrar información (artículo 4)**
 Las personas físicas y jurídicas distintas de las anteriores que presten servicios públicos, ejerzan potestades administrativas o actúen como agentes colaboradores, están obligadas a suministrar a la Administración o entidad a la que se encuentren vinculadas toda la información necesaria para el cumplimiento de las obligaciones establecidas en la Ley.
 
 Este suministro deberá efectuarse previo requerimiento y en un plazo de 10 días desde el acuse de recibo de la petición. La obligación se extiende a los adjudicatarios de contratos del sector público en los términos recogidos en el respectivo contrato.
@@ -106,7 +122,7 @@ El contratista no sustituye a la Administración como sujeto responsable de la t
 
 Los pliegos y documentos contractuales deben recoger la obligación de suministrar información y la forma de hacerla efectiva. En un test, no debe confundirse “suministrar información previo requerimiento” con “publicar directamente toda la información en el Portal”.
 
-### Definiciones esenciales
+### Definiciones esenciales (artículo 5)
 
 La Ley utiliza conceptos que conviene distinguir:
 
@@ -118,7 +134,7 @@ La Ley utiliza conceptos que conviene distinguir:
 - **Datos abiertos:** datos que cualquiera puede utilizar, reutilizar y redistribuir, con las condiciones y límites legales.
 - **Participación y colaboración ciudadana:** intervención individual o colectiva en el diseño, ejecución y evaluación de políticas y actuaciones públicas mediante instrumentos de comunicación con las entidades públicas.
 
-### Principios de interpretación y aplicación
+### Principios de interpretación y aplicación (artículo 6: principios técnicos)
 
 La aplicación de la Ley se basa, entre otros, en:
 
@@ -191,7 +207,7 @@ El desistimiento por falta de concreción no equivale a una denegación por razo
 
 ### Inadmisión
 
-Se inadmitirán a trámite, mediante resolución motivada, las solicitudes que incurran en las causas de inadmisión previstas en la legislación básica estatal.
+Se inadmitirán a trámite, mediante resolución motivada, las solicitudes que incurran en las causas de inadmisión previstas en la legislación básica estatal, esto es, en el artículo 18 de la Ley 19/2013, de 9 de diciembre.
 
 Entre las causas estatales se encuentran, con carácter general, solicitudes referidas a información en curso de elaboración o de publicación general; información auxiliar o de apoyo en los términos legales; información que exija una acción previa de reelaboración; solicitudes dirigidas a un órgano que no posee la información cuando se desconoce el competente; y solicitudes manifiestamente repetitivas o abusivas no justificadas por la finalidad de transparencia.
 
@@ -201,7 +217,7 @@ No tendrán consideración de información auxiliar o de apoyo los informes prec
 
 ### Límites al derecho de acceso
 
-El derecho de acceso únicamente podrá ser limitado o denegado en los supuestos previstos en la normativa de la Unión Europea y en la legislación básica del Estado, especialmente la Ley 19/2013.
+El derecho de acceso únicamente podrá ser limitado o denegado en los supuestos previstos en la normativa de la Unión Europea y en la legislación básica del Estado, especialmente el artículo 14 de la Ley 19/2013, de 9 de diciembre, de transparencia, acceso a la información pública y buen gobierno.
 
 Los límites estatales protegen, entre otros bienes:
 
@@ -294,7 +310,7 @@ En examen pueden diferenciarse:
 
 ## 3. Publicidad activa y Portal de Transparencia.
 
-**Obligación de transparencia**
+**Obligación de transparencia (artículo 8)**
 Los sujetos incluidos en el ámbito de aplicación de la Ley están obligados a garantizar la publicidad activa de su actuación. Deben elaborar, mantener actualizada y difundir, preferentemente por medios electrónicos, la información cuya divulgación resulte de mayor relevancia para garantizar la transparencia de su actividad.
 
 La publicidad activa debe ser:
@@ -312,19 +328,20 @@ La publicación no se cumple simplemente colocando documentos sin orden. La info
 
 Los sujetos deben indicar la fecha de actualización y, cuando proceda, la fecha de la próxima revisión. Deben facilitar buscadores, índices y enlaces comprensibles.
 
-**Información sujeta a publicación**
+**Información sujeta a publicación (artículos 10 a 27)**
 La Ley 10/2019 amplía el catálogo de información obligatoria estructurándola en las siguientes áreas:
 
-*   **Información institucional:** Estatuto de Autonomía, normas de organización, estructura organizativa, composición y agendas completas de trabajo y de reuniones institucionales de los responsables públicos.
-*   **Información en materia organizativa:** Relación de departamentos, organismos autónomos, empresas públicas, consorcios y organigramas.
-*   **Información relativa a altos cargos, directivos y personal eventual:** Perfil y trayectoria profesional, funciones, órganos colegiados de los que son miembros, actividades con compatibilidad concedida y declaraciones de bienes, derechos y actividades.
-*   **Información en materia de empleo en el sector público:** Relaciones de puestos de trabajo, número de empleados, número de liberados sindicales y horas utilizadas, oferta de empleo público y procesos selectivos.
-*   **Información económica y presupuestaria:** Retribuciones de altos cargos, indemnizaciones, gastos de representación, dietas y gastos de viaje, gastos protocolarios, presupuestos, cuentas anuales, informes de auditoría, información sobre ingresos y gastos, y endeudamiento.
+*   **Información institucional (artículo 10):** Estatuto de Autonomía, normas de organización, estructura organizativa, composición y agendas completas de trabajo y de reuniones institucionales de los responsables públicos.
+*   **Información en materia organizativa (artículo 11):** Relación de departamentos, organismos autónomos, empresas públicas, consorcios y organigramas.
+*   **Información relativa a altos cargos y personal directivo (artículo 12) y a personal eventual (artículo 13):** Perfil y trayectoria profesional, funciones, órganos colegiados de los que son miembros, actividades con compatibilidad concedida y declaraciones de bienes, derechos y actividades.
+*   **Información en materia de empleo en el sector público (artículo 14):** Relaciones de puestos de trabajo, número de empleados, número de liberados sindicales y horas utilizadas, oferta de empleo público y procesos selectivos.
+*   **Información económica (artículo 15) y presupuestaria:** Retribuciones de altos cargos, indemnizaciones, gastos de representación, dietas y gastos de viaje, gastos protocolarios, presupuestos, cuentas anuales, informes de auditoría, información sobre ingresos y gastos, y endeudamiento.
 *   **Información normativa:** Anteproyectos de ley, proyectos de reglamento, memorias e informes que conforman los expedientes de elaboración normativa.
 *   **Información sobre servicios y procedimientos:** Catálogo de procedimientos, cartas de servicios, listas de espera, procedimientos para la presentación de quejas y número de reclamaciones.
-*   **Información del patrimonio:** Relación de bienes inmuebles, bienes demaniales, arrendamientos y parque de vehículos oficiales.
-*   **Información de planificación, programación, obras públicas y contratación:** Planes plurianuales, evaluación de resultados, información completa sobre licitaciones, actas de mesas de contratación, contratos adjudicados, incluyendo menores, modificaciones, encomiendas de gestión y concesiones de servicios públicos.
+*   **Información del patrimonio (artículo 19):** Relación de bienes inmuebles, bienes demaniales, arrendamientos y parque de vehículos oficiales.
+*   **Información de planificación y programación (artículo 20), obras públicas (artículo 21) y contratación (artículo 22):** Planes plurianuales, evaluación de resultados, información completa sobre licitaciones, actas de mesas de contratación, contratos adjudicados, incluyendo menores, modificaciones, encomiendas de gestión y concesiones de servicios públicos.
 *   **Información de ayudas y subvenciones:** Planes estratégicos, relación de líneas convocadas y concesiones con indicación de beneficiarios y cuantías.
+*   **Información en materia de ordenación del territorio (artículo 26) e información estadística (artículo 27):** información urbanística y territorial, y datos e indicadores estadísticos de la actividad de los sujetos obligados.
 
 ### Desarrollo de las categorías
 
@@ -367,7 +384,7 @@ Debe distinguirse:
 
 La publicidad incluye planes estratégicos, convocatorias, líneas, beneficiarios, importes, objetivos, justificación, reintegros y sanciones cuando sean publicables. La publicación de beneficiarios debe coordinarse con la normativa de protección de datos.
 
-### Publicidad y protección de datos
+### Publicidad y protección de datos (artículo 9)
 
 La publicidad activa no desplaza automáticamente al RGPD ni a la LOPDGDD. Antes de publicar debe existir base jurídica y debe aplicarse minimización de datos.
 
@@ -378,11 +395,11 @@ Deben evitarse:
 - publicación indefinida sin revisión;
 - datos especialmente protegidos sin habilitación suficiente.
 
-### Organización y coordinación de la transparencia
+### Organización y coordinación de la transparencia (artículos 28 y 29)
 
-*   **Oficina de Coordinación de la Transparencia:** Adscrita a la Consejería competente, tiene funciones de coordinación, elaboración de directrices, gestión del Portal de Transparencia de la Comunidad de Madrid y emisión de un informe anual.
+*   **Oficina de Coordinación de la Transparencia (artículo 28, órganos responsables de la información pública):** Adscrita a la Consejería competente, tiene funciones de coordinación, elaboración de directrices, gestión del Portal de Transparencia de la Comunidad de Madrid y emisión de un informe anual.
 *   **Unidades de transparencia:** En el ámbito de cada Consejería, coordinan los órganos dependientes, realizan seguimiento de las solicitudes de acceso y prestan apoyo técnico.
-*   **Portal de Transparencia:** Sistema integral de información en formato electrónico que centraliza y facilita el acceso libre y gratuito a toda la información responsabilidad de la Comunidad de Madrid y del resto de sujetos obligados. Permite acceder al Registro de acceso y reclamaciones, a los instrumentos de participación y al Registro de Transparencia.
+*   **Portal de Transparencia (artículo 29):** Sistema integral de información en formato electrónico que centraliza y facilita el acceso libre y gratuito a toda la información responsabilidad de la Comunidad de Madrid y del resto de sujetos obligados. Permite acceder al Registro de acceso y reclamaciones, a los instrumentos de participación y al Registro de Transparencia.
 
 **Portal de Transparencia**
 El Portal debe entenderse como un punto de acceso y difusión. Puede:
@@ -404,7 +421,7 @@ La reutilización exige que la información pueda utilizarse para finalidades di
 
 ## 4. Participación ciudadana.
 
-La participación y colaboración ciudadana es la intervención individual o colectiva en el diseño, ejecución y evaluación de las políticas y actuaciones públicas. Sus resultados poseen naturaleza consultiva y no vinculante, salvo previsión legal específica.
+La participación y colaboración ciudadana es la intervención individual o colectiva en el diseño, ejecución y evaluación de las políticas y actuaciones públicas (artículo 55, concepto). Sus resultados poseen naturaleza consultiva y no vinculante, salvo previsión legal específica.
 
 La participación no equivale a la adopción de la decisión. La Administración debe escuchar, valorar y, cuando proceda, explicar el resultado, pero la aportación ciudadana no sustituye la competencia del órgano decisor.
 
@@ -413,10 +430,10 @@ No podrán someterse a participación ciudadana los asuntos contrarios al ordena
 
 La exclusión por falta de competencia es especialmente importante: una entidad no puede abrir un proceso participativo para decidir sobre una materia que legalmente corresponde a otra Administración.
 
-**Instrumentos de participación**
+**Instrumentos de participación (artículo 56, instrumentos específicos de participación ciudadana)**
 Las Administraciones Públicas impulsarán la implicación de la ciudadanía empleando mecanismos específicos, dando prioridad a las nuevas tecnologías. Entre los instrumentos previstos destacan:
 
-*   **Ficheros de participación y colaboración ciudadana:** Registros de ciudadanos e instituciones interesados en recibir información sobre materias específicas para tomar parte activa en los procesos.
+*   **Ficheros de participación y colaboración ciudadana (artículo 57):** Registros de ciudadanos e instituciones interesados en recibir información sobre materias específicas para tomar parte activa en los procesos.
 *   **Consultas públicas:** Orientadas a recabar la opinión ciudadana sobre propuestas administrativas.
 *   **Foros de consulta:** Espacios de debate para contrastar los efectos o la percepción de medidas públicas.
 *   **Paneles ciudadanos:** Espacios temporales para la consulta de cuestiones de interés público.
@@ -447,12 +464,14 @@ La participación normativa debe distinguirse de:
 
 Son mecanismos relacionados, pero no equivalentes ni intercambiables.
 
-**Registro de Transparencia y Código Ético**
+**Registro de Transparencia y Código Ético (artículos 65 a 71)**
 
 *   **Registro de Transparencia:** Registro público, gratuito y obligatorio destinado a la inscripción de personas y entidades que realicen actividades destinadas a influir directa o indirectamente en la elaboración de normas jurídicas y políticas públicas de la Administración autonómica y local.
 *   **Exclusiones:** Quedan excluidas las actividades de asesoramiento jurídico en procedimientos, la representación sindical u organizaciones en el ejercicio de su función constitucional, y el derecho de petición, en los términos legales.
 *   **Obligaciones:** Las entidades inscritas deben mantener actualizada la información exigible, renovar la información financiera y organizativa cada dos años cuando proceda y cumplir el Código Ético.
 *   **Código Ético:** Exige comportamiento íntegro y honesto, salvaguarda de información confidencial, prohibición de influir de forma deshonesta o mediante obsequios y prevención de conflictos de intereses.
+
+El Registro de Transparencia de la Comunidad de Madrid, previsto en la Ley 10/2019, ha sido objeto de desarrollo reglamentario mediante decreto autonómico, que regula su organización, régimen jurídico y funcionamiento, así como los criterios e instrumentos necesarios para facilitar la adhesión, integración e interconexión de los registros de las entidades locales y del resto de sujetos a los que se aplica.
 
 ### Registro de Transparencia: conceptos examinables
 
@@ -506,19 +525,21 @@ La Ley estatal añade reglas sobre:
 
 Una pregunta puede presentar una obligación de buen gobierno como si fuera una mera recomendación ética. Debe distinguirse entre un principio jurídico exigible y una buena práctica no vinculante.
 
-### Consejo de Transparencia y Protección de Datos
+### Consejo de Transparencia y Protección de Datos (artículos 72 a 79)
 
 La Ley 16/2023 modificó el Título V de la Ley 10/2019 y creó el nuevo Consejo de Transparencia y Protección de Datos de la Comunidad de Madrid, sustituyendo el esquema anterior.
 
-El Consejo es un órgano administrativo colegiado adscrito orgánicamente a la Consejería de Presidencia. Tiene competencias en transparencia para el fomento, análisis, control y protección de la transparencia pública y la participación en la Comunidad de Madrid, y competencias en protección de datos de carácter personal para la deliberación, consulta, participación y coordinación de las consejerías y entes institucionales vinculados o dependientes.
+El Consejo es un órgano administrativo colegiado adscrito orgánicamente a la Consejería de Presidencia (artículo 72, creación del Consejo). Tiene competencias en transparencia para el fomento, análisis, control y protección de la transparencia pública y la participación en la Comunidad de Madrid, y competencias en protección de datos de carácter personal para la deliberación, consulta, participación y coordinación de las consejerías y entes institucionales vinculados o dependientes.
+
+Su composición (artículo 73) se organiza internamente a través de dos órganos especializados: la **Comisión de Transparencia y Participación** (artículo 74) y la **Comisión de Protección de Datos** (artículo 75), bajo la dirección de una Presidencia (artículo 76). El artículo 79 regula, entre otros aspectos organizativos, las relaciones del Consejo con la Asamblea de Madrid.
 
 La reforma también suprimió el artículo 71 y los artículos 81 a 88, y modificó el artículo 80 para remitir al régimen de infracciones y sanciones de la Ley 19/2013. Por tanto, no debe estudiarse como vigente la antigua estructura sancionadora autonómica de los artículos 81 a 88.
 
 El Consejo cuenta, como mínimo, con apoyo jurídico, técnico y administrativo. Su estructura y el estatuto de sus órganos deben revisarse conforme a la regulación vigente en la fecha de la convocatoria.
 
-### Régimen de infracciones y sanciones
+### Régimen de infracciones y sanciones (Título VI)
 
-La redacción vigente debe estudiarse con especial cuidado porque la Ley 16/2023 modificó el Título VI. El régimen autonómico actual remite al régimen de infracciones y sanciones regulado en la Ley 19/2013.
+La redacción vigente debe estudiarse con especial cuidado porque la Ley 16/2023 modificó el Título VI. El régimen autonómico actual remite, a través del artículo 80, al régimen de infracciones y sanciones regulado en la Ley 19/2013.
 
 No debe memorizarse como vigente la afirmación “los artículos 80 a 88 regulan íntegramente las infracciones y sanciones autonómicas”: los artículos 81 a 88 fueron suprimidos por la reforma de 2023.
 
@@ -528,7 +549,7 @@ No debe memorizarse como vigente la afirmación “los artículos 80 a 88 regula
 |---|---|
 | Ley 10/2019 | Transparencia, acceso, publicidad activa, participación, Registro, Consejo y remisión sancionadora vigente |
 | Ley 16/2023 | Reforma del Consejo y del régimen sancionador de la Ley 10/2019 |
-| Ley 19/2013 | Legislación básica estatal sobre transparencia, acceso y buen gobierno; límites y régimen sancionador aplicable por remisión |
+| Ley 19/2013 | Legislación básica estatal sobre transparencia, acceso y buen gobierno; límites (art. 14), causas de inadmisión (art. 18) y régimen sancionador aplicable por remisión |
 | RGPD | Protección de datos personales y principios de tratamiento |
 | Ley Orgánica 3/2018 | Protección de datos y garantía de derechos digitales |
 | Decreto 48/2019 | Procedimiento autonómico de acceso a información pública |
@@ -564,7 +585,7 @@ Trampas:
 
 ## 8. Fuentes normativas oficiales
 
-- Ley 10/2019, de 10 de abril, de Transparencia y de Participación de la Comunidad de Madrid, texto consolidado del BOE, referencia BOE-A-2019-10102.
+- Ley 10/2019, de 10 de abril, de Transparencia y de Participación de la Comunidad de Madrid, publicada en el BOCM núm. 94, de 22 de abril de 2019, y en el BOE núm. 163, de 9 de julio de 2019, referencia BOE-A-2019-10102.
 - Ley 16/2023, de 27 de diciembre, de medidas para la simplificación y mejora de la eficacia de instituciones y organismos de la Comunidad de Madrid, especialmente sus modificaciones de la Ley 10/2019.
 - Texto oficial de la Ley 10/2019 publicado por la Comunidad de Madrid y por el Consejo de Transparencia y Protección de Datos.
 - Ley 19/2013, de 9 de diciembre, de transparencia, acceso a la información pública y buen gobierno, BOE-A-2013-12887.
