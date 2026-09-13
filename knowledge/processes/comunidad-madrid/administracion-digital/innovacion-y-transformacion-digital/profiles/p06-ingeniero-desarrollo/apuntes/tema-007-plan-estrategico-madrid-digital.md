@@ -17,13 +17,15 @@ tags:
   - "estrategia-tic"
   - "ejes-estrategicos"
   - "administracion-digital"
+  - "medidas-estrategicas"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -84,6 +86,8 @@ El PEMD define seis valores que orientan la actuación de Madrid Digital:
 5. **Innovación:** inquietud constante por la innovación, para ser capaces de ofrecer nuevos servicios y soluciones, incorporando continuamente nuevas tecnologías y formas de trabajar.
 6. **Sostenibilidad:** reducción de huella ambiental de infraestructuras y servicios TIC, consciente del alto consumo energético del sector.
 
+El propio documento cuantifica esta preocupación: el sector TIC se estima responsable de en torno al **3,5% del consumo energético mundial** y de alrededor del **3% de las emisiones globales de CO2**, motivo por el cual el PEMD complementa su estrategia de digitalización con una componente de sostenibilidad, alineada con los objetivos de sostenibilidad de la Unión Europea y de Naciones Unidas, y con el objetivo de apoyar las transiciones ecológica y digital del Mecanismo para la Recuperación y la Resiliencia (MRR), núcleo de los fondos Next Generation EU.
+
 ## 3. Estructura operativa: líneas de servicio y ámbitos de actuación
 
 El PEMD dedica un bloque completo (previo a su formulación estratégica) al análisis de las tendencias de mercado y de digitalización en las Administraciones Públicas, que sustenta la justificación de sus ejes y medidas. Este contexto se apoya en fuentes de consultoras internacionales de referencia citadas expresamente en el documento (McKinsey, Gartner, KPMG) y en el marco estratégico europeo.
@@ -118,6 +122,17 @@ Estas tendencias tecnológicas guardan una relación directa con medidas concret
 
 El PEMD sitúa su formulación en el marco de la **Brújula Digital de la Unión Europea** (Digital Compass), hoja de ruta para la transformación digital de la UE en la denominada "Década Digital" europea, articulada en cuatro puntos cardinales: ciudadanía capacitada y empoderada digitalmente (con mayor presencia de profesionales del sector), infraestructuras digitales seguras y sostenibles, transformación digital de las empresas, y digitalización de los servicios públicos. Este marco es compartido con la Estrategia de Digitalización de la Comunidad de Madrid (EDCM), estudiada en otro tema del temario.
 
+### 3.5. Otros planes de referencia citados en el PEMD
+
+El propio documento ejecutivo precisa que, para su elaboración, se han tomado como referencia los planes de digitalización aprobados por la Comisión Europea, por la Administración General del Estado y por la propia Comunidad de Madrid, destacando por su relevancia:
+
+- **Plan España Digital 2025**, publicado en 2020, agenda para impulsar la transformación digital de España como palanca para relanzar el crecimiento económico, reducir la desigualdad, aumentar la productividad y aprovechar las oportunidades de las nuevas tecnologías, destacando su Eje 5 "Transformación Digital del Sector Público". En julio de 2022 se publicó la **Agenda España Digital 2026**, que actualiza la estrategia con horizonte 2026 para sincronizarla con el Plan de Recuperación, otorgando un papel clave al despliegue de la tecnología 6G.
+- **Plan de Recuperación, Transformación y Resiliencia**, plan de la Administración General del Estado alineado con los fondos Next Generation EU, que a través de su Eje 2 "Una España Digital" y de la política palanca de reforma estructural 4 "Una Administración para el siglo XXI" facilita la aceleración de la transformación tecnológica y digital de España.
+- **Estrategia para la Recuperación y Resiliencia de la Comunidad de Madrid**, que define la hoja de ruta regional para la recuperación y la transformación, destacando su Línea Estratégica 4 "Administración digital, conectada y ágil", y que establece como uno de sus 12 retos convertir a Madrid en la región más digitalizada de Europa, reto al que el PEMD 2022-26 da respuesta directa.
+- **Estrategia de Digitalización de la Comunidad de Madrid (EDCM)**, marco de actuación regional desarrollado bajo 10 principios, estudiada en otro tema del temario.
+
+Asimismo, en la elaboración del PEMD se han tenido en cuenta los **cinco principios del "Libro Blanco de la Gobernanza Europea"** aprobados por la Comisión Europea: **Eficiencia, Coherencia en la Gestión Pública, Transparencia, Rendición de Cuentas y Participación ciudadana**. El desarrollo del Plan ha contado además con el apoyo del **Consejo Asesor de Transformación Digital de la Comunidad de Madrid**, red de expertos y compañías tecnológicas que ha orientado, contrastado y validado los planteamientos, estrategias y soluciones definidas por Madrid Digital.
+
 ## 4. Estructura operativa: líneas de servicio y ámbitos de actuación
 
 Madrid Digital ordena sus competencias en **7 líneas de servicio**:
@@ -145,6 +160,8 @@ Estas líneas de servicio se prestan a través de funciones y procesos que se or
 
 Aunque no se suele pedir el detalle de cada ámbito en test, sí pueden preguntar por la existencia de estas dos capas de organización (líneas de servicio y ámbitos de actuación) y por su correspondencia numérica (7 líneas, 10 ámbitos).
 
+El propio PEMD establece además el **alineamiento entre ejes estratégicos y ámbitos de actuación**, precisando que, si bien la ejecución de cada eje exige en mayor o menor medida la participación de todos los ámbitos, cada ámbito de actuación tiene un protagonismo claro en un único eje estratégico: el Eje 1 se apoya principalmente en AA1 y AA2; el Eje 2 en AA3, AA4 y AA5 (con alta participación también de AA6); el Eje 3 en AA6, AA7 y AA8; el Eje 4 en AA9; y el Eje 5 en AA10.
+
 ## 5. Objetivos, ejes y medidas del PEMD
 
 ### 5.1. Los cinco objetivos estratégicos
@@ -171,7 +188,15 @@ La formulación oficial de los **5 ejes** es:
 | 4 | **Ciberseguridad y Seguridad de la Información** | Hacer una Administración más segura, confiable y resiliente. |
 | 5 | **Transformación de Madrid Digital hacia una Cultura Digital** | Transformar la gestión interna de Madrid Digital. |
 
-En total, el PEMD está compuesto por **27 medidas estratégicas** distribuidas entre estos cinco ejes.
+En total, el PEMD está compuesto por **27 medidas estratégicas** distribuidas entre estos cinco ejes. El listado oficial completo de las 27 medidas, tal y como figura en el documento ejecutivo del PEMD, es el siguiente:
+
+| Eje | Medidas estratégicas (denominación oficial) |
+| :-- | :--- |
+| **Eje 1** | E1M01 Cuenta Digital · E1M02 Identidad Digital · E1M03 Innovación y Digitalización de Servicios Públicos · E1M04 Inteligencia Artificial · E1M05 Iniciativas Sectoriales Transformadoras · E1M06 Transparencia y Gobierno Abierto |
+| **Eje 2** | E2M07 Mejora de la Experiencia de Usuario · E2M08 Modernización de SSII de Gestión · E2M09 Digitalización de Servicios de Administración Electrónica · E2M10 Automatización de Procedimientos · E2M11 Puesto y Entorno de Trabajo Digitales · E2M12 Habilidades y Competencias Digitales · E2M13 Gestión Pública Inteligente basada en el Dato |
+| **Eje 3** | E3M14 Estrategia Cloud · E3M15 Arquitecturas Digitales y Apificación de Servicios · E3M16 Arquitectura y Gobierno del Dato · E3M17 Sostenibilidad tecnológica y medio ambiental de las infraestructuras · E3M18 Obsolescencia 0 |
+| **Eje 4** | E4M19 Gobierno, Riesgo y Cumplimiento · E4M20 Concienciación y Formación · E4M21 Prevención y Protección · E4M22 Cibervigilancia, respuesta y recuperación |
+| **Eje 5** | E5M23 Gestión de la Cuenta: Cliente, Producto y Servicio · E5M24 Gobernanza: Organización, Personas y Procesos · E5M25 Evolución del Talento y Capacidades Digitales · E5M26 Comunicación y Gestión del Cambio hacia una Cultura Digital · E5M27 Cultura del Dato |
 
 ## 6. Eje 1: Innovación para una Administración Digital
 
@@ -183,14 +208,18 @@ Busca transformar el modelo de relación con la Administración, haciéndolo má
 
 Para ello se plantea una **Cuenta Digital** única y una **Identidad Digital sencilla y segura**, además de la digitalización y personalización de servicios mediante IA.
 
+El propio documento ejecutivo detalla siete aspectos que debe incorporar la estrategia de digitalización de este eje: Experiencia Total (servicios centrados en los eventos vitales del ciudadano), Acceso único (la Cuenta Digital), Omnicanalidad (con el móvil como dispositivo de preferencia), Identidad Digital única y confiable, Sencillez de uso (salvando la brecha digital), Personalización y anticipación (mediante el uso de los datos) e Innovación (aplicación de nuevas tecnologías e incentivo de la colaboración público-privada).
+
 ### 6.2. Medidas destacadas
 
-Algunas de las **seis medidas** de este eje (E1M01-E1M06) son especialmente importantes:
+El eje se compone de **seis medidas** (E1M01-E1M06):
 
-- **E1M01 Cuenta Digital:** plataforma tecnológica única y omnicanal que integra todos los servicios digitales, accesible desde cualquier dispositivo mediante la identidad digital.
-- **E1M02 Identidad Digital ("Identifica"):** sistema de autenticación orientado al móvil (por ejemplo, validación mediante selfie, códigos de un solo uso), con procesos de alta desasistidos.
-- **E1M04 Inteligencia Artificial:** creación de un hub analítico y soluciones cognitivas para personalizar servicios públicos y mejorar decisiones de la Administración.
-- **E1M05 Iniciativas sectoriales transformadoras:** proyectos tractores (Justicia Digital, Historia Social Única, etc.) en sectores clave de la Comunidad.
+- **E1M01 Cuenta Digital:** plataforma tecnológica única y omnicanal que integra todos los servicios digitales, accesible desde cualquier dispositivo mediante la identidad digital. Se concibe como espacio digital único, omnicanal y proactivo, y también como espacio de participación ciudadana para compartir opiniones y valoraciones sobre los servicios públicos digitales, contribuyendo así a la evolución del propio roadmap de servicios.
+- **E1M02 Identidad Digital ("Identifica"):** nuevo modelo de identidad digital que no requiere interacciones físicas con ningún organismo de la Administración. Mediante un selfie y una prueba de vida realizada de forma desatendida, el ciudadano dispone de una identidad con doble factor de autenticación (envío de SMS al móvil) para acceder a los servicios de la Comunidad de Madrid, pudiendo además modificar de forma sencilla sus datos básicos de identidad (teléfono, correo electrónico).
+- **E1M03 Innovación y Digitalización de Servicios Públicos:** transformación completa de la experiencia del ciudadano en los servicios públicos, que deben ser completamente automatizados, sencillos de usar, omnicanales, impulsados por datos y soportados por una identidad digital confiable. Incluye el rediseño de servicios incorporando la voz del ciudadano (a través del Citizen Lab del Centro de Innovación), la eliminación del lenguaje administrativo y la simplificación de los procedimientos de gestión asociados.
+- **E1M04 Inteligencia Artificial:** creación de un hub analítico y soluciones cognitivas para personalizar servicios públicos y mejorar decisiones de la Administración. El documento estructura su despliegue en cinco etapas: definición de la Estrategia de Inteligencia Artificial de la Comunidad de Madrid; construcción de una Plataforma de Servicios Cognitivos (Hub Analítico); abordaje de proyectos con casos de uso concretos; consolidación y extensión del uso de la IA; y transformación de los servicios delegando parte de la toma de decisiones en el núcleo de inteligencia artificial.
+- **E1M05 Iniciativas sectoriales transformadoras:** proyectos tractores en sectores clave de la Comunidad, financiados en parte con fondos del Mecanismo de Recuperación y Resiliencia (MRR), entre los que el documento destaca específicamente la Justicia Digital, la Historia Social Única (HSU) y la Teleasistencia Avanzada (TAD).
+- **E1M06 Transparencia y Gobierno Abierto:** desarrollo de utilidades que permitan la compartición y publicación de información coherente y verídica, y fomento de la participación ciudadana en la toma de decisiones de gestión de la Administración regional. Se estructura en tres ámbitos: Datos Abiertos (evolución hacia un portal único de acceso e incorporación de nuevos conjuntos de datos), Participación Ciudadana (a través del Citizen Lab) y Transparencia (cuadros de mando de publicación de datos de negocio y uso de un lenguaje claro).
 
 En examen es habitual que se cruce la **Cuenta Digital** del PEMD con la Cuenta Digital de la Estrategia de Digitalización (EDCM), por lo que conviene recordar que aquí se trata del **Plan interno de Madrid Digital**, mientras que en la EDCM la Cuenta Digital es una medida del Eje 1 de dicha Estrategia regional.
 
@@ -200,15 +229,18 @@ Eje orientado al usuario interno: gestores y empleados públicos.
 
 ### 7.1. Foco
 
-Persigue **incrementar la competitividad del empleado público**, dotando al gestor de herramientas basadas en datos, automatizando procedimientos y modernizando el puesto de trabajo digital.
+Persigue **incrementar la competitividad del empleado público**, dotando al gestor de herramientas basadas en datos, automatizando procedimientos y modernizando el puesto de trabajo digital. El propio documento apoya este eje en tres grandes pilares: la modernización de los procesos administrativos del gestor y empleado público, la especialización digital del empleado y gestor público en su función, y el liderazgo de los gestores de cada Consejería en el proceso de transformación.
 
 Se articula en **7 medidas** (E2M07-E2M13) que abarcan formación, RPA, gestión del dato y servicios de soporte.
 
 ### 7.2. Medidas destacadas
 
-Entre las medidas relevantes para TIC:
-
-- **E2M10 Automatización de procedimientos:** uso de **RPA** y otras tecnologías para eliminar tareas manuales repetitivas en procesos administrativos.
+- **E2M07 Mejora de la Experiencia de Usuario:** incorporación, en la línea de la "Experiencia Total" (TX), de la experiencia del empleado público al diseño de procesos y servicios (además de la del ciudadano), mediante estrategias de retroalimentación, prototipado y patrones de comportamiento de los sistemas de gestión que faciliten su familiarización de uso.
+- **E2M08 Modernización de SSII de Gestión:** revisión, adecuación, modernización y agilización de los procesos y sistemas de información de gestión corporativos y sectoriales, identificando oportunidades de racionalización y automatización, en estrecha relación con la medida E3M18 Obsolescencia 0.
+- **E2M09 Digitalización de Servicios de Administración Electrónica:** revisión de los servicios de administración digital y sus procedimientos asociados para simplificarlos, automatizarlos y mejorar su usabilidad, orientada a consolidar la implantación de la Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas, y de la Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público.
+- **E2M10 Automatización de procedimientos:** uso de **RPA** y otras tecnologías para eliminar tareas manuales repetitivas en procesos administrativos, mediante la elaboración de una metodología de automatización y la puesta en marcha de una Factoría de RPA.
+- **E2M11 Puesto y Entorno de Trabajo Digitales:** implantación de un nuevo entorno de trabajo digital del empleado público, que aborda herramientas de colaboración, comunicaciones unificadas, dispositivos de acceso según perfil, movilidad y conectividad de nueva generación. El modelo de trabajo híbrido en la región se sustenta en el **Decreto 79/2020**, por el que se regula la modalidad de prestación de servicios en régimen de teletrabajo en la Administración de la Comunidad de Madrid.
+- **E2M12 Habilidades y Competencias Digitales:** desarrollo del Plan de Capacitación Digital de la Comunidad de Madrid (PCDCM), orientado a habilitar al empleado público en las competencias digitales requeridas para la Transformación Digital, estructurado en tres ejes objetivo: acompañar al empleado público (Campus Digital), cocrear un modelo homogéneo de capacitación (ecosistema interno) y convertir a la Comunidad de Madrid en referente en capacitación entre las Administraciones Públicas (ecosistema externo).
 - **E2M13 Gestión pública inteligente basada en el dato:** explotación de datos mediante cuadros de mando y analítica avanzada para apoyar la toma de decisiones del gestor.
 
 ## 8. Eje 3: Infraestructuras, soluciones y arquitecturas digitales
@@ -217,18 +249,19 @@ Es el eje técnico con mayor peso presupuestario y relevancia para arquitecturas
 
 ### 8.1. Presupuesto y prioridad
 
-El **Eje 3** concentra la mayor parte del presupuesto del PEMD (alrededor de **652,3 millones**, aproximadamente el 60% del total).
+El **Eje 3** concentra la mayor parte del presupuesto del PEMD.
 
 Su objetivo es desplegar infraestructuras y arquitecturas de última generación, incrementar servicios IT basados en cloud, asegurar fiabilidad y disponibilidad y garantizar sostenibilidad tecnológica, económica y ambiental.
 
 ### 8.2. Medidas clave
 
-El eje incluye 5 medidas (E3M14-E3M18), de las que destacan:
+El eje incluye **5 medidas** (E3M14-E3M18):
 
 - **E3M14 Estrategia Cloud:** adopción del modelo de **Cloud híbrida multi-proveedor** y principio **Cloud First / Cloud Native** para nuevos servicios.
   - Promueve el uso combinado de CPD propio y al menos dos nubes públicas, con catálogo único de servicios TI y automatización de operaciones.
 - **E3M15 Arquitecturas digitales y apificación:** impulso de arquitecturas basadas en **APIs, microservicios, contenedores, eventos y DevSecOps**, consolidando un modelo modular y escalable.
 - **E3M16 Arquitectura y gobierno del dato:** diseño de la arquitectura técnica del dato y su gobierno a lo largo del ciclo de vida (captura, almacenamiento, explotación, calidad y seguridad).
+- **E3M17 Sostenibilidad tecnológica y medio ambiental de las infraestructuras:** medida orientada a garantizar la sostenibilidad económica y ambiental de las infraestructuras, en coherencia con el compromiso de Madrid Digital con la reducción de la huella ambiental del sector TIC descrito en el apartado 2.3.
 - **E3M18 Obsolescencia 0:** programa para reducir deuda técnica y renovar sistemas; el propio plan reconoce este objetivo como "inalcanzable en la práctica" pero útil como guía de modernización continua.
 
 Para el test, es frecuente que pregunten por la **definición exacta** de Estrategia Cloud (híbrida multi-proveedor, cloud first/cloud native) y por la asociación de Obsolescencia 0 al Eje 3.
@@ -248,10 +281,14 @@ El eje se estructura alrededor del lema de **"Las 4 Más"**:
 
 ### 9.2. Medidas relevantes
 
-Incluye cuatro medidas (E4M19-E4M22); las más destacables:
+Incluye **cuatro medidas** (E4M19-E4M22):
 
+- **E4M19 Gobierno, Riesgo y Cumplimiento:** definición del modelo de gobierno de la ciberseguridad, enfocado a la gestión de riesgos y al cumplimiento normativo (entre otros marcos, el Esquema Nacional de Seguridad).
+- **E4M20 Concienciación y Formación:** desarrollado bajo el lema "Más Cultura", comprende el Plan de Formación-Concienciación en ciberseguridad para los empleados de la Comunidad de Madrid, con itinerarios diversificados según perfil.
 - **E4M21 Prevención y protección:** refuerzo de controles de acceso, antimalware, firewall y otras barreras de seguridad.
 - **E4M22 Cibervigilancia, respuesta y recuperación:** monitorización continua, capacidades de **SOC** y procedimientos de respuesta y recuperación ante incidentes (incluyendo posible uso de IA aplicada a detección).
+
+El objetivo último declarado por el plan es generar confianza en la utilización de los servicios de la Comunidad de Madrid, bajo un enfoque de gestión de riesgos y de mejora continua de las medidas de seguridad requeridas.
 
 ## 10. Eje 5: Transformación de Madrid Digital hacia una cultura digital
 
@@ -261,35 +298,39 @@ Eje orientado al cambio interno y a la gestión organizativa de Madrid Digital.
 
 Se propone transformar la gestión de la Agencia, cambiando el modelo de relación con las Consejerías (clientes internos), la gobernanza de proyectos y la cultura del dato.
 
-Contiene cinco medidas (E5M23-E5M27), todas centradas en organización, gobierno y cultura.
+Contiene **cinco medidas** (E5M23-E5M27), todas centradas en organización, gobierno y cultura.
 
 ### 10.2. Medidas relevantes
 
-Tres medidas que suelen aparecer en preguntas:
-
-- **E5M23 Gestión de la Cuenta:** nuevo modelo de relación con las Consejerías, catálogo de servicios digitales y modelo de gestión de demanda orientado a producto.
-- **E5M24 Gobernanza:** adopción de modelos de equipos transversales y matriciales, más ágiles, con mejor gestión del portfolio de proyectos.
+- **E5M23 Gestión de la Cuenta: Cliente, Producto y Servicio:** nuevo modelo de relación con las Consejerías, catálogo de servicios digitales y modelo de gestión de demanda orientado a producto.
+- **E5M24 Gobernanza: Organización, Personas y Procesos:** adopción de modelos de equipos transversales y matriciales, más ágiles, con mejor gestión del portfolio de proyectos.
+- **E5M25 Evolución del Talento y Capacidades Digitales:** desarrollo del talento interno de Madrid Digital y de las capacidades digitales de su equipo, en coherencia con el principio de invertir de manera continua en el talento recogido entre los principios de transformación interna del propio PEMD.
+- **E5M26 Comunicación y Gestión del Cambio hacia una Cultura Digital:** acompañamiento del cambio cultural y organizativo necesario para consolidar una cultura digital dentro de Madrid Digital.
 - **E5M27 Cultura del Dato:** incorporación del dato como activo central en la cultura interna de Madrid Digital.
 
 ## 11. Evaluación, seguimiento y presupuesto
 
 ### 11.1. Presupuesto
 
-El plan cifra su presupuesto global en **1.085.775.000 €**, distribuido por ejes y anualidades:
+El plan cifra su presupuesto global en **1.085.775.000 €**, distribuido por anualidades en **169.500.000 € en 2022 (16%)**, **264.000.000 € en 2023 (24%)** y **652.275.000 € en el periodo 2024-2026 (60%)**.
 
-- Eje 1: ~155,8 millones.
-- Eje 2: ~283 millones.
-- Eje 3: ~652,3 millones (mayor peso).
-- Eje 4: ~86,4 millones.
-- Eje 5: ~13 millones.
+El desglose exacto por eje estratégico que recoge el documento ejecutivo del PEMD es el siguiente:
 
-El documento aclara que estas cifras son **estimativas**, excluyen gastos de personal y mantenimiento operativo corrientes, y están condicionadas a la aprobación de los Presupuestos anuales por la Asamblea de Madrid.
+- Eje 1 (Innovación para una Administración Digital): 155.750.000 € (14%).
+- Eje 2 (Gestor y Empleado Público Digital): 283.000.000 € (26%).
+- Eje 3 (Infraestructuras, Soluciones y Arquitecturas Digitales): 609.450.000 € (56%), el de mayor peso presupuestario, coherente con ser el eje técnico de mayor volumen de inversión en infraestructuras y arquitecturas.
+- Eje 4 (Ciberseguridad y Seguridad de la Información): 24.600.000 € (2%).
+- Eje 5 (Transformación de Madrid Digital hacia una Cultura Digital): 12.975.000 € (1%).
+
+El documento aclara que estas cifras son **estimativas**, excluyen gastos de personal y mantenimiento operativo corrientes (incluidos los de conservación de equipos informáticos e infraestructuras técnicas y el mantenimiento correctivo de aplicaciones), y están condicionadas a la aprobación de los Presupuestos anuales por la Asamblea de Madrid: el correspondiente a 2022 se determina sobre la ejecución presupuestaria proyectada a 31 de diciembre, el de 2023 a partir del Anteproyecto de Presupuestos de dicho ejercicio, y el del periodo 2024-2026 a partir de una proyección de los gastos de 2022-2023.
 
 ### 11.2. Sistema SEsP y seguimiento
 
 El **SEsP (Seguimiento Estratégico de Proyectos)** es el sistema corporativo donde se carga la cartera de proyectos y se vincula cada proyecto a medidas y ejes del PEMD.
 
-El plan prevé informes periódicos de seguimiento (trimestrales o semestrales), publicados en el portal de transparencia como Primer, Segundo, Tercer y Cuarto seguimiento PEMD.
+El plan se implementa mediante la ejecución de un conjunto de proyectos y subproyectos asociados a cada eje y medida; la cartera de proyectos de Madrid Digital contempla del orden de 250 proyectos y más de 330 subproyectos asociados a las medidas del PEMD.
+
+El plan prevé informes periódicos de seguimiento, publicados en el portal de transparencia. A la fecha de esta ampliación, el portal de transparencia recoge sucesivos seguimientos periódicos del PEMD 2022-26 (desde el primer seguimiento de octubre de 2022 hasta seguimientos más recientes de los ejercicios 2024 y 2025), lo que evidencia que el modelo de evaluación y seguimiento del plan se mantiene vigente a lo largo de todo su periodo de ejecución (2022-2026).
 
 ### 11.3. Madrid Digital en cifras (contexto de partida, septiembre 2022)
 
@@ -303,10 +344,10 @@ El documento incluye un apartado de indicadores de gestión a fecha 1 de septiem
 - **Destinatarios:** cuatro grandes beneficiarios: **Ciudadano, Empresa, Gestor y Empleado público**.
 - **Visión:** "**Ser la Administración referente en la prestación de servicios públicos digitales**".
 - **Misión (doble formulación):** impulsar la transformación digital con gestión eficiente e innovación; ofrecer servicios, productos y plataformas sencillos, ágiles y seguros.
-- **Valores corporativos (6):** Orientación al ciudadano/empleado, Compromiso y rigor, Ética y transparencia, Eficiencia y simplificación, Innovación, **Sostenibilidad** (por el elevado consumo energético TIC).
-- **Marco de referencia:** Brújula Digital de la Unión Europea (Digital Compass), y tendencias de McKinsey (estratégicas) y Gartner (organizativas y tecnológicas).
-- **Presupuesto global:** alrededor de **1.085,8 millones de euros** (1.085.775.000 €) para 2022-26, con más del 60% concentrado en el Eje 3.
-- **Eje con más presupuesto:** **Eje 3 – Infraestructuras, Soluciones y Arquitecturas Digitales** (unos **652 millones**, ~60%).
+- **Valores corporativos (6):** Orientación al ciudadano/empleado, Compromiso y rigor, Ética y transparencia, Eficiencia y simplificación, Innovación, **Sostenibilidad** (por el elevado consumo energético TIC, ~3,5% del consumo energético mundial).
+- **Marco de referencia:** Brújula Digital de la Unión Europea (Digital Compass), tendencias de McKinsey (estratégicas) y Gartner (organizativas y tecnológicas), y los cinco principios del Libro Blanco de la Gobernanza Europea.
+- **Presupuesto global:** **1.085,8 millones de euros** (1.085.775.000 €) para 2022-26, con el **56% concentrado en el Eje 3** (609.450.000 €), el **26% en el Eje 2** (283.000.000 €), el **14% en el Eje 1** (155.750.000 €), el **2% en el Eje 4** (24.600.000 €) y el **1% en el Eje 5** (12.975.000 €).
+- **Eje con más presupuesto:** **Eje 3 – Infraestructuras, Soluciones y Arquitecturas Digitales** (609.450.000 €, 56%).
 - **Sistema SEsP:** acrónimo de **Seguimiento Estratégico de Proyectos**, herramienta corporativa de seguimiento del PEMD.
 
 | Concepto / Distractor | PEMD 2022-26 (Madrid Digital) | EDCM 2023-26 (Comunidad de Madrid) |
@@ -326,4 +367,10 @@ El documento incluye un apartado de indicadores de gestión a fecha 1 de septiem
 - **Plan Estratégico Madrid Digital 2022-26 (PEMD)** – documento ejecutivo PDF oficial, publicado en el portal de transparencia de la Comunidad de Madrid.
 - Ficha del PEMD en el Portal de Transparencia de la Comunidad de Madrid (visión, misión, objetivos, ejes).
 - Informes de seguimiento del PEMD (seguimientos trimestrales y cierre anual).
+- **Decreto 79/2020**, por el que se regula la modalidad de prestación de servicios en régimen de teletrabajo en la Administración de la Comunidad de Madrid.
+- Ley 39/2015, de 1 de octubre, del Procedimiento Administrativo Común de las Administraciones Públicas.
+- Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público.
 - Estrategia de Digitalización de la Comunidad de Madrid 2023-2026 (EDCM), documento relacionado de nivel regional superior, estudiado en otro tema del temario.
+- Estrategia para la Recuperación y Resiliencia de la Comunidad de Madrid.
+- Plan España Digital 2025 y Agenda España Digital 2026 (Gobierno de España).
+- Plan de Recuperación, Transformación y Resiliencia (Gobierno de España), Eje 2 "Una España Digital".
