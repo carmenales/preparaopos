@@ -26,19 +26,34 @@ tags:
   - "aplicaciones-ia"
   - "reglamento-ia"
   - "ai-act"
+  - "historia-de-la-ia"
+  - "retropropagacion"
+  - "gan"
+  - "vae"
+  - "modelos-de-difusion"
+  - "model-context-protocol"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
 # Tema 13. Fundamentos de Inteligencia Artificial
 
 ## 1. Conceptos de IA, Machine Learning y Deep Learning.
+
+**Antecedentes históricos y tipología de la IA**
+El nacimiento formal de la Inteligencia Artificial como campo de estudio se sitúa en la **Conferencia de Dartmouth**, celebrada durante el verano de 1956 en Dartmouth College (Hanover, New Hampshire), organizada por John McCarthy junto con Marvin Minsky, Nathaniel Rochester y Claude Shannon. Fue el propio McCarthy quien acuñó el término *"Artificial Intelligence"* en la propuesta de financiación presentada a la Fundación Rockefeller, eligiendo deliberadamente un nombre neutro que evitase la vinculación exclusiva con la cibernética o la teoría de autómatas. Entre los participantes en el encuentro se encontraban también Allen Newell y Herbert Simon, quienes presentaron el *Logic Theorist*, considerado el primer programa de IA capaz de demostrar teoremas matemáticos mediante razonamiento heurístico. Unos años antes, en 1950, Alan Turing había planteado en su artículo *"Computing Machinery and Intelligence"* el conocido como **Test de Turing**, un criterio conductual para valorar si una máquina exhibe un comportamiento indistinguible del de un ser humano en una conversación.
+
+Doctrinalmente se distingue entre tres niveles o tipos de IA según su alcance y capacidad:
+*   **IA débil o estrecha (*Narrow AI*):** sistemas diseñados y entrenados para realizar una tarea concreta y acotada (traducción automática, reconocimiento de imágenes, recomendación de contenidos). Es el único tipo de IA existente en la actualidad de forma operativa.
+*   **IA fuerte o general (*Artificial General Intelligence*, AGI):** hipotética inteligencia artificial capaz de igualar la capacidad cognitiva humana en cualquier tarea intelectual, con capacidad de transferir el aprendizaje entre dominios dispares.
+*   **Superinteligencia artificial (*Artificial Superintelligence*, ASI):** hipotético estadio posterior en el que la capacidad de la máquina superaría a la inteligencia humana en la práctica totalidad de los dominios.
 
 **Inteligencia Artificial (IA)**
 El Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (Reglamento de Inteligencia Artificial), define normativamente en su artículo 3, apartado 1, un **sistema de IA** como un sistema basado en una máquina que está diseñado para funcionar con distintos niveles de autonomía y que puede mostrar capacidad de adaptación tras el despliegue, y que, para objetivos explícitos o implícitos, infiere de la información de entrada que recibe la manera de generar resultados de salida, como predicciones, contenidos, recomendaciones o decisiones, que pueden influir en entornos físicos o virtuales. La capacidad de inferencia trasciende el tratamiento básico de datos, permitiendo el aprendizaje, el razonamiento o la modelización.
@@ -56,6 +71,7 @@ Es una subdisciplina avanzada del Machine Learning basada en redes neuronales ar
 *   **Topologías comunes:**
     *   *Redes Neuronales Convolucionales (CNN):* Especializadas en el procesamiento de datos con topología de cuadrícula, como imágenes y video (visión artificial).
     *   *Redes Neuronales Recurrentes (RNN):* Diseñadas para el procesamiento de datos secuenciales o series temporales, como texto o audio. LSTM (*Long Short-Term Memory*) es una de sus variantes más estables.
+*   **Mecanismo de entrenamiento: descenso de gradiente y retropropagación:** El ajuste de los pesos y sesgos de una red neuronal durante el entrenamiento se realiza mediante el algoritmo de **descenso de gradiente** (*Gradient Descent*), un método de optimización iterativo que actualiza los parámetros del modelo en la dirección que reduce el valor de la función de pérdida (*loss function*), que cuantifica el error entre la predicción del modelo y el valor real esperado. El cálculo del gradiente de dicha función respecto de cada peso de la red se obtiene mediante el algoritmo de **retropropagación** (*Backpropagation*), que propaga el error desde la capa de salida hacia las capas anteriores aplicando la regla de la cadena del cálculo diferencial. La magnitud del ajuste en cada iteración viene determinada por la **tasa de aprendizaje** (*learning rate*), un hiperparámetro cuya elección condiciona la velocidad y la estabilidad de la convergencia del entrenamiento.
 
 ## 2. Modelos supervisados y no supervisados.
 
@@ -90,7 +106,13 @@ Durante el entrenamiento, deben evitarse dos problemas fundamentales:
 ## 3. IA generativa y modelos de lenguaje.
 
 **IA Generativa**
-La IA generativa comprende arquitecturas diseñadas para la generación flexible de contenidos, permitiendo producir elementos novedosos en formato de texto, audio, imágenes o vídeo, que pueden adaptarse fácilmente a una amplia gama de tareas diferenciadas. El desarrollo de estos modelos requiere acceder a grandes cantidades de datos y utilizar técnicas de prospección de textos y datos para la recuperación y el análisis de contenidos. La arquitectura tecnológica que ha revolucionado este campo es el **Transformer**, basado en mecanismos de atención (*Self-Attention*), que permite procesar secuencias de datos en paralelo, capturando el contexto a largo plazo con alta eficiencia.
+La IA generativa comprende arquitecturas diseñadas para la generación flexible de contenidos, permitiendo producir elementos novedosos en formato de texto, audio, imágenes o vídeo, que pueden adaptarse fácilmente a una amplia gama de tareas diferenciadas. El desarrollo de estos modelos requiere acceder a grandes cantidades de datos y utilizar técnicas de prospección de textos y datos para la recuperación y el análisis de contenidos. La arquitectura tecnológica que ha revolucionado este campo es el **Transformer**, formulada en el artículo *"Attention Is All You Need"* (Vaswani et al., Google, 2017), basado en mecanismos de atención (*Self-Attention*), que permite procesar secuencias de datos en paralelo, capturando el contexto a largo plazo con alta eficiencia.
+
+**Otras arquitecturas de modelos generativos**
+Junto a los modelos basados en Transformer (propios de los grandes modelos de lenguaje), la generación de contenido sintético, en particular de imágenes, se apoya históricamente en otras familias de arquitecturas de aprendizaje profundo:
+*   **Autocodificadores variacionales (VAE - *Variational Autoencoders*):** Arquitectura compuesta por un codificador, que comprime los datos de entrada en una representación latente de menor dimensión siguiendo una distribución de probabilidad, y un decodificador, que reconstruye los datos originales a partir de dicha representación latente. Permiten generar nuevas muestras variando el espacio latente, si bien tienden a producir resultados de menor nitidez que otras arquitecturas.
+*   **Redes generativas antagónicas (GAN - *Generative Adversarial Networks*):** Arquitectura propuesta por Ian Goodfellow y otros en 2014, compuesta por dos redes neuronales entrenadas de forma simultánea y competitiva: un **generador**, que crea muestras sintéticas a partir de ruido aleatorio, y un **discriminador**, que trata de distinguir las muestras generadas artificialmente de las muestras reales del conjunto de entrenamiento. Ambas redes se entrenan conjuntamente como un juego de suma cero, de modo que el generador mejora progresivamente su capacidad de producir muestras indistinguibles de las reales.
+*   **Modelos de difusión (*Diffusion Models*):** Arquitectura generativa que aprende a revertir progresivamente un proceso de adición controlada de ruido gaussiano a una imagen, de modo que, partiendo de ruido puro, el modelo aprende a "limpiar" la imagen paso a paso hasta reconstruir una muestra coherente. Constituyen en la actualidad el estado del arte en la generación de imágenes de alta fidelidad, siendo la arquitectura subyacente de herramientas como Stable Diffusion o DALL·E.
 
 **Modelos de Lenguaje y Modelos de IA de Uso General**
 Los grandes modelos de IA generativa (LLMs - *Large Language Models*) constituyen el ejemplo paradigmático de lo que el marco normativo define como **modelo de IA de uso general**. Un modelo de IA de uso general se caracteriza por:
@@ -111,13 +133,13 @@ El artículo 50 del Reglamento (UE) 2024/1689 establece obligaciones específica
 ## 4. IA agentica y automatización inteligente.
 
 **IA Agéntica (Agentes Autónomos)**
-La Inteligencia Artificial agéntica representa la evolución desde los modelos reactivos o de consulta directa hacia sistemas autónomos o "agentes" capaces de planificar tareas, utilizar herramientas externas, razonar secuencialmente y tomar acciones para cumplir objetivos complejos sin supervisión continua. 
+La Inteligencia Artificial agéntica representa la evolución desde los modelos reactivos o de consulta directa hacia sistemas autónomos o "agentes" capaces de planificar tareas, utilizar herramientas externas, razonar secuencialmente y tomar acciones para cumplir objetivos complejos sin supervisión continua.
 
 Un agente autónomo se compone arquitectónicamente de:
 *   **Cerebro (Brain):** El LLM que actúa como motor de razonamiento, toma de decisiones y procesamiento de lenguaje natural.
 *   **Memoria (Memory):** Capacidad de retener contexto. Se divide en memoria a corto plazo (historial de la conversación actual) y memoria a largo plazo (almacenamiento vectorial de interacciones pasadas para recuperación de contexto histórico).
-*   **Planificación (Planning):** Habilidad para descomponer un objetivo complejo en sub-tareas manejables (técnicas como *Chain of Thought* o *Tree of Thoughts*) y capacidad de autorreflexión para corregir errores durante la ejecución.
-*   **Herramientas/Actuadores (Tools/Action):** Interfaces que permiten al agente interactuar con el entorno exterior, tales como ejecutar código, consultar APIs, buscar en internet o ejecutar consultas SQL en bases de datos.
+*   **Planificación (Planning):** Habilidad para descomponer un objetivo complejo en sub-tareas manejables (técnicas como *Chain of Thought* o *Tree of Thoughts*) y capacidad de autorreflexión para corregir errores durante la ejecución. Una técnica de planificación especialmente extendida es el patrón **ReAct** (*Reasoning + Acting*), formulado en el artículo *"ReAct: Synergizing Reasoning and Acting in Language Models"* (Yao et al., 2022), que intercala explícitamente pasos de razonamiento en lenguaje natural con la ejecución de acciones concretas sobre el entorno, de modo que el resultado de cada acción retroalimenta el razonamiento del paso siguiente.
+*   **Herramientas/Actuadores (Tools/Action):** Interfaces que permiten al agente interactuar con el entorno exterior, tales como ejecutar código, consultar APIs, buscar en internet o ejecutar consultas SQL en bases de datos. Para estandarizar esta conexión entre el agente y las herramientas o fuentes de datos externas se ha extendido el uso del **Protocolo de Contexto de Modelo (MCP - *Model Context Protocol*)**, un estándar abierto presentado por Anthropic en noviembre de 2024, que define una arquitectura cliente-servidor (host, cliente y servidor MCP) para que un mismo sistema de IA pueda conectarse, mediante una interfaz uniforme, a múltiples herramientas, API o bases de datos externas sin necesidad de desarrollar una integración específica para cada combinación de modelo y servicio.
 
 La gestión técnica del ciclo de vida de este paradigma, englobando su desarrollo, monitorización y gobernanza corporativa, se articula en torno a metodologías avanzadas de operaciones como **AgentOps**, que complementan a las tradicionales MLOps y LLMOps.
 
@@ -171,6 +193,12 @@ En el marco estratégico de la modernización de la Administración Pública, la
 *   **Tratamiento de información no estructurada:** Automatización de procesos administrativos mediante algoritmos de inteligencia artificial, optimizando la búsqueda, clasificación y extracción de datos en repositorios de información no estructurada (documentos escaneados, imágenes y vídeos).
 *   **Ciberseguridad y Centros de Operaciones (SOC):** Integración de IA en la cibervigilancia para la detección temprana de amenazas persistentes avanzadas (APT). El uso de IA permite el análisis dinámico de grandes volúmenes de eventos de seguridad y la ejecución de respuestas automatizadas de prevención y contención frente a incidentes.
 
-## Referencias normativas
+## Referencias normativas y técnicas
 
 *   Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (Reglamento de Inteligencia Artificial), publicado en el Diario Oficial de la Unión Europea el 12 de julio de 2024 (artículos 3, 5, 6, 50 y Anexo III).
+*   Turing, A. M., *"Computing Machinery and Intelligence"*, Mind, 1950.
+*   McCarthy, J., Minsky, M., Rochester, N. y Shannon, C., propuesta de la Conferencia de Dartmouth (Dartmouth Summer Research Project on Artificial Intelligence), 1956.
+*   Vaswani, A. et al., *"Attention Is All You Need"*, Google, NeurIPS 2017 (arXiv:1706.03762).
+*   Goodfellow, I. et al., *"Generative Adversarial Networks"*, 2014 (arXiv:1406.2661).
+*   Yao, S. et al., *"ReAct: Synergizing Reasoning and Acting in Language Models"*, 2022 (arXiv:2210.03629).
+*   Anthropic, *"Introducing the Model Context Protocol"*, noviembre de 2024.
