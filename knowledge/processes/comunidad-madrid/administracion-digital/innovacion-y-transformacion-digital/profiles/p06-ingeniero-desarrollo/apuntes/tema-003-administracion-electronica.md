@@ -17,13 +17,17 @@ tags:
   - "rd-203-2021"
   - "funcionamiento-sector-publico"
   - "medios-electronicos"
+  - "page"
+  - "carpeta-ciudadana"
+  - "sede-electronica"
 created_at: "2026-09-03"
-last_reviewed: null
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -36,19 +40,13 @@ El Real Decreto 203/2021 aprueba el Reglamento que tiene por objeto el desarroll
 
 El Reglamento no sustituye a las Leyes 39/2015 y 40/2015: las desarrolla en los aspectos electrónicos y debe interpretarse conjuntamente con ellas. La Ley 39/2015 regula principalmente la relación electrónica con las personas y el procedimiento administrativo; la Ley 40/2015 regula, entre otras materias, el funcionamiento electrónico interno, la sede, los sistemas y la interoperabilidad entre Administraciones.
 
-El Real Decreto 203/2021 se estructura en:
+El Real Decreto 203/2021 se estructura, según su propio índice sistemático, en:
 
-- disposiciones generales;
-- portales de Internet, Punto de Acceso General electrónico y sedes electrónicas;
-- identificación y firma electrónica de las Administraciones y de las personas interesadas;
-- actuación administrativa automatizada;
-- sistemas de identificación y firma del personal;
-- intercambio electrónico de datos en entornos cerrados;
-- documentos y expedientes electrónicos;
-- archivo electrónico;
-- relaciones electrónicas entre Administraciones;
-- asistencia en materia de registros;
-- notificaciones electrónicas.
+- **Disposiciones generales** (arts. 1 a 4): objeto, principios generales, derecho y obligación de relacionarse electrónicamente, y canales de asistencia.
+- **Título I. Portales de Internet, Punto de Acceso General electrónico y sedes electrónicas** (arts. 5 a 12).
+- **Título II. Procedimiento administrativo por medios electrónicos**, dividido en tres capítulos: Capítulo I "Disposiciones generales" (tramitación administrativa automatizada y régimen de subsanaciones); Capítulo II "Identificación y autenticación de las Administraciones Públicas y de las personas interesadas" (dividido a su vez en cuatro secciones); y el capítulo relativo a las notificaciones electrónicas (arts. 41 a 45).
+- **Título III. Expediente administrativo electrónico** (arts. 46 a 55), dividido en dos capítulos: Capítulo I "Documento administrativo electrónico y copias" (arts. 46 a 53) y Capítulo II "Archivo electrónico único" (arts. 54 y 55).
+- **Título IV. Relaciones electrónicas entre las Administraciones Públicas**, dividido en dos capítulos: colaboración entre Administraciones para la actuación electrónica y asistencia en materia de registros.
 
 **Ámbito de aplicación subjetivo**
 El ámbito de aplicación de este Reglamento es el establecido de manera concurrente en el artículo 2 de la Ley 39/2015, de 1 de octubre, y en el artículo 2 de la Ley 40/2015, de 1 de octubre.
@@ -74,15 +72,15 @@ El sector público deberá respetar los siguientes principios en sus actuaciones
 *   **Proporcionalidad:** Exigencia de garantías y medidas de seguridad adecuadas a la naturaleza y circunstancias de los distintos trámites.
 *   **Personalización y proactividad:** Capacidad de proporcionar servicios precumplimentados y anticiparse a posibles necesidades a partir del conocimiento adquirido del usuario.
 
-A estos principios deben añadirse, para entender el Reglamento, la seguridad, la protección de datos personales, la transparencia, la simplificación administrativa, la cooperación y colaboración entre Administraciones y la orientación al servicio a la ciudadanía.
+A estos principios deben añadirse, para entender el Reglamento, la seguridad, la protección de datos personales, la transparencia, la simplificación administrativa, la cooperación y colaboración entre Administraciones y la orientación al servicio a la ciudadanía. Estos principios generales se regulan en el artículo 2 del Reglamento.
 
 ### Conceptos que se confunden
 
-- **Portal de Internet:** punto de acceso a información y servicios de una Administración o entidad.
-- **Punto de Acceso General electrónico:** punto de acceso electrónico que facilita la relación con una Administración y la localización de sus servicios.
-- **Sede electrónica:** dirección electrónica cuya titularidad corresponde a una Administración, organismo público o entidad de Derecho público, en el ejercicio de sus competencias, y que está sujeta a responsabilidad del titular respecto de la integridad, veracidad y actualización de la información y servicios.
+- **Portal de Internet (artículo 5):** punto de acceso a información y servicios de una Administración o entidad.
+- **Punto de Acceso General electrónico (PAGe) (artículo 7):** punto de acceso electrónico que facilita la relación con una Administración y la localización de sus servicios. En el ámbito de la Administración General del Estado, el PAGe dispone de sede electrónica propia, a través de la cual puede accederse a todas las sedes electrónicas y sedes asociadas de dicha Administración.
+- **Sede electrónica (artículo 9):** dirección electrónica cuya titularidad corresponde a una Administración, organismo público o entidad de Derecho público, en el ejercicio de sus competencias, y que está sujeta a responsabilidad del titular respecto de la integridad, veracidad y actualización de la información y servicios. Conforme al artículo 66.1 de la Ley 39/2015, las Administraciones Públicas deben mantener y actualizar en su sede electrónica un listado con los códigos de identificación vigentes de sus órganos, centros o unidades administrativas.
 - **Registro electrónico:** sistema para recibir y remitir solicitudes, escritos y comunicaciones.
-- **Carpeta ciudadana:** espacio que permite consultar información personal, expedientes, notificaciones y otros servicios según la Administración competente.
+- **Carpeta ciudadana (artículo 8):** espacio que permite consultar información personal, expedientes, notificaciones y otros servicios según la Administración competente. En el ámbito estatal, es accesible a través de la sede electrónica del PAGe de la Administración General del Estado y puede ofrecer, entre otras, funcionalidades como el seguimiento del estado de tramitación de los procedimientos en los que el interesado sea parte. El interesado debe asegurar el buen uso de los sistemas de identificación y velar por que el acceso a su Carpeta Ciudadana solo se realice por sí mismo o por tercero autorizado.
 
 La sede electrónica no es simplemente una página web: tiene titular identificado, responsabilidad jurídica y garantías de seguridad, disponibilidad, autenticidad e integridad.
 
@@ -216,7 +214,7 @@ La comparecencia en sede significa el acceso por el interesado o su representant
 
 En caso de puesta a disposición por ambos sistemas simultáneamente, el cómputo de plazos y efectos jurídicos se iniciará tomando la fecha y hora de acceso al contenido o rechazo de la notificación en el sistema en el que haya ocurrido en primer lugar.
 
-En el ámbito de la Administración General del Estado, las notificaciones se pondrán a disposición obligatoriamente a través de la DEHú, pudiendo realizarse de forma complementaria en la sede electrónica correspondiente.
+En el ámbito de la Administración General del Estado, las notificaciones se pondrán a disposición obligatoriamente a través de la DEHú, pudiendo realizarse de forma complementaria en la sede electrónica correspondiente. Esta regla, y la referida a la notificación electrónica practicada directamente en sede electrónica o sede electrónica asociada, se concretan en el artículo 45 del Reglamento.
 
 **Acceso, rechazo y diez días**
 Para dar por efectuado el trámite a efectos jurídicos, deberá constar:
@@ -260,7 +258,7 @@ El acceso debe realizarlo el interesado o su representante identificado. La mera
 **Características y obligatoriedad**
 Las Administraciones Públicas dispondrán de registros electrónicos para la recepción y remisión de solicitudes, escritos y comunicaciones, los cuales deberán ser plenamente interoperables para garantizar su interconexión a través del Sistema de Interconexión de Registros —SIR—. Cada Administración dispondrá de un Registro Electrónico General.
 
-El Registro Electrónico General de cada Administración funciona como punto de entrada para solicitudes, escritos y comunicaciones dirigidos a órganos, organismos y entidades de su ámbito, salvo que exista un registro electrónico específico habilitado para un procedimiento concreto.
+El Registro Electrónico General de cada Administración funciona como punto de entrada para solicitudes, escritos y comunicaciones dirigidos a órganos, organismos y entidades de su ámbito, salvo que exista un registro electrónico específico habilitado para un procedimiento concreto. La presentación y tratamiento de documentos en registro se regula en el artículo 39 del Reglamento, cuyas anotaciones en el Registro General de la Administración General del Estado tienen, conforme al propio precepto, plena eficacia y validez para todas las Administraciones Públicas.
 
 El registro debe:
 
@@ -346,6 +344,8 @@ Debe distinguirse entre:
 - registro electrónico de apoderamientos: representación otorgada para actuar ante la Administración;
 - funcionario habilitado: asistencia para identificación o firma de una actuación concreta.
 
+En el ámbito de la Administración General del Estado y sus organismos públicos y entidades de derecho público vinculados o dependientes, los trámites electrónicos que pueden realizarse mediante un poder general (de los previstos en el artículo 6.4.a de la Ley 39/2015, otorgado por el interesado e inscrito en el Registro Electrónico de Apoderamientos) se publican en la sede electrónica del PAGe de la Administración General del Estado y en las respectivas sedes electrónicas o sedes electrónicas asociadas.
+
 ### Interoperabilidad y Sistema de Interconexión de Registros
 
 El SIR permite el intercambio de asientos registrales y documentos entre Administraciones y oficinas conectadas. La interoperabilidad exige utilizar normas técnicas, metadatos, identificación de órganos y garantías de integridad.
@@ -354,13 +354,13 @@ La existencia del SIR no elimina la responsabilidad del órgano destinatario: el
 
 ## 6. Documentos, expedientes y archivo electrónico
 
-Aunque no aparezcan como epígrafes separados, son contenidos razonablemente examinables porque forman parte del Reglamento y están conectados con registro y notificaciones.
+Aunque no aparezcan como epígrafes separados, son contenidos razonablemente examinables porque forman parte del Reglamento y están conectados con registro y notificaciones. Este contenido se corresponde con el Título III del Reglamento (arts. 46 a 55).
 
 ### Documento electrónico
 
-El documento administrativo electrónico debe incorporar, al menos, información que permita identificarlo, garantizar su autenticidad e integridad y contextualizarlo dentro de un expediente.
+El documento administrativo electrónico (artículo 46) debe incorporar, al menos, información que permita identificarlo, garantizar su autenticidad e integridad y contextualizarlo dentro de un expediente.
 
-La copia electrónica auténtica debe permitir comprobar:
+Los requisitos de validez y eficacia de las copias auténticas de documentos (artículo 47) se remiten expresamente a lo previsto en el artículo 27.2 de la Ley 39/2015. La copia electrónica auténtica debe permitir comprobar:
 
 - identidad del órgano o persona que la expide;
 - correspondencia con el original;
@@ -368,15 +368,17 @@ La copia electrónica auténtica debe permitir comprobar:
 - fecha y, cuando proceda, sello de tiempo;
 - código o sistema de verificación.
 
+Cuando en un procedimiento electrónico el órgano actuante esté obligado a facilitar al interesado un ejemplar de un documento administrativo electrónico, dicho documento podrá sustituirse por la entrega de los datos necesarios para su acceso por medios electrónicos adecuados.
+
 ### Expediente electrónico
 
 El expediente electrónico es el conjunto ordenado de documentos y actuaciones que sirven de antecedente y fundamento a la resolución administrativa, así como las diligencias encaminadas a ejecutarla.
 
-Debe incorporar índice electrónico, que garantiza la integridad del expediente y permite su recuperación. La remisión del expediente a otro órgano debe realizarse mediante copia auténtica o sistema que asegure su integridad.
+Debe incorporar índice electrónico, que garantiza la integridad del expediente y permite su recuperación. La remisión del expediente a otro órgano debe realizarse mediante copia auténtica o sistema que asegure su integridad. La configuración del expediente administrativo electrónico se regula en el artículo 51 del Reglamento, y el ejercicio del derecho de acceso al expediente electrónico y la obtención de copias de los documentos electrónicos, en el artículo 52. El tiempo de conservación y la destrucción de documentos se regulan en el artículo 53.
 
 ### Archivo electrónico único
 
-Cada Administración debe mantener un archivo electrónico único de los documentos electrónicos correspondientes a procedimientos finalizados, en los términos de la normativa aplicable.
+Cada Administración debe mantener un archivo electrónico único de los documentos electrónicos correspondientes a procedimientos finalizados, en los términos de la normativa aplicable, regulado en el Capítulo II del Título III del Reglamento (artículos 54 y 55).
 
 El archivo debe garantizar:
 
@@ -393,13 +395,23 @@ El archivo debe garantizar:
 
 | Materia | Norma de referencia |
 |---|---|
+| Principios generales | RD 203/2021, art. 2 |
 | Derecho y obligación de relación electrónica | Ley 39/2015, art. 14; RD 203/2021, art. 3 |
+| Canales de asistencia para el acceso a los servicios electrónicos | RD 203/2021, art. 4 |
+| Portales de internet | RD 203/2021, arts. 5 y 6 |
+| Punto de Acceso General electrónico (PAGe) | RD 203/2021, art. 7 |
+| Carpeta Ciudadana del sector público estatal | RD 203/2021, art. 8 |
+| Sede electrónica | Ley 40/2015, art. 38; RD 203/2021, arts. 9 a 11 |
 | Subsanación por canal incorrecto | RD 203/2021, art. 14 |
-| Identificación y firma de interesados | Ley 39/2015, arts. 9 y 10; RD 203/2021 |
+| Identificación y firma de interesados | Ley 39/2015, arts. 9 y 10; RD 203/2021, Título II, capítulo II |
 | Notificaciones electrónicas | Ley 39/2015, arts. 40 a 46; RD 203/2021, arts. 41 a 45 |
-| Registros | Ley 39/2015, arts. 16 y 31; RD 203/2021 |
-| Sede electrónica | Ley 40/2015, art. 38; RD 203/2021 |
-| Actuación administrativa automatizada | Ley 40/2015, art. 41; RD 203/2021 |
+| Presentación y tratamiento de documentos en registro | Ley 39/2015, arts. 16 y 31; RD 203/2021, art. 39 |
+| Documento administrativo electrónico | RD 203/2021, art. 46 |
+| Requisitos de validez y eficacia de las copias auténticas | Ley 39/2015, art. 27.2; RD 203/2021, art. 47 |
+| Configuración y acceso al expediente electrónico | RD 203/2021, arts. 51 y 52 |
+| Conservación y destrucción de documentos | RD 203/2021, art. 53 |
+| Archivo electrónico único | RD 203/2021, arts. 54 y 55 |
+| Actuación administrativa automatizada | Ley 40/2015, art. 41; RD 203/2021, Título II, capítulo I |
 | Interoperabilidad | Ley 40/2015 y Esquema Nacional de Interoperabilidad |
 | Seguridad | Ley 40/2015 y Esquema Nacional de Seguridad |
 
@@ -427,6 +439,8 @@ El archivo debe garantizar:
 - El aviso por correo no es la notificación.
 - La falta de aviso no invalida automáticamente la notificación.
 - El Portal no es la sede.
+- El PAGe no es lo mismo que una sede electrónica concreta: es el punto de acceso que enlaza con todas las sedes y sedes asociadas de la Administración correspondiente.
+- La Carpeta Ciudadana no es un registro: es un espacio de consulta y seguimiento personalizado del interesado.
 - El registro electrónico no es el registro de apoderamientos.
 - Digitalizar no equivale siempre a crear una copia electrónica auténtica.
 - SIR intercambia asientos y documentos, pero no sustituye la competencia del órgano destinatario.
