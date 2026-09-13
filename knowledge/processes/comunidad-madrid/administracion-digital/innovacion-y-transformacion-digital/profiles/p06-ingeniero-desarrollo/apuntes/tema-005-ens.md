@@ -19,13 +19,17 @@ tags:
   - "disposiciones-generales"
   - "medidas-seguridad"
   - "ccn-cert"
+  - "declaracion-de-conformidad"
+  - "certificacion-de-conformidad"
+  - "perfiles-de-cumplimiento-especifico"
 created_at: "2026-09-09"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -150,7 +154,15 @@ Enfocadas a salvaguardar activos concretos según su naturaleza y exigencia de n
 *   **[mp.info] Información:** Calificación de la información, protección de datos personales, firma electrónica, sellos de tiempo, limpieza de metadatos y copias de seguridad probadas.
 *   **[mp.s] Servicios:** Protección del correo electrónico (antispam, antimalware), protección de aplicaciones web (WAF, prevención de inyecciones) y mitigación de denegación de servicio (DoS/DDoS).
 
-## 5. Auditoría, Gobernanza y Respuesta a Incidentes
+## 5. Cumplimiento de los requisitos mínimos: infraestructuras comunes y perfiles de cumplimiento específicos (Capítulo III, Artículos 28 a 30)
+
+El Capítulo III del Real Decreto ("Requisitos mínimos de seguridad") cierra su regulación con tres artículos que conviene distinguir con precisión:
+
+*   **Cumplimiento de los requisitos mínimos de seguridad (Artículo 28):** Establece que, para dar cumplimiento a los requisitos mínimos exigidos, las entidades aplicarán las medidas de seguridad indicadas en el Anexo II, atendiendo a la categoría del sistema. Cuando alguna de dichas medidas no resulte de aplicación, deberá justificarse documentalmente y, en su caso, proponerse una medida compensatoria alternativa que ofrezca una protección equivalente. El conjunto de medidas seleccionadas, junto con su grado de implantación y las eventuales excepciones justificadas, se recoge en la **Declaración de Aplicabilidad**, documento formal que constituye la base sobre la que se sustentará posteriormente la auditoría o autoevaluación de conformidad.
+*   **Infraestructuras y servicios comunes (Artículo 29):** Realiza un llamamiento a la utilización, por parte de las entidades del sector público, de las infraestructuras y servicios comunes que pongan a su disposición las Administraciones Públicas (por ejemplo, servicios horizontales de identidad digital, notificaciones electrónicas o interconexión de redes), con el fin de lograr una mayor eficiencia en el empleo de los recursos públicos y aprovechar las sinergias y economías de escala de cada colectivo de entidades.
+*   **Perfiles de cumplimiento específicos y acreditación de entidades de implementación de configuraciones seguras (Artículo 30):** Habilita la elaboración de **perfiles de cumplimiento específicos**, entendidos como adaptaciones de la aplicación del ENS a colectivos concretos de entidades o a tipologías particulares de sistemas de información (por ejemplo, entidades locales de reducida dimensión, universidades u otros sectores con características singulares), facilitando así una aplicación proporcionada y adaptada del Esquema sin rebajar el nivel de seguridad exigido. El mismo artículo habilita, además, el establecimiento de esquemas de acreditación de entidades especializadas en la implementación de configuraciones seguras conforme a las guías CCN-STIC, reforzando la garantía técnica de dicha implementación.
+
+## 6. Auditoría, Gobernanza y Respuesta a Incidentes
 
 **Auditoría de Seguridad (Artículo 31 y Anexo III)**
 *   Los sistemas de información deben someterse a una auditoría regular ordinaria al menos **cada dos años** para verificar el cumplimiento del ENS.
@@ -158,15 +170,21 @@ Enfocadas a salvaguardar activos concretos según su naturaleza y exigencia de n
 *   En sistemas de categoría BÁSICA, la auditoría puede sustituirse por una autoevaluación documentada. En categorías MEDIA y ALTA se requiere auditoría externa formal.
 *   El Informe Nacional del Estado de la Seguridad (INES) consolida la información anual de todas las Administraciones Públicas a través del CCN.
 
+**Declaración y Certificación de Conformidad (Capítulo V, Artículo 38)**
+El Capítulo V del Real Decreto ("Normas de conformidad") regula en su artículo 38 los procedimientos para determinar y acreditar formalmente la conformidad de un sistema de información con el ENS, distinguiendo dos figuras según la categoría del sistema:
+*   **Declaración de Conformidad:** Reservada a los sistemas de categoría **BÁSICA**. Se obtiene mediante un proceso de **autoevaluación** interna, realizado ordinariamente al menos cada dos años (sin perjuicio de que la entidad pueda optar voluntariamente por someterse a una auditoría externa).
+*   **Certificación de Conformidad:** Exigida para los sistemas de categoría **MEDIA y ALTA**. Requiere necesariamente una **auditoría de certificación** realizada por una entidad de certificación acreditada (por la Entidad Nacional de Acreditación, ENAC, para el esquema ENS), sin perjuicio de que la propia auditoría de seguridad ordinaria del artículo 31 pueda servir a estos mismos efectos de certificación cuando reúna los requisitos exigidos.
+Tanto la Declaración como la Certificación de Conformidad deben hacerse constar mediante el correspondiente distintivo de conformidad con el ENS, en los términos que determine el CCN, y su vigencia está sujeta a renovación periódica.
+
 **Respuesta a Incidentes y el CCN-CERT (Artículos 33 y 34)**
 *   La capacidad técnica de respuesta se articula en torno al **CCN-CERT** (Computer Emergency Response Team del Centro Criptológico Nacional).
 *   Las entidades del sector público están obligadas a notificar al CCN-CERT aquellos incidentes que tengan un impacto significativo en la seguridad de sus sistemas.
 *   El CCN-CERT coordina la respuesta a nivel nacional, emite directrices técnicas (Guías CCN-STIC) y establece las alertas sobre vulnerabilidades y ciberamenazas avanzadas.
 *   Tras un incidente grave, el CCN-CERT determinará técnicamente el riesgo de reconexión del sistema afectado y dictará las salvaguardas a implementar para su reactivación segura.
 
-## 6. Referencias normativas
+## 7. Referencias normativas
 
-*   Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad (BOE núm. 106, de 4 de mayo de 2022).
+*   Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad (BOE núm. 106, de 4 de mayo de 2022), artículos 28 a 30 y 38.
 *   Ley 40/2015, de 1 de octubre, de Régimen Jurídico del Sector Público (artículos 2 y 156.2).
 *   Ley 36/2015, de 28 de septiembre, de Seguridad Nacional.
 *   Ley 9/1968, de 5 de abril, de Secretos Oficiales.
