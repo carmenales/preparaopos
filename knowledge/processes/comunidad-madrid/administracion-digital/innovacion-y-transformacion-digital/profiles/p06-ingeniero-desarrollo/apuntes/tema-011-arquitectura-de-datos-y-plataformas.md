@@ -27,13 +27,17 @@ tags:
   - "on-premise"
   - "nist-800-145"
   - "arquitectura-medallion"
+  - "gaia-x"
+  - "contratos-de-datos"
+  - "tiempo-de-evento"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-12"
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -110,6 +114,13 @@ El procesamiento de los datos se diseña atendiendo a la latencia requerida por 
 *   **Casos de uso:** Sistemas de recomendación en tiempo real, detección de fraude, monitorización de logs de ciberseguridad y procesamiento de telemetría en Internet de las Cosas (IoT).
 *   **Tecnologías habituales:** Apache Kafka, Apache Flink, Apache Spark Streaming, Apache Storm.
 
+**Conceptos clave de la semántica del procesamiento en streaming**
+El diseño correcto de una canalización de streaming exige distinguir con precisión los siguientes conceptos:
+*   **Tiempo de evento (*Event Time*) frente a tiempo de procesamiento (*Processing Time*):** el tiempo de evento es el instante en que el suceso ocurrió realmente en el origen (por ejemplo, el momento en que un sensor IoT registró una medición), mientras que el tiempo de procesamiento es el instante en que dicho evento es efectivamente procesado por el motor de streaming. Ambos pueden diferir de forma significativa por retrasos de red o desconexiones temporales, lo que resulta crítico para obtener resultados correctos en agregaciones temporales.
+*   **Marcas de agua (*Watermarks*):** mecanismo que permite al motor de streaming estimar hasta qué punto en el tiempo de evento ha recibido ya todos los datos relevantes, de modo que pueda decidir cuándo cerrar una ventana temporal de agregación y emitir un resultado, a la vez que gestiona de forma acotada los eventos que llegan fuera de orden o con retraso (*late data*).
+*   **Ventaneo (*Windowing*):** técnica para agrupar un flujo continuo e ilimitado de eventos en subconjuntos finitos sobre los que aplicar agregaciones, mediante ventanas fijas o de saltos (*tumbling windows*), ventanas deslizantes (*sliding windows*) o ventanas de sesión (*session windows*), delimitadas estas últimas por periodos de inactividad.
+*   **Garantías de entrega (*delivery semantics*):** determinan cuántas veces puede llegar a procesarse un mismo evento ante fallos o reintentos: *at-most-once* (el evento puede perderse pero nunca se procesa más de una vez), *at-least-once* (el evento nunca se pierde pero puede procesarse más de una vez, exigiendo operaciones idempotentes aguas abajo) y *exactly-once* (el efecto neto del procesamiento es equivalente a haber procesado el evento una única vez, la garantía más exigente y la que ofrecen motores como Apache Flink o Kafka Streams mediante mecanismos transaccionales).
+
 **Arquitecturas de referencia para combinar batch y streaming: Lambda y Kappa**
 
 Cuando una organización necesita ofrecer tanto una vista histórica completa y precisa (propia del batch) como una vista de baja latencia en tiempo real (propia del streaming), suelen adoptarse dos patrones arquitectónicos de referencia:
@@ -134,6 +145,9 @@ El modelo de infraestructura sobre el que se despliega la arquitectura de datos 
     *   *Nube Pública:* Infraestructura de recursos compartida.
     *   *Nube Privada:* Infraestructura dedicada exclusivamente a una sola organización, aportando mayor aislamiento.
     *   *Nube Híbrida:* Integración de infraestructura on-premise con nube pública, permitiendo la orquestación entre ambas. Facilita la portabilidad de datos y la gestión de picos de carga (*cloud bursting*).
+
+**Soberanía digital europea: la iniciativa Gaia-X**
+Como respuesta a la elevada dependencia de las Administraciones y empresas europeas respecto de proveedores de nube de terceros países, en agosto de 2019 un conjunto de organizaciones públicas y privadas europeas puso en marcha la iniciativa **Gaia-X**, orientada a la creación de una infraestructura de datos abierta, federada e interoperable que preserve la soberanía digital y facilite la disponibilidad y el intercambio confiable de datos entre entidades europeas. Gaia-X no constituye, en sí misma, ni un proveedor de nube ni un producto de hardware o software, sino un marco común de gobernanza técnica, organizativa y normativa (los denominados *Gaia-X Federation Services*) que cualquier proveedor de infraestructura o de espacio de datos puede adoptar para acreditar el cumplimiento de principios de apertura, transparencia, interoperabilidad, portabilidad y soberanía del dato, permitiendo así construir ecosistemas de "espacios de datos" sectoriales (por ejemplo, en movilidad, salud o industria) bajo reglas de confianza comunes.
 
 **Definición normativa de referencia: NIST SP 800-145**
 La definición técnica de referencia más citada internacionalmente sobre computación en la nube es la publicación **NIST SP 800-145, "The NIST Definition of Cloud Computing"**, del National Institute of Standards and Technology (NIST) de Estados Unidos. Define la computación en la nube como un modelo que permite el acceso ubicuo, cómodo y a demanda a través de la red a un conjunto compartido de recursos informáticos configurables (redes, servidores, almacenamiento, aplicaciones y servicios) que pueden aprovisionarse y liberarse rápidamente con un esfuerzo de gestión mínimo o una interacción mínima con el proveedor del servicio.
@@ -169,6 +183,7 @@ La gobernanza de datos define las políticas, procesos, estándares, roles y mé
     *   Cumplimiento normativo estricto del marco jurídico aplicable: Esquema Nacional de Seguridad (ENS, Real Decreto 311/2022) para la categorización y protección técnica/organizativa, y el Reglamento General de Protección de Datos (RGPD) / LOPDGDD para la protección de la privacidad (minimizando datos y aplicando privacidad desde el diseño).
     *   Implementación de técnicas protectoras: cifrado (en tránsito y reposo), anonimización, seudonimización y enmascaramiento dinámico de datos.
 6.  **Gobernanza para la Inteligencia Artificial:** Aseguramiento de la integridad y representatividad de los conjuntos de datos de entrenamiento, validación y prueba para mitigar sesgos algorítmicos. Cumplimiento de las obligaciones regulatorias emergentes (Reglamento (UE) 2024/1689 de Inteligencia Artificial) en cuanto a evaluación de impacto, trazabilidad y supervisión humana.
+7.  **Contratos de Datos (*Data Contracts*):** Mecanismo de gobernanza emergente, especialmente asociado a la implantación práctica del paradigma Data Mesh, consistente en un acuerdo formal y versionado entre el equipo de datos que produce un conjunto de datos (dominio productor) y los equipos que lo consumen, que especifica de forma explícita el esquema de los datos, las garantías de calidad, la semántica de los campos, la frecuencia de actualización y las condiciones de cambio (*versionado semántico*). Su finalidad es evitar que modificaciones no comunicadas en los sistemas de origen rompan de forma silenciosa los procesos analíticos consumidores, trasladando a los propios pipelines de datos una disciplina de contrato similar a la de una API entre servicios.
 
 **Consideraciones específicas de gobernanza en plataformas cloud e híbridas**
 Cuando la arquitectura de datos se despliega, total o parcialmente, sobre infraestructura cloud, la gobernanza debe incorporar de forma adicional:
@@ -184,3 +199,4 @@ Cuando la arquitectura de datos se despliega, total o parcialmente, sobre infrae
 *   Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad.
 *   Reglamento (UE) 2016/679 (RGPD) y Ley Orgánica 3/2018 (LOPDGDD).
 *   Reglamento (UE) 2024/1689, por el que se establecen normas armonizadas en materia de inteligencia artificial.
+*   Gaia-X, *Gaia-X Federation Services* y documentación de la iniciativa europea de infraestructura de datos federada (2019).
