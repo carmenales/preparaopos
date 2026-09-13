@@ -264,6 +264,8 @@ Para consultar los detalles técnicos de bajo nivel de cada componente, recurra 
 * 📄 **Preparador TAI:** [`apps/preparadortai/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/preparadortai/ARCHITECTURE.md)
 * 📄 **Study Assistant:** [`apps/studyassistant/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/studyassistant/ARCHITECTURE.md)
 * 📄 **Capa Compartida:** [`apps/shared/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/shared/ARCHITECTURE.md)
+* 📄 **Microservicios (IA y NLP):** [`services/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/services/ARCHITECTURE.md) ([Catálogo y Guía](file:///c:/repositories/preparaopos/services/README.md))
 * 📄 **Scripts y Pipelines:** [`scripts/README.md`](file:///c:/repositories/preparaopos/scripts/README.md)
 * 📄 **Base de Datos y Configuración:** [`docs/database.md`](file:///c:/repositories/preparaopos/docs/database.md)
+
 
