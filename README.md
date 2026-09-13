@@ -4,14 +4,18 @@ Laboratorio/plataforma para preparación de oposiciones y modernización técnic
 
 ## Aplicaciones
 
-- `apps/preparadortai`: aplicación PHP legacy para tests y preguntas de relación.
+- `apps/preparadortai`: aplicación interactiva para tests, simulacros y banco de preguntas ([Arquitectura](apps/preparadortai/ARCHITECTURE.md)).
 - `apps/studyassistant`: aplicación para consultar, estudiar y realizar búsquedas semánticas sobre los apuntes Markdown ([Arquitectura](apps/studyassistant/ARCHITECTURE.md)).
+- `apps/shared`: librería compartida de configuración y generadores de URLs canónicas inter-aplicación ([Arquitectura](apps/shared/ARCHITECTURE.md)).
 
 ## Documentación
 
-- [Database setup](docs/database.md)
-- [Catálogo de Scripts y Pipelines](scripts/README.md)
+- [Arquitectura General del Sistema](ARCHITECTURE.md)
+- [Arquitectura de Preparador TAI](apps/preparadortai/ARCHITECTURE.md)
 - [Arquitectura de Study Assistant](apps/studyassistant/ARCHITECTURE.md)
+- [Arquitectura de Apps Shared](apps/shared/ARCHITECTURE.md)
+- [Catálogo de Scripts y Pipelines](scripts/README.md)
+- [Database setup](docs/database.md)
 
 ## Comprobación del entorno Docker
 
