@@ -23,13 +23,18 @@ tags:
   - "gestion-sistemas-ia"
   - "sandbox-regulatorio"
   - "articulo-22-rgpd"
+  - "aepd"
+  - "mitre-atlas"
+  - "owasp-llm-top-10"
+  - "enisa"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-12"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -113,6 +118,13 @@ La evaluación debe contener, como mínimo:
 * medidas previstas para afrontar los riesgos y demostrar el cumplimiento del RGPD.
 
 La EIPD debe revisarse cuando se produzca un cambio relevante que pueda afectar al nivel de riesgo del tratamiento.
+
+### 1.7. Guías de la Agencia Española de Protección de Datos (AEPD) sobre IA
+
+La AEPD ha publicado un conjunto de guías específicas, sin fuerza normativa vinculante pero de gran valor interpretativo, que desarrollan la aplicación práctica del RGPD a los tratamientos que incorporan IA:
+*   *"Adecuación al RGPD de tratamientos que incorporan Inteligencia Artificial. Una introducción"* (febrero de 2020): primera aproximación dirigida a responsables, desarrolladores y encargados, que analiza la legitimación del tratamiento, la información y transparencia, el ejercicio de derechos (incluidas las decisiones automatizadas), la exactitud, la minimización de datos, la gestión del riesgo para los derechos y libertades y la evaluación de impacto, además de las posibles transferencias internacionales de datos que puede implicar el uso de tecnologías de IA.
+*   *"Requisitos para auditorías de tratamientos de datos personales que incluyan Inteligencia Artificial"* (enero de 2021): documento complementario al anterior que ofrece criterios objetivos, desde la perspectiva de protección de datos, que deben incorporarse a las auditorías de tratamientos con componentes de IA, abarcando transparencia, trazabilidad, gestión de datos y prevención de sesgos.
+*   Guías más recientes de la Agencia sobre la gestión del riesgo en tratamientos que emplean **IA agéntica**, que definen dicha gestión del riesgo como un proceso proactivo para gobernar las incertidumbres que amenazan los derechos y libertades de los interesados, exigiendo identificar, evaluar y priorizar los riesgos para después coordinar esfuerzos y adoptar decisiones que eviten o minimicen su probabilidad o impacto.
 
 ## 2. Esquema Nacional de Seguridad (ENS).
 
@@ -331,6 +343,15 @@ Los sistemas destinados a interactuar directamente con personas deben informar d
 
 Para determinados contenidos sintéticos, el Reglamento establece obligaciones de marcado o etiquetado que permitan identificar su carácter generado o manipulado artificialmente.
 
+### 4.8. Marcos de referencia para el catálogo de amenazas a la IA
+
+Junto a la enumeración legal de amenazas del artículo 15 del Reglamento de IA, existen marcos técnicos de catalogación de amenazas, de adopción voluntaria, ampliamente utilizados en la práctica de la ciberseguridad para estructurar el análisis de riesgos y las pruebas de un sistema de IA:
+*   **MITRE ATLAS** (*Adversarial Threat Landscape for Artificial-Intelligence Systems*): base de conocimiento pública, mantenida por MITRE en colaboración con la industria desde 2021 y modelada sobre el formato del conocido marco MITRE ATT&CK. Cataloga, mediante una matriz de tácticas (columnas) y técnicas (filas), el comportamiento real de adversarios frente a sistemas de IA y de aprendizaje automático a lo largo de un ciclo de vida de ataque de varias fases (desde el reconocimiento y el desarrollo de recursos hasta la exfiltración y el impacto), incluyendo tácticas específicas de la IA como el acceso al modelo de aprendizaje automático y la preparación del ataque (*ML Attack Staging*), y case studies de incidentes reales.
+*   **OWASP Top 10 for LLM Applications:** lista de las diez categorías de riesgo de seguridad más críticas específicas de las aplicaciones basadas en grandes modelos de lenguaje, publicada por el Open Worldwide Application Security Project (OWASP) y actualizada periódicamente (edición 2025): inyección de instrucciones (*Prompt Injection*), divulgación de información sensible, vulnerabilidades de la cadena de suministro, envenenamiento de datos y de modelos, tratamiento indebido de los resultados de salida, exceso de autonomía o agencia del sistema (*Excessive Agency*), filtración del *system prompt*, debilidades en los vectores y las incrustaciones (*embeddings*) utilizados en arquitecturas RAG, generación de desinformación y consumo no acotado de recursos.
+*   **ENISA, *"Multilayer Framework for Good Cybersecurity Practices for AI"*** (junio de 2023): marco publicado por la Agencia de la Unión Europea para la Ciberseguridad (ENISA), estructurado en tres capas: los fundamentos de ciberseguridad de la infraestructura TIC que aloja los sistemas de IA (en coordinación con el RGPD y la Directiva NIS2); los requisitos de ciberseguridad específicos de la IA a lo largo de su ciclo de vida (frente a amenazas como la evasión, el envenenamiento o la divulgación de datos y de modelos); y recomendaciones de ciberseguridad adaptadas a sectores concretos (energía, salud, automoción y telecomunicaciones).
+
+Estos marcos constituyen referencias técnicas complementarias que operativizan, mediante taxonomías de amenazas y técnicas de prueba, las obligaciones legales de precisión, solidez y ciberseguridad ya exigidas por el artículo 15 del Reglamento de IA, sin sustituirlas.
+
 ## 5. Buenas prácticas en seguridad, privacidad y cumplimiento.
 
 El cumplimiento integral del marco de seguridad y privacidad en el despliegue de IA exige la adopción de medidas proactivas que integren las obligaciones legales con los estándares técnicos y la vigilancia continua.
@@ -375,6 +396,8 @@ Entre las referencias técnicas reconocidas se encuentran:
 * **ISO/IEC 23894:2023**, que proporciona orientación sobre gestión de riesgos de inteligencia artificial.
 * **NIST AI Risk Management Framework (AI RMF 1.0)**, marco voluntario para la gestión de riesgos asociados a sistemas de IA.
 * **NIST AI 600-1**, perfil del AI RMF para inteligencia artificial generativa.
+* **ENISA, *"Multilayer Framework for Good Cybersecurity Practices for AI"* (2023)**, marco de la Agencia de la Unión Europea para la Ciberseguridad que estructura la ciberseguridad de la IA en tres capas (infraestructura TIC, requisitos específicos de la IA y recomendaciones sectoriales).
+* **MITRE ATLAS** y el **OWASP Top 10 for LLM Applications**, como catálogos técnicos de referencia de las tácticas, técnicas y categorías de riesgo de seguridad propias de los sistemas de IA y de los grandes modelos de lenguaje.
 
 Estos marcos constituyen referencias técnicas y no sustituyen las obligaciones jurídicas del RGPD, del Reglamento de IA o del ENS.
 
@@ -400,19 +423,17 @@ En cada etapa deben identificarse los requisitos legales, de seguridad, privacid
 
 ## 6. Referencias normativas y técnicas
 
-*   Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024 (artículos 3.55, 9, 10, 13, 14, 15, 22, 57 y 59).
-*   Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016 (RGPD), artículos 9, 22, 24 y 35.
+*   Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (artículos 3.55, 4, 5, 9, 10, 13, 14, 15, 16, 22, 26, 27, 50, 57 y 59).
+*   Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo, de 27 de abril de 2016 (RGPD), artículos 5, 6, 9, 13, 14, 22, 24, 25, 26, 28 y 35.
 *   Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD), artículo 9.
-*   Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad.
+*   Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad (artículo 36).
 *   Sentencia del Tribunal de Justicia de la Unión Europea de 7 de diciembre de 2023, asunto C-634/21 (SCHUFA Holding y otros), relativa a la interpretación del artículo 22.1 del RGPD.
-
-## 6. Referencias normativas y técnicas
-
-* Reglamento (UE) 2016/679 (RGPD).
-* Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales.
-* Real Decreto 311/2022, de 3 de mayo, por el que se regula el Esquema Nacional de Seguridad.
-* Reglamento (UE) 2024/1689, por el que se establecen normas armonizadas en materia de inteligencia artificial (Reglamento de Inteligencia Artificial).
-* ISO/IEC 42001:2023, Information technology — Artificial intelligence — Management system.
-* ISO/IEC 23894:2023, Information technology — Artificial intelligence — Guidance on risk management.
-* NIST AI Risk Management Framework (AI RMF 1.0).
-* NIST AI 600-1, Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile.
+*   Agencia Española de Protección de Datos (AEPD), *"Adecuación al RGPD de tratamientos que incorporan Inteligencia Artificial. Una introducción"*, febrero de 2020.
+*   Agencia Española de Protección de Datos (AEPD), *"Requisitos para auditorías de tratamientos de datos personales que incluyan Inteligencia Artificial"*, enero de 2021.
+*   ISO/IEC 42001:2023, Information technology — Artificial intelligence — Management system.
+*   ISO/IEC 23894:2023, Information technology — Artificial intelligence — Guidance on risk management.
+*   NIST, Artificial Intelligence Risk Management Framework (AI RMF 1.0).
+*   NIST AI 600-1, Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile.
+*   ENISA, *"Multilayer Framework for Good Cybersecurity Practices for AI"*, junio de 2023.
+*   MITRE ATLAS (Adversarial Threat Landscape for Artificial-Intelligence Systems), atlas.mitre.org.
+*   OWASP, *"Top 10 for LLM Applications"* (edición 2025), Open Worldwide Application Security Project.
