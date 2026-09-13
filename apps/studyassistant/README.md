@@ -2,6 +2,8 @@
 
 Aplicación mínima para consultar la base de conocimiento Markdown.
 
+Para una descripción técnica detallada, consulta el [Documento de Arquitectura](ARCHITECTURE.md).
+
 ## Flujo
 
 ```text
