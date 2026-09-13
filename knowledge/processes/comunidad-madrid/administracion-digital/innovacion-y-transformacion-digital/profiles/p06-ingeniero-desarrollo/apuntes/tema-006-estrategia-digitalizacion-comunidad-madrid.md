@@ -17,13 +17,17 @@ tags:
   - "edcm"
   - "administracion-digital"
   - "gobierno-digital"
+  - "red-neuronal-artificial-edcm"
+  - "comite-estrategico-edcm"
+  - "digitaliza-madrid"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-12"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -242,9 +246,18 @@ Eje crítico para asegurar las infraestructuras digitales.
 
 ## 5. Gobernanza y presupuesto de la EDCM
 
-El apartado 6 del documento oficial (Gobernanza) establece el modelo de seguimiento, coordinación y ejecución de las medidas entre las distintas consejerías y organismos implicados en el despliegue de la Estrategia.
+El apartado de Gobernanza del documento de la Estrategia establece el modelo de seguimiento, coordinación y ejecución de las medidas entre las distintas consejerías y organismos implicados en el despliegue de la Estrategia. Este modelo se estructura en dos niveles funcionales diferenciados, que se articulan en comités:
 
-El apartado 7 del documento (Presupuesto) recoge el coste total asociado a la EDCM para el periodo 2023-2026, distribuido por años y por unidades ejecutoras (entre otras, Madrid Digital, la Consejería de Digitalización, Educación, Economía, Cultura, Transportes y Sanidad).
+*   **Nivel estratégico:** orienta, dirige y gestiona los avances de las iniciativas de transformación digital, garantizando su coherencia con la Estrategia. Se materializa en el **Comité Estratégico**, del que forman parte el responsable de la Oficina Técnica de Transformación Digital, un responsable de cada Consejería, un responsable de Madrid Digital y un responsable de la Dirección General con competencias en materia de estadística y Oficina del dato, pudiendo apoyarse en Comités de Expertos de carácter temporal nombrados por Digitaliza Madrid. El Comité Estratégico actúa como máxima autoridad de decisión, realiza el seguimiento técnico y económico de las iniciativas y elabora un informe anual de seguimiento de la EDCM. Se reúne con periodicidad cuatrimestral.
+*   **Nivel operativo:** ejecuta las iniciativas, elaborando entregables e implementando las soluciones. Se articula en dos **Comités Operativos**, de periodicidad trimestral: el de la dimensión de "problemas y oportunidades" (compuesto por un representante de cada mesa sectorial) y el de la dimensión de "soluciones tecnológicas" (compuesto por un representante de cada clúster tecnológico, del European Digital Innovation Hub, de Digitaliza Madrid y del Consejo Asesor de Transformación Digital).
+
+Un elemento singular del modelo de gobernanza de la EDCM es el recurso a una **Red Neuronal Artificial (RNA)** como herramienta de apoyo a la toma de decisiones en la evaluación, seguimiento y evolución de la propia Estrategia. Este modelo computacional se alimenta de las variables del entorno social, económico y tecnológico y de los resultados de los planes de digitalización sectoriales, con el objetivo de simular escenarios a partir de datos históricos y de proponer, de forma ágil y en algunos casos automática, iniciativas de corrección ante cambios de contexto o situaciones sobrevenidas. El propio documento resume las ventajas de este enfoque en una "solución Triple A": **Anticipar** (simular escenarios a partir del histórico), **Adaptar** (ajustarse ágilmente a circunstancias externas imprevistas) y **Automatizar** (optimizar y acelerar la puesta en marcha de las iniciativas).
+
+La toma de decisiones basada en este modelo se somete, según el propio documento, a un marco de gobernanza ética articulado en torno a siete principios: autonomía humana, libertad y dignidad; robustez y seguridad técnicas; privacidad y gobierno de los datos; transparencia; diversidad, no discriminación y equidad; bienestar individual, social y medioambiental; y rendición de cuentas.
+
+Como **facilitadores de la innovación digital** que impulsan la ejecución de los diez ejes del Decálogo estratégico, el documento identifica el **European Digital Innovation Hub (EDIH)** de la Comunidad de Madrid, los **clústeres tecnológicos** de Transformación Digital, Inteligencia Artificial, IoT y Blockchain, y el **Centro de Innovación Digital "Digitaliza Madrid"**, órgano colegiado consultivo, asesor y de coordinación interadministrativa que cuenta con un Consejo Asesor de Transformación Digital integrado por expertos y representantes de los sectores público y privado.
+
+El apartado de Presupuesto recoge el coste total asociado a la EDCM para el periodo 2023-2026, distribuido por años y por unidades ejecutoras (entre otras, Madrid Digital, la Consejería de Digitalización, Educación, Economía, Cultura, Transportes y Sanidad).
 
 ## 6. Relación con otras estrategias
 
@@ -272,3 +285,4 @@ La EDCM se relaciona con otros planes de digitalización de distinto nivel de go
 - Decreto 198/2021, por el que se establece la estructura orgánica de la Consejería de Administración Local y Digitalización de la Comunidad de Madrid.
 - Ficha de la Estrategia en el Portal de Transparencia de la Comunidad de Madrid.
 - Plan Estratégico de Madrid Digital 2022-2026 (PEMD), documento independiente con 5 ejes y 27 medidas.
+- Documento base "Estrategia de Digitalización de la Comunidad de Madrid" (participa.comunidad.madrid), del que trae causa el modelo de gobernanza (Comité Estratégico, Comités Operativos, Red Neuronal Artificial y facilitadores de la innovación digital) descrito en el apartado 5 de este apunte.
