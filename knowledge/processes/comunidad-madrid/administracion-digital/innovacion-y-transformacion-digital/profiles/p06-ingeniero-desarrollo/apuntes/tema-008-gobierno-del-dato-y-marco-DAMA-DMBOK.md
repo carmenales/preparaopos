@@ -19,13 +19,16 @@ tags:
   - "ciclo-de-vida-del-dato"
   - "data-governance-act"
   - "une-0077"
+  - "rueda-de-dama"
+  - "data-stewardship"
 created_at: "2026-09-03"
-last_reviewed: "2026-09-09"
+last_reviewed: "2026-09-13"
 ai_generated: true
 ai_sources:
   - "perplexity"
   - "chatgpt"
   - "gemini"
+  - "claude"
 needs_human_review: true
 ---
 
@@ -45,7 +48,7 @@ El ecosistema de estandarización español, promovido por la **Oficina del Dato*
 *   **UNE 0077:2023 - Gobierno del dato:** Se enfoca en la evaluación, dirección y monitorización. Define el marco estratégico.
 *   **UNE 0078:2023 - Gestión del dato:** Se centra en el ciclo de vida del dato (creación, almacenamiento, uso, archivo y destrucción).
 *   **UNE 0079:2023 - Gestión de la calidad del dato:** Define métricas, procesos de perfilado y aseguramiento para que el dato se adecúe al uso pretendido.
-*   **UNE 0085:2023 - Implantación del gobierno del dato:** Establece un modelo de madurez y los pasos para evaluar e implantar progresivamente el gobierno, gestión y calidad.
+*   **UNE 0085:2024 - Implantación del gobierno del dato:** Establece un modelo de madurez y los pasos para evaluar e implantar progresivamente el gobierno, gestión y calidad. Las cuatro especificaciones están diseñadas para aplicarse de forma conjunta y coordinada, y las tres primeras (UNE 0077, 0078 y 0079) incorporan cada una un modelo de evaluación de capacidad de procesos y un modelo de madurez organizativa basados en la familia de normas ISO/IEC 33000.
 
 **Reglamento (UE) 2022/868: Gobernanza Europea de Datos (Data Governance Act - DGA)**
 *   **Aplicabilidad:** Plenamente aplicable desde el **24 de septiembre de 2023**.
@@ -57,9 +60,11 @@ El ecosistema de estandarización español, promovido por la **Oficina del Dato*
 
 ## 2. Marco DAMA-DMBOK: áreas de conocimiento
 
-El DAMA-DMBOK (Data Management Body of Knowledge), en su segunda edición (DMBOK2), es el marco de referencia internacional estándar desarrollado por **DAMA International (Data Management Association)** para la gestión integral de datos.
+El DAMA-DMBOK (Data Management Body of Knowledge), en su segunda edición (DMBOK2, publicada en 2017), es el marco de referencia internacional estándar desarrollado por **DAMA International (Data Management Association)** para la gestión integral de datos.
 
-El modelo visual de DAMA se representa mediante la **Rueda de DAMA** (DAMA Wheel), que sitúa el Gobierno del Dato en el centro, interactuando de forma radial con otras 10 Áreas de Conocimiento (Knowledge Areas). El propio DMBOK2 define el Gobierno de Datos, en su acepción de área de conocimiento central, como "la planificación, supervisión y control sobre la gestión y el uso de los datos" (*Planning, supervision and control over data management and use*).
+El propio DMBOK2 define formalmente la **Gestión de Datos (Data Management)** como el desarrollo, la ejecución y la supervisión de planes, políticas, programas y prácticas que entregan, controlan, protegen y mejoran el valor de los datos y los activos de información a lo largo de sus ciclos de vida. Entre los objetivos que persigue esta disciplina se encuentran: comprender y satisfacer las necesidades de información de la organización y de sus grupos de interés; capturar, almacenar, proteger y garantizar la integridad de los activos de datos; asegurar la calidad de los datos y de la información; garantizar la privacidad y la confidencialidad de los datos de los interesados; y prevenir el acceso no autorizado o inapropiado a los mismos.
+
+El modelo visual de DAMA se representa mediante la **Rueda de DAMA** (DAMA Wheel), que sitúa el Gobierno del Dato en el centro, interactuando de forma radial con otras 10 Áreas de Conocimiento (Knowledge Areas), puesto que el gobierno resulta necesario para garantizar la coherencia y el equilibrio entre el resto de funciones. El propio DMBOK2 define el Gobierno de Datos, en su acepción de área de conocimiento central, como "la planificación, supervisión y control sobre la gestión y el uso de los datos" (*Planning, supervision and control over data management and use*).
 
 1.  **Gobierno de Datos** (Data Governance): Eje central. Define la dirección estratégica, la supervisión, las políticas, las métricas y la toma de decisiones sobre los activos de datos.
 2.  **Arquitectura de Datos** (Data Architecture): Define la estructura global de los datos de la empresa, los modelos de datos a alto nivel y el diseño de la arquitectura tecnológica que soporta el flujo de información (Data Warehouse, Data Lake, Lakehouse).
@@ -68,7 +73,7 @@ El modelo visual de DAMA se representa mediante la **Rueda de DAMA** (DAMA Wheel
 5.  **Seguridad de los Datos (Data Security):** Garantizar la privacidad, la confidencialidad y el acceso adecuado a los datos en cumplimiento con el marco regulatorio (RGPD, ENS).
 6.  **Datos Maestros y de Referencia** (Reference & Master Data): Gestión continua (MDM - Master Data Management) de los datos críticos de la organización (clientes, productos, ciudadanos) para asegurar que conforman una única fuente de la verdad ("Single Source of Truth").
 7.  **Data Warehousing e Inteligencia de Negocios** (Data Warehousing & Business Intelligence): Planificación, implementación y control de procesos que proporcionan datos para la toma de decisiones, análisis y reporting.
-8.  **Integración e Interoperabilidad de Datos** (Data Integration & Interoperability): Procesos de adquisición, extracción, transformación, movimiento, entrega, replicación (ETL/ELT) e intercambio de datos entre sistemas y unidades organizativas.
+8.  **Integración e Interoperabilidad de Datos** (Data Integration & Interoperability): Procesos de adquisición, extracción, transformación, movimiento, entrega, replicación (ETL/ELT) e intercambio de datos entre sistemas y unidades organizativas. Área de conocimiento incorporada como tal en la propia DMBOK2.
 9.  **Gestión de Documentos y Contenidos** (Document & Content Management): Almacenamiento, protección, indexación y acceso a datos no estructurados y semiestructurados.
 10. **Metadatos** (Metadata): Planificación, implementación y control de actividades para asegurar el acceso a metadatos integrados, precisos y de alta calidad. Incluye la creación de catálogos de datos y metadatos.
 11. **Calidad de los Datos** (Data Quality): Planificación y ejecución de técnicas de medición, evaluación, mejora y certificación de la aptitud de los datos para su uso previsto.
@@ -105,6 +110,18 @@ Según la propia estructura oficial de DAMA International, el orden numerado de 
 
 Junto a las 11 Áreas de Conocimiento, el DMBOK2 identifica también los **elementos que rodean cada área** en la representación gráfica de la Rueda de DAMA, comunes a todas ellas: personas, procesos y tecnología, que interactúan de forma transversal con cada área de conocimiento para su correcta implementación.
 
+**El Hexágono de Factores del Entorno (Environmental Factors Hexagon)**
+
+El DMBOK2 desarrolla estos tres elementos mediante una representación en forma de hexágono, que constituye la clave para interpretar el diagrama de contexto de cada área de conocimiento. Dicho hexágono articula, en torno a los objetivos de negocio de la organización, los siguientes factores:
+
+*   **Personas (People):** La cultura organizativa, los roles y las responsabilidades asociadas a la gestión de los datos.
+*   **Procesos (Process):** Las actividades y las técnicas empleadas para ejecutar la gestión de datos.
+*   **Tecnología (Technology):** Las herramientas y los entregables que dan soporte técnico a dicha gestión.
+
+**El Diagrama de Contexto del Área de Conocimiento (Knowledge Area Context Diagram)**
+
+Cada una de las 11 áreas de conocimiento del DMBOK2 se describe, además, mediante un diagrama de contexto normalizado, inspirado en el concepto SIPOC (*Suppliers, Inputs, Process, Outputs, Consumers*) propio de la metodología Six Sigma. Este diagrama sitúa en su centro las actividades del área, clasificadas en cuatro fases o grupos de actividad: **Planificar (Plan), Desarrollar (Develop), Operar (Operate) y Controlar (Control)** —conocidas habitualmente por sus siglas P-D-O-C—, dado que dichas actividades son las que producen los entregables que satisfacen los requisitos de los interesados. A la izquierda del diagrama se sitúan los proveedores y las entradas (*suppliers* e *inputs*) que alimentan dichas actividades, y a la derecha los entregables y los consumidores (*deliverables* y *consumers*) que resultan de ellas, indicándose además los participantes (roles) asociados a cada actividad, así como las herramientas, técnicas y métricas que influyen en el área de conocimiento correspondiente.
+
 ## 3. Roles y responsabilidades en la gestión del dato
 
 La estructura organizativa del gobierno del dato exige la definición formal de roles con responsabilidades segregadas. Según las directrices de DMBOK y las mejores prácticas de la industria, destacan las siguientes figuras:
@@ -114,6 +131,17 @@ La estructura organizativa del gobierno del dato exige la definición formal de 
 *   **Propietario del Dato** (Data Owner):*Perfil de NEGOCIO (no IT)*. Es el "dueño" del dato (ej. el Director de RRHH es el Owner de los datos de empleados). Es el responsable final (*accountable*) de su calidad, seguridad y de autorizar quién accede a ellos.
 *   **Gestor del Dato** (Data Steward):*Perfil de NEGOCIO/Liaison*. Es la figura operativa del Owner. Vela diariamente por la calidad, resuelve anomalías, documenta los metadatos y glosarios. Actúa como puente entre Negocio y TI.
 *   **Custodio del Dato** (Data Custodian):*Perfil TÉCNICO*. Pertenece a Sistemas/TI (ej. un DBA o un Arquitecto). NO decide quién accede, sino que *implementa* los controles de acceso dictados por el Owner. Gestiona las copias de seguridad, rendimiento de BBDD, etc.
+
+**Tipología de Data Steward según DMBOK2**
+
+El propio DMBOK2 matiza y desarrolla la figura del Gestor del Dato (Data Steward), distinguiendo distintos perfiles según su procedencia profesional y su nivel de actuación dentro de la organización:
+
+*   **Business Data Steward:** perfil de negocio, con conocimiento experto sobre un dominio de datos concreto, responsable de velar por su calidad y su correcta definición.
+*   **Technical Data Steward:** perfil técnico, encargado de la implementación de las reglas y requisitos de gestión de datos definidos desde el negocio sobre los sistemas y las plataformas tecnológicas.
+*   **Coordinating Data Steward:** perfil de enlace o coordinación, responsable de armonizar la actuación de los distintos stewards de negocio y técnicos entre sí.
+*   **Chief Data Steward / Executive Data Steward:** perfiles de carácter directivo, con responsabilidad de supervisión y coordinación del conjunto del programa de stewardship a nivel corporativo.
+
+DAMA representa a los stewards, en su conjunto, como aquellas personas o grupos de personas que representan los intereses de todos los interesados (stakeholders) y que deben adoptar una perspectiva de conjunto de la organización para garantizar que los datos empresariales son de alta calidad y pueden utilizarse de forma efectiva.
 
 ```mermaid
 graph TD
@@ -172,6 +200,7 @@ La adopción de una cultura del dato y la ética en la IA resulta fundamental. C
 *   Especificación UNE 0077:2023, Gobierno del dato.
 *   Especificación UNE 0078:2023, Gestión del dato.
 *   Especificación UNE 0079:2023, Gestión de la calidad del dato.
-*   Especificación UNE 0085, Implantación del gobierno del dato.
-*   DAMA International, DAMA-DMBOK: Data Management Body of Knowledge, 2ª edición (DMBOK2).
+*   Especificación UNE 0085:2024, Implantación del gobierno del dato.
+*   Familia de normas ISO/IEC 33000, Ingeniería de software y de sistemas — Evaluación de procesos.
+*   DAMA International, DAMA-DMBOK: Data Management Body of Knowledge, 2ª edición (DMBOK2), 2017.
 *   Plan Estratégico de Madrid Digital 2022-2026 (PEMD), apartado relativo a la cultura del dato.
