@@ -89,6 +89,18 @@ class TestJoinBrokenParagraphs(unittest.TestCase):
         result = join_broken_paragraphs(text)
         self.assertEqual(result, "Esta frase se ha cortado a mitad.")
 
+    def test_joins_continuation_starting_with_capitalized_proper_noun(self):
+        """Regresión: _is_joinable exigía que la línea siguiente empezara
+        en minúscula, lo que rompía frases que continúan con un sustantivo
+        propio en mayúscula (Ley Orgánica, España, Estado...) — muy común
+        en texto legal/administrativo."""
+        text = "El artículo 53.2 remite a la Ley Orgánica que regula\nEspaña y su ordenamiento territorial."
+        result = join_broken_paragraphs(text)
+        self.assertEqual(
+            result,
+            "El artículo 53.2 remite a la Ley Orgánica que regula España y su ordenamiento territorial."
+        )
+
     def test_does_not_join_across_heading(self):
         text = "Texto antes.\n## Un heading\nTexto después."
         result = join_broken_paragraphs(text)
