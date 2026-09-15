@@ -56,9 +56,7 @@ def _is_joinable(a: str, b: str) -> bool:
     if b.startswith(("#", "-", "*", "|", ">")):
         return False
 
-    c = b[0]
-
-    return c.isalnum() or c in "áéíóúüñÁÉÍÓÚÜÑ(«\""
+    return True
 
 
 def join_broken_paragraphs(text: str) -> str:
