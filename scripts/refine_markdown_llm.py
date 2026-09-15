@@ -26,13 +26,13 @@ CACHE_DIR = Path(".llm_cache")
 CACHE_DIR.mkdir(exist_ok=True)
 PAGE_HEADING_RE = re.compile(r"^## Página \d+\s*$", re.MULTILINE)
 
-def cache_path(chunk: str) -> Path:
-    digest = hashlib.sha256(chunk.encode("utf8")).hexdigest()
+def cache_path(chunk: str, model: str) -> Path:
+    digest = hashlib.sha256(f"{model}:{chunk}".encode("utf8")).hexdigest()
     return CACHE_DIR / f"{digest}.md"
 
 
-def load_cache(chunk: str) -> Optional[str]:
-    path = cache_path(chunk)
+def load_cache(chunk: str, model: str) -> Optional[str]:
+    path = cache_path(chunk, model)
 
     if path.exists():
         return path.read_text("utf8")
@@ -40,8 +40,8 @@ def load_cache(chunk: str) -> Optional[str]:
     return None
 
 
-def save_cache(chunk: str, refined: str) -> None:
-    cache_path(chunk).write_text(refined, encoding="utf8")
+def save_cache(chunk: str, model: str, refined: str) -> None:
+    cache_path(chunk, model).write_text(refined, encoding="utf8")
 
 def split_by_pages(markdown: str) -> list[str]:
     lines = markdown.splitlines()
@@ -247,7 +247,7 @@ def refine_markdown_document(
             f"({len(chunk)} caracteres)..."
         )
 
-        cached = load_cache(chunk)
+        cached = load_cache(chunk, model)
 
         if cached is not None:
             print(f"  Cache bloque {index}/{len(chunks)}")
@@ -262,7 +262,7 @@ def refine_markdown_document(
             temperature=temperature,
         )
 
-        save_cache(chunk, refined)
+        save_cache(chunk, model, refined)
 
         refined_chunks.append(refined.strip())
 

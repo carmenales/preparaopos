@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 from normalize_markdown import (
     remove_obvious_extraction_noise,
+    remove_repeated_headers_footers,
     convert_acronym_blocks_to_table,
     dedupe_repeated_lines,
     join_broken_paragraphs,
@@ -22,23 +23,44 @@ class TestRemoveObviousExtractionNoise(unittest.TestCase):
         self.assertNotIn("Página 3", result)
         self.assertIn("Contenido real.", result)
 
-    def test_removes_known_hardcoded_header(self):
-        text = "## Centro de Estudios TIC\nContenido real."
-        result = remove_obvious_extraction_noise(text)
-        self.assertNotIn("Centro de Estudios TIC", result)
+    def test_removes_any_repeated_header_regardless_of_text(self):
+        text = "\n".join([
+            "## Página 1",
+            "ForjaTIC — Apuntes oficiales",
+            "Contenido de la página 1.",
+            "## Página 2",
+            "ForjaTIC — Apuntes oficiales",
+            "Contenido de la página 2.",
+        ])
+        result = remove_obvious_extraction_noise(remove_repeated_headers_footers(text))
+        self.assertNotIn("ForjaTIC", result)
+        self.assertIn("Contenido de la página 1.", result)
+        self.assertIn("Contenido de la página 2.", result)
 
-    def test_KNOWN_LIMITATION_does_not_remove_unlisted_academy_headers(self):
-        """Documenta una limitación real, no un comportamiento deseado:
-        SIMPLE_HEADER_RE tiene la cabecera de una academia concreta
-        hardcodeada como texto literal. Cualquier otra fuente (otra
-        academia, PreparaTIC) con su propia cabecera repetida NO se
-        detecta ni se limpia aquí. Si este test empieza a fallar porque
-        alguien generalizó la detección (por posición/frecuencia en vez
-        de texto literal), es una buena noticia — hay que actualizarlo,
-        no dejarlo en rojo."""
-        text = "## ForjaTIC — Apuntes oficiales\nContenido real."
-        result = remove_obvious_extraction_noise(text)
+    def test_single_page_repeated_line_is_not_removed(self):
+        text = "## Página 1\nForjaTIC — Apuntes oficiales\nContenido único."
+        result = remove_repeated_headers_footers(text)
         self.assertIn("ForjaTIC", result)
+
+    def test_body_text_that_happens_to_repeat_in_the_middle_is_not_touched(self):
+        text = "\n".join([
+            "## Página 1",
+            "Cabecera real",
+            "Primera línea de contenido de la página 1.",
+            "Un concepto importante se repite aquí para énfasis.",
+            "Última línea de contenido de la página 1.",
+            "Pie real",
+            "## Página 2",
+            "Cabecera real",
+            "Primera línea de contenido de la página 2.",
+            "Un concepto importante se repite aquí para énfasis.",
+            "Última línea de contenido de la página 2.",
+            "Pie real",
+        ])
+        result = remove_repeated_headers_footers(text)
+        self.assertEqual(result.count("Un concepto importante se repite aquí para énfasis."), 2)
+        self.assertNotIn("Cabecera real", result)
+        self.assertNotIn("Pie real", result)
 
     def test_preserves_blank_lines(self):
         text = "Párrafo uno.\n\nPárrafo dos."
@@ -88,6 +110,18 @@ class TestJoinBrokenParagraphs(unittest.TestCase):
         text = "Esta frase se ha\ncortado a mitad."
         result = join_broken_paragraphs(text)
         self.assertEqual(result, "Esta frase se ha cortado a mitad.")
+
+    def test_joins_continuation_starting_with_capitalized_proper_noun(self):
+        """Regresión: _is_joinable exigía que la línea siguiente empezara
+        en minúscula, lo que rompía frases que continúan con un sustantivo
+        propio en mayúscula (Ley Orgánica, España, Estado...) — muy común
+        en texto legal/administrativo."""
+        text = "El artículo 53.2 remite a la Ley Orgánica que regula\nEspaña y su ordenamiento territorial."
+        result = join_broken_paragraphs(text)
+        self.assertEqual(
+            result,
+            "El artículo 53.2 remite a la Ley Orgánica que regula España y su ordenamiento territorial."
+        )
 
     def test_does_not_join_across_heading(self):
         text = "Texto antes.\n## Un heading\nTexto después."

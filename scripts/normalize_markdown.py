@@ -20,13 +20,70 @@ from pathlib import Path
 import string
 
 
+from collections import Counter
+
 SIGLAS_INTRO_RE = re.compile(r"^\s*Las siglas empleadas en este documento son las siguientes\s*:??\s*$", re.IGNORECASE)
-PAGE_MARKER_RE = re.compile(r"^\s*#{1,6}\s*Página\s+\d+\s*$", re.IGNORECASE)
-SIMPLE_HEADER_RE = re.compile(
-    r"^\s*#{1,6}\s*(Centro de Estudios TIC|CentrodeEstudiosTIC|Centro de Estudios|Cuerpo de Gestión de Sistemas e Informática de la Administración del Estado|Página\s+\d+)\b",
-    re.IGNORECASE,
-)
+PAGE_MARKER_RE = re.compile(r"^\s*#{1,6}\s*(Página|Diapositiva)\s+\d+\s*$", re.IGNORECASE)
 SIGLA_RE = re.compile(r"^[A-ZÁÉÍÓÚÜÑ0-9]{2,15}[a-z]?$")
+
+HEADER_FOOTER_EDGE_LINES = 2
+HEADER_FOOTER_MIN_FRACTION = 0.5
+HEADER_FOOTER_MIN_OCCURRENCES = 2
+
+
+def _normalize_for_comparison(line: str) -> str:
+    return re.sub(r"\s+", " ", line.strip().lower())
+
+
+def _split_into_pages(text: str) -> list[list[str]]:
+    lines = text.splitlines()
+    pages: list[list[str]] = []
+    current: list[str] = []
+
+    for line in lines:
+        if PAGE_MARKER_RE.match(line.strip()):
+            if current:
+                pages.append(current)
+            current = [line]
+        else:
+            current.append(line)
+
+    if current:
+        pages.append(current)
+
+    return pages if len(pages) > 1 else [lines]
+
+
+def _detect_repeated_header_footer_lines(pages: list[list[str]]) -> set[str]:
+    if len(pages) < 2:
+        return set()
+
+    counter: Counter[str] = Counter()
+
+    for page_lines in pages:
+        non_empty = [line.strip() for line in page_lines if line.strip()]
+        candidates = non_empty[:HEADER_FOOTER_EDGE_LINES] + non_empty[-HEADER_FOOTER_EDGE_LINES:]
+        seen_this_page: set[str] = set()
+        for candidate in candidates:
+            normalized = _normalize_for_comparison(candidate)
+            if normalized and normalized not in seen_this_page:
+                counter[normalized] += 1
+                seen_this_page.add(normalized)
+
+    threshold = max(HEADER_FOOTER_MIN_OCCURRENCES, int(len(pages) * HEADER_FOOTER_MIN_FRACTION))
+    return {text for text, count in counter.items() if count >= threshold}
+
+
+def remove_repeated_headers_footers(text: str) -> str:
+    pages = _split_into_pages(text)
+    repeated = _detect_repeated_header_footer_lines(pages)
+
+    if not repeated:
+        return text
+
+    lines = text.splitlines()
+    cleaned = [line for line in lines if _normalize_for_comparison(line) not in repeated]
+    return "\n".join(cleaned)
 
 
 _HEADING_RE = re.compile(r"^(#{1,6}\s+|\d+(\.\d+)*\.?\s)")
@@ -56,9 +113,7 @@ def _is_joinable(a: str, b: str) -> bool:
     if b.startswith(("#", "-", "*", "|", ">")):
         return False
 
-    c = b[0]
-
-    return c.islower() or c in "áéíóúüñ(«\""
+    return True
 
 
 def join_broken_paragraphs(text: str) -> str:
@@ -144,9 +199,6 @@ def remove_obvious_extraction_noise(text: str) -> str:
             continue
 
         if PAGE_MARKER_RE.match(stripped):
-            continue
-
-        if SIMPLE_HEADER_RE.match(stripped):
             continue
 
         if stripped.lower() in {"mostrar menos", "mostrar más"}:
@@ -235,6 +287,7 @@ def dedupe_repeated_lines(text: str) -> str:
 
 def normalize_markdown(content: str) -> str:
     content = normalize_whitespace(content)
+    content = remove_repeated_headers_footers(content)
     content = remove_obvious_extraction_noise(content)
     content = join_broken_paragraphs(content)
     content = fix_broken_lists(content)
