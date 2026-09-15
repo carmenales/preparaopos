@@ -58,7 +58,7 @@ def _is_joinable(a: str, b: str) -> bool:
 
     c = b[0]
 
-    return c.islower() or c in "áéíóúüñ(«\""
+    return c.isalnum() or c in "áéíóúüñÁÉÍÓÚÜÑ(«\""
 
 
 def join_broken_paragraphs(text: str) -> str:
