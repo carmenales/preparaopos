@@ -10,7 +10,13 @@ import textwrap
 # Añadimos la carpeta raíz al path para poder importar el script
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from scripts.build_knowledge_index import slugify, extract_headings, normalize_array
+from scripts.build_knowledge_index import (
+    slugify,
+    extract_headings,
+    normalize_array,
+    prettify_process_slug,
+    load_processes_registry,
+)
 
 class TestBuildIndex(unittest.TestCase):
 
@@ -39,6 +45,33 @@ class TestBuildIndex(unittest.TestCase):
         self.assertEqual(headings[1]["level"], 3)
         self.assertEqual(headings[1]["text"], "Detalles Técnicos")
         self.assertEqual(headings[1]["anchor"], "detalles-tecnicos")
+
+    def test_prettify_process_slug(self):
+        """Comprueba que se genera un título legible a partir de slugs jerárquicos."""
+        self.assertEqual(prettify_process_slug("ayuntamiento-majadahonda"), "Ayuntamiento Majadahonda")
+        self.assertEqual(prettify_process_slug("age/a2-gsi"), "AGE › A2 GSI")
+        self.assertEqual(
+            prettify_process_slug("comunidad-madrid/administracion-digital/ia"),
+            "Comunidad Madrid › Administracion Digital › IA"
+        )
+
+    def test_load_processes_registry(self):
+        """Comprueba la carga del registro declarativo YAML de procesos."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmpdir_path = Path(tmpdir)
+            proc_file = tmpdir_path / "processes" / "processes.yml"
+            proc_file.parent.mkdir(parents=True, exist_ok=True)
+            proc_file.write_text(textwrap.dedent("""
+            processes:
+              - id: "test-proc"
+                title: "Test Convocatoria"
+                organism: "Ministerio de Prueba"
+            """).strip(), encoding="utf-8")
+
+            registry = load_processes_registry(tmpdir_path)
+            self.assertIn("test-proc", registry)
+            self.assertEqual(registry["test-proc"]["title"], "Test Convocatoria")
+            self.assertEqual(registry["test-proc"]["organism"], "Ministerio de Prueba")
 
 class TestBuildIndexEndToEnd(unittest.TestCase):
 
@@ -109,6 +142,8 @@ class TestBuildIndexEndToEnd(unittest.TestCase):
 
         self.assertIn("notes", data)
         self.assertEqual(len(data["notes"]), 1)
+        self.assertIn("processes", data)
+        self.assertIn("ayuntamiento-majadahonda", data["processes"])
 
         note = data["notes"][0]
 
