@@ -321,3 +321,20 @@ function sa_status_badge_class(string $status): string
     }
     return 'badge-status-default';
 }
+
+function sa_sort_notes_sequentially(array &$notes): void
+{
+    usort($notes, static function ($a, $b) {
+        $topicA = trim((string)($a['official_topic'] ?? ''));
+        $topicB = trim((string)($b['official_topic'] ?? ''));
+        if ($topicA !== '' && $topicB !== '') {
+            return strnatcasecmp($topicA, $topicB);
+        }
+        $idA = (string)($a['id'] ?? '');
+        $idB = (string)($b['id'] ?? '');
+        if ($idA !== '' && $idB !== '') {
+            return strnatcasecmp($idA, $idB);
+        }
+        return strnatcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''));
+    });
+}
