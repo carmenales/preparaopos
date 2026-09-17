@@ -1202,7 +1202,305 @@ tr:nth-child(even) td {
     display: flex;
 }
 
+.selected-process-hero {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
 
+.back-to-hub-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #4f46e5;
+    margin-bottom: 12px;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.back-to-hub-link:hover {
+    color: #3730a3;
+    text-decoration: underline;
+}
+
+.selected-process-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.selected-process-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6366f1;
+    background: #eef2ff;
+    padding: 3px 10px;
+    border-radius: 9999px;
+    margin-bottom: 6px;
+}
+
+.selected-process-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.25;
+}
+
+.selected-process-stats {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.proc-stat-pill {
+    font-size: 13px;
+    padding: 6px 12px;
+    background: #f1f5f9;
+    color: #334155;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+.proc-stat-pill.stat-rev {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.proc-stat-pill.stat-draft {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+/* Process Hub Section */
+.process-hub-section {
+    margin-bottom: 32px;
+}
+
+.section-header-row {
+    margin-bottom: 16px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.section-subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+}
+
+.process-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.process-hub-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.03);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.process-hub-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+    border-color: #cbd5e1;
+}
+
+.process-hub-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.process-hub-icon {
+    font-size: 24px;
+    background: #eef2ff;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.process-hub-title-block {
+    flex: 1;
+    min-width: 0;
+}
+
+.process-hub-name {
+    margin: 0 0 4px;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.35;
+}
+
+.process-hub-name a {
+    color: #0f172a;
+    text-decoration: none;
+}
+
+.process-hub-name a:hover {
+    color: #4f46e5;
+}
+
+.process-hub-slug {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.process-hub-metrics {
+    display: flex;
+    gap: 10px;
+    font-size: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.proc-metric {
+    background: #f8fafc;
+    border: 1px solid #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #475569;
+}
+
+.proc-metric.text-green {
+    background: #f0fdf4;
+    border-color: #dcfce7;
+    color: #15803d;
+}
+
+.proc-metric.text-amber {
+    background: #fffbeb;
+    border-color: #fef3c7;
+    color: #b45309;
+}
+
+.process-hub-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.tag-mini {
+    font-size: 11px;
+    background: #f1f5f9;
+    color: #64748b;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.process-hub-card-footer {
+    margin-top: auto;
+}
+
+.button-process-enter {
+    display: block;
+    text-align: center;
+    background: #4f46e5;
+    color: #ffffff;
+    border: 1px solid #4f46e5;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.button-process-enter:hover {
+    background: #f8fafc;
+    color: #334155;
+    text-decoration: none;
+}
+
+/* Process Preview Footer (4-6 preview teaser) */
+.process-preview-footer {
+    margin-top: 18px;
+    padding: 16px 20px;
+    background: #f8fafc;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.process-preview-footer-text {
+    font-size: 14px;
+    color: #475569;
+}
+
+.process-preview-more-btn {
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.preview-badge-pill {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 2px 8px;
+    border-radius: 9999px;
+}
+
+.process-header-enter-btn {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4f46e5;
+    background: #ffffff;
+    border: 1px solid #c7d2fe;
+    padding: 4px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.process-header-enter-btn:hover {
+    background: #4f46e5;
+    color: #ffffff;
+    text-decoration: none;
+}
 
 @media print {
   body {
@@ -1253,7 +1551,6 @@ tr:nth-child(even) td {
     transform-origin: top left;
   }
 
-  /* Opcional: añadir margen antes y después para que no queden pegados al salto */
   .note-content .mermaid {
     page-break-inside: avoid;
     break-inside: avoid;
