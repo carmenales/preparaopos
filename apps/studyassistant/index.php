@@ -30,6 +30,56 @@ foreach ($notes as $n) {
     }
 }
 
+// Resúmenes por proceso para el Process Hub
+$processSummaries = [];
+foreach ($processes as $procSlug) {
+    $procNotes = array_filter($notes, static function ($n) use ($procSlug) {
+        return in_array($procSlug, $n['processes'] ?? [], true);
+    });
+    $procTotal = count($procNotes);
+    if ($procTotal === 0) {
+        continue;
+    }
+    $procReviewed = 0;
+    $procDraft = 0;
+    $procTagCounts = [];
+    foreach ($procNotes as $pn) {
+        $st = strtolower((string)($pn['status'] ?? ''));
+        if (in_array($st, ['revisado', 'publicado', 'completo', 'listo'], true)) {
+            $procReviewed++;
+        } else {
+            $procDraft++;
+        }
+        foreach ($pn['tags'] ?? [] as $t) {
+            $procTagCounts[$t] = ($procTagCounts[$t] ?? 0) + 1;
+        }
+    }
+    arsort($procTagCounts);
+    $topTags = array_slice(array_keys($procTagCounts), 0, 3);
+
+    $processSummaries[$procSlug] = [
+        'slug' => $procSlug,
+        'title' => sa_format_process_title($procSlug),
+        'total' => $procTotal,
+        'reviewed' => $procReviewed,
+        'draft' => $procDraft,
+        'tags' => $topTags,
+    ];
+}
+
+$reviewedCountInProcess = 0;
+$draftCountInProcess = 0;
+if ($process !== '') {
+    foreach ($filteredNotes as $fn) {
+        $st = strtolower((string)($fn['status'] ?? ''));
+        if (in_array($st, ['revisado', 'publicado', 'completo', 'listo'], true)) {
+            $reviewedCountInProcess++;
+        } else {
+            $draftCountInProcess++;
+        }
+    }
+}
+
 // Filtros activos para generar chips
 $activeFilters = [];
 if ($query !== '') {
@@ -69,14 +119,127 @@ if ($status !== '') {
     ];
 }
 
-$pageTitle = 'Dashboard de Apuntes · Study Assistant';
+$pageTitle = ($process !== '' ? sa_format_process_title($process) . ' · ' : '') . 'Dashboard de Apuntes · Study Assistant';
 require __DIR__ . '/includes/header.php';
 ?>
 
-<section class="hero">
-    <h1>Apuntes</h1>
-    <p>Consulta, filtra y busca en la base de conocimiento.</p>
-</section>
+<?php if ($process !== ''): ?>
+    <!-- Cabecera Dedicada al Proceso Seleccionado -->
+    <div class="selected-process-hero">
+        <a class="back-to-hub-link" href="index.php">← Volver al catálogo general de procesos</a>
+        <div class="selected-process-title-row">
+            <div>
+                <span class="selected-process-badge">Oposición / Convocatoria</span>
+                <h1 class="selected-process-title"><?php echo sa_safe_text(sa_format_process_title($process)); ?></h1>
+            </div>
+            <div class="selected-process-stats">
+                <span class="proc-stat-pill"><strong><?php echo count($filteredNotes); ?></strong> temas</span>
+                <span class="proc-stat-pill stat-rev"><strong><?php echo $reviewedCountInProcess; ?></strong> revisados</span>
+                <?php if ($draftCountInProcess > 0): ?>
+                    <span class="proc-stat-pill stat-draft"><strong><?php echo $draftCountInProcess; ?></strong> en borrador</span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+<?php else: ?>
+    <section class="hero">
+        <h1>Apuntes</h1>
+        <p>Consulta, filtra y busca en la base de conocimiento.</p>
+    </section>
+
+    <!-- Métricas del Dashboard (KPIs Objetivos) -->
+    <section class="kpi-grid">
+        <a class="kpi-card" href="index.php" title="Ver todos los apuntes">
+            <div class="kpi-icon kpi-icon-blue">📚</div>
+            <div class="kpi-content">
+                <span class="kpi-val"><?php echo $totalNotes; ?></span>
+                <span class="kpi-label">Apuntes Totales</span>
+            </div>
+        </a>
+
+        <a class="kpi-card" href="#procesos-hub" title="Ver oposiciones y procesos indexados">
+            <div class="kpi-icon kpi-icon-purple">🏛️</div>
+            <div class="kpi-content">
+                <span class="kpi-val"><?php echo $totalProcesses; ?></span>
+                <span class="kpi-label">Procesos</span>
+            </div>
+        </a>
+
+        <a class="kpi-card" href="index.php?status=revisado" title="Filtrar apuntes revisados">
+            <div class="kpi-icon kpi-icon-green">✅</div>
+            <div class="kpi-content">
+                <span class="kpi-val"><?php echo $reviewedCount; ?></span>
+                <span class="kpi-label">Revisados</span>
+            </div>
+        </a>
+
+        <a class="kpi-card" href="index.php?status=borrador" title="Filtrar apuntes en borrador">
+            <div class="kpi-icon kpi-icon-amber">📝</div>
+            <div class="kpi-content">
+                <span class="kpi-val"><?php echo $draftCount; ?></span>
+                <span class="kpi-label">En Preparación</span>
+            </div>
+        </a>
+    </section>
+
+    <?php if ($query === '' && $tag === '' && $status === ''): ?>
+        <!-- Hub de Procesos Selectivos (Directorio de Convocatorias) -->
+        <section class="process-hub-section" id="procesos-hub">
+            <div class="section-header-row">
+                <div>
+                    <h2 class="section-title">🏛️ Convocatorias y Procesos Selectivos</h2>
+                    <p class="section-subtitle">Accede directamente al temario completo de cada oposición o consulta una selección de temas destacados abajo.</p>
+                </div>
+            </div>
+
+            <div class="process-hub-grid">
+                <?php foreach ($processSummaries as $pSummary): ?>
+                    <div class="process-hub-card">
+                        <div class="process-hub-card-header">
+                            <div class="process-hub-icon">🏛️</div>
+                            <div class="process-hub-title-block">
+                                <h3 class="process-hub-name">
+                                    <a href="index.php?process=<?php echo urlencode($pSummary['slug']); ?>">
+                                        <?php echo sa_safe_text($pSummary['title']); ?>
+                                    </a>
+                                </h3>
+                                <span class="process-hub-slug"><?php echo sa_safe_text($pSummary['slug']); ?></span>
+                            </div>
+                        </div>
+
+                        <div class="process-hub-metrics">
+                            <span class="proc-metric" title="Total de temas disponibles">
+                                📚 <strong><?php echo $pSummary['total']; ?></strong> <?php echo $pSummary['total'] === 1 ? 'tema' : 'temas'; ?>
+                            </span>
+                            <span class="proc-metric text-green" title="Temas con estado revisado">
+                                ✅ <strong><?php echo $pSummary['reviewed']; ?></strong> revisados
+                            </span>
+                            <?php if ($pSummary['draft'] > 0): ?>
+                                <span class="proc-metric text-amber" title="Temas en preparación">
+                                    📝 <strong><?php echo $pSummary['draft']; ?></strong> borradores
+                                </span>
+                            <?php endif; ?>
+                        </div>
+
+                        <?php if (!empty($pSummary['tags'])): ?>
+                            <div class="process-hub-tags">
+                                <?php foreach ($pSummary['tags'] as $t): ?>
+                                    <span class="tag-mini">#<?php echo sa_safe_text($t); ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="process-hub-card-footer">
+                            <a class="button-process-enter" href="index.php?process=<?php echo urlencode($pSummary['slug']); ?>">
+                                Ver apuntes
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </section>
+    <?php endif; ?>
+<?php endif; ?>
 
 <?php if (empty($notes)): ?>
     <div class="alert">
@@ -84,41 +247,6 @@ require __DIR__ . '/includes/header.php';
         <code>python scripts/build_knowledge_index.py</code>
     </div>
 <?php endif; ?>
-
-<!-- Métricas del Dashboard (KPIs Objetivos) -->
-<section class="kpi-grid">
-    <a class="kpi-card" href="index.php" title="Ver todos los apuntes">
-        <div class="kpi-icon kpi-icon-blue">📚</div>
-        <div class="kpi-content">
-            <span class="kpi-val"><?php echo $totalNotes; ?></span>
-            <span class="kpi-label">Apuntes Totales</span>
-        </div>
-    </a>
-
-    <a class="kpi-card" href="#procesos" title="Ver oposiciones y procesos indexados">
-        <div class="kpi-icon kpi-icon-purple">🏛️</div>
-        <div class="kpi-content">
-            <span class="kpi-val"><?php echo $totalProcesses; ?></span>
-            <span class="kpi-label">Procesos</span>
-        </div>
-    </a>
-
-    <a class="kpi-card" href="index.php?status=revisado" title="Filtrar apuntes revisados">
-        <div class="kpi-icon kpi-icon-green">✅</div>
-        <div class="kpi-content">
-            <span class="kpi-val"><?php echo $reviewedCount; ?></span>
-            <span class="kpi-label">Revisados</span>
-        </div>
-    </a>
-
-    <a class="kpi-card" href="index.php?status=borrador" title="Filtrar apuntes en borrador">
-        <div class="kpi-icon kpi-icon-amber">📝</div>
-        <div class="kpi-content">
-            <span class="kpi-val"><?php echo $draftCount; ?></span>
-            <span class="kpi-label">En Preparación</span>
-        </div>
-    </a>
-</section>
 
 <!-- Barra de Búsqueda y Filtros Unificada -->
 <section class="dashboard-toolbar">
@@ -259,15 +387,23 @@ foreach ($filteredNotes as $note) {
     }
     $notesByProcess[$processKey][] = $note;
 }
+$isLimitedPreview = ($process === '' && $query === '' && $tag === '' && $status === '');
+$previewLimit = 6;
 ?>
 
 <div id="procesos" class="accordion-controls">
     <div class="summary" style="margin: 0;">
-        Mostrando <strong><?php echo count($filteredNotes); ?></strong> apuntes
-        <?php if (count($filteredNotes) < $totalNotes): ?>
-            (filtrados de <?php echo $totalNotes; ?> totales)
+        <?php if ($process !== ''): ?>
+            Mostrando todos los <strong><?php echo count($filteredNotes); ?></strong> temas de <strong><?php echo sa_safe_text(sa_format_process_title($process)); ?></strong>.
+        <?php elseif ($isLimitedPreview): ?>
+            Mostrando temas · <strong><?php echo $totalNotes; ?></strong> temas en <strong><?php echo count($notesByProcess); ?></strong> convocatorias.
+        <?php else: ?>
+            Mostrando <strong><?php echo count($filteredNotes); ?></strong> apuntes
+            <?php if (count($filteredNotes) < $totalNotes): ?>
+                (filtrados de <?php echo $totalNotes; ?> totales)
+            <?php endif; ?>
+            en <strong><?php echo count($notesByProcess); ?></strong> ámbito(s).
         <?php endif; ?>
-        en <strong><?php echo count($notesByProcess); ?></strong> ámbito(s).
     </div>
 
     <?php if (!empty($notesByProcess)): ?>
@@ -295,23 +431,35 @@ foreach ($filteredNotes as $note) {
 
 <!-- Listado de Grupos de Procesos -->
 <?php foreach ($notesByProcess as $processKey => $notesInProcess): ?>
-    <details open class="process-accordion">
+    <?php
+    $totalInProcess = count($notesInProcess);
+    if ($isLimitedPreview && $totalInProcess > $previewLimit) {
+        $displayedNotes = array_slice($notesInProcess, 0, $previewLimit);
+        $remainingCount = $totalInProcess - $previewLimit;
+    } else {
+        $displayedNotes = $notesInProcess;
+        $remainingCount = 0;
+    }
+    ?>
+    <details open class="process-accordion" id="proc-<?php echo sa_safe_text(preg_replace('/[^a-zA-Z0-9_-]/', '-', $processKey)); ?>">
         <summary class="process-accordion-summary">
             <div class="process-title-wrapper">
                 <span class="process-chevron">▶</span>
                 <span><?php echo sa_safe_text(sa_format_process_title($processKey)); ?></span>
-                <span class="process-badge-count"><?php echo count($notesInProcess); ?></span>
+                <span class="process-badge-count"><?php echo $totalInProcess; ?></span>
+                <?php if ($remainingCount > 0): ?>
+                    <span class="preview-badge-pill">Mostrando <?php echo count($displayedNotes); ?> de <?php echo $totalInProcess; ?></span>
+                <?php endif; ?>
             </div>
 
             <?php if ($process !== $processKey && $processKey !== 'Sin proceso'): ?>
                 <a
-                    class="tag"
-                    style="background: #ffffff; color: #2457c5; border: 1px solid #cbd5e1; font-weight: 600;"
+                    class="process-header-enter-btn"
                     href="index.php?process=<?php echo urlencode($processKey); ?>"
                     onclick="event.stopPropagation();"
-                    title="Filtrar solo este proceso"
+                    title="Abrir temario completo de este ámbito"
                 >
-                    Filtrar este ámbito
+                    Ver todos (<?php echo $totalInProcess; ?>) →
                 </a>
             <?php endif; ?>
         </summary>
@@ -320,7 +468,7 @@ foreach ($filteredNotes as $note) {
             <div class="notes-view-container is-grid-view">
                 <!-- Vista Cuadrícula (Cards) -->
                 <div class="note-grid">
-                    <?php foreach ($notesInProcess as $note): ?>
+                    <?php foreach ($displayedNotes as $note): ?>
                         <?php
                         $practiceTopics = sa_normalize_practice_topics($note);
                         $headingsCount = count($note['headings'] ?? []);
@@ -369,16 +517,16 @@ foreach ($filteredNotes as $note) {
                                 <div class="tags" style="margin-top: auto; margin-bottom: 12px;">
                                     <?php
                                     $visibleTags = array_slice($note['tags'], 0, 4);
-                                    $remainingCount = count($note['tags']) - 4;
+                                    $remainingCountTag = count($note['tags']) - 4;
                                     ?>
                                     <?php foreach ($visibleTags as $noteTag): ?>
                                         <a class="tag" href="index.php?tag=<?php echo urlencode($noteTag); ?>">
                                             <?php echo sa_safe_text($noteTag); ?>
                                         </a>
                                     <?php endforeach; ?>
-                                    <?php if ($remainingCount > 0): ?>
+                                    <?php if ($remainingCountTag > 0): ?>
                                         <span class="tag" style="background: #f1f5f9; color: #64748b;" title="Más etiquetas disponibles en el apunte">
-                                            +<?php echo $remainingCount; ?> más
+                                            +<?php echo $remainingCountTag; ?> más
                                         </span>
                                     <?php endif; ?>
                                 </div>
@@ -412,7 +560,7 @@ foreach ($filteredNotes as $note) {
 
                 <!-- Vista Lista Compacta -->
                 <div class="note-list-view">
-                    <?php foreach ($notesInProcess as $note): ?>
+                    <?php foreach ($displayedNotes as $note): ?>
                         <?php
                         $practiceTopics = sa_normalize_practice_topics($note);
                         $headingsCount = count($note['headings'] ?? []);
@@ -470,6 +618,17 @@ foreach ($filteredNotes as $note) {
                         </div>
                     <?php endforeach; ?>
                 </div>
+
+                <?php if ($remainingCount > 0): ?>
+                    <div class="process-preview-footer">
+                        <div class="process-preview-footer-text">
+                            Mostrando <strong><?php echo count($displayedNotes); ?></strong> de <strong><?php echo $totalInProcess; ?></strong> temas de esta convocatoria.
+                        </div>
+                        <a class="button-primary process-preview-more-btn" href="index.php?process=<?php echo urlencode($processKey); ?>">
+                            Ver temas
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </details>
