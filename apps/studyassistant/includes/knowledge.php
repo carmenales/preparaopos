@@ -210,3 +210,114 @@ function sa_normalize_practice_topics(array $note): array
 
     return $practiceTopics;
 }
+
+function sa_prettify_slug(string $slug): string
+{
+    $segments = explode('/', $slug);
+    $formattedSegments = [];
+    $connectors = ['de', 'del', 'la', 'las', 'el', 'los', 'en', 'y', 'a', 'por', 'para', 'con', 'e'];
+    $accents = [
+        'administracion' => 'Administración',
+        'innovacion' => 'Innovación',
+        'transformacion' => 'Transformación',
+        'informatica' => 'Informática',
+        'gestion' => 'Gestión',
+        'tecnico' => 'Técnico',
+        'comunicacion' => 'Comunicación',
+    ];
+
+    foreach ($segments as $segment) {
+        $words = preg_split('/[\s\-_]+/', trim($segment));
+        $formattedWords = [];
+
+        foreach ($words as $i => $word) {
+            $lower = function_exists('mb_strtolower') ? mb_strtolower($word, 'UTF-8') : strtolower($word);
+            if ($lower === '') {
+                continue;
+            }
+
+            if (isset($accents[$lower])) {
+                $formattedWords[] = $accents[$lower];
+            } elseif ($i > 0 && in_array($lower, $connectors, true)) {
+                $formattedWords[] = $lower;
+            } elseif (strlen($lower) <= 3 || preg_match('/^[a-z][0-9]$/i', $lower)) {
+                $formattedWords[] = function_exists('mb_strtoupper') ? mb_strtoupper($lower, 'UTF-8') : strtoupper($lower);
+            } else {
+                $formattedWords[] = function_exists('mb_convert_case')
+                    ? mb_convert_case($lower, MB_CASE_TITLE, 'UTF-8')
+                    : ucfirst($lower);
+            }
+        }
+
+        if (!empty($formattedWords)) {
+            $formattedSegments[] = implode(' ', $formattedWords);
+        }
+    }
+
+    return implode(' › ', $formattedSegments) ?: $slug;
+}
+
+function sa_format_process_title(string $slug): string
+{
+    $slug = trim($slug);
+    if ($slug === '' || $slug === 'Sin proceso') {
+        return 'Sin proceso asignado';
+    }
+
+    // 1. Caché en memoria para evitar accesos repetidos a disco en la misma petición
+    static $titlesCache = [];
+    if (isset($titlesCache[$slug])) {
+        return $titlesCache[$slug];
+    }
+
+    // 2. Descubrir automáticamente el título desde el README.md de la carpeta del proceso si existe
+    $projectPath = sa_project_base_path();
+    if ($projectPath) {
+        $processDir = $projectPath . '/knowledge/processes/' . $slug;
+        foreach (['README.md', 'readme.md'] as $readmeName) {
+            $readmePath = $processDir . '/' . $readmeName;
+            if (is_file($readmePath)) {
+                $handle = @fopen($readmePath, 'r');
+                if ($handle) {
+                    while (($line = fgets($handle)) !== false) {
+                        $line = trim($line);
+                        if (strpos($line, '# ') === 0) {
+                            $title = trim(substr($line, 2));
+                            if ($title !== '') {
+                                fclose($handle);
+                                $titlesCache[$slug] = $title;
+                                return $title;
+                            }
+                        }
+                    }
+                    fclose($handle);
+                }
+            }
+        }
+    }
+
+    // 3. Si no hay README, generar el título automáticamente formateando el slug
+    $formatted = sa_prettify_slug($slug);
+    $titlesCache[$slug] = $formatted;
+    return $formatted;
+}
+
+function sa_estimate_reading_time(array $note): string
+{
+    $text = $note['content_text'] ?? ($note['excerpt'] ?? '');
+    $charCount = function_exists('mb_strlen') ? mb_strlen((string)$text, 'UTF-8') : strlen((string)$text);
+    $minutes = max(1, (int)ceil($charCount / 800));
+    return "~{$minutes} min";
+}
+
+function sa_status_badge_class(string $status): string
+{
+    $status = strtolower(trim($status));
+    if (in_array($status, ['revisado', 'publicado', 'completo', 'listo'], true)) {
+        return 'badge-status-revisado';
+    }
+    if (in_array($status, ['borrador', 'en-revision', 'draft'], true)) {
+        return 'badge-status-borrador';
+    }
+    return 'badge-status-default';
+}

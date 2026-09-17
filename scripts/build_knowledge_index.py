@@ -186,6 +186,76 @@ def should_include(path: Path, knowledge_root: Path) -> bool:
     return True
 
 
+def prettify_process_slug(slug: str) -> str:
+    """Genera un título legible a partir del slug si no está en el registro."""
+    segments = str(slug).strip().split('/')
+    formatted_segments = []
+    lowercase_words = {'de', 'del', 'la', 'las', 'el', 'los', 'en', 'y', 'a', 'por', 'para', 'con'}
+
+    for segment in segments:
+        words = re.split(r'[\s\-_]+', segment.strip())
+        formatted_words = []
+        for i, word in enumerate(words):
+            word_lower = word.lower()
+            if not word_lower:
+                continue
+            if i > 0 and word_lower in lowercase_words:
+                formatted_words.append(word_lower)
+            elif len(word_lower) <= 3:
+                formatted_words.append(word_lower.upper())
+            else:
+                formatted_words.append(word_lower.capitalize())
+        if formatted_words:
+            formatted_segments.append(' '.join(formatted_words))
+
+    return ' › '.join(formatted_segments) or str(slug)
+
+
+def load_processes_registry(knowledge_root: Path) -> dict[str, dict[str, str]]:
+    """Carga el registro de procesos desde processes.yml o processes/processes.yml."""
+    candidates = [
+        knowledge_root / "processes" / "processes.yml",
+        knowledge_root / "processes.yml",
+    ]
+    for path in candidates:
+        if path.exists():
+            try:
+                try:
+                    import yaml
+                    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                except ImportError:
+                    data = {"processes": []}
+                    current = {}
+                    for raw_line in path.read_text(encoding="utf-8").splitlines():
+                        line = raw_line.strip()
+                        if line.startswith("- id:"):
+                            if current.get("id"):
+                                data["processes"].append(current)
+                            current = {"id": line.split(":", 1)[1].strip().strip('"\'')}
+                        elif ":" in line and current:
+                            k, v = line.split(":", 1)
+                            k = k.strip()
+                            if k in ("title", "organism"):
+                                current[k] = v.strip().strip('"\'')
+                    if current.get("id"):
+                        data["processes"].append(current)
+
+                procs = {}
+                for item in data.get("processes", []):
+                    proc_id = item.get("id")
+                    if proc_id:
+                        procs[proc_id] = {
+                            "id": proc_id,
+                            "title": item.get("title") or proc_id,
+                            "organism": item.get("organism") or "",
+                        }
+                if procs:
+                    return procs
+            except Exception:
+                pass
+    return {}
+
+
 def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]:
     """Recorre la base de conocimiento y produce el JSON de metadatos ordenado."""
     notes: list[dict[str, Any]] = []
@@ -228,8 +298,24 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
 
     notes.sort(key=lambda x: x["title"])
 
+    processes_registry = load_processes_registry(knowledge_root)
+    all_processes: dict[str, dict[str, str]] = {}
+
+    for note in notes:
+        for p in note.get("processes", []):
+            if p not in all_processes:
+                if p in processes_registry:
+                    all_processes[p] = processes_registry[p]
+                else:
+                    all_processes[p] = {
+                        "id": p,
+                        "title": prettify_process_slug(p),
+                        "organism": "",
+                    }
+
     output_data = {
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "processes": all_processes,
         "notes": notes
     }
 
