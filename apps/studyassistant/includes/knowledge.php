@@ -338,3 +338,21 @@ function sa_sort_notes_sequentially(array &$notes): void
         return strnatcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''));
     });
 }
+
+function sa_knowledge_service_url(): string
+{
+    return getenv('KNOWLEDGE_SERVICE_URL') ?: 'http://knowledge-service:8000';
+}
+
+function sa_load_processes_registry(): array
+{
+    $indexPath = sa_index_path();
+    if (is_file($indexPath)) {
+        $raw = file_get_contents($indexPath);
+        $data = json_decode($raw, true);
+        if (!empty($data['processes']) && is_array($data['processes'])) {
+            return $data['processes'];
+        }
+    }
+    return [];
+}
