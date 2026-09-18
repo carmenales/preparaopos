@@ -387,6 +387,11 @@ foreach ($filteredNotes as $note) {
     }
     $notesByProcess[$processKey][] = $note;
 }
+foreach ($notesByProcess as $pk => &$pNotes) {
+    sa_sort_notes_sequentially($pNotes);
+}
+unset($pNotes);
+
 $isLimitedPreview = ($process === '' && $query === '' && $tag === '' && $status === '');
 $previewLimit = 6;
 ?>
@@ -474,11 +479,15 @@ $previewLimit = 6;
                         $headingsCount = count($note['headings'] ?? []);
                         $readingTime = sa_estimate_reading_time($note);
                         $statusClass = sa_status_badge_class($note['status'] ?? '');
+                        $noteUrl = 'note.php?id=' . urlencode($note['id']);
+                        if ($processKey !== 'Sin proceso') {
+                            $noteUrl .= '&amp;process=' . urlencode($processKey);
+                        }
                         ?>
                         <article class="note-card">
                             <div class="note-card-header">
                                 <h3>
-                                    <a href="note.php?id=<?php echo urlencode($note['id']); ?>">
+                                    <a href="<?php echo $noteUrl; ?>">
                                         <?php echo sa_safe_text($note['title']); ?>
                                     </a>
                                 </h3>
@@ -533,7 +542,7 @@ $previewLimit = 6;
                             <?php endif; ?>
 
                             <div class="note-card-footer">
-                                <a class="card-action-read" href="note.php?id=<?php echo urlencode($note['id']); ?>">
+                                <a class="card-action-read" href="<?php echo $noteUrl; ?>">
                                     📖 Ver apunte →
                                 </a>
 
@@ -566,11 +575,15 @@ $previewLimit = 6;
                         $headingsCount = count($note['headings'] ?? []);
                         $readingTime = sa_estimate_reading_time($note);
                         $statusClass = sa_status_badge_class($note['status'] ?? '');
+                        $noteUrl = 'note.php?id=' . urlencode($note['id']);
+                        if ($processKey !== 'Sin proceso') {
+                            $noteUrl .= '&amp;process=' . urlencode($processKey);
+                        }
                         ?>
                         <div class="note-list-row">
                             <div class="note-list-info">
                                 <h4 class="note-list-title">
-                                    <a href="note.php?id=<?php echo urlencode($note['id']); ?>">
+                                    <a href="<?php echo $noteUrl; ?>">
                                         <?php echo sa_safe_text($note['title']); ?>
                                     </a>
                                 </h4>
@@ -611,7 +624,7 @@ $previewLimit = 6;
                                     </a>
                                 <?php endif; ?>
 
-                                <a class="button-secondary" style="padding: 6px 12px; font-size: 13px;" href="note.php?id=<?php echo urlencode($note['id']); ?>">
+                                <a class="button-secondary" style="padding: 6px 12px; font-size: 13px;" href="<?php echo $noteUrl; ?>">
                                     Ver →
                                 </a>
                             </div>

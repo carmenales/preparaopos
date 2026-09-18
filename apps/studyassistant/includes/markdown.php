@@ -85,9 +85,28 @@ function sa_inline_markdown($text) {
     $mathBlocks = [];
     $text = sa_extract_inline_math((string)$text, $mathBlocks);
 
+    $codeSpans = [];
+    $text = preg_replace_callback('/`([^`]+)`/', function ($m) use (&$codeSpans) {
+        $placeholder = '%%SA_CODE_' . count($codeSpans) . '%%';
+        $codeSpans[$placeholder] = '<code>' . htmlspecialchars($m[1], ENT_QUOTES, 'UTF-8') . '</code>';
+        return $placeholder;
+    }, $text);
+
+    $htmlTags = [];
+    $safeTagRegex = '#</?(?:br|sup|sub|b|i|u|strong|em|mark|small|del|s|strike|abbr|p|span)(?:\s+[a-zA-Z0-9_\-]+(?:=(?:"[^"]*"|\'[^\']*\'))?)*\s*/?>|<a(?:\s+[a-zA-Z0-9_\-]+(?:=(?:"[^"]*"|\'[^\']*\'))?)*\s*>|</a>#i';
+
+    $text = preg_replace_callback($safeTagRegex, function ($m) use (&$htmlTags) {
+        $placeholder = '%%SA_HTML_' . count($htmlTags) . '%%';
+        $htmlTags[$placeholder] = $m[0];
+        return $placeholder;
+    }, $text);
+
     $html = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 
-    $html = preg_replace('/`([^`]+)`/', '<code>$1</code>', $html);
+    if (!empty($htmlTags)) {
+        $html = strtr($html, $htmlTags);
+    }
+
     $html = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $html);
     $html = preg_replace('/\*([^*]+)\*/', '<em>$1</em>', $html);
 
@@ -120,6 +139,10 @@ function sa_inline_markdown($text) {
 
         return '<a href="' . $escapedPath . '">' . $text . '</a>';
     }, $html);
+
+    if (!empty($codeSpans)) {
+        $html = strtr($html, $codeSpans);
+    }
 
     return sa_restore_math_placeholders($html, $mathBlocks);
 }
@@ -640,6 +663,24 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
             continue;
         }
 
+        if (preg_match('/^<br\s*\/?>$/i', $trimmed)) {
+            $flushParagraph();
+            $html .= '<br>';
+            continue;
+        }
+
+        if (preg_match('/^<hr\s*\/?>$/i', $trimmed) || preg_match('/^(?:-{3,}|\*{3,}|_{3,})$/', $trimmed)) {
+            $flushParagraph();
+            $html .= '<hr>';
+            continue;
+        }
+
+        if (preg_match('/^<p\b/i', $trimmed)) {
+            $flushParagraph();
+            $html .= sa_inline_markdown($trimmed);
+            continue;
+        }
+
         if (sa_is_quiz_question_start($trimmed)) {
             $flushParagraph();
             $html .= sa_collect_quiz_question($lines, $i);
@@ -678,11 +719,13 @@ function sa_render_markdown($markdown, ?string $noteId = null) {
             $flushParagraph();
 
             $bq = [];
-            while ($i < count($lines) && preg_match('/^>\s?(.*)$/', $lines[$i], $m)) {
+            while ($i < count($lines) && preg_match('/^\s*>\s?(.*)$/', $lines[$i], $m)) {
                 $bq[] = $m[1];
                 $i++;
             }
-            $i--;
+            if (!empty($bq)) {
+                $i--;
+            }
 
             if (!empty($bq) && preg_match('/^(Nota|Note):/iu', $bq[0])) {
                 $bq[0] = preg_replace('/^(Nota|Note):/iu', '', $bq[0]);
