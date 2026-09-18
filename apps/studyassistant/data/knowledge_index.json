@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-16T07:20:05Z",
+  "generated_at": "2026-09-18T07:56:12Z",
   "processes": {
     "age/a2-gsi": {
       "id": "age/a2-gsi",
@@ -8,17 +8,17 @@
     },
     "comunidad-madrid/administracion-digital/innovacion-y-transformacion-digital": {
       "id": "comunidad-madrid/administracion-digital/innovacion-y-transformacion-digital",
-      "title": "Comunidad Madrid › Administración Digital › Innovación y Transformación Digital",
+      "title": "Comunidad Madrid › Administracion Digital › Innovacion y Transformacion Digital",
       "organism": ""
     },
     "comunidad-madrid/administracion-digital/tic": {
       "id": "comunidad-madrid/administracion-digital/tic",
-      "title": "Proceso selectivo perfiles TIC — Madrid Digital (2026)",
+      "title": "Comunidad Madrid › Administracion Digital › TIC",
       "organism": ""
     },
     "comunidad-madrid/administracion-digital/ia": {
       "id": "comunidad-madrid/administracion-digital/ia",
-      "title": "Proceso selectivo de Inteligencia Artificial — Madrid Digital (2026)",
+      "title": "Comunidad Madrid › Administracion Digital › IA",
       "organism": ""
     },
     "ayuntamiento-majadahonda": {
