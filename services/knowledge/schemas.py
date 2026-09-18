@@ -116,3 +116,55 @@ class GenerateNotePreview(BaseModel):
     full_markdown: str
     fragments_used: list[RetrievedFragment]
     warnings: list[str] = Field(default_factory=list)
+
+
+class ExtractPdfResponse(BaseModel):
+    """Respuesta de POST /ingest/extract-pdf."""
+
+    markdown: str
+    raw_markdown: str = ""
+    detected_title: str
+    page_count: int
+    headings: list[str] = Field(default_factory=list)
+    stats: dict = Field(default_factory=dict)
+    images: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+class RefineMarkdownRequest(BaseModel):
+    """Payload para POST /ingest/refine."""
+
+    markdown: str = Field(..., min_length=1)
+    instructions: str = Field(default="")
+
+
+class RefineMarkdownResponse(BaseModel):
+    """Respuesta de POST /ingest/refine."""
+
+    refined_markdown: str
+    warnings: list[str] = Field(default_factory=list)
+
+
+class PublishNoteRequest(BaseModel):
+    """Payload para POST /ingest/publish."""
+
+    process_slug: str = Field(..., min_length=1, description="Slug del proceso, ej. 'age/a2-gsi'")
+    title: str = Field(..., min_length=1, description="Título del apunte")
+    official_topic: str = Field(default="", description="Tema oficial o epígrafe")
+    markdown_body: str = Field(..., min_length=1, description="Cuerpo del apunte en Markdown")
+    tags: list[str] = Field(default_factory=list)
+    status: str = Field(default="revisado")
+    source: str = Field(default="cetic")
+    custom_filename: str | None = Field(default=None)
+
+
+class PublishNoteResponse(BaseModel):
+    """Respuesta de POST /ingest/publish."""
+
+    success: bool
+    note_id: str
+    slug: str
+    file_path: str
+    index_rebuilt: bool
+    note_url: str
+    warnings: list[str] = Field(default_factory=list)
