@@ -122,6 +122,88 @@ class TestIngestService(unittest.TestCase):
         # 4. Ejemplos a evitar debe ser un bloque destacado
         self.assertIn("**Ejemplos a evitar:**", md)
 
+    def test_bullet_point_continuation_without_blank_lines(self):
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        # Línea 1 de viñeta
+        page.insert_text((50, 100), "• Un nivel Alto suele estar vinculado con: riesgo de muerte para las personas, perjuicio muy alto", fontsize=10)
+        # Línea 2 continuación
+        page.insert_text((50, 120), "para el país, etc. Si se pone hay que tenerlo muy justificado y asumir que se pueden implantar", fontsize=10)
+        # Línea 3 continuación
+        page.insert_text((50, 140), "las medidas que este nivel requiere.", fontsize=10)
+
+        pdf_bytes = doc.tobytes()
+        doc.close()
+
+        service = IngestService()
+        result = service.extract_from_pdf_bytes(pdf_bytes, filename="test_bullets.pdf", normalize=True)
+        md = result["markdown"]
+
+        # Debe unirse en un solo ítem de viñeta sin líneas en blanco intermedias
+        self.assertIn("- Un nivel Alto suele estar vinculado con: riesgo de muerte para las personas, perjuicio muy alto para el país, etc.", md)
+        self.assertIn("asumir que se pueden implantar las medidas que este nivel requiere.", md)
+        self.assertNotIn("perjuicio muy alto\n\npara el país", md)
+        self.assertNotIn("implantar\n\nlas medidas", md)
+
+    def test_unclosed_parenthesis_and_abbreviation_continuation(self):
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        page.insert_text((50, 100), "• Régimen jurídico del sector público: Ley 40/2015 del Régimen Jurídico del Sector Público (art.", fontsize=10)
+        page.insert_text((50, 120), "156) o RD 203/2021 Reglamento de actuación y funcionamiento del Sector Público por medios electrónicos.", fontsize=10)
+        pdf_bytes = doc.tobytes()
+        doc.close()
+
+        service = IngestService()
+        result = service.extract_from_pdf_bytes(pdf_bytes, filename="test_art.pdf", normalize=True)
+        md = result["markdown"]
+        self.assertIn("- Régimen jurídico del sector público: Ley 40/2015 del Régimen Jurídico del Sector Público (art. 156) o RD 203/2021", md)
+        self.assertNotIn("(art.\n\n156)", md)
+
+    def test_dangling_connective_continuation(self):
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        page.insert_text((50, 100), "• Ley Orgánica 7/2021, de 26 de mayo, de protección de datos personales tratados para fines de", fontsize=10)
+        page.insert_text((50, 120), "prevención, detección, investigación y enjuiciamiento de infracciones penales y de ejecución de sanciones penales (art.37)", fontsize=10)
+        pdf_bytes = doc.tobytes()
+        doc.close()
+
+        service = IngestService()
+        result = service.extract_from_pdf_bytes(pdf_bytes, filename="test_fines_de.pdf", normalize=True)
+        md = result["markdown"]
+        self.assertIn("- Ley Orgánica 7/2021, de 26 de mayo, de protección de datos personales tratados para fines de prevención, detección", md)
+        self.assertNotIn("fines de\n\nprevención", md)
+
+    def test_lone_bullet_and_subbullets(self):
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        page.insert_text((50, 100), "•", fontsize=10)
+        page.insert_text((50, 120), "Marco estratégico de ciberseguridad:", fontsize=10)
+        page.insert_text((50, 140), "o RD 1150/2021 de Estrategia de Seguridad Nacional 2021", fontsize=10)
+        page.insert_text((50, 160), "o Plan Nacional de Ciberseguridad aprobado en Consejo de Ministros el 29/03/2022", fontsize=10)
+        pdf_bytes = doc.tobytes()
+        doc.close()
+
+        service = IngestService()
+        result = service.extract_from_pdf_bytes(pdf_bytes, filename="test_subbullets.pdf", normalize=True)
+        md = result["markdown"]
+        self.assertIn("- **Marco estratégico de ciberseguridad:**", md)
+        self.assertIn("- RD 1150/2021 de Estrategia de Seguridad Nacional 2021", md)
+        self.assertNotIn("•\n\n**Marco", md)
+
+    def test_colon_in_continuous_sentence_is_not_split_as_callout(self):
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        page.insert_text((50, 100), "Para asignar un nivel de seguridad u otro a cada dimensión se tendrá que valorar el impacto de un", fontsize=10)
+        page.insert_text((50, 120), "incidente sobre:", fontsize=10)
+        pdf_bytes = doc.tobytes()
+        doc.close()
+
+        service = IngestService()
+        result = service.extract_from_pdf_bytes(pdf_bytes, filename="test_colon.pdf", normalize=True)
+        md = result["markdown"]
+        self.assertIn("Para asignar un nivel de seguridad u otro a cada dimensión se tendrá que valorar el impacto de un incidente sobre:", md)
+        self.assertNotIn("un\n\n**incidente sobre:**", md)
+
     def test_strip_frontmatter(self):
         content_with_fm = "---\nid: test\ntitle: Titulo\n---\n# Encabezado\nTexto real"
         cleaned = strip_frontmatter(content_with_fm)
