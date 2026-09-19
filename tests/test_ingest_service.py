@@ -15,7 +15,9 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 from config import settings
 from ingest_service import (
     IngestService,
+    clean_inline_noise,
     detect_note_title,
+    is_pure_page_or_header_noise,
     sanitize_filename,
     strip_frontmatter,
 )
@@ -54,6 +56,71 @@ class TestIngestService(unittest.TestCase):
         text = "Solo un párrafo sin headings.\nSegunda línea."
         title, topic = detect_note_title(text, "A2_Tema_05_BBDD.pdf")
         self.assertIn("Tema 05 BBDD", title)
+
+    def test_detect_note_title_from_noisy_header(self):
+        noisy_line = "Página1 | 12 ## ESQUEMA NACIONAL DE SEGURIDAD Actualizado a 06/11/2023"
+        title, topic = detect_note_title(noisy_line, "A2_Tema_I.09.II_ENS-ENI.pdf")
+        self.assertEqual(title, "ESQUEMA NACIONAL DE SEGURIDAD")
+        self.assertEqual(topic, "ESQUEMA NACIONAL DE SEGURIDAD")
+
+    def test_clean_inline_noise_removes_page_markers_and_dates(self):
+        noisy_heading = "Página1 | 12 ## ESQUEMA NACIONAL DE SEGURIDAD Actualizado a 06/11/2023"
+        self.assertEqual(clean_inline_noise(noisy_heading), "## ESQUEMA NACIONAL DE SEGURIDAD")
+
+        pure_noise_page = "### Página2 | 12"
+        self.assertEqual(clean_inline_noise(pure_noise_page), "")
+
+        footer_noise = "Convocatoria 2024 - Pág. 3 / 10 - Actualizado a 01/02/2024"
+        self.assertEqual(clean_inline_noise(footer_noise), "")
+
+    def test_is_pure_page_or_header_noise(self):
+        self.assertTrue(is_pure_page_or_header_noise("### Página2 | 12"))
+        self.assertTrue(is_pure_page_or_header_noise("Página1 | 12"))
+        self.assertTrue(is_pure_page_or_header_noise("1 | 12"))
+        self.assertTrue(is_pure_page_or_header_noise("Actualizado a 06/11/2023"))
+        self.assertTrue(is_pure_page_or_header_noise("Todos los derechos reservados"))
+        self.assertTrue(is_pure_page_or_header_noise("www.ejemplo-academia.com"))
+        self.assertFalse(is_pure_page_or_header_noise("ESQUEMA NACIONAL DE SEGURIDAD"))
+        self.assertFalse(is_pure_page_or_header_noise("## Principios Básicos del ENS"))
+
+    def test_natural_prose_with_page_word_is_preserved(self):
+        prose = "En la página 10 del Esquema Nacional de Seguridad se definen las dimensiones."
+        self.assertFalse(is_pure_page_or_header_noise(prose))
+        self.assertEqual(clean_inline_noise(prose), prose)
+
+    def test_line_level_heading_and_callout_separation(self):
+        doc = fitz.open()
+        page = doc.new_page(width=595, height=842)
+        # Heading: 14pt
+        page.insert_text((50, 100), "1. INTRODUCCIÓN", fontsize=14)
+        # Paragraph: 10pt
+        page.insert_text((50, 130), "El Esquema Nacional de Seguridad se ha actualizado con el RD 311/2022.", fontsize=10)
+        page.insert_text((50, 150), "El supuesto práctico suele incorporar una pregunta relativa al ENS.", fontsize=10)
+        # Callout: 10pt (starts with 'Consejo...')
+        page.insert_text((50, 190), "Consejo de Preparatic", fontsize=10)
+        # Callout body: 10pt
+        page.insert_text((50, 210), "Aunque en el examen no nos pidan categorizar el sistema...", fontsize=10)
+        # Label with colon
+        page.insert_text((50, 250), "Ejemplos a evitar:", fontsize=10)
+        page.insert_text((50, 270), "Indicar que el sistema es de categoría básica.", fontsize=10)
+
+        pdf_bytes = doc.tobytes()
+        doc.close()
+
+        service = IngestService()
+        result = service.extract_from_pdf_bytes(pdf_bytes, filename="test_intro.pdf", normalize=True)
+        md = result["markdown"]
+
+        # 1. El heading debe estar en su propia línea
+        self.assertIn("### 1. INTRODUCCIÓN", md)
+        # 2. El párrafo NO debe estar pegado al heading como ####
+        self.assertNotIn("#### 1. INTRODUCCIÓN El Esquema", md)
+        self.assertNotIn("### 1. INTRODUCCIÓN El Esquema", md)
+        self.assertIn("El Esquema Nacional de Seguridad se ha actualizado con el RD 311/2022.", md)
+        # 3. Consejo debe ser un callout destacado
+        self.assertIn("**Consejo de Preparatic**", md)
+        # 4. Ejemplos a evitar debe ser un bloque destacado
+        self.assertIn("**Ejemplos a evitar:**", md)
 
     def test_strip_frontmatter(self):
         content_with_fm = "---\nid: test\ntitle: Titulo\n---\n# Encabezado\nTexto real"
