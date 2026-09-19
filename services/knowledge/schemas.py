@@ -124,6 +124,7 @@ class ExtractPdfResponse(BaseModel):
     markdown: str
     raw_markdown: str = ""
     detected_title: str
+    official_topic: str = ""
     page_count: int
     headings: list[str] = Field(default_factory=list)
     stats: dict = Field(default_factory=dict)
