@@ -20,6 +20,15 @@ from typing import Any
 
 import fitz  # PyMuPDF
 
+try:
+    from normalize_markdown import clean_inline_noise, is_pure_page_or_header_noise
+except ImportError:
+    def clean_inline_noise(text: str) -> str:
+        return text
+
+    def is_pure_page_or_header_noise(text: str) -> bool:
+        return False
+
 
 @dataclass(frozen=True)
 class TextBlock:
@@ -69,7 +78,8 @@ def _page_block_signature(block: dict[str, Any]) -> tuple[str, int]:
         if line_text:
             lines.append(line_text)
     text = " ".join(lines)
-    text = re.sub(r"\b\d+\b", "#", text)
+    text = text.replace("\u200b", "").replace("\u00a0", " ")
+    text = re.sub(r"\d+", "#", text)
     text = re.sub(r"\s+", " ", text).strip().lower()
     return text, len(lines)
 
@@ -78,8 +88,8 @@ def _is_header_footer_candidate(block: dict[str, Any], page_height: float) -> bo
     bbox = block.get("bbox", [0, 0, 0, 0])
     y0 = float(bbox[1])
     y1 = float(bbox[3])
-    top_band = page_height * 0.12
-    bottom_band = page_height * 0.88
+    top_band = page_height * 0.16
+    bottom_band = page_height * 0.84
     return y1 <= top_band or y0 >= bottom_band
 
 
@@ -134,7 +144,7 @@ def _collect_repeated_header_footer_blocks(doc: fitz.Document) -> set[tuple[str,
                 signature_counter[sig] += 1
                 signatures_by_page[page.number].append(sig)
 
-    threshold = max(3, int(len(doc) * 0.6))
+    threshold = max(2, int(len(doc) * 0.35))
     return {sig for sig, count in signature_counter.items() if count >= threshold}
 
 
@@ -209,31 +219,103 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
     page_texts: dict[int, str] = {}
 
     for page in doc:
-        blocks = _extract_blocks(page)
-        body_candidates = [b.font_size for b in blocks if b.font_size > 0]
-        body_size = sorted(body_candidates)[len(body_candidates) // 2] if body_candidates else 0.0
+        blocks = page.get_text("dict").get("blocks", [])
+        body_candidates: list[float] = []
+        for b in blocks:
+            if b.get("type", 0) != 0:
+                continue
+            for line in b.get("lines", []):
+                for span in line.get("spans", []):
+                    try:
+                        sz = float(span.get("size", 0.0))
+                        if sz > 4.0:
+                            body_candidates.append(sz)
+                    except Exception:
+                        pass
+        body_candidates.sort()
+        body_size = body_candidates[len(body_candidates) // 2] if body_candidates else 10.0
 
-        page_lines: list[str] = []
+        page_elements: list[str] = []
         for block in blocks:
-            sig_text = re.sub(r"\b\d+\b", "#", block.text).lower()
-            if (sig_text, len(block.text.splitlines())) in repeated_headers_footers:
+            if block.get("type", 0) != 0:
+                continue
+            sig = _page_block_signature(block)
+            if sig in repeated_headers_footers:
                 continue
 
-            if _looks_like_toc_page(block.text):
-                continue
+            current_paragraph: list[str] = []
 
-            heading_level = _infer_heading_level(block.font_size, body_size)
-            text = block.text
-            if heading_level == 2:
-                page_lines.append(f"## {text}")
-            elif heading_level == 3:
-                page_lines.append(f"### {text}")
-            elif heading_level == 4:
-                page_lines.append(f"#### {text}")
-            else:
-                page_lines.append(text)
+            def flush_p() -> None:
+                if current_paragraph:
+                    p_text = " ".join(current_paragraph).strip()
+                    p_clean = clean_inline_noise(p_text)
+                    if p_clean and not is_pure_page_or_header_noise(p_clean):
+                        page_elements.append(p_clean)
+                    current_paragraph.clear()
 
-        page_texts[page.number + 1] = _normalize_text("\n\n".join(page_lines))
+            for line in block.get("lines", []):
+                spans = line.get("spans", [])
+                if not spans:
+                    continue
+                line_text = "".join(span.get("text", "") for span in spans).strip()
+                line_clean = clean_inline_noise(line_text)
+                if not line_clean or is_pure_page_or_header_noise(line_clean):
+                    continue
+
+                line_font_size = max(float(span.get("size", 0.0)) for span in spans)
+                is_bold = any(
+                    (int(span.get("flags", 0)) & 2 != 0) or ("bold" in str(span.get("font", "")).lower())
+                    for span in spans
+                )
+                word_count = len(line_clean.split())
+
+                # Detección de encabezado real (conciso, sin punto final)
+                heading_level = 0
+                if word_count <= 15 and not line_clean.endswith((".", ";")):
+                    delta = line_font_size - body_size
+                    if delta >= 4.5:
+                        heading_level = 2
+                    elif delta >= 2.0:
+                        heading_level = 3
+                    elif is_bold and (re.match(r"^\d+(\.\d+)*\.?\s+[A-ZÁÉÍÓÚÑ]", line_clean) or delta >= 1.0):
+                        heading_level = 4
+                    elif re.match(r"^\d+(\.\d+)*\.?\s+[A-ZÁÉÍÓÚÑ]", line_clean) and line_clean.isupper():
+                        heading_level = 3
+
+                if heading_level > 0:
+                    flush_p()
+                    prefix = f"{'#' * heading_level} "
+                    if (
+                        page_elements
+                        and page_elements[-1].startswith(prefix)
+                        and not re.match(r"^\d+(\.\d+)*\.?\s+", line_clean)
+                        and not page_elements[-1].endswith((".", ":"))
+                    ):
+                        page_elements[-1] += " " + line_clean
+                    else:
+                        page_elements.append(f"{prefix}{line_clean}")
+                    continue
+
+                # Detección de callout / etiqueta de nota
+                if (line_clean.endswith(":") and word_count <= 8) or re.match(
+                    r"^(consejo|nota|importante|ejemplo|atenci[óo]n|advertencia|recordatorio)\b",
+                    line_clean,
+                    re.I,
+                ):
+                    flush_p()
+                    page_elements.append(f"**{line_clean}**")
+                    continue
+
+                if re.match(r"^[-*•]\s+", line_clean):
+                    flush_p()
+                    page_elements.append(line_clean)
+                    continue
+
+                current_paragraph.append(line_text)
+
+            flush_p()
+
+        page_texts[page.number + 1] = "\n\n".join(page_elements)
 
     lines = [
         "> Texto extraído automáticamente desde PDF. Puede contener errores de formato.",
