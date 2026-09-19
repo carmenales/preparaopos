@@ -58,18 +58,45 @@ function sa_note_absolute_path(array $note)
         return null;
     }
 
-    $absolutePath = realpath($projectBasePath . '/' . $path);
     $knowledgeBasePath = realpath($projectBasePath . '/knowledge');
-
-    if ($absolutePath === false || $knowledgeBasePath === false) {
+    if ($knowledgeBasePath === false) {
         return null;
     }
 
-    if (strpos($absolutePath, $knowledgeBasePath) !== 0) {
+    $candidate = null;
+
+    if (is_file($path)) {
+        $candidate = realpath($path);
+    }
+
+    if ($candidate === null) {
+        $relTry = $projectBasePath . '/' . ltrim($path, '/\\');
+        if (is_file($relTry)) {
+            $candidate = realpath($relTry);
+        }
+    }
+
+    if ($candidate === null) {
+        $normPath = str_replace('\\', '/', $path);
+        $pos = strpos($normPath, 'knowledge/');
+        if ($pos !== false) {
+            $relKnowledge = substr($normPath, $pos);
+            $relTry = $projectBasePath . '/' . $relKnowledge;
+            if (is_file($relTry)) {
+                $candidate = realpath($relTry);
+            }
+        }
+    }
+
+    if ($candidate === false || $candidate === null) {
         return null;
     }
 
-    return $absolutePath;
+    if (strpos($candidate, $knowledgeBasePath) !== 0) {
+        return null;
+    }
+
+    return $candidate;
 }
 
 function sa_contains_text($haystack, $needle)
@@ -264,13 +291,11 @@ function sa_format_process_title(string $slug): string
         return 'Sin proceso asignado';
     }
 
-    // 1. Caché en memoria para evitar accesos repetidos a disco en la misma petición
     static $titlesCache = [];
     if (isset($titlesCache[$slug])) {
         return $titlesCache[$slug];
     }
 
-    // 2. Descubrir automáticamente el título desde el README.md de la carpeta del proceso si existe
     $projectPath = sa_project_base_path();
     if ($projectPath) {
         $processDir = $projectPath . '/knowledge/processes/' . $slug;
@@ -296,7 +321,6 @@ function sa_format_process_title(string $slug): string
         }
     }
 
-    // 3. Si no hay README, generar el título automáticamente formateando el slug
     $formatted = sa_prettify_slug($slug);
     $titlesCache[$slug] = $formatted;
     return $formatted;
@@ -337,4 +361,22 @@ function sa_sort_notes_sequentially(array &$notes): void
         }
         return strnatcasecmp((string)($a['title'] ?? ''), (string)($b['title'] ?? ''));
     });
+}
+
+function sa_knowledge_service_url(): string
+{
+    return getenv('KNOWLEDGE_SERVICE_URL') ?: 'http://knowledge-service:8000';
+}
+
+function sa_load_processes_registry(): array
+{
+    $indexPath = sa_index_path();
+    if (is_file($indexPath)) {
+        $raw = file_get_contents($indexPath);
+        $data = json_decode($raw, true);
+        if (!empty($data['processes']) && is_array($data['processes'])) {
+            return $data['processes'];
+        }
+    }
+    return [];
 }

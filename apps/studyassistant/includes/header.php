@@ -63,8 +63,9 @@ $currentTitle = $pageTitle ?? 'Study Assistant';
         <a class="brand" href="index.php">Study Assistant</a>
         <span class="subtitle">Base de conocimiento Markdown</span>
     </div>
-    <nav>
-        <a href="index.php">Apuntes</a>
+    <nav class="topbar-nav">
+        <a href="index.php" class="<?php echo ($currentPage ?? '') === 'index' ? 'active' : ''; ?>">Apuntes</a>
+        <a href="ingest.php" class="nav-ingest-btn <?php echo ($currentPage ?? '') === 'ingest' ? 'active' : ''; ?>">+ Añadir Fuente</a>
     </nav>
 </header>
 <main class="container">

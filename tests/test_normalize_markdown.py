@@ -23,6 +23,26 @@ class TestRemoveObviousExtractionNoise(unittest.TestCase):
         self.assertNotIn("Página 3", result)
         self.assertIn("Contenido real.", result)
 
+    def test_removes_inline_page_markers_and_dates_from_headers(self):
+        text = "\n".join([
+            "Página1 | 12 ## ESQUEMA NACIONAL DE SEGURIDAD Actualizado a 06/11/2023",
+            "### Página2 | 12",
+            "Todos los derechos reservados - Convocatoria 2024 - Pág. 1 / 12 - www.oposiciones.es",
+            "El Esquema Nacional de Seguridad (ENS) tiene por objeto...",
+        ])
+        result = remove_obvious_extraction_noise(text)
+        self.assertIn("## ESQUEMA NACIONAL DE SEGURIDAD", result)
+        self.assertIn("El Esquema Nacional de Seguridad (ENS) tiene por objeto...", result)
+        self.assertNotIn("Página1", result)
+        self.assertNotIn("Página2", result)
+        self.assertNotIn("06/11/2023", result)
+        self.assertNotIn("www.oposiciones.es", result)
+
+    def test_preserves_legitimate_prose_mentioning_page(self):
+        text = "En la página 10 de la memoria técnica se especifican los requisitos."
+        result = remove_obvious_extraction_noise(text)
+        self.assertEqual(result, text)
+
     def test_removes_any_repeated_header_regardless_of_text(self):
         text = "\n".join([
             "## Página 1",

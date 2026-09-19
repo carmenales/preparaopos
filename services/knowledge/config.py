@@ -59,7 +59,38 @@ class Settings:
     default_min_score: float = _get_float("NOTE_GENERATION_MIN_SCORE", 0.35)
 
     # --- Rutas ---
-    prompts_dir: Path = Path(os.environ.get("PROMPTS_DIR", "prompts"))
+    prompts_dir: Path = Path(
+        os.environ.get(
+            "PROMPTS_DIR",
+            "/app/prompts"
+            if Path("/app/prompts").exists()
+            else str(Path(__file__).resolve().parent / "prompts"),
+        )
+    )
+    knowledge_dir: Path = Path(
+        os.environ.get(
+            "KNOWLEDGE_DIR",
+            "/workspace/knowledge"
+            if Path("/workspace/knowledge").exists()
+            else str(Path(__file__).resolve().parent.parent.parent / "knowledge"),
+        )
+    )
+    index_output_path: Path = Path(
+        os.environ.get(
+            "INDEX_OUTPUT_PATH",
+            "/workspace/apps/studyassistant/data/knowledge_index.json"
+            if Path("/workspace/apps/studyassistant/data").exists()
+            else str(Path(__file__).resolve().parent.parent.parent / "apps" / "studyassistant" / "data" / "knowledge_index.json"),
+        )
+    )
+    scripts_dir: Path = Path(
+        os.environ.get(
+            "SCRIPTS_DIR",
+            "/workspace/scripts"
+            if Path("/workspace/scripts").exists()
+            else str(Path(__file__).resolve().parent.parent.parent / "scripts"),
+        )
+    )
 
 
 settings = Settings()

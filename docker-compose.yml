@@ -58,8 +58,18 @@ services:
       OLLAMA_URL: "http://host.docker.internal:11434"
       OLLAMA_MODEL: "llama3.1:latest"
       OLLAMA_READ_TIMEOUT_SECONDS: "900"
+      PYTHONPATH: "/workspace/scripts:/app"
+      KNOWLEDGE_DIR: "/workspace/knowledge"
+      INDEX_OUTPUT_PATH: "/workspace/apps/studyassistant/data/knowledge_index.json"
+      SCRIPTS_DIR: "/workspace/scripts"
+    volumes:
+      - ./knowledge:/workspace/knowledge
+      - ./apps/studyassistant/data:/workspace/apps/studyassistant/data
+      - ./scripts:/workspace/scripts
+      - ./services/knowledge:/app
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
     depends_on:
       - embeddings
 
