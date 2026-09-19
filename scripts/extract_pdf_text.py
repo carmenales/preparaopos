@@ -296,19 +296,28 @@ def extract_pdf_to_markdown(input_pdf: Path, output_md: Path, extract_images: bo
                         page_elements.append(f"{prefix}{line_clean}")
                     continue
 
-                # Detección de callout / etiqueta de nota
-                if (line_clean.endswith(":") and word_count <= 8) or re.match(
-                    r"^(consejo|nota|importante|ejemplo|atenci[óo]n|advertencia|recordatorio)\b",
-                    line_clean,
-                    re.I,
-                ):
+                # Detección de callout / etiqueta de nota (no dividir frases abiertas)
+                is_callout = bool(
+                    re.match(r"^(consejo|nota|importante|ejemplo[s]?(\s+a\s+evitar)?|atenci[óo]n|advertencia|recordatorio|aviso|caso\s+pr[áa]ctico|definici[óo]n)\b", line_clean, re.I)
+                    or (is_bold and word_count <= 6 and line_clean.endswith(":") and line_clean[0].isupper() and not current_paragraph)
+                )
+                if is_callout:
                     flush_p()
                     page_elements.append(f"**{line_clean}**")
                     continue
 
-                if re.match(r"^[-*•]\s+", line_clean):
+                # Sub-viñetas con 'o' / '○' / '(a)'
+                m_sub = re.match(r"^\s*([oO○\u25cb\u25ef\u25e6]|\([a-z]\)|[a-z]\))\s+([A-ZÁÉÍÓÚ0-9\"'¿¡].*)$", line_clean)
+                if m_sub:
                     flush_p()
-                    page_elements.append(line_clean)
+                    page_elements.append(f"  - {m_sub.group(2).strip()}")
+                    continue
+
+                if re.match(r"^[-*+•·●○▪▫⁃–—\uf0b7\uf0a7\uf0d8]\s*", line_clean):
+                    flush_p()
+                    bullet_text = re.sub(r"^[-*+•·●○▪▫⁃–—\uf0b7\uf0a7\uf0d8]\s*", "", line_clean).strip()
+                    if bullet_text:
+                        page_elements.append(f"- {bullet_text}")
                     continue
 
                 current_paragraph.append(line_text)
