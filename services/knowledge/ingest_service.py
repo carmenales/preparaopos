@@ -3,87 +3,36 @@ services/knowledge/ingest_service.py
 
 Servicio para la ingestión y publicación de nuevas fuentes de conocimiento.
 Coordina:
-- Extracción de texto y estructura desde PDFs con PyMuPDF.
-- Normalización mediante scripts/normalize_markdown.py.
-- Detección automática de títulos y temas oficiales.
+- Extracción estructurada de texto y headings desde PDFs mediante PdfExtractor.
+- Normalización determinista mediante MarkdownNormalizer.
 - Refinado opcional asistido por LLM (Ollama).
 - Publicación física en knowledge/processes/{process_slug}/apuntes/ con YAML frontmatter.
-- Sincronización automática de knowledge_index.json vía scripts/build_knowledge_index.py.
+- Sincronización automática de knowledge_index.json.
 """
 
 from __future__ import annotations
 
 import re
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-import fitz  # PyMuPDF
-
 from config import settings
+from markdown_normalizer import (
+    MarkdownNormalizer,
+    clean_inline_noise,
+    is_pure_page_or_header_noise,
+    normalize_markdown,
+)
 from ollama_client import OllamaClient, OllamaClientError
+from pdf_extractor import ExtractedDocument, PdfExtractor
 from schemas import PublishNoteRequest, PublishNoteResponse
 from text_utils import slugify
-
-# Asegurar que scripts/ esté en sys.path para reutilizar extractores e indexador
-_scripts_dir = str(settings.scripts_dir)
-if _scripts_dir not in sys.path:
-    sys.path.insert(0, _scripts_dir)
-
-try:
-    from normalize_markdown import normalize_markdown
-except ImportError:
-    def normalize_markdown(content: str) -> str:
-        return content
 
 try:
     from build_knowledge_index import build_index
 except ImportError:
     build_index = None
-
-try:
-    from extract_pdf_text import (
-        _collect_repeated_header_footer_blocks,
-        _extract_blocks,
-        _infer_heading_level,
-        _looks_like_toc_page,
-        _normalize_text,
-    )
-except ImportError:
-    # Fallback directo si no se puede importar
-    def _normalize_text(text: str) -> str:
-        text = text.replace("\u00ad", "")
-        text = re.sub(r"[ \t]+", " ", text)
-        text = re.sub(r" *\n *", "\n", text)
-        text = re.sub(r"\n{3,}", "\n\n", text)
-        text = re.sub(r"(?<=\w)-\n(?=\w)", "", text)
-        text = re.sub(r"(?<=\w)\n(?=\w)", " ", text)
-        text = re.sub(r"\s{2,}", " ", text)
-        return text.strip()
-
-    def _looks_like_toc_page(text: str) -> bool:
-        lines = [line.strip() for line in text.splitlines() if line.strip()]
-        if len(lines) < 6:
-            return False
-        toc_like = sum(1 for line in lines[:25] if re.search(r"\b\d+\s*$", line) or re.search(r"\.{3,}", line))
-        return toc_like >= max(4, len(lines[:25]) // 2)
-
-    def _collect_repeated_header_footer_blocks(doc: fitz.Document) -> set:
-        return set()
-
-    def _infer_heading_level(font_size: float, body_size: float) -> int:
-        delta = font_size - body_size
-        if delta >= 5:
-            return 2
-        if delta >= 3:
-            return 3
-        if delta >= 1.5:
-            return 4
-        return 0
-
-    def _extract_blocks(page: fitz.Page) -> list:
-        return []
 
 
 def sanitize_filename(filename: str) -> str:
@@ -96,43 +45,6 @@ def sanitize_filename(filename: str) -> str:
     return f"{cleaned}.md" if cleaned else "apunte.md"
 
 
-def detect_note_title(extracted_text: str, filename: str = "") -> tuple[str, str]:
-    """
-    Detecta automáticamente el título de la nota y el tema oficial a partir
-    del texto extraído o del nombre de archivo.
-    Retorna (title, official_topic).
-    """
-    # 1. Buscar patrón tipo "TEMA X. TITULO..." en los primeros párrafos
-    first_lines = extracted_text[:3000].splitlines()
-    for line in first_lines:
-        line_clean = line.strip().lstrip("#").strip()
-        tema_match = re.match(r"^(TEMA\s+([A-Z0-9IVXLCDM\.\-_]+)[\.\:\s\-]+(.+))$", line_clean, re.IGNORECASE)
-        if tema_match:
-            topic_num = tema_match.group(2).strip().rstrip(".:-")
-            topic_name = tema_match.group(3).strip()
-            title = f"Tema {topic_num} {topic_name}".strip()
-            official_topic = f"{topic_num} {topic_name}".strip()
-            return title, official_topic
-
-    # 2. Buscar primer heading de nivel 1 o 2 (# o ##)
-    for line in first_lines:
-        match = re.match(r"^#{1,2}\s+(.+)$", line.strip())
-        if match:
-            heading = match.group(1).strip()
-            if not heading.lower().startswith("página"):
-                return heading, heading
-
-    # 3. Fallback a limpiar el nombre de archivo
-    if filename:
-        stem = Path(filename).stem
-        cleaned = re.sub(r"^[A-Z0-9]+[_\-]", "", stem)  # Quitar prefijos tipo A2_
-        cleaned = cleaned.replace("_", " ").replace("-", " ")
-        cleaned = re.sub(r"\s+", " ", cleaned).strip()
-        return cleaned, cleaned
-
-    return "Nuevo Apunte", ""
-
-
 def strip_frontmatter(content: str) -> str:
     """Elimina frontmatter YAML existente del contenido si lo hay."""
     content = content.lstrip("\ufeff").replace("\r\n", "\n").replace("\r", "\n")
@@ -143,9 +55,21 @@ def strip_frontmatter(content: str) -> str:
     return content
 
 
+def detect_note_title(extracted_text: str, filename: str = "") -> tuple[str, str]:
+    """Función de conveniencia para compatibilidad con código existente."""
+    return PdfExtractor().detect_note_title(extracted_text, filename=filename)
+
+
 class IngestService:
-    def __init__(self, ollama_client: OllamaClient | None = None) -> None:
+    def __init__(
+        self,
+        ollama_client: OllamaClient | None = None,
+        pdf_extractor: PdfExtractor | None = None,
+        markdown_normalizer: type[MarkdownNormalizer] = MarkdownNormalizer,
+    ) -> None:
         self._ollama_client = ollama_client or OllamaClient()
+        self._pdf_extractor = pdf_extractor or PdfExtractor(normalizer=markdown_normalizer)
+        self._markdown_normalizer = markdown_normalizer
 
     def extract_from_pdf_bytes(
         self,
@@ -155,115 +79,25 @@ class IngestService:
     ) -> dict[str, Any]:
         """
         Extrae texto estructurado desde un archivo PDF en memoria.
-        Aplica heurísticas de descarte de cabeceras/pies repetidos y detección de headings.
+        Aplica heurísticas de segmentación por línea, descarte de cabeceras/pies repetidos
+        y detección de títulos limpios.
         """
-        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        page_count = len(doc)
-        warnings: list[str] = []
-
-        if page_count == 0:
-            return {
-                "markdown": "",
-                "raw_markdown": "",
-                "detected_title": Path(filename).stem if filename else "Documento vacío",
-                "official_topic": "",
-                "page_count": 0,
-                "headings": [],
-                "stats": {"char_count": 0, "word_count": 0, "line_count": 0},
-                "images": [],
-                "warnings": ["El PDF no contiene páginas."],
-            }
-
-        repeated_headers_footers = _collect_repeated_header_footer_blocks(doc)
-        page_texts: dict[int, str] = {}
-        all_headings: list[str] = []
-
-        for page in doc:
-            blocks = _extract_blocks(page)
-            body_candidates = [b.font_size for b in blocks if getattr(b, "font_size", 0) > 0]
-            body_size = (
-                sorted(body_candidates)[len(body_candidates) // 2]
-                if body_candidates
-                else 0.0
-            )
-
-            page_lines: list[str] = []
-            for block in blocks:
-                text = getattr(block, "text", "")
-                sig_text = re.sub(r"\b\d+\b", "#", text).lower()
-                if (sig_text, len(text.splitlines())) in repeated_headers_footers:
-                    continue
-
-                if _looks_like_toc_page(text):
-                    continue
-
-                heading_level = _infer_heading_level(getattr(block, "font_size", 0.0), body_size)
-                if heading_level == 2:
-                    page_lines.append(f"## {text}")
-                    all_headings.append(text)
-                elif heading_level == 3:
-                    page_lines.append(f"### {text}")
-                    all_headings.append(text)
-                elif heading_level == 4:
-                    page_lines.append(f"#### {text}")
-                else:
-                    page_lines.append(text)
-
-            page_texts[page.number + 1] = _normalize_text("\n\n".join(page_lines))
-
-        raw_lines = [
-            f"> Documento extraído automáticamente desde `{filename or 'archivo PDF'}`.",
-            f"> Páginas analizadas: {page_count}.",
-            "",
-        ]
-
-        for page_number in range(1, page_count + 1):
-            p_text = page_texts.get(page_number, "")
-            if p_text:
-                raw_lines.append(f"## Página {page_number}")
-                raw_lines.append("")
-                raw_lines.append(p_text)
-                raw_lines.append("")
-
-        raw_markdown = "\n".join(raw_lines).strip()
-
-        if normalize:
-            try:
-                processed_markdown = normalize_markdown(raw_markdown)
-            except Exception as exc:
-                warnings.append(f"Error durante normalización: {exc}")
-                processed_markdown = raw_markdown
-        else:
-            processed_markdown = raw_markdown
-
-        detected_title, detected_topic = detect_note_title(processed_markdown, filename)
-
-        # Extraer lista de títulos principales para el índice
-        headings_clean: list[str] = []
-        for line in processed_markdown.splitlines():
-            m = re.match(r"^#{1,3}\s+(.+)$", line.strip())
-            if m:
-                h_text = m.group(1).strip()
-                if not h_text.lower().startswith("página") and h_text not in headings_clean:
-                    headings_clean.append(h_text)
-
-        stats = {
-            "char_count": len(processed_markdown),
-            "word_count": len(processed_markdown.split()),
-            "line_count": len(processed_markdown.splitlines()),
-            "page_count": page_count,
-        }
+        doc_result: ExtractedDocument = self._pdf_extractor.extract_from_bytes(
+            pdf_bytes=pdf_bytes,
+            filename=filename,
+            normalize=normalize,
+        )
 
         return {
-            "markdown": processed_markdown,
-            "raw_markdown": raw_markdown,
-            "detected_title": detected_title,
-            "official_topic": detected_topic,
-            "page_count": page_count,
-            "headings": headings_clean[:20],
-            "stats": stats,
-            "images": [],
-            "warnings": warnings,
+            "markdown": doc_result.markdown,
+            "raw_markdown": doc_result.raw_markdown,
+            "detected_title": doc_result.detected_title,
+            "official_topic": doc_result.official_topic,
+            "page_count": doc_result.page_count,
+            "headings": doc_result.headings,
+            "stats": doc_result.stats,
+            "images": doc_result.images,
+            "warnings": doc_result.warnings,
         }
 
     def refine_markdown(self, markdown: str, instructions: str = "") -> dict[str, Any]:
