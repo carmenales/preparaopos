@@ -23,7 +23,29 @@ import string
 from collections import Counter
 
 SIGLAS_INTRO_RE = re.compile(r"^\s*Las siglas empleadas en este documento son las siguientes\s*:??\s*$", re.IGNORECASE)
-PAGE_MARKER_RE = re.compile(r"^\s*#{1,6}\s*(Página|Diapositiva)\s+\d+\s*$", re.IGNORECASE)
+PAGE_MARKER_RE = re.compile(
+    r"^\s*#{0,6}\s*(?:P[áa]g(?:ina)?\.?|Diapositiva)\s*\d+\s*(?:(?:\||/|de|-)\s*\d+)?\s*$",
+    re.IGNORECASE,
+)
+LONE_PAGE_NUMBER_RE = re.compile(
+    r"^\s*#{0,6}\s*\d+\s*(?:(?:\||/|de)\s*\d+)\s*$",
+    re.IGNORECASE,
+)
+LEGAL_BOILERPLATE_RE = re.compile(
+    r"^\s*(?:Actualizado\s+(?:a|en|el|de)?\s*:?\s*\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}"
+    r"|Actualizado\s+(?:a|en|el|de)?\s*:?\s*[a-záéíóú]+\s+de\s+\d{4}"
+    r"|Fecha\s*:?\s*\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}"
+    r"|Edici[óo]n\s+\d{4}"
+    r"|Convocatoria\s+\d{4}"
+    r"|https?://\S+"
+    r"|www\.[a-z0-9\-\.]+\.[a-z]{2,}"
+    r"|Dep[óo]sito\s+legal[^\n]*"
+    r"|Copyright\s+[^\n]*"
+    r"|©[^\n]*"
+    r"|Todos\s+los\s+derechos\s+reservados"
+    r"|Prohibida\s+(?:su\s+)?reproducci[óo]n.*)\s*$",
+    re.IGNORECASE,
+)
 SIGLA_RE = re.compile(r"^[A-ZÁÉÍÓÚÜÑ0-9]{2,15}[a-z]?$")
 
 HEADER_FOOTER_EDGE_LINES = 2
@@ -188,6 +210,71 @@ def normalize_whitespace(text: str) -> str:
     return text.strip() + "\n"
 
 
+def clean_inline_noise(text: str) -> str:
+    """Limpia ruido incrustado como fechas de actualización, números de página y academias."""
+    text = text.replace("\u200b", "").replace("\u00a0", " ")
+
+    # 1. Fechas de actualización y convocatorias
+    text = re.sub(r"\bactualizado\s+(?:a|en|el|de)?\s*:?\s*\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}\b", "", text, flags=re.I)
+    text = re.sub(r"\bactualizado\s+(?:a|en|el|de)?\s*:?\s*[a-záéíóú]+\s+de\s+\d{4}\b", "", text, flags=re.I)
+    text = re.sub(r"\bactualizado\s*:?\s*\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}\b", "", text, flags=re.I)
+    text = re.sub(r"\bfecha\s*:?\s*\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}\b", "", text, flags=re.I)
+    text = re.sub(r"\bconvocatoria\s+\d{4}\b", "", text, flags=re.I)
+    text = re.sub(r"\bedici[óo]n\s+\d{4}\b", "", text, flags=re.I)
+
+    # 2. URLs y enlaces web genéricos
+    text = re.sub(r"https?://\S+", "", text)
+    text = re.sub(r"\bwww\.[a-z0-9\-\.]+\.[a-z]{2,}\b", "", text, flags=re.I)
+
+    # 3. Marcadores de paginación explícitos ('Página 1 | 12', 'Pág. 3 / 10', 'Página1 | 12', 'Página1')
+    text = re.sub(r"\bp[áa]g(?:ina)?\.?\s*\d+\s*(?:\||/|de)\s*\d+\b", "", text, flags=re.I)
+    text = re.sub(r"\bp[áa]g\.\s*\d+\b", "", text, flags=re.I)
+    text = re.sub(r"\bp[áa]gina\d+\b", "", text, flags=re.I)
+
+    # Marcador de página prefijado al inicio de línea o heading (ej. '^Página1 | 12 ## ...')
+    text = re.sub(r"^\s*p[áa]g(?:ina)?\.?\s*\d+\s*(?:(?:\||/|de|-)\s*\d+)?\s*", "", text, flags=re.I)
+
+    # 4. Fracciones de página sueltas con barras o pipes ('1 | 12')
+    text = re.sub(r"\b\d{1,3}\s*\|\s*\d{1,3}\b", "", text)
+
+    # 5. Símbolos residuales de bordes
+    text = re.sub(r"\s*\|\s*\d+\s*$", "", text)
+    text = re.sub(r"\|\s*\d+\b", "", text)
+    text = re.sub(r"\s*\|\s*$", "", text)
+    text = re.sub(r"^\s*\|\s*", "", text)
+    text = re.sub(r"\s*-\s*$", "", text)
+    text = re.sub(r"^\s*-\s*", "", text)
+
+    # 6. Normalizar headings con ruido al inicio (ej. 'Página1 | 12 ## Título' -> '## Título')
+    if not text.strip().startswith("#") and re.search(r"\s(#{1,6}\s+)", text):
+        m = re.search(r"(#{1,6}\s+.*)", text)
+        if m:
+            text = m.group(1).strip()
+
+    # Si solo quedan almohadillas (como '###' derivado de '### Página2 | 12')
+    if re.match(r"^#{1,6}\s*$", text.strip()):
+        return ""
+
+    text = re.sub(r"[ \t]+", " ", text).strip()
+    return text
+
+
+def is_pure_page_or_header_noise(text: str) -> bool:
+    """Detecta si una línea o bloque es únicamente un marcador de página o cabecera/pie residual."""
+    s = text.strip()
+    if not s:
+        return True
+    if re.match(r"^\s*#{0,6}\s*(?:p[áa]g(?:ina)?\.?\s*\d+|\d+)\s*(?:(?:\||/|de|-)\s*\d+)?\s*$", s, re.I):
+        return True
+    if re.match(r"^\s*#{0,6}\s*\d+\s*$", s):
+        return True
+    if LEGAL_BOILERPLATE_RE.match(s):
+        return True
+    if re.match(r"^\s*actualizado\s+[^\n]+$", s, re.I):
+        return True
+    return False
+
+
 def remove_obvious_extraction_noise(text: str) -> str:
     lines = text.splitlines()
     cleaned: list[str] = []
@@ -201,10 +288,23 @@ def remove_obvious_extraction_noise(text: str) -> str:
         if PAGE_MARKER_RE.match(stripped):
             continue
 
+        if LONE_PAGE_NUMBER_RE.match(stripped):
+            continue
+
+        if LEGAL_BOILERPLATE_RE.match(stripped):
+            continue
+
+        if is_pure_page_or_header_noise(stripped):
+            continue
+
         if stripped.lower() in {"mostrar menos", "mostrar más"}:
             continue
 
-        cleaned.append(line)
+        cleaned_line = clean_inline_noise(line)
+        if not cleaned_line.strip() or is_pure_page_or_header_noise(cleaned_line):
+            continue
+
+        cleaned.append(cleaned_line)
 
     return "\n".join(cleaned)
 
