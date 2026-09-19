@@ -109,7 +109,7 @@ def remove_repeated_headers_footers(text: str) -> str:
 
 
 _HEADING_RE = re.compile(r"^(#{1,6}\s+|\d+(\.\d+)*\.?\s)")
-_LIST_RE = re.compile(r"^(\s*[-*+]\s+|\s*\d+\.\s+)")
+_LIST_RE = re.compile(r"^(\s*[-*+•·●○▪▫⁃–—\uf0b7\uf0a7\uf0d8]\s+|\s*\d+\.\s+)")
 _TABLE_RE = re.compile(r"^\|.*\|$")
 
 
@@ -132,7 +132,7 @@ def _is_joinable(a: str, b: str) -> bool:
     if a.endswith((":", ";", ".", "?", "!", "|")):
         return False
 
-    if b.startswith(("#", "-", "*", "|", ">")):
+    if b.startswith(("#", "-", "*", "•", "·", "●", "|", ">")):
         return False
 
     return True
@@ -243,7 +243,8 @@ def clean_inline_noise(text: str) -> str:
     text = re.sub(r"\s*\|\s*$", "", text)
     text = re.sub(r"^\s*\|\s*", "", text)
     text = re.sub(r"\s*-\s*$", "", text)
-    text = re.sub(r"^\s*-\s*", "", text)
+    if re.match(r"^[\s\-\|]+$", text):
+        return ""
 
     # 6. Normalizar headings con ruido al inicio (ej. 'Página1 | 12 ## Título' -> '## Título')
     if not text.strip().startswith("#") and re.search(r"\s(#{1,6}\s+)", text):
