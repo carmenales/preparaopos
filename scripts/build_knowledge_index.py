@@ -278,12 +278,17 @@ def build_index(knowledge_root: Path, output_path: Path) -> list[dict[str, Any]]
 
         plain_text = strip_markdown_to_text(body)
 
+        try:
+            rel_path = path.relative_to(knowledge_root.parent).as_posix()
+        except Exception:
+            rel_path = f"knowledge/{path.relative_to(knowledge_root).as_posix()}"
+
         notes.append({
             "id": note_id,
             "title": title,
             "official_topic": metadata.get("official_topic", ""),
             "slug": slugify(title),
-            "path": path.as_posix(),
+            "path": rel_path,
             "processes": metadata.get("processes", []),
             "profiles": metadata.get("profiles", []),
             "origin": metadata.get("origin", ""),
