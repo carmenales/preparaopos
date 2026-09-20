@@ -1,32 +1,33 @@
 <?php
 
-function sa_normalize_markdown($markdown) {
-    $markdown = (string)$markdown;
-    $markdown = preg_replace('/^\xEF\xBB\xBF/', '', $markdown);
-    $markdown = str_replace(["\r\n", "\r"], "\n", $markdown);
+declare(strict_types=1);
 
-    $markdown = preg_replace_callback('/^([ \t]+)/m', function ($m) {
-        return str_replace("\t", "    ", $m[1]);
-    }, $markdown);
+require_once __DIR__ . '/autoload.php';
 
-    return $markdown;
+use StudyAssistant\Markdown\MarkdownRenderer;
+
+/**
+ * Facade procedural de renderizado Markdown para compatibilidad hacia atrás.
+ * Delega en StudyAssistant\Markdown\MarkdownRenderer.
+ */
+
+function sa_normalize_markdown(mixed $markdown): string
+{
+    return (new MarkdownRenderer())->normalize((string)$markdown);
 }
 
-function sa_strip_frontmatter($markdown) {
-    $markdown = sa_normalize_markdown($markdown);
-
-    if (preg_match('/\A---\s*\n.*?\n---\s*\n/s', $markdown, $matches)) {
-        return substr($markdown, strlen($matches[0]));
-    }
-
-    return $markdown;
+function sa_strip_frontmatter(mixed $markdown): string
+{
+    return (new MarkdownRenderer())->stripFrontmatter((string)$markdown);
 }
 
-function sa_math_placeholder($key) {
+function sa_math_placeholder(int|string $key): string
+{
     return '%%SA_MATH_' . $key . '%%';
 }
 
-function sa_extract_inline_math($text, &$mathBlocks) {
+function sa_extract_inline_math(string $text, array &$mathBlocks): string
+{
     return preg_replace_callback('/(?<!\\\\)\$([^$\n]+)(?<!\\\\)\$/', function ($matches) use (&$mathBlocks) {
         $key = count($mathBlocks);
         $mathBlocks[$key] = [
@@ -35,10 +36,11 @@ function sa_extract_inline_math($text, &$mathBlocks) {
         ];
 
         return sa_math_placeholder($key);
-    }, (string)$text);
+    }, $text) ?? $text;
 }
 
-function sa_restore_math_placeholders($html, $mathBlocks) {
+function sa_restore_math_placeholders(string $html, array $mathBlocks): string
+{
     foreach ($mathBlocks as $key => $math) {
         $placeholder = sa_math_placeholder($key);
         $formula = htmlspecialchars($math['content'], ENT_NOQUOTES, 'UTF-8');
@@ -55,7 +57,8 @@ function sa_restore_math_placeholders($html, $mathBlocks) {
     return $html;
 }
 
-function sa_render_context(?string $noteId = null, bool $set = false): ?string {
+function sa_render_context(?string $noteId = null, bool $set = false): ?string
+{
     static $currentNoteId = null;
 
     if ($set) {
@@ -65,10 +68,11 @@ function sa_render_context(?string $noteId = null, bool $set = false): ?string {
     return $currentNoteId;
 }
 
-function sa_render_details_block(string $detailsHtml): string {
+function sa_render_details_block(string $detailsHtml): string
+{
     $detailsHtml = trim($detailsHtml);
-    $detailsHtml = preg_replace('/^\s*<details\b[^>]*>\s*/is', '', $detailsHtml);
-    $detailsHtml = preg_replace('/\s*<\/details>\s*$/is', '', $detailsHtml);
+    $detailsHtml = preg_replace('/^\s*<details\b[^>]*>\s*/is', '', $detailsHtml) ?? $detailsHtml;
+    $detailsHtml = preg_replace('/\s*<\/details>\s*$/is', '', $detailsHtml) ?? $detailsHtml;
 
     if (preg_match('/^(.*?)(<summary\b[^>]*>.*?<\/summary>\s*)(.*)$/is', $detailsHtml, $matches)) {
         $summaryHtml = $matches[2];
@@ -81,82 +85,18 @@ function sa_render_details_block(string $detailsHtml): string {
     return '<details>' . sa_render_markdown($detailsHtml, sa_render_context()) . '</details>';
 }
 
-function sa_inline_markdown($text) {
-    $mathBlocks = [];
-    $text = sa_extract_inline_math((string)$text, $mathBlocks);
-
-    $codeSpans = [];
-    $text = preg_replace_callback('/`([^`]+)`/', function ($m) use (&$codeSpans) {
-        $placeholder = '%%SA_CODE_' . count($codeSpans) . '%%';
-        $codeSpans[$placeholder] = '<code>' . htmlspecialchars($m[1], ENT_QUOTES, 'UTF-8') . '</code>';
-        return $placeholder;
-    }, $text);
-
-    $htmlTags = [];
-    $safeTagRegex = '#</?(?:br|sup|sub|b|i|u|strong|em|mark|small|del|s|strike|abbr|p|span)(?:\s+[a-zA-Z0-9_\-]+(?:=(?:"[^"]*"|\'[^\']*\'))?)*\s*/?>|<a(?:\s+[a-zA-Z0-9_\-]+(?:=(?:"[^"]*"|\'[^\']*\'))?)*\s*>|</a>#i';
-
-    $text = preg_replace_callback($safeTagRegex, function ($m) use (&$htmlTags) {
-        $placeholder = '%%SA_HTML_' . count($htmlTags) . '%%';
-        $htmlTags[$placeholder] = $m[0];
-        return $placeholder;
-    }, $text);
-
-    $html = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
-
-    if (!empty($htmlTags)) {
-        $html = strtr($html, $htmlTags);
-    }
-
-    $html = preg_replace('/\*\*([^*]+)\*\*/', '<strong>$1</strong>', $html);
-    $html = preg_replace('/\*([^*]+)\*/', '<em>$1</em>', $html);
-
-    $noteId = sa_render_context();
-    $html = preg_replace_callback('/!\[([^\]]*)\]\(([^)]+)\)/', function ($matches) use ($noteId) {
-        $alt = $matches[1];
-        $path = $matches[2];
-
-        if ($noteId !== null && !preg_match('#^https?://#i', $path)) {
-            $src = 'asset.php?note=' . urlencode($noteId) . '&path=' . urlencode($path);
-        } else {
-            $src = $path;
-        }
-
-        return '<img src="' . htmlspecialchars($src, ENT_QUOTES, 'UTF-8') . '" alt="' . htmlspecialchars($alt, ENT_QUOTES, 'UTF-8') . '" loading="lazy">';
-    }, $html);
-
-    $html = preg_replace_callback('/\[([^\]]+)\]\(([^)]+)\)/', function ($matches) {
-        $text = $matches[1];
-        $path = $matches[2];
-        $escapedPath = htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
-
-        if (preg_match('/^\s*#/u', $path)) {
-            return '<a href="' . $escapedPath . '">' . $text . '</a>';
-        }
-
-        if (preg_match('#^https?://#i', $path)) {
-            return '<a href="' . $escapedPath . '" target="_blank" rel="noopener noreferrer">' . $text . '</a>';
-        }
-
-        return '<a href="' . $escapedPath . '">' . $text . '</a>';
-    }, $html);
-
-    if (!empty($codeSpans)) {
-        $html = strtr($html, $codeSpans);
-    }
-
-    return sa_restore_math_placeholders($html, $mathBlocks);
+function sa_inline_markdown(mixed $text): string
+{
+    return (new MarkdownRenderer(sa_render_context()))->renderInline((string)$text);
 }
 
-function sa_slugify_heading($text) {
-    $text = trim((string)$text);
-    $text = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $text);
-    $text = preg_replace('/[^\p{L}\p{N}]+/u', '-', $text);
-    $text = trim($text, '-');
-
-    return function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+function sa_slugify_heading(mixed $text): string
+{
+    return (new MarkdownRenderer())->slugify((string)$text);
 }
 
-function sa_render_table($lines) {
+function sa_render_table(array $lines): string
+{
     $html = '<div class="table-wrapper"><table>';
     $headerRendered = false;
 
@@ -186,15 +126,18 @@ function sa_render_table($lines) {
     return $html;
 }
 
-function sa_has_pipe($line) {
+function sa_has_pipe(mixed $line): bool
+{
     return strpos(trim((string)$line), '|') !== false;
 }
 
-function sa_is_table_separator($line) {
-    return preg_match('/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/', (string)$line);
+function sa_is_table_separator(mixed $line): bool
+{
+    return (bool)preg_match('/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/', (string)$line);
 }
 
-function sa_is_table_start($lines, $index) {
+function sa_is_table_start(array $lines, int $index): bool
+{
     if (!isset($lines[$index + 1])) {
         return false;
     }
@@ -202,7 +145,8 @@ function sa_is_table_start($lines, $index) {
     return sa_has_pipe($lines[$index]) && sa_is_table_separator($lines[$index + 1]);
 }
 
-function sa_collect_table($lines, &$index) {
+function sa_collect_table(array $lines, int &$index): string
+{
     $tableLines = [];
 
     while ($index < count($lines)) {
@@ -223,14 +167,16 @@ function sa_collect_table($lines, &$index) {
     return sa_render_table($tableLines);
 }
 
-function sa_is_quiz_question_start($line) {
-    return preg_match('/^\s*(?:\*\*)?Pregunta\s+([0-9]+)\.(?:\*\*)?\s*(.*)$/u', trim($line));
+function sa_is_quiz_question_start(mixed $line): bool
+{
+    return (bool)preg_match('/^\s*(?:\*\*)?Pregunta\s+([0-9]+)\.(?:\*\*)?\s*(.*)$/u', trim((string)$line));
 }
 
-function sa_parse_answer_line($line) {
-    $clean = trim($line);
-    $clean = preg_replace('/^\*\*/', '', $clean);
-    $clean = preg_replace('/\*\*/', '', $clean);
+function sa_parse_answer_line(mixed $line): ?string
+{
+    $clean = trim((string)$line);
+    $clean = preg_replace('/^\*\*/', '', $clean) ?? $clean;
+    $clean = preg_replace('/\*\*/', '', $clean) ?? $clean;
 
     if (!preg_match('/^Respuesta correcta:\s*(.+)$/u', $clean, $matches)) {
         return null;
@@ -239,18 +185,17 @@ function sa_parse_answer_line($line) {
     return trim($matches[1]);
 }
 
-function sa_render_quiz_question($questionNumber, $questionText, $options, $answerText) {
+function sa_render_quiz_question(int|string $questionNumber, string $questionText, array $options, string $answerText): string
+{
     $html = '<section class="quiz-card">';
     $html .= '<div class="quiz-question-label">Pregunta ' . (int)$questionNumber . '</div>';
     $html .= '<div class="quiz-question-text">' . sa_inline_markdown($questionText) . '</div>';
 
     if (!empty($options)) {
         $html .= '<ol class="quiz-options" type="A">';
-
         foreach ($options as $option) {
             $html .= '<li>' . sa_inline_markdown($option) . '</li>';
         }
-
         $html .= '</ol>';
     }
 
@@ -266,7 +211,8 @@ function sa_render_quiz_question($questionNumber, $questionText, $options, $answ
     return $html;
 }
 
-function sa_collect_quiz_question($lines, &$index) {
+function sa_collect_quiz_question(array $lines, int &$index): string
+{
     $line = trim($lines[$index]);
     preg_match('/^\s*(?:\*\*)?Pregunta\s+([0-9]+)\.(?:\*\*)?\s*(.*)$/u', $line, $matches);
 
@@ -333,7 +279,9 @@ function sa_collect_quiz_question($lines, &$index) {
     );
 }
 
-function sa_parse_list_marker($line) {
+function sa_parse_list_marker(mixed $line): ?array
+{
+    $line = (string)$line;
     if (preg_match('/^(\s*)([0-9]+)\.\s+(.+)$/u', $line, $matches)) {
         return [
             'type' => 'ol',
@@ -365,7 +313,8 @@ function sa_parse_list_marker($line) {
     return null;
 }
 
-function sa_next_non_empty_index($lines, $index) {
+function sa_next_non_empty_index(array $lines, int $index): ?int
+{
     for ($i = $index; $i < count($lines); $i++) {
         if (trim($lines[$i]) !== '') {
             return $i;
@@ -375,7 +324,8 @@ function sa_next_non_empty_index($lines, $index) {
     return null;
 }
 
-function sa_collect_list($lines, &$index, $parentIndent = 0) {
+function sa_collect_list(array $lines, int &$index, int $parentIndent = 0): string
+{
     $firstMarker = sa_parse_list_marker($lines[$index]);
 
     if ($firstMarker === null) {
@@ -499,7 +449,8 @@ function sa_collect_list($lines, &$index, $parentIndent = 0) {
     return $html;
 }
 
-function sa_render_math_block($formula) {
+function sa_render_math_block(mixed $formula): string
+{
     $formula = trim((string)$formula);
 
     if ($formula === '') {
@@ -509,284 +460,12 @@ function sa_render_math_block($formula) {
     return '<div class="math-block">\\[' . htmlspecialchars($formula, ENT_NOQUOTES, 'UTF-8') . '\\]</div>';
 }
 
-function sa_render_markdown($markdown, ?string $noteId = null) {
-    sa_render_context($noteId, true);
-
-    $markdown = sa_strip_frontmatter($markdown);
-    $lines = preg_split('/\n/', $markdown);
-
-    $html = '';
-    $paragraph = [];
-    $inCode = false;
-    $codeBuffer = [];
-    $inMermaid = false;
-    $mermaidBuffer = [];
-    $mermaidClass = '';
-    $inDetails = false;
-    $detailsBuffer = [];
-    $inMathBlock = false;
-    $mathBuffer = [];
-
-    $flushParagraph = function () use (&$html, &$paragraph) {
-        if (!empty($paragraph)) {
-            $html .= '<p>' . sa_inline_markdown(implode(' ', $paragraph)) . '</p>';
-            $paragraph = [];
-        }
-    };
-
-    for ($i = 0; $i < count($lines); $i++) {
-        $line = $lines[$i];
-        $trimmed = trim($line);
-
-        if ($inDetails) {
-            $detailsBuffer[] = $line;
-
-            if (stripos($line, '</details>') !== false) {
-                $html .= sa_render_details_block(implode("\n", $detailsBuffer));
-                $detailsBuffer = [];
-                $inDetails = false;
-            }
-
-            continue;
-        }
-
-        if (preg_match('/^<details\b/i', $trimmed)) {
-            $flushParagraph();
-            $inDetails = true;
-            $detailsBuffer = [$line];
-
-            if (stripos($trimmed, '</details>') !== false) {
-                $html .= sa_render_details_block(implode("\n", $detailsBuffer));
-                $detailsBuffer = [];
-                $inDetails = false;
-            }
-
-            continue;
-        }
-
-        if (preg_match('/^```mermaid\s*$/i', $trimmed)) {
-            $flushParagraph();
-
-            if ($inMermaid) {
-                $html .= '<pre class="mermaid' . $mermaidClass . '">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
-                $mermaidBuffer = [];
-                $mermaidClass = '';
-                $inMermaid = false;
-                continue;
-            }
-
-            $inMermaid = true;
-            $mermaidBuffer = [];
-            $mermaidClass = '';
-            continue;
-        }
-
-        if ($inMermaid) {
-            if (preg_match('/^```\s*$/', $trimmed)) {
-                $html .= '<pre class="mermaid' . $mermaidClass . '">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
-                $mermaidBuffer = [];
-                $mermaidClass = '';
-                $inMermaid = false;
-                continue;
-            }
-
-            if ($mermaidClass === '' && preg_match('/^\s*(mindmap|graph|flowchart|sequenceDiagram|classDiagram|erDiagram|journey|pie|gantt|stateDiagram|xychart)\b/i', $line, $mmMatch)) {
-                $type = strtolower($mmMatch[1]);
-                if ($type === 'mindmap') {
-                    $mermaidClass = ' mermaid-mindmap';
-                }
-            }
-
-            $mermaidBuffer[] = $line;
-            continue;
-        }
-
-        if (preg_match('/^```/', $trimmed)) {
-            $flushParagraph();
-
-            if ($inCode) {
-                $html .= '<pre><code>' . htmlspecialchars(implode("\n", $codeBuffer), ENT_QUOTES, 'UTF-8') . '</code></pre>';
-                $codeBuffer = [];
-                $inCode = false;
-            } else {
-                $inCode = true;
-            }
-
-            continue;
-        }
-
-        if ($inCode) {
-            $codeBuffer[] = $line;
-            continue;
-        }
-
-        if (preg_match('/^\$\$\s*(.*)$/', $trimmed, $matches)) {
-            $flushParagraph();
-
-            $afterOpening = trim($matches[1]);
-
-            if ($afterOpening !== '' && substr($afterOpening, -2) === '$$') {
-                $html .= sa_render_math_block(substr($afterOpening, 0, -2));
-                continue;
-            }
-
-            $inMathBlock = true;
-            $mathBuffer = [];
-
-            if ($afterOpening !== '') {
-                $mathBuffer[] = $afterOpening;
-            }
-
-            continue;
-        }
-
-        if ($inMathBlock) {
-            if (preg_match('/^(.*?)\s*\$\$$/', $trimmed, $matches)) {
-                $beforeClosing = trim($matches[1]);
-
-                if ($beforeClosing !== '') {
-                    $mathBuffer[] = $beforeClosing;
-                }
-
-                $html .= sa_render_math_block(implode("\n", $mathBuffer));
-                $mathBuffer = [];
-                $inMathBlock = false;
-            } else {
-                $mathBuffer[] = $line;
-            }
-
-            continue;
-        }
-
-        if ($trimmed === '') {
-            $flushParagraph();
-            continue;
-        }
-
-        if (preg_match('/^<br\s*\/?>$/i', $trimmed)) {
-            $flushParagraph();
-            $html .= '<br>';
-            continue;
-        }
-
-        if (preg_match('/^<hr\s*\/?>$/i', $trimmed) || preg_match('/^(?:-{3,}|\*{3,}|_{3,})$/', $trimmed)) {
-            $flushParagraph();
-            $html .= '<hr>';
-            continue;
-        }
-
-        if (preg_match('/^<p\b/i', $trimmed)) {
-            $flushParagraph();
-            $html .= sa_inline_markdown($trimmed);
-            continue;
-        }
-
-        if (sa_is_quiz_question_start($trimmed)) {
-            $flushParagraph();
-            $html .= sa_collect_quiz_question($lines, $i);
-            $i--;
-            continue;
-        }
-
-        if (sa_is_table_start($lines, $i)) {
-            $flushParagraph();
-            $html .= sa_collect_table($lines, $i);
-            $i--;
-            continue;
-        }
-
-        $listMarker = sa_parse_list_marker($line);
-
-        if ($listMarker !== null) {
-            $flushParagraph();
-            $html .= sa_collect_list($lines, $i, 0);
-            $i--;
-            continue;
-        }
-
-        if (preg_match('/^(#{1,6})\s+(.+)$/', $trimmed, $matches)) {
-            $flushParagraph();
-
-            $level = strlen($matches[1]);
-            $text = trim($matches[2]);
-            $slug = sa_slugify_heading($text);
-
-            $html .= '<h' . $level . ' id="' . htmlspecialchars($slug, ENT_QUOTES, 'UTF-8') . '">' . sa_inline_markdown($text) . '</h' . $level . '>';
-            continue;
-        }
-
-        if (preg_match('/^>/', $trimmed)) {
-            $flushParagraph();
-
-            $bq = [];
-            while ($i < count($lines) && preg_match('/^\s*>\s?(.*)$/', $lines[$i], $m)) {
-                $bq[] = $m[1];
-                $i++;
-            }
-            if (!empty($bq)) {
-                $i--;
-            }
-
-            if (!empty($bq) && preg_match('/^(Nota|Note):/iu', $bq[0])) {
-                $bq[0] = preg_replace('/^(Nota|Note):/iu', '', $bq[0]);
-            }
-
-            $paragraphs = [];
-            $currentParagraph = '';
-            foreach ($bq as $bqLine) {
-                if (trim($bqLine) === '') {
-                    if ($currentParagraph !== '') {
-                        $paragraphs[] = $currentParagraph;
-                        $currentParagraph = '';
-                    }
-                    continue;
-                }
-                if ($currentParagraph !== '') {
-                    $currentParagraph .= ' ' . $bqLine;
-                } else {
-                    $currentParagraph = $bqLine;
-                }
-            }
-            if ($currentParagraph !== '') {
-                $paragraphs[] = $currentParagraph;
-            }
-
-            $noteHtml = '';
-            foreach ($paragraphs as $noteParagraph) {
-                $noteHtml .= '<p>' . sa_inline_markdown(trim($noteParagraph)) . '</p>';
-            }
-            $html .= '<aside class="note"><div class="note-body">' . $noteHtml . '</div></aside>';
-            continue;
-        }
-
-        $paragraph[] = $trimmed;
-    }
-
-    if ($inCode) {
-        $html .= '<pre><code>' . htmlspecialchars(implode("\n", $codeBuffer), ENT_QUOTES, 'UTF-8') . '</code></pre>';
-    }
-
-    if ($inMermaid) {
-        $html .= '<pre class="mermaid">' . htmlspecialchars(implode("\n", $mermaidBuffer), ENT_QUOTES, 'UTF-8') . '</pre>';
-    }
-
-    if ($inMathBlock) {
-        $html .= sa_render_math_block(implode("\n", $mathBuffer));
-    }
-
-    $flushParagraph();
-
-    return $html;
+function sa_render_markdown(mixed $markdown, ?string $noteId = null): string
+{
+    return (new MarkdownRenderer())->render((string)$markdown, $noteId);
 }
 
-function add_heading_anchors(string $html): string {
-    return preg_replace_callback('/(<h([2-4]) id="([^"]+)">)(.*?)(<\/h\2>)/i', function($matches) {
-        $tagOpen = $matches[1];
-        $id = $matches[3];
-        $content = $matches[4];
-        $tagClose = $matches[5];
-        $anchorLink = ' <a href="#' . $id . '" class="heading-anchor" aria-hidden="true" title="Enlace directo">#</a>';
-        
-        return $tagOpen . $content . $anchorLink . $tagClose;
-    }, $html);
+function add_heading_anchors(string $html): string
+{
+    return (new MarkdownRenderer())->addHeadingAnchors($html);
 }
