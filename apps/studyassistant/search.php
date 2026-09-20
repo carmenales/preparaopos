@@ -1,78 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
+require_once __DIR__ . '/includes/autoload.php';
+
+use StudyAssistant\Service\KnowledgeServiceClient;
+
 /**
  * Búsqueda semántica: reenvía la consulta al servicio `embeddings`
- * (ver docker-compose.yml, servicio interno, sin coste ni API externa)
  * y devuelve los resultados enlazados a note.php#anchor.
- *
- * Igual que ai_client.php: sin cURL, con file_get_contents + stream
- * context, para no añadir dependencias a la imagen PHP.
  */
 
 header('Content-Type: application/json; charset=utf-8');
 
-const SA_EMBEDDINGS_SERVICE_URL = 'http://embeddings:8000';
-const SA_SEARCH_TIMEOUT_SECONDS = 10;
+$query = trim((string)($_GET['q'] ?? ''));
+$topK = max(1, min((int)($_GET['top_k'] ?? 8), 20));
 
-function sa_search_respond(int $httpCode, array $body): void
-{
-    http_response_code($httpCode);
-    echo json_encode($body, JSON_UNESCAPED_UNICODE);
+if ($query === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'Falta el parámetro q.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-$query = trim((string) ($_GET['q'] ?? ''));
-$topK = (int) ($_GET['top_k'] ?? 8);
-$topK = max(1, min($topK, 20));
+$embeddingsUrl = getenv('EMBEDDINGS_SERVICE_URL') ?: 'http://embeddings:8000';
+$client = new KnowledgeServiceClient($embeddingsUrl, 10);
 
-if ($query === '') {
-    sa_search_respond(400, ['error' => 'Falta el parámetro q.']);
-}
+try {
+    $data = $client->get('/search', ['q' => $query, 'top_k' => $topK]);
 
-$url = SA_EMBEDDINGS_SERVICE_URL . '/search?' . http_build_query([
-    'q' => $query,
-    'top_k' => $topK,
-]);
-
-$context = stream_context_create([
-    'http' => [
-        'method' => 'GET',
-        'timeout' => SA_SEARCH_TIMEOUT_SECONDS,
-        'ignore_errors' => true, // para poder leer el cuerpo de error del servicio
-    ],
-]);
-
-$raw = @file_get_contents($url, false, $context);
-
-if ($raw === false) {
-    sa_search_respond(502, [
-        'error' => 'No se ha podido contactar con el servicio de búsqueda semántica '
-            . '(¿está levantado el contenedor "embeddings"? -> docker compose up embeddings).',
-    ]);
-}
-
-$statusLine = $http_response_header[0] ?? '';
-$statusCode = 0;
-if (preg_match('/\s(\d{3})\s/', $statusLine, $matches)) {
-    $statusCode = (int) $matches[1];
-}
-
-$data = json_decode($raw, true);
-
-if ($statusCode !== 200 || !is_array($data)) {
-    sa_search_respond(502, [
-        'error' => 'El servicio de búsqueda semántica ha devuelto un error.',
-        'details' => $data['detail'] ?? $raw,
-    ]);
-}
-
-// Enlace directo a note.php#anchor para cada resultado.
-if (!empty($data['results']) && is_array($data['results'])) {
-    foreach ($data['results'] as &$result) {
-        $result['url'] = 'note.php?id=' . urlencode($result['note_id'])
-            . ($result['anchor'] ? '#' . $result['anchor'] : '');
+    // Enlace directo a note.php#anchor para cada resultado.
+    if (!empty($data['results']) && is_array($data['results'])) {
+        foreach ($data['results'] as &$result) {
+            $result['url'] = 'note.php?id=' . urlencode((string)$result['note_id'])
+                . (!empty($result['anchor']) ? '#' . $result['anchor'] : '');
+        }
+        unset($result);
     }
-    unset($result);
-}
 
-sa_search_respond(200, $data);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+} catch (Throwable $e) {
+    http_response_code(502);
+    echo json_encode([
+        'error' => 'No se ha podido contactar con el servicio de búsqueda semántica (¿está levantado el contenedor "embeddings"?).',
+        'details' => $e->getMessage(),
+    ], JSON_UNESCAPED_UNICODE);
+}

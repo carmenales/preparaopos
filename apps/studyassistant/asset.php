@@ -38,19 +38,21 @@ if (!isset(SA_ASSET_ALLOWED_EXTENSIONS[$extension])) {
     sa_asset_fail(400, 'Tipo de fichero no permitido.');
 }
 
-$notes = sa_load_index();
-$note = sa_find_note_by_id($notes, $noteId);
+use StudyAssistant\Knowledge\NoteRepository;
+
+$repo = NoteRepository::getInstance();
+$note = $repo->findById($noteId);
 
 if (!$note) {
     sa_asset_fail(404, 'Apunte no encontrado.');
 }
 
-$noteAbsolutePath = sa_note_absolute_path($note);
+$noteAbsolutePath = $repo->getAbsolutePath($note);
 if ($noteAbsolutePath === null) {
     sa_asset_fail(404, 'No se ha podido resolver el apunte.');
 }
 
-$knowledgeBasePath = realpath(sa_project_base_path() . '/knowledge');
+$knowledgeBasePath = realpath(($repo->getProjectBasePath() ?? '') . '/knowledge');
 $candidatePath = realpath(dirname($noteAbsolutePath) . '/' . $relativePath);
 
 if (
