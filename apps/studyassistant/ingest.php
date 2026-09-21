@@ -3,12 +3,16 @@ require_once __DIR__ . '/includes/knowledge.php';
 require_once __DIR__ . '/includes/markdown.php';
 require_once __DIR__ . '/../shared/helpers/url.php';
 
+use StudyAssistant\Knowledge\NoteRepository;
+use StudyAssistant\Markdown\MarkdownRenderer;
+use StudyAssistant\Service\KnowledgeServiceClient;
+
 // Manejo de endpoints AJAX proxy para comunicación con el microservicio
 $action = $_GET['action'] ?? null;
 
 if ($action !== null) {
     header('Content-Type: application/json; charset=utf-8');
-    $serviceUrl = sa_knowledge_service_url();
+    $client = new KnowledgeServiceClient();
 
     // 1. Acción: Extracción de PDF
     if ($action === 'extract') {
@@ -24,40 +28,14 @@ if ($action !== null) {
 
         $tmpFile = $_FILES['pdf_file']['tmp_name'];
         $origName = $_FILES['pdf_file']['name'];
-        $normalize = isset($_POST['normalize']) ? (string)$_POST['normalize'] : 'true';
+        $normalize = ($_POST['normalize'] ?? 'true') !== 'false';
 
-        $cfile = new CURLFile($tmpFile, 'application/pdf', $origName);
-        $postData = [
-            'file' => $cfile,
-            'normalize' => $normalize,
-        ];
-
-        $ch = curl_init($serviceUrl . '/ingest/extract-pdf');
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $postData,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 180,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($curlError) {
-            echo json_encode(['error' => 'Error de conexión con el servicio de conocimiento: ' . $curlError], JSON_UNESCAPED_UNICODE);
-            exit;
+        try {
+            $data = $client->extractPdf($tmpFile, $origName, $normalize);
+            echo json_encode($data, JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $e) {
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
-
-        if ($httpCode >= 400) {
-            $errData = json_decode($response, true);
-            $msg = $errData['detail'] ?? "Error {$httpCode} al procesar el PDF.";
-            echo json_encode(['error' => $msg], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        echo $response;
         exit;
     }
 
@@ -66,7 +44,7 @@ if ($action !== null) {
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true) ?: [];
         $markdown = $data['markdown'] ?? '';
-        $html = sa_render_markdown($markdown);
+        $html = (new MarkdownRenderer())->render($markdown);
         echo json_encode(['html' => $html], JSON_UNESCAPED_UNICODE);
         exit;
     }
@@ -74,66 +52,26 @@ if ($action !== null) {
     // 3. Acción: Refinado asistido por LLM (Ollama)
     if ($action === 'refine') {
         $raw = file_get_contents('php://input');
-        $ch = curl_init($serviceUrl . '/ingest/refine');
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $raw,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 300,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($curlError) {
-            echo json_encode(['error' => 'Error al conectar con el servicio LLM: ' . $curlError], JSON_UNESCAPED_UNICODE);
-            exit;
+        $data = json_decode($raw, true) ?: [];
+        try {
+            $response = $client->refine($data);
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $e) {
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
-
-        if ($httpCode >= 400) {
-            $errData = json_decode($response, true);
-            $msg = $errData['detail'] ?? "Error {$httpCode} en refinado LLM.";
-            echo json_encode(['error' => $msg], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        echo $response;
         exit;
     }
 
     // 4. Acción: Publicación definitiva en la Base de Conocimiento
     if ($action === 'publish') {
         $raw = file_get_contents('php://input');
-        $ch = curl_init($serviceUrl . '/ingest/publish');
-        curl_setopt_array($ch, [
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $raw,
-            CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 60,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $curlError = curl_error($ch);
-        curl_close($ch);
-
-        if ($curlError) {
-            echo json_encode(['error' => 'Error al conectar para publicar: ' . $curlError], JSON_UNESCAPED_UNICODE);
-            exit;
+        $data = json_decode($raw, true) ?: [];
+        try {
+            $response = $client->publish($data);
+            echo json_encode($response, JSON_UNESCAPED_UNICODE);
+        } catch (Throwable $e) {
+            echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
         }
-
-        if ($httpCode >= 400) {
-            $errData = json_decode($response, true);
-            $msg = $errData['detail'] ?? "Error {$httpCode} al publicar la nota.";
-            echo json_encode(['error' => $msg], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        echo $response;
         exit;
     }
 
@@ -142,23 +80,23 @@ if ($action !== null) {
 }
 
 // Carga de procesos registrados para el selector
-$processesRegistry = sa_load_processes_registry();
-$notes = sa_load_index();
-$uniqueProcesses = sa_collect_unique($notes, 'processes');
+$repo = NoteRepository::getInstance();
+$processesRegistry = $repo->getProcessesRegistry();
+$uniqueProcesses = $repo->collectUnique('processes');
 
 // Unir los procesos del registro con los presentes en las notas
 $availableProcesses = [];
 foreach ($uniqueProcesses as $pSlug) {
     $availableProcesses[$pSlug] = [
         'id' => $pSlug,
-        'title' => $processesRegistry[$pSlug]['title'] ?? sa_format_process_title($pSlug),
+        'title' => $processesRegistry[$pSlug]['title'] ?? $repo->formatProcessTitle($pSlug),
     ];
 }
 foreach ($processesRegistry as $pSlug => $pData) {
     if (!isset($availableProcesses[$pSlug])) {
         $availableProcesses[$pSlug] = [
             'id' => $pSlug,
-            'title' => $pData['title'] ?? sa_format_process_title($pSlug),
+            'title' => $pData['title'] ?? $repo->formatProcessTitle($pSlug),
         ];
     }
 }
