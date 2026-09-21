@@ -1,271 +1,291 @@
-# Arquitectura General del Sistema Preparaopos
+# Arquitectura Global del Ecosistema PreparaOpos
 
-Documento técnico de arquitectura global del repositorio **preparaopos**, una plataforma integral diseñada para la preparación de oposiciones tecnológicas mediante aplicaciones interactivas, bases de conocimiento estructuradas en Markdown, modelos locales de inteligencia artificial y búsqueda semántica vectorial.
+Documento técnico integral y exhaustivo de la arquitectura de software, infraestructura, módulos, modelos de datos y estado actual del ecosistema **PreparaOpos**.
 
----
-
-## 1. Principios de Diseño y Filosofía del Sistema
-
-El ecosistema **preparaopos** se rige por cuatro principios fundamentales:
-
-1. **Local-First y Cero Costes de Nube (Zero-Cloud-Cost):**
-   Tanto los modelos de embeddings (`sentence-transformers`) como los modelos generativos de lenguaje (LLMs vía Ollama) se ejecutan 100% en infraestructura local (CPU/GPU local). No existen suscripciones externas, costes por token ni exposición de datos privados a APIs de terceros.
-2. **Git como Única Fuente de Verdad para el Conocimiento:**
-   Los apuntes teóricos no se almacenan como blobs en una base de datos relacional, sino como archivos Markdown (`knowledge/**/*.md`) versionados en Git con metadatos estructurados en YAML frontmatter. Esto permite control de versiones diff, edición colaborativa y legibilidad humana universal.
-3. **Desacoplamiento Funcional en Monorepo:**
-   El repositorio agrupa aplicaciones web especializadas, microservicios de IA, scripts de procesamiento y esquemas de base de datos en un único monorepo coordinado, comunicados mediante contratos ligeros de URLs y APIs REST internas.
-4. **Resiliencia Operativa:**
-   Las aplicaciones web cliente (`preparadortai` y `studyassistant`) son completamente funcionales de forma autónoma. Si los microservicios de IA o búsqueda semántica están detenidos, las aplicaciones degradan su funcionalidad de forma elegante sin interrumpir el estudio.
+> **Nota para IAs / Arquitectos de Software:** Este documento describe la totalidad del monorepo, sus subsistemas, tecnologías, patrones implementados, dependencias y deuda técnica actual con el objetivo de evaluar y diseñar una **estrategia de unificación arquitectónica óptima**.
 
 ---
 
-## 2. Mapa Global de la Arquitectura
+## 1. Propósito y Misión de la Plataforma
+
+**PreparaOpos** es una plataforma integral orientada a la preparación de oposiciones de cuerpos tecnológicos de la administración pública española (Administración General del Estado: **A2-GSI**, **C1-TAI**; Comunidad de Madrid; Ayuntamientos).
+
+El ecosistema cubre el ciclo de estudio completo del opositor uniendo tres pilares:
+
+```mermaid
+flowchart LR
+    A["1. Estudio Teórico<br>(Study Assistant)"] -->|"📝 Ponerme a prueba"| B["2. Evaluación Práctica<br>(Preparador TAI)"]
+    B -->|"🔗 Ver apunte vinculado"| A
+    C["3. Ingesta y Refinado IA<br>(Knowledge Service + Scripts)"] -->|"📚 Alimenta el temario"| A
+```
+
+1. **Estudio Teórico y Base de Conocimiento (`studyassistant`):**
+   - Lectura de temas en Markdown estructurado con soporte para fórmulas $\LaTeX$ (MathJax), diagramas dinámicos (Mermaid.js), callouts normativos y tabla de contenidos (TOC) multinivel y colapsable.
+   - Búsqueda híbrida: filtrado instantáneo por metadatos (procesos, perfiles, etiquetas, estados) y búsqueda semántica vectorial por significado (embeddings locales en CPU).
+2. **Evaluación Práctica y Simulacros (`preparadortai`):**
+   - Motor interactivo de exámenes oficiales con cronómetro, práctica libre por temas/bloques, relación de conceptos y refuerzo de fallos anteriores.
+   - Persistencia granular de intentos por pregunta y cálculo de puntuaciones oficiales aplicando penalizaciones normativas ($A - \frac{F}{3}$ o $A - \frac{F}{4}$).
+   - Panel de gestión para curación y justificación razonada del banco de preguntas.
+3. **Ingesta Inteligente de Documentos (`services/knowledge` y `scripts/`):**
+   - Extracción estructurada de texto y títulos desde documentos PDF/PPTX (temarios de academia, boletines oficiales BOE/BOCM).
+   - Detección y supresión heurística de cabeceras/pies de página repetidos.
+   - Refinado y estructuración de apuntes con LLMs locales (Ollama) sin costes de APIs externas.
+
+---
+
+## 2. Topología de Infraestructura y Contenedores
+
+El proyecto está orquestado mediante **Docker Compose** (`docker-compose.yml`):
 
 ```mermaid
 flowchart TD
-    subgraph Cliente["Capa Cliente (Navegador Web)"]
-        User["Opositor / Estudiante"]
-        BrowserUI["Interfaz Web (HTML5 / Bootstrap 5 / CSS Moderno)"]
-        ClientLibs["MathJax v3 (LaTeX) · Mermaid.js v10 · Fetch API"]
+    subgraph Host["Host (Máquina del Usuario)"]
+        Ollama["Ollama (LLM Local)<br>Puerto 11434<br>Modelos: llama3.1, etc."]
     end
 
-    subgraph Frontends["Capa de Aplicaciones Web (apps/)"]
-        TAI_App["apps/preparadortai (Puerto 8080)<br>PHP 8.2 / Apache<br>Tests, Simulacros, Métricas y Exámenes"]
-        Study_App["apps/studyassistant (Puerto 8090)<br>PHP 8.2<br>Visor Markdown, TOC Anidado y Búsqueda"]
-        Shared_Lib["apps/shared (Volumen Compartido)<br>Configuración de Rutas y Helpers de Enlace"]
+    subgraph Docker_Network["Red Docker: preparaopos_default"]
+        subgraph Web_Apps["Aplicaciones Web (Frontend / SSR)"]
+            App_TAI["preparaopos-preparadortai-web<br>PHP 8.2 + Apache<br>Host: 8080 → Container: 80"]
+            App_SA["preparaopos-studyassistant-web<br>PHP 8.2 Built-in Server<br>Host: 8090 → Container: 8080"]
+        end
+
+        subgraph Backend_Services["Microservicios Backend (FastAPI / Python 3.11)"]
+            Service_Embeddings["preparaopos-embeddings<br>FastAPI + SentenceTransformers<br>Host: 8091 → Container: 8000"]
+            Service_Knowledge["preparaopos-knowledge-service<br>FastAPI + PyMuPDF + Ollama Client<br>Host: 8100 → Container: 8000"]
+        end
+
+        subgraph Database["Almacenamiento Relacional"]
+            DB_MariaDB[("preparaopos-preparadortai-db<br>MariaDB 10.4<br>Host: 3307 → Container: 3306")]
+        end
+
+        subgraph Shared_Volumes["Volúmenes y Datos Compartidos"]
+            Vol_Knowledge["knowledge/ (Markdown :ro)"]
+            Vol_Data["apps/studyassistant/data/ (Índices JSON / NPY)"]
+            Vol_Shared["apps/shared/ (Helpers PHP :ro)"]
+        end
     end
 
-    subgraph Microservicios["Capa de Servicios de Inteligencia Artificial (services/)"]
-        Embeddings_Svc["services/embeddings (Puerto 8091:8000)<br>FastAPI / Python 3.11<br>Modelo MiniLM L12 v2 (CPU)"]
-        Knowledge_Svc["services/knowledge (Puerto 8100:8000)<br>FastAPI / Python 3.11<br>Generador RAG Asistido"]
-        Ollama_Host["Ollama en Host (Puerto 11434)<br>Modelos: llama3.1, etc."]
-    end
-
-    subgraph Almacenamiento["Capa de Almacenamiento y Persistencia"]
-        DB_MariaDB[(MariaDB 10.4: preparadortai<br>Puerto 3307:3306<br>Preguntas, Intentos, Sesiones, Reglas)]
-        PMA["phpMyAdmin (Puerto 8081)<br>Gestión Visual de Base de Datos"]
-        FS_Knowledge["knowledge/**/*.md<br>Apuntes Teóricos con Frontmatter"]
-        FS_Data["apps/studyassistant/data/<br>Índices JSON y Matriz de Embeddings .npy"]
-    end
-
-    subgraph Pipelines["Capa de Pipelines de Procesamiento (scripts/)"]
-        Ingestion["Ingesta y Extracción (batch_extract.py, PyMuPDF, PPTX)"]
-        CleanRefine["Normalización y Refinado (normalize_markdown.py, LLM)"]
-        NLP_Tags["Enriquecimiento NLP (extract_tags.py con spaCy)"]
-        Indexers["Indexación (build_knowledge_index.py, build_semantic_index.py)"]
-        Linkers["Enlace Semántico (suggest_topic_links.py)"]
-    end
-
-    %% Relaciones Cliente
-    User --> BrowserUI
-    BrowserUI --> ClientLibs
-    BrowserUI -->|HTTP 8080| TAI_App
-    BrowserUI -->|HTTP 8090| Study_App
-    BrowserUI -->|HTTP 8081| PMA
-
-    %% Relaciones Frontends
-    TAI_App -->|mysqli TCP 3306| DB_MariaDB
-    TAI_App -->|require_once| Shared_Lib
-    Study_App -->|require_once| Shared_Lib
-    Study_App -->|Lectura directa :ro| FS_Knowledge
-    Study_App -->|Lectura directa| FS_Data
-    Study_App -->|Proxy HTTP /search| Embeddings_Svc
-
-    %% Interoperabilidad entre Apps
-    Study_App -.->|"Enlace canónico: Ponerme a prueba"| TAI_App
-    TAI_App -.->|"Enlace canónico: Repasar apunte"| Study_App
-
-    %% Relaciones Microservicios
-    Embeddings_Svc -->|Carga en memoria| FS_Data
-    Knowledge_Svc -->|Consulta vectorial /search| Embeddings_Svc
-    Knowledge_Svc -->|Generación vía API /api/generate| Ollama_Host
-    PMA -->|TCP 3306| DB_MariaDB
-
-    %% Relaciones Pipelines
-    Ingestion --> CleanRefine
-    CleanRefine --> NLP_Tags
-    NLP_Tags --> FS_Knowledge
-    FS_Knowledge --> Indexers
-    Indexers --> FS_Data
-    Linkers -->|Consulta semántica| Embeddings_Svc
-    Linkers -->|Lectura/Escritura enlaces| DB_MariaDB
+    %% Conexiones
+    App_TAI -->|mysqli| DB_MariaDB
+    App_TAI --> Vol_Shared
+    App_SA --> Vol_Knowledge
+    App_SA --> Vol_Data
+    App_SA --> Vol_Shared
+    App_SA -->|HTTP Proxy /search| Service_Embeddings
+    App_SA -->|HTTP Ingest & Refine| Service_Knowledge
+    Service_Knowledge -->|HTTP host.docker.internal| Ollama
+    Service_Knowledge -->|HTTP Search| Service_Embeddings
+    Service_Embeddings --> Vol_Data
+    Service_Embeddings --> Vol_Knowledge
 ```
 
----
+### Tabla de Puertos y Servicios
 
-## 3. Topología de Contenedores y Red (`docker-compose.yml`)
-
-El entorno de ejecución completo se orquesta mediante **Docker Compose**:
-
-| Servicio | Contenedor | Imagen / Dockerfile | Puerto Host | Puerto Red Docker | Propósito y Responsabilidad |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`web`** | `preparaopos-preparadortai-web` | `infra/docker/php/Dockerfile` (PHP 8.2 + Apache) | `8080` | `80` | Servidor web de la aplicación interactiva de exámenes **Preparador TAI**. |
-| **`studyassistant`** | `preparaopos-studyassistant-web` | `infra/docker/php/Dockerfile` (PHP 8.2 integrado) | `8090` | `8080` | Servidor web del visor de apuntes y catálogo **Study Assistant**. |
-| **`embeddings`** | `preparaopos-embeddings` | `infra/docker/embeddings/Dockerfile` (Python 3.11) | `8091` | `8000` | Microservicio FastAPI de búsqueda semántica vectorial en local. |
-| **`knowledge-service`** | `preparaopos-knowledge-service` | `services/knowledge/Dockerfile` (Python 3.11) | `8100` | `8000` | Microservicio RAG para generación asistida de contenido con Ollama. |
-| **`db`** | `preparaopos-preparadortai-db` | `mariadb:10.4` | `3307` | `3306` | Base de datos relacional del banco de preguntas y sesiones. |
-| **`phpmyadmin`** | `preparaopos-preparadortai-phpmyadmin` | `phpmyadmin:5` | `8081` | `80` | Interfaz web de administración de la base de datos MariaDB. |
-
-### Medidas de Seguridad y Aislamiento de Volúmenes:
-* **Volúmenes de sólo lectura (`:ro`):**
-  * `knowledge/` se monta estrictamente como `:ro` en `studyassistant` y en `embeddings`, evitando cualquier posibilidad de sobreescritura accidental o maliciosa desde la web.
-  * `apps/shared/` se monta como `:ro` en ambas aplicaciones web para asegurar un contrato inmutable en tiempo de ejecución.
-* **Privilegios de Contenedor:**
-  * El contenedor `studyassistant` opera bajo el usuario sin privilegios `www-data` y con la directiva de seguridad `security_opt: no-new-privileges:true`.
-* **Conexión con el Host:**
-  * El contenedor `knowledge-service` se comunica con el servidor Ollama que corre en la máquina anfitrión a través de `host.docker.internal:11434` mediante la directiva `extra_hosts`.
+| Contenedor | Tecnología | Puerto Host | Puerto Contenedor | Propósito |
+|---|---|---|---|---|
+| `preparadortai-web` | PHP 8.2 / Apache | `8080` | `80` | Plataforma de exámenes, simulacros y gestión del banco de preguntas. |
+| `preparadortai-db` | MariaDB 10.4 | `3307` | `3306` | Base de datos relacional de preguntas, respuestas, sesiones y usuarios. |
+| `studyassistant-web` | PHP 8.2 CLI Server | `8090` | `8080` | Catálogo de apuntes, visor Markdown, TOC dinámico e interfaz de ingesta. |
+| `embeddings` | Python 3.11 / FastAPI | `8091` | `8000` | Búsqueda semántica vectorial en CPU con `SentenceTransformers`. |
+| `knowledge-service` | Python 3.11 / FastAPI | `8100` | `8000` | Extracción de PDFs con `PyMuPDF`, refinado con Ollama y publicación. |
+| *Host (Externo)* | Ollama | `11434` | `11434` | Inferencia LLM local (`llama3.1:latest`, etc.). |
 
 ---
 
-## 4. Estructura de Directorios del Monorepo
+## 3. Arquitectura Detallada por Subsistema
 
-```text
-preparaopos/
-├── apps/                          # Aplicaciones de usuario final
-│   ├── preparadortai/             # Plataforma de tests y exámenes (PHP + MariaDB)
-│   ├── studyassistant/            # Visor y buscador de apuntes Markdown (PHP + JS)
-│   └── shared/                    # Configuración común y generadores de URLs canónicas
-│
-├── services/                      # Microservicios auxiliares contenerizados
-│   ├── embeddings/                # API FastAPI de búsqueda vectorial (Sentence-Transformers)
-│   └── knowledge/                 # Servicio RAG de generación y explotación de conocimiento
-│
-├── knowledge/                     # Base de conocimiento central en Markdown
-│   ├── _template/                 # Plantillas formales de apuntes
-│   ├── processes/                 # Apuntes organizados por proceso / perfil / apuntes
-│   └── sources/                   # Fuentes de origen (PDFs de leyes, manuales, etc.)
-│
-├── scripts/                       # Pipelines de ingesta, NLP, indexación y mantenimiento
-├── db/                            # Base de datos relacional
-│   ├── migrations/                # Migraciones SQL versionadas
-│   └── local/                     # Dumps de inicialización local (ignorados en Git)
-│
-├── infra/                         # Dockerfiles de soporte
-│   └── docker/
-│       ├── php/                   # Entorno PHP 8.2 con extensiones PDO y MySQLi
-│       └── embeddings/            # Entorno Python 3.11 con PyTorch y Transformers
-│
-├── docker-compose.yml             # Orquestación de contenedores y redes
-└── ARCHITECTURE.md                # Este documento de arquitectura global
+### 3.1. `apps/studyassistant`: Visor de Apuntes y Base de Conocimiento
+
+Aplicación en **PHP 8.2 nativo** recientemente refactorizada a un diseño modular orientado a objetos respaldado por un autocargador PSR-4 nativo.
+
+#### Estructura de Directorios
+```
+apps/studyassistant/
+├── assets/                  # CSS y JavaScript del cliente (styles.css, semantic-search.js)
+├── data/                    # Índices estáticos precalculados (knowledge_index.json, etc.)
+├── includes/                # Capa de compatibilidad e inicialización
+│   ├── autoload.php         # Autocargador PSR-4 nativo (mapea StudyAssistant\ -> src/)
+│   ├── header.php           # Template de cabecera común con MathJax y Mermaid
+│   ├── knowledge.php        # Fachada procedural con funciones sa_* (retrocompatibilidad)
+│   └── markdown.php         # Fachada procedural de renderizado (retrocompatibilidad)
+├── src/                     # Núcleo Orientado a Objetos (OOP)
+│   ├── Dashboard/
+│   │   └── DashboardMetrics.php       # Agregaciones, conteos y chips de filtros
+│   ├── Knowledge/
+│   │   └── NoteRepository.php         # Repositorio Singleton, caché, búsqueda O(1), Path Traversal
+│   ├── Markdown/
+│   │   └── MarkdownRenderer.php       # Motor Markdown: MathJax, Mermaid, Quiz Cards, Tablas GFM
+│   ├── Navigation/
+│   │   └── TableOfContents.php        # Algoritmo de árbol jerárquico h2-h4 y acordeones
+│   └── Service/
+│       └── KnowledgeServiceClient.php # Cliente cURL tipado para microservicios Python
+├── tests/
+│   └── test_studyassistant.php        # Suite de pruebas automatizadas (65 tests, 0 fallos)
+├── index.php                # Catálogo principal, métricas del Process Hub y filtros
+├── note.php                 # Visor de apunte con TOC dinámico y botón de práctica
+├── ingest.php               # Stepper interactivo de 4 pasos para carga de PDFs
+├── search.php               # Proxy JSON hacia embeddings:8000
+└── asset.php                # Servidor seguro de imágenes relativas (anti-path traversal)
 ```
 
----
-
-## 5. Descripción de los Subsistemas Principales
-
-### 5.1. Preparador TAI (`apps/preparadortai`)
-* **Rol:** Sistema de evaluación, entrenamiento y administración del banco de preguntas.
-* **Capacidades:**
-  * Tests aleatorios, tests por bloque/tema, exámenes de convocatorias oficiales con temporizador, práctica de preguntas falladas (*banco de errores*) y relación de conceptos.
-  * Persistencia asíncrona de intentos en MariaDB (`test_attempts` y `test_sessions`).
-  * Panel estadístico avanzado con soporte para reglas de puntuación oficiales parametrizables (`scoring_rules`).
-* **Documentación específica:** [`apps/preparadortai/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/preparadortai/ARCHITECTURE.md).
-
-### 5.2. Study Assistant (`apps/studyassistant`)
-* **Rol:** Visor interactivo y catálogo de la base de conocimiento teórico.
-* **Capacidades:**
-  * Catálogo de apuntes con filtrado rápido en memoria sobre `knowledge_index.json` (por texto, etiqueta, proceso y estado).
-  * Renderizador Markdown propio ultraligero que soporta fórmulas matemáticas $\LaTeX$ (MathJax), diagramas Mermaid.js, tarjetas interactivas de cuestionarios tipo test y callouts.
-  * Tabla de contenidos (TOC) multinivel y colapsable (`h2` a `h4`).
-  * Búsqueda semántica interactiva en lenguaje natural conectada al microservicio de embeddings.
-* **Documentación específica:** [`apps/studyassistant/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/studyassistant/ARCHITECTURE.md).
-
-### 5.3. Capa de Interoperabilidad (`apps/shared`)
-* **Rol:** Puente de comunicación desacoplado entre las aplicaciones web.
-* **Capacidades:**
-  * Centralización de puertos y dominios en `config/apps.php`.
-  * Helpers canónicos en `helpers/url.php` para generar enlaces parametrizados entre el estudio teórico y la práctica de tests.
-* **Documentación específica:** [`apps/shared/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/shared/ARCHITECTURE.md).
-
-### 5.4. Microservicio de Embeddings (`services/embeddings`)
-* **Rol:** Inferencia vectorial y cálculo de similitud para búsqueda por significado.
-* **Capacidades:**
-  * Utiliza el modelo multilingüe `paraphrase-multilingual-MiniLM-L12-v2` (384 dimensiones).
-  * Carga en el arranque los fragmentos (`semantic_chunks.json`) y la matriz densa normalizada (`semantic_embeddings.npy`).
-  * Computa similitud coseno en microsegundos mediante multiplicación matricial NumPy en CPU: $\text{scores} = \mathbf{E} \cdot \mathbf{q}$.
-
-### 5.5. Microservicio de Generación RAG (`services/knowledge`)
-* **Rol:** Generación asistida de nuevos apuntes de estudio y síntesis de contenidos.
-* **Capacidades:**
-  * Combina búsqueda vectorial sobre el microservicio `embeddings` con inferencia de modelos LLM locales a través de Ollama.
-  * Recupera fragmentos relevantes (`TopicRetriever`), redacta el borrador del apunte (`NoteGenerator`) y genera el frontmatter YAML estandarizado de forma determinista (`FrontmatterGenerator`).
-
-### 5.6. Pipelines y Scripts (`scripts/`)
-* **Rol:** Cadena de procesamiento de datos por lotes e indexación.
-* **Capacidades:**
-  * Ingesta y conversión de PDFs y PPTX a Markdown limpio (`batch_extract.py`, `extract_pdf_text.py`, `extract_pptx_text.py`, `normalize_markdown.py`).
-  * Refinado ortotipográfico con LLM local y caché SHA-256 (`refine_markdown_llm.py`).
-  * Extracción de etiquetas por NLP con spaCy (`extract_tags.py`).
-  * Generación de índices léxicos y semánticos (`build_knowledge_index.py`, `build_semantic_index.py`).
-  * Enlace inteligente entre preguntas y apuntes (`suggest_topic_links.py`).
-* **Documentación específica:** [`scripts/README.md`](file:///c:/repositories/preparaopos/scripts/README.md).
+#### Patrones de Diseño Implementados
+- **Repository Pattern (`NoteRepository`)**: Desacopla el acceso al índice JSON en memoria, la ordenación secuencial por tema oficial y la verificación de rutas canónicas contra la raíz `knowledge/`.
+- **Singleton Pattern (`NoteRepository::getInstance()`)**: Evita lecturas redundantes del archivo de índice de 140 notas en una misma petición.
+- **Facade Pattern (`includes/knowledge.php` y `includes/markdown.php`)**: Mantiene disponibles 20+ funciones históricas `sa_*` (`sa_load_index`, `sa_render_markdown`, etc.) como delegados directos hacia las clases OOP para garantizar cero roturas en código externo.
+- **Service Client (`KnowledgeServiceClient`)**: Encapsula llamadas cURL multiparte y JSON con timeouts defensivos (hasta 300s para LLM) y mapeo de excepciones `RuntimeException`.
 
 ---
 
-## 6. Flujos de Datos Transversales End-to-End
+### 3.2. `apps/preparadortai`: Plataforma de Exámenes y Tests
 
-### 6.1. Ciclo de Vida del Conocimiento: De PDF a Consulta Semántica
+Aplicación web en **PHP 8.2 con Apache**, renderizado en servidor (SSR) asistido por JavaScript vanilla para interactividad en exámenes y persistencia asíncrona.
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Admin as Administrador / Opositor
-    participant Batch as scripts/batch_extract.py
-    participant Normalize as scripts/normalize_markdown.py
-    participant Ollama as Ollama Local (LLM)
-    participant KnowledgeRepo as knowledge/**/*.md
-    participant Indexer as scripts/build_semantic_index.py
-    participant EmbeddingsSvc as services/embeddings
-    participant StudyUI as Study Assistant (Web)
-
-    Admin->>Batch: Ejecuta extracción sobre temarios en PDF
-    Batch->>Normalize: Convierte a texto plano y normaliza tablas/siglas
-    Normalize->>Ollama: Refina sintaxis y repara párrafos (vía LLM)
-    Ollama-->>Normalize: Markdown estructurado
-    Normalize->>KnowledgeRepo: Almacena apunte final con Frontmatter YAML
-    Admin->>Indexer: Ejecuta indexación semántica en contenedor
-    Indexer->>Indexer: Trocea por headings y genera vectores (MiniLM)
-    Indexer-->>EmbeddingsSvc: Actualiza semantic_chunks.json y semantic_embeddings.npy
-    EmbeddingsSvc->>EmbeddingsSvc: Recarga matriz y normaliza en memoria
-    Admin->>StudyUI: Busca "arquitectura lambda vs kappa"
-    StudyUI->>EmbeddingsSvc: Consulta HTTP /search
-    EmbeddingsSvc-->>StudyUI: Resultados con % de similitud y anclas directas
+#### Estructura de Directorios
+```
+apps/preparadortai/
+├── assets/                  # CSS (Bootstrap 5, custom styles) y JS de cronómetro y examen
+├── includes/
+│   ├── config.php           # Inicialización de conexión MariaDB con mysqli
+│   ├── question_search.php  # Lógica de filtrado dinámico para el banco de preguntas
+│   └── topic_links.php      # Consultas sobre question_topic_links
+├── logic/                   # Endpoints asíncronos (AJAX)
+│   ├── save_attempt.php     # Persistencia inmediata de cada respuesta emitida
+│   ├── start_topic_test.php # Generación e inicio de sesión de test por tema
+│   ├── submit.php           # Cierre de examen y cálculo final de nota
+│   └── sync_question_sets.php
+├── index.php                # Dashboard de progreso y accesos rápidos
+├── test.php                 # Motor principal de ejecución de examen (cronómetro, navegación)
+├── practica_tematica.php    # Lanzador de test parametrizado desde StudyAssistant (?topics=...)
+├── refuerzo.php             # Batería automática de preguntas falladas
+├── relacionar.php           # Modo de juego/estudio para emparejar conceptos
+├── examenes.php             # Selección de convocatorias oficiales históricas
+├── estadisticas.php         # Analítica detallada con aplicación de reglas oficiales de corrección
+├── gestionar.php            # Buscador y tabla del banco de preguntas
+├── agregar.php / editar.php # CRUD de preguntas, respuestas y justificaciones
+└── categorias.php / temas.php # Mantenimiento de taxonomía y bloques
 ```
 
-### 6.2. Ciclo de Aprendizaje Activo: Estudio $\leftrightarrow$ Práctica de Examen
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Alumno as Opositor
-    participant Study as Study Assistant (note.php)
-    participant Shared as apps/shared/helpers/url.php
-    participant TAI as Preparador TAI (practica_tematica.php)
-    participant DB as MariaDB (test_attempts)
-
-    Alumno->>Study: Lee apunte "Tema 11: Arquitectura de Datos"
-    Study->>Shared: build_preparadortai_topic_practice_url(["Tema 11"])
-    Shared-->>Study: URL "practica_tematica.php?topics=Tema+11&source=studyassistant"
-    Study-->>Alumno: Muestra botón "📝 Ponerme a prueba"
-    Alumno->>TAI: Clic en el botón
-    TAI->>DB: Carga preguntas vinculadas a la categoría y tema
-    TAI-->>Alumno: Inicia examen temático focalizado
-    Alumno->>TAI: Responde preguntas y concluye sesión
-    TAI->>DB: Guarda métricas de acierto/fallo y tiempo
-    TAI-->>Alumno: Presenta resultados con opción de relectura del apunte
-```
+#### Modelo de Datos Clave (MariaDB `preparadortai`)
+- `questions`: Preguntas (enunciado, tipo: test/relacionar, dificultad, año oficial, justificación, estado).
+- `answers`: Opciones de respuesta vinculadas a cada pregunta (texto, si es correcta).
+- `categories` / `topics`: Taxonomía organizativa por bloques y temas.
+- `test_sessions`: Sesiones de examen iniciadas (modo, duración, fecha, puntuación total).
+- `test_attempts`: Registro detallado de cada intento de respuesta (tiempo en responder, acierto/fallo).
+- `question_topic_links`: Tabla de asociación semántica entre preguntas del test y temas de la base de conocimiento (`topic_name`, `process_slug`, `source`).
+- `scoring_rules`: Parámetros de corrección oficial por convocatoria (penalización por fallo: $-0.33$, $-0.25$, puntuación mínima de corte).
 
 ---
 
-## 7. Índice de Documentación de Arquitectura
+### 3.3. `services/knowledge`: Microservicio de Ingesta y Procesamiento IA
 
-Para consultar los detalles técnicos de bajo nivel de cada componente, recurra a los documentos específicos del repositorio:
+Microservicio en **Python 3.11 con FastAPI** para la transformación de documentos no estructurados en notas limpias de Markdown.
 
-* 📄 **Preparador TAI:** [`apps/preparadortai/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/preparadortai/ARCHITECTURE.md)
-* 📄 **Study Assistant:** [`apps/studyassistant/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/studyassistant/ARCHITECTURE.md)
-* 📄 **Capa Compartida:** [`apps/shared/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/apps/shared/ARCHITECTURE.md)
-* 📄 **Microservicios (IA y NLP):** [`services/ARCHITECTURE.md`](file:///c:/repositories/preparaopos/services/ARCHITECTURE.md) ([Catálogo y Guía](file:///c:/repositories/preparaopos/services/README.md))
-* 📄 **Scripts y Pipelines:** [`scripts/README.md`](file:///c:/repositories/preparaopos/scripts/README.md)
-* 📄 **Base de Datos y Configuración:** [`docs/database.md`](file:///c:/repositories/preparaopos/docs/database.md)
+#### Módulos Clave
+- **`app.py`**: Router FastAPI que expone:
+  - `POST /ingest/extract-pdf`: Recibe `multipart/form-data` con un PDF y aplica extracción.
+  - `POST /ingest/refine`: Recibe JSON con Markdown bruto y envía el prompt a Ollama.
+  - `POST /ingest/publish`: Guarda la nota procesada en la ruta `knowledge/processes/{process}/apuntes/{slug}.md` y regenera el índice.
+- **`pdf_extractor.py`**: Extractor basado en `PyMuPDF` (`fitz`) con detección de:
+  - Bloques de texto con tamaño tipográfico para inferir niveles de encabezado (`#`, `##`, `###`).
+  - Bloques de cabecera y pie repetidos (números de página, títulos de documento) para eliminarlos.
+  - Exclusión automática de páginas de índice o tabla de contenidos (TOC).
+- **`markdown_normalizer.py`**: Heurísticas regex para arreglar roturas de línea artificiales de PDFs, unir palabras con guion de final de línea y limpiar caracteres espurios.
+- **`ollama_client.py`**: Cliente HTTP asíncrono para comunicarse con el servidor Ollama local (`/api/generate` o `/api/chat`).
+- **`schemas.py`**: Modelos estrictos `Pydantic v2` para validación de entrada/salida.
 
+---
 
+### 3.4. `services/embeddings`: Búsqueda Semántica Vectorial
+
+Microservicio en **Python 3.11 con FastAPI** para búsqueda semántica basada en embeddings densos.
+
+#### Componentes
+- **`main.py`**:
+  - Carga en memoria al inicio el modelo `paraphrase-multilingual-MiniLM-L12-v2` (~470 MB, 384 dimensiones) y los archivos `semantic_chunks.json` y `semantic_embeddings.npy`.
+  - Normaliza la matriz de embeddings a norma euclídea unitaria ($L_2 = 1$).
+  - `GET /search?q={query}&top_k={k}`: Codifica la consulta en un vector y realiza el producto escalar matricial contra todos los fragmentos con `numpy.dot`:
+    $$\text{scores} = \mathbf{E} \cdot \mathbf{q}$$
+  - Retorna los $k$ resultados con mayor puntuación en menos de 20 milisegundos en CPU.
+
+---
+
+### 3.5. `scripts/`: Pipeline de Procesamiento por Lotes y Utilidades
+
+Conjunto de herramientas CLI en **Python** para el mantenimiento de la plataforma:
+- `build_knowledge_index.py`: Escanea `knowledge/`, lee el YAML frontmatter, genera títulos, slugs, extractos y guarda `apps/studyassistant/data/knowledge_index.json`.
+- `build_semantic_index.py`: Fragmenta apuntes por encabezados (`##`, `###`, `####`), calcula embeddings con SentenceTransformers y genera `semantic_chunks.json` y `semantic_embeddings.npy`.
+- `suggest_topic_links.py`: Algoritmo de cruce que propone asociaciones entre preguntas de `preparadortai` y apuntes de `studyassistant` mediante coincidencia de texto y similitud.
+- `extract_pdf_text.py` / `normalize_markdown.py` / `refine_markdown_llm.py`: Scripts reutilizables por línea de comandos para procesamiento por lotes de PDFs.
+
+---
+
+### 3.6. `apps/shared/`: Enlace Inter-Aplicaciones
+
+Módulo PHP montado en ambas aplicaciones web (`apps/preparadortai` y `apps/studyassistant`):
+- `helpers/url.php`: Funciones `build_preparadortai_topic_practice_url()` y `build_studyassistant_note_url()`.
+- Permite que desde un apunte teórico en StudyAssistant (`note.php`) se pulse "📝 Ponerme a prueba" y se abra automáticamente un test temático en `preparadortai` con las preguntas correspondientes al tema leído.
+
+---
+
+## 4. Estado Actual del Proyecto ("Lo que está hecho")
+
+| Capacidad / Módulo | Estado | Descripción técnica |
+|---|---|---|
+| **Base de Conocimiento Markdown** | **Completado** | 140 notas estructuradas con YAML frontmatter repartidas en AGE (A2-GSI: 81), Comunidad de Madrid (44) y Majadahonda (3). |
+| **Visor de Apuntes Enriquecido** | **Completado** | Renderizado nativo de MathJax ($\LaTeX$), diagramas Mermaid.js, tarjetas interactivas de test y callouts normativos. |
+| **Navegación y TOC Anidado** | **Completado** | Generación dinámica de árbol jerárquico h2-h4 con acordeones `<details><summary>` y enlaces directos con ancla `#`. |
+| **Catálogo y Filtrado Léxico** | **Completado** | Dashboard con KPIs, filtros combinados por búsqueda, etiquetas, estado y proceso selectivo con chips removibles. |
+| **Búsqueda Semántica Vectorial** | **Completado** | Microservicio FastAPI + SentenceTransformers en CPU; búsqueda instantánea por concepto sin APIs externas. |
+| **Ingesta de PDFs con Heurísticas** | **Completado** | Extracción con PyMuPDF, eliminación de cabeceras/pies repetidos, normalización de saltos de línea y frontend con stepper de 4 pasos. |
+| **Refinado Asistido por LLM** | **Completado** | Integración con Ollama local (`http://host.docker.internal:11434`) para limpieza y estructuración de apuntes. |
+| **Motor de Exámenes y Simulacros** | **Completado** | Exámenes oficiales, práctica libre, cronómetro, persistencia AJAX respuesta a respuesta y modo relacionar conceptos. |
+| **Analítica y Corrección Oficial** | **Completado** | Historial de sesiones, detalle de respuestas y aplicación de fórmulas de penalización oficiales ($A - \frac{F}{3}$, $A - \frac{F}{4}$). |
+| **Enlace Teórico-Práctico** | **Completado** | Botón directo desde el apunte al test temático de PreparadorTAI vía `apps/shared/helpers/url.php`. |
+| **Suite de Tests de StudyAssistant** | **Completado** | 65 pruebas unitarias automatizadas (`test_studyassistant.php`) verificadas con 0 fallos. |
+
+---
+
+## 5. Deuda Técnica y Oportunidades de Mejora ("Lo que queda pendiente")
+
+Para abordar una unificación arquitectónica coherente, se identifican las siguientes fricciones:
+
+### 5.1. Fragmentación de Lenguajes y Ecosistemas
+- **El conflicto PHP vs Python**:
+  - La lógica de datos, IA, embeddings, extracción de PDFs y scripts está en **Python** (`services/knowledge`, `services/embeddings`, `scripts/`).
+  - La capa web y de usuario está dividida en dos aplicaciones **PHP**: `preparadortai` (PHP procedimental clásico) y `studyassistant` (PHP 8.2 modular OOP).
+  - La desarrolladora principal **no está familiarizada con PHP** y domina mejor Python, lo que ralentiza el desarrollo y mantenimiento del frontend.
+
+### 5.2. Dos Aplicaciones Web Separadas (Puertos 8080 y 8090)
+- Actualmente el usuario debe saltar entre dos puertos distintos en el navegador (`localhost:8080` para tests y `localhost:8090` para teoría).
+- No existe **sesión única ni autenticación compartida**: los progresos de lectura en StudyAssistant no están vinculados con los intentos de examen de PreparadorTAI más allá de un enlace GET por URL.
+
+### 5.3. Disparidad en el Almacenamiento de Datos
+- Las preguntas de examen residen en **MariaDB** (modelo relacional SQL).
+- Los apuntes teóricos residen en **ficheros Markdown planos** en el disco (`knowledge/`) indexados en un archivo JSON (`knowledge_index.json`).
+- La vinculación entre ambos se mantiene mediante la tabla `question_topic_links` que se actualiza periódicamente mediante un script Python (`suggest_topic_links.py`).
+
+### 5.4. Duplicación de Lógica
+- Existen parsers y normalizadores de Markdown tanto en Python (`services/knowledge/markdown_normalizer.py`) como en PHP (`StudyAssistant\Markdown\MarkdownRenderer.php`).
+- Si se cambia una regla de formato en uno, hay que replicarla en el otro para mantener consistencia.
+
+---
+
+## 6. Guía para la IA / Arquitecto de Software: Preguntas para la Unificación
+
+Si estás leyendo este documento para proponer la arquitectura unificada de **PreparaOpos**, ten en cuenta las siguientes restricciones y preguntas de decisión:
+
+### Restricciones Críticas
+1. **Sin costes de APIs externas:** Toda la IA (búsqueda semántica, embeddings y refinado) debe seguir ejecutándose localmente (Ollama y SentenceTransformers en CPU/GPU local).
+2. **Máxima ligereza y simplicidad para una única desarrolladora:** Evitar frameworks hiper-complejos que requieran pipelines de compilación pesados o microservicios innecesarios si un monolito modular puede resolverlo.
+3. **Preservación del valor de los datos:**
+   - No perder los apuntes en Markdown (`knowledge/**/*.md`).
+   - No perder el banco de preguntas y el histórico de exámenes de MariaDB.
+
+### Preguntas Clave a Responder en la Propuesta de Unificación
+1. **¿Cuál es la tecnología de backend ideal para unificar `preparadortai`, `studyassistant` y los servicios de IA?**
+   - *Opción A: Python unificado (FastAPI o Django)*: ¿Tiene sentido absorber la lógica de MariaDB y los apuntes bajo un único backend en Python (FastAPI), unificando `services/knowledge` y las dos apps web?
+   - *Opción B: Backend FastAPI + Frontend desacoplado (Astro o Next.js)*: ¿Es mejor dejar FastAPI como API REST unificada (con SQLModel/SQLAlchemy para MariaDB y endpoints de Markdown/IA) y crear un único frontend moderno en Astro (especialista en Markdown y ultra-rápido)?
+2. **¿Cómo debe ser el modelo de datos unificado?**
+   - ¿Deben los apuntes Markdown seguir siendo ficheros planos en disco o indexarse en una base de datos documental/relacional?
+   - ¿Cómo unificar la tabla `question_topic_links` para que la relación entre preguntas tipo test y apartados de apuntes sea dinámica y bidireccional?
+3. **¿Cuál sería el plan de migración por fases sin interrumpir el estudio diario del opositor?**
