@@ -10,6 +10,7 @@ Este directorio contiene todo el material estructurado para la preparación inte
 knowledge/processes/age/a2-gsi/
 ├── apuntes/               # Temario teórico completo (Bloques I, II, III y IV)
 ├── repaso/                # Resúmenes de alto rendimiento para repaso rápido
+├── supuesto-practico/     # Guía metodológica, plantillas y casos resueltos (2º Ejercicio)
 ├── supuesto-practico/     # Guía metodológica, plantillas, defensa oral y casos resueltos (2º Ejercicio)
 ├── convocatorias/         # Histórico de exámenes oficiales (2003-2025) y novedades BOE
 └── assets/                # Mapas conceptuales, diagramas UML y recursos multimedia
@@ -34,8 +35,42 @@ Documentos de consolidación diseñados para repasar conceptos clave antes de si
 ---
 
 ## 3. Preparación del Supuesto Práctico (`supuesto-practico/`)
+Estructura y plantillas orientadas al segundo ejercicio (resolución de un supuesto práctico TIC):
 Estructura y plantillas orientadas al segundo ejercicio (resolución y defensa oral de un supuesto práctico TIC):
 
+- **`00_marco_general/`**:
+  - Guía estratégica del examen y criterios de corrección.
+  - Manual normativo y legal (LPAC, LRJSP, Ley 11/2007, RD 203/2021, ENS, ENI).
+  - Plantillas normalizadas de respuesta.
+  - Gestión, planificación y cronogramas de proyectos (MÉTRICA v3, metodologías ágiles).
+  - Marco estratégico: España Digital 2026.
+  - Evaluación de Impacto en Protección de Datos (EIPD / RGPD).
+- **`01_analisis_funcional/`**:
+  - Actores del sistema y mapa de necesidades.
+  - Requisitos funcionales y no funcionales (FURPS+ / ISO 25010).
+  - Modelado de procesos y DFD (Diagramas de Flujo de Datos).
+- **`02_arquitectura_logica/`**:
+  - Catálogo de arquitecturas tipo (MVC, Hexagonal, Microservicios, Orientada a Eventos).
+  - Modelo de datos y gobernanza RGPD.
+  - Arquitectura de paquetes y componentes lógicos.
+  - Diagramas de comportamiento UML: Secuencia, Estados y Actividades.
+  - Estrategia de redacción de especificaciones técnicas.
+- **`03_arquitectura_tecnica/`**:
+  - Despliegue en infraestructuras seguras (Red SARA, nube híbrida, Cloud AGE).
+  - Comunicaciones, redes locales, VPN y segmentación.
+  - Canales de acceso: PWA, aplicaciones móviles y accesibilidad (UNE-EN 301549).
+  - Soluciones de puesto de trabajo y teletrabajo.
+  - Big Data, analítica y diseño de CPD.
+- **`04_servicios_comunes/`**:
+  - Autenticación y firma: Cl@ve, @firma, Autofirma, Portafirmas.
+  - Notificaciones e intermediación: Notifica (DEHú), PID (Plataforma de Intermediación de Datos).
+  - Registro y tramitación: GEISER/SIA, ACCEDA, SIR.
+- **`05_seguridad/`**:
+  - Esquema Nacional de Seguridad (ENS - RD 311/2022): Categorización del sistema y medidas de seguridad.
+  - Seguridad en aplicaciones (OWASP Top 10) y gestión de riesgos (MAGERIT / PILAR).
+  - Seguridad por capas (defensa en profundidad).
+- **`06_ejemplos/`**:
+  - Casos prácticos completos resueltos (Trámite ciudadano, Entorno tributario QA, RentaWeb).
 - **`00_marco_general/`**: Guía estratégica del examen, criterios de corrección, plantillas, cronogramas y España Digital 2026.
 - **`01_analisis_funcional/`**: Actores del sistema, mapa de necesidades, requisitos (FURPS+/ISO 25010) y DFD.
 - **`02_arquitectura_logica/`**: Catálogo de arquitecturas tipo, modelos de datos, arquitectura de paquetes y comportamiento UML.
@@ -50,6 +85,7 @@ Estructura y plantillas orientadas al segundo ejercicio (resolución y defensa o
 
 ---
 
+## 4. Recursos Multimedia y Diagramas (`assets/`)
 ## 4. Histórico de Convocatorias y Exámenes (`convocatorias/`)
 - `00-examenes.md`: Catálogo cronológico de exámenes oficiales (CSSTIC, GSI, TAI de 2003 a 2025).
 - `03-supuestos.md`: Registro de supuestos prácticos de convocatorias anteriores.
