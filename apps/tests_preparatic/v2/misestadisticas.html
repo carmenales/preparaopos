@@ -1,0 +1,1203 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tests Preparatic  | Mis estad&iacute;sticas</title>
+
+    <!-- Bootstrap -->
+    <link href="./vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="./vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="./vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="./css/custom.min.css" rel="stylesheet">
+</head>
+<body class="nav-md">
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;">
+                        <a href="index.html" class="site_title"><i class="fa fa-check-square-o"></i> <span>Preparatic </span></a>
+                    </div>
+                    <div class="clearfix"></div>
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        <div class="menu_section">
+                            <h3>Menu</h3>
+                            <ul class="nav side-menu">
+                                <li>
+                                    <a><i class="fa fa-home"></i> Bienvenida <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="index.html">Sobre los Tests</a></li>
+                                        <li><a href="about_us.html">Sobre Nosotros</a></li>
+                                        <li><a href="faq.html">F.A.Q.</a></li>
+                                        <li><a href="licencia.html">Licencia de Uso</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a><i class="fa fa-edit"></i> Tests <span class="fa fa-chevron-down"></span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="tests_todos.html">Ver todos</a></li>
+                                        <li><a href="tests_globales.html">Globales</a></li>
+                                        <li><a href="tests_relevancia.html">Por Relevancia</a></li>
+                                        <li><a href="tests_bloques.html">Por Bloques</a></li>
+                                        <li><a href="tests_temas.html">Por Temas</a></li>
+                                        <li><a href="tests_annos.html">Por A&ntilde;o</a></li>
+                                        <li><a href="tests_examen.html">Por Examen</a></li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <a><i class="fa fa-bar-chart-o"></i> Mi Progreso <span class="label label-success pull-right">En Beta!</span></a>
+                                    <ul class="nav child_menu">
+                                        <li><a href="listado_tests.html">Test Realizados</a></li>
+                                        <li><a href="misestadisticas.html">Estad&iacute;sticas</a></li>
+                                    </ul>
+                                </li>
+                                <!--<li> <a href="javascript:void(0)"><i class="fa fa-windows"></i> Extras <span class="label label-success pull-right">Coming Soon</span></a></li>-->
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- /sidebar menu -->
+                </div>
+            </div>
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <nav>
+                        <div class="nav toggle">
+                            <a id="menu_toggle"><i class="fa fa-bars"></i></a>
+                        </div>
+                        <ul class="nav navbar-nav navbar-right">
+
+                            <li class="">
+                                <!--<div class="container-fluid">-->
+                                <a class="navbar-brand" href="#">
+                                    <img alt="Preparatic " src="images/logo-alpha.png">
+                                </a>
+
+                                <h2>
+                                    Cuerpo Superior de Sistemas y Tecnolog&iacute;as de la Información de la Administraci&oacute;n del Estado
+                                </h2>
+                                <!--</div>-->
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            <div class="right_col" role="main">
+                <div class="">
+                    <div class="page-title">
+                        <div class="title_left">
+                            <h3>Mis estad&iacute;sticas <small>Para tener una visi&oacute;n global.</small></h3>
+                        </div>
+                        <!--<div class="title_right">
+                            <div class="col-md-5 col-sm-5 col-xs-12 form-group pull-right top_search">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" placeholder="Search for...">
+                                    <span class="input-group-btn">
+                                        <button class="btn btn-default" type="button">Go!</button>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>-->
+                    </div>
+
+                    <div class="clearfix"></div>
+                    <div class="row">
+                        <div class="col-md-8 col-sm-8 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Resumen por Bloques</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li>
+                                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                        </li>
+                                        <li>
+                                            <a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div id="mainb" style="height:370px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Mi rendimiento</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li>
+                                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                        </li>
+                                        <li class="dropdown">
+                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><i class="fa fa-wrench"></i></a>
+                                            <ul class="dropdown-menu" role="menu">
+                                                <li>
+                                                    <a href="#" id="settings-1">Mis 10 &uacute;ltimos tests</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#" id="settings-2">Mis 25 &uacute;ltimos tests</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#"  id="settings-3">Mis 50 &uacute;ltimos tests</a>
+                                                </li>
+                                                <li>
+                                                    <a href="#" id="settings-4">Todos mis tests</a>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div id="echart_guage" style="height:370px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-8 col-sm-8 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Temas m&aacute;s Relevantes</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li>
+                                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                        </li>
+                                        <li>
+                                            <a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div id="echart_bar_masrelevantes" style="height:370px;"></div>
+                                </div>
+                            </div>
+                        </div>
+ 
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Sonar</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li>
+                                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                        </li>
+                                        <li>
+                                            <a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div id="echart_sonar" style="height:370px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Temas m&aacute;s trabajados</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li>
+                                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                        </li>
+                                        <li>
+                                            <a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div id="echart_bar_mastrabajados" style="height:370px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <div class="x_panel">
+                                <div class="x_title">
+                                    <h2>Temas menos trabajados</h2>
+                                    <ul class="nav navbar-right panel_toolbox">
+                                        <li>
+                                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                        </li>
+                                        <li>
+                                            <a class="close-link"><i class="fa fa-close"></i></a>
+                                        </li>
+                                    </ul>
+                                    <div class="clearfix"></div>
+                                </div>
+                                <div class="x_content">
+                                    <div id="echart_bar_menostrabajados" style="height:370px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade bs-nosupported-modal-sm" id="IndexedDBnotsupported" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">×</span>
+                                    </button>
+                                    <h4 class="modal-title" id="myModalLabel2">Su navegador no soporta IndexedDB</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <h4>Atenci&oacute;n!</h4>
+                                    Su navegador no soporta los requisitos requeridos. Podr&aacute; realizar ensayos de los tests, pero los resultados no podr&aacute;n ser almacenados o analizados. 
+                                    <p>Las funcionalidades relacionadas con su progreso no tendr&aacute;n efecto.</p>
+                                    <p>Le recomendamos que utilice versiones recientes de los navegadores Chrome, Microsoft Edge o Mozilla Firefox.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal">Entendido</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                <div class="pull-right">
+                    Copyright &copy; 2022 by Preparatic . All rights reserved. Plantilla de Bootstrap Gentelella - <a href="https://colorlib.com">Colorlib</a>
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="./vendors/jquery/dist/jquery.min.js"></script>
+    <!-- Bootstrap -->
+    <script src="./vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <!-- FastClick -->
+    <script src="./vendors/fastclick/lib/fastclick.js"></script>
+    <!-- NProgress -->
+    <script src="./vendors/nprogress/nprogress.js"></script>
+    <!-- ECharts -->
+    <script src="./vendors/echarts/dist/echarts.min.js"></script>
+    <!--<script src="./vendors/echarts/map/js/world.js"></script>-->
+    <!-- Custom Theme Scripts -->
+    <script src="./js/custom.min.js"></script>
+
+    <script src="./js/IndexedDB.js"></script>
+    <script src="./data/info_tests.js"></script>
+    <script src="./vendors/aaronpowell-db.js/db.js"></script>
+    <script src="./vendors/promise-polyfill/promise.js"></script>
+    <script>
+        $(document).ready(function () {
+            if (!indexedDB) {
+                $('#IndexedDBnotsupported').modal('show');
+            }
+            if (typeof window.Promise == "undefined") {
+                $('#IndexedDBnotsupported').modal('show');
+            }
+        });
+
+        var limitesultimos = 25;
+
+        $("#settings-1").click(function (e) {
+            limitesultimos = 10;
+            computeStatistics();
+            e.preventDefault();
+        });
+
+        $("#settings-2").click(function (e) {
+            limitesultimos = 25;
+            computeStatistics();
+            e.preventDefault();
+        });
+
+        $("#settings-3").click(function (e) {
+            limitesultimos = 50;
+            computeStatistics();
+            e.preventDefault();
+        });
+        $("#settings-4").click(function (e) {
+            limitesultimos = 900000000;
+            computeStatistics();
+            e.preventDefault();
+        });
+
+        var listaTestsRealizados = [];
+        var aciertosPorBloque = initBloquesMap();
+        var fallosPorBloque = initBloquesMap();
+        var ncPorBloque = initBloquesMap();
+        var aciertosPorTemas = initTemasArray();
+        var fallosPorTemas = initTemasArray();
+        var ncPorTemas = initTemasArray();
+
+        function inArray(temas, temaid) {
+            var count = temas.length;
+            for (var i = 0; i < count; i++) {
+                if (temas[i].tema === temaid) { return true; }
+            }
+            return false;
+        }
+
+        function getValues(arr)
+        {
+            return Object.keys(arr).map(function (key) {
+                return arr[key];
+            });
+        }
+
+        function computeStatistics() {
+            var server;
+            db.open({
+                server: DB_NAME,
+                version: DB_VERSION,
+                schema: {
+                    testsrealizados: {
+                        key: { keyPath: 'id', autoIncrement: true },
+                    }
+                }
+            }).then(function (s) {
+                server = s;
+                s.testsrealizados.query()
+                    .all()
+                    .execute()
+                    .then(function (allObjs) {
+                        //console.log(allObjs);
+                        listaTestsRealizados = allObjs
+
+                        aciertosPorBloque = initBloquesMap();
+                        fallosPorBloque = initBloquesMap();
+                        ncPorBloque = initBloquesMap();
+                        aciertosPorTemas = initTemasArray();
+                        fallosPorTemas = initTemasArray();
+                        var totalPorTemas = initTemasArray();
+                        var totalPorTemasMas = initTemasArray();
+                        var totalPorTemasMenos = initTemasArray();
+                        var totalPorTemasRelevantes = initTemasArray();
+                        ncPorTemas = initTemasArray();
+                        
+                        var porcentajeAciertosPorBloque = initBloquesMap();
+                        var porcentajefallosPorBloque = initBloquesMap();
+                        var porcentajencPorBloque = initBloquesMap();
+
+                        for (i = 0; i < listaTestsRealizados.length; i++) { 
+                            var test = listaTestsRealizados[i];
+                            var keys = Object.keys(test.listaAciertosPorBloque);
+                            for (j = 0; j < keys.length; j++){
+                                var k = keys[j];
+                                aciertosPorBloque[k] = aciertosPorBloque[k] + test.listaAciertosPorBloque[k];
+                                fallosPorBloque[k] = fallosPorBloque[k] + test.listaFallosPorBloque[k];
+                                ncPorBloque[k] = ncPorBloque[k] + test.listaNCPorBloque[k];
+                            }
+                            for (j = 0; j < test.listaAciertosPorTema.length; j++){
+                                aciertosPorTemas[j] = aciertosPorTemas[j] + test.listaAciertosPorTema[j];
+                            }
+                            for (j = 0; j < test.listaFallosPorTema.length; j++){
+                                fallosPorTemas[j] = fallosPorTemas[j] + test.listaFallosPorTema[j];
+                            }
+                            for (j = 0; j < test.listaNCPorTema.length; j++){
+                                ncPorTemas[j] = ncPorTemas[j] + test.listaNCPorTema[j];
+                            }
+                        }
+                        for (j = 0; j < totalPorTemas.length; j++){
+                                totalPorTemas[j] = aciertosPorTemas[j] + fallosPorTemas[j] + ncPorTemas[j];
+                        }
+
+                        totalPorTemas = totalPorTemas.map(function (num, idx) {
+                                              return {tema:idx+1,  total: num, aciertos: aciertosPorTemas[idx], fallos: fallosPorTemas[idx], nc: ncPorTemas[idx]};
+                                            });
+                        totalPorTemasMas = totalPorTemas.sort(function sortNumber(a, b) {
+                            return b.total - a.total;
+                        }).slice(0, 9);
+                        totalPorTemasMenos = totalPorTemas.sort(function sortNumber(a, b) {
+                            return a.total - b.total;
+                        }).slice(0, 9);
+                        var temas = [];
+                        var cnt = 0;
+                        for (var d in infoTemas) {
+                            temas.push({ tema: infoTemas[d].tema, peso: infoTemas[d].peso });
+                        }
+                        var temasRelevantes = temas.sort(function sortNumber(a, b) {
+                                                return b.peso - a.peso;
+                                            }).slice(0, 9);
+                        totalPorTemasRelevantes = totalPorTemas.filter(function isRelevant(t) {
+                            return inArray(temasRelevantes, t.tema);
+                        });
+                        //var tmp = totalPorTemas.map(function (obj, idx) { return obj.aciertos; });
+
+                        var score = 0;
+                        var numtests = 0
+                        for (i = Math.max(0, listaTestsRealizados.length - limitesultimos) ; i < listaTestsRealizados.length; i++) {
+                            var test = listaTestsRealizados[i];
+                            score = score + test.score;
+                            numtests = numtests + 1;
+                        }
+                        if (numtests> 0)
+                            score = Math.round(score/numtests * 100) / 100;
+                        
+                        var keys = Object.keys(aciertosPorBloque);
+                        for (j = 0; j < keys.length; j++){
+                            var k = keys[j];
+                            var total = aciertosPorBloque[k] + fallosPorBloque[k] + ncPorBloque[k];
+                            if (total  != 0) {
+                                porcentajeAciertosPorBloque[k] =  Math.round(aciertosPorBloque[k] / total * 100) / 100;
+                                porcentajefallosPorBloque[k] = Math.round(fallosPorBloque[k] / total * 100) / 100;
+                                porcentajencPorBloque[k] = Math.round(ncPorBloque[k] / total * 100) / 100;
+                            }
+                        }
+                        echartBar1.setOption({series: [{
+                                name: 'Aciertos',
+                                type: 'bar',
+                                data: getValues(aciertosPorBloque),
+                                markLine: {
+                                    data: [{
+                                        type: 'average',
+                                        name: 'Media Aciertos'
+                                    }]
+                                }
+                                }, {
+                                    name: 'Fallos',
+                                    type: 'bar',
+                                    data: getValues(fallosPorBloque),
+                                    markLine: {
+                                        data: [{
+                                            type: 'average',
+                                            name: 'Media Fallos'
+                                        }]
+                                    }
+                                }, {
+                                    name: 'N/C',
+                                    type: 'bar',
+                                    data: getValues(ncPorBloque),
+                                    markLine: {
+                                        data: [{
+                                            type: 'average',
+                                            name: 'Media sin responder'
+                                        }]
+                                    }
+                                }]
+                        });
+                         echartRadar.setOption({
+                                    series: [{
+                                            name: 'Aciertos vs Fallos',
+                                            type: 'radar',
+                                            data: [{
+                                                value: getValues(porcentajeAciertosPorBloque),
+                                                name: 'Aciertos'
+                                            }, {
+                                                value: getValues(porcentajefallosPorBloque),
+                                                name: 'Fallos'
+                                            }, {
+                                                value: getValues(porcentajencPorBloque),
+                                                name: 'N/C'
+                                            }]
+                                   }]
+                        });
+                        echartGauge.setOption({series: [{ data: [{
+                                                    value: score,
+                                                    name: 'Rendimiento'
+                                             }] }]
+                        });
+                        
+                        echartBarRelevantes.setOption({
+                            yAxis: [{
+                                type: 'category',
+                                data: totalPorTemasRelevantes.map(function (obj, idx) { return 'T. ' + obj.tema; })
+                            }],
+                            series: [{
+                                name: 'Aciertos',
+                                type: 'bar',
+                                data: totalPorTemasRelevantes.map(function (obj, idx) { return obj.aciertos; })
+                            }, {
+                                name: 'Fallos',
+                                type: 'bar',
+                                data: totalPorTemasRelevantes.map(function (obj, idx) { return obj.fallos; })
+                            }, {
+                                name: 'N/C',
+                                type: 'bar',
+                                data: totalPorTemasRelevantes.map(function (obj, idx) { return obj.nc; })
+                            }]
+                        });
+
+                       echartBarMas.setOption({
+                          yAxis: [{
+                                type: 'category',
+                                data: totalPorTemasMas.map(function (obj, idx) { return 'T. ' + obj.tema; })
+                            }],
+                            series: [{
+                                name: 'Aciertos',
+                                type: 'bar',
+                                data: totalPorTemasMas.map(function (obj, idx) { return obj.aciertos; })
+                            }, {
+                                name: 'Fallos',
+                                type: 'bar',
+                                data: totalPorTemasMas.map(function (obj, idx) { return obj.fallos; })
+                            }, {
+                                name: 'N/C',
+                                type: 'bar',
+                                data: totalPorTemasMas.map(function (obj, idx) { return obj.nc; })
+                            }]
+                       });
+
+                       echartBarMenos.setOption({
+                           yAxis: [{
+                               type: 'category',
+                               data: totalPorTemasMenos.map(function (obj, idx) { return 'T. ' + obj.tema; })
+                           }],
+                           series: [{
+                               name: 'Aciertos',
+                               type: 'bar',
+                               data: totalPorTemasMenos.map(function (obj, idx) { return obj.aciertos; })
+                           }, {
+                               name: 'Fallos',
+                               type: 'bar',
+                               data: totalPorTemasMenos.map(function (obj, idx) { return obj.fallos; })
+                           }, {
+                               name: 'N/C',
+                               type: 'bar',
+                               data: totalPorTemasMenos.map(function (obj, idx) { return obj.nc; })
+                           }]
+                       });
+                        server.close();
+                    });
+            });
+        };
+
+        window.onload = function () {
+            if (indexedDB) {
+                statistics = computeStatistics();
+            }
+        }
+
+
+
+        var theme = {
+            color: [
+                '#26B99A', '#e6224e',  '#3498DB','#BDC3C7',
+                '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+            ],
+
+            title: {
+                itemGap: 8,
+                textStyle: {
+                    fontWeight: 'normal',
+                    color: '#408829'
+                }
+            },
+
+            dataRange: {
+                color: ['#1f610a', '#97b58d']
+            },
+
+            toolbox: {
+                color: ['#408829', '#408829', '#408829', '#408829']
+            },
+
+            tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.5)',
+                axisPointer: {
+                    type: 'line',
+                    lineStyle: {
+                        color: '#408829',
+                        type: 'dashed'
+                    },
+                    crossStyle: {
+                        color: '#408829'
+                    },
+                    shadowStyle: {
+                        color: 'rgba(200,200,200,0.3)'
+                    }
+                }
+            },
+
+            dataZoom: {
+                dataBackgroundColor: '#eee',
+                fillerColor: 'rgba(64,136,41,0.2)',
+                handleColor: '#408829'
+            },
+            grid: {
+                borderWidth: 0
+            },
+
+            categoryAxis: {
+                axisLine: {
+                    lineStyle: {
+                        color: '#408829'
+                    }
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: ['#eee']
+                    }
+                }
+            },
+
+            valueAxis: {
+                axisLine: {
+                    lineStyle: {
+                        color: '#408829'
+                    }
+                },
+                splitArea: {
+                    show: true,
+                    areaStyle: {
+                        color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                    }
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: ['#eee']
+                    }
+                }
+            },
+            timeline: {
+                lineStyle: {
+                    color: '#408829'
+                },
+                controlStyle: {
+                    normal: { color: '#408829' },
+                    emphasis: { color: '#408829' }
+                }
+            },
+
+            k: {
+                itemStyle: {
+                    normal: {
+                        color: '#68a54a',
+                        color0: '#a9cba2',
+                        lineStyle: {
+                            width: 1,
+                            color: '#408829',
+                            color0: '#86b379'
+                        }
+                    }
+                }
+            },
+            map: {
+                itemStyle: {
+                    normal: {
+                        areaStyle: {
+                            color: '#ddd'
+                        },
+                        label: {
+                            textStyle: {
+                                color: '#c12e34'
+                            }
+                        }
+                    },
+                    emphasis: {
+                        areaStyle: {
+                            color: '#99d2dd'
+                        },
+                        label: {
+                            textStyle: {
+                                color: '#c12e34'
+                            }
+                        }
+                    }
+                }
+            },
+            force: {
+                itemStyle: {
+                    normal: {
+                        linkStyle: {
+                            strokeColor: '#408829'
+                        }
+                    }
+                }
+            },
+            chord: {
+                padding: 4,
+                itemStyle: {
+                    normal: {
+                        lineStyle: {
+                            width: 1,
+                            color: 'rgba(128, 128, 128, 0.5)'
+                        },
+                        chordStyle: {
+                            lineStyle: {
+                                width: 1,
+                                color: 'rgba(128, 128, 128, 0.5)'
+                            }
+                        }
+                    },
+                    emphasis: {
+                        lineStyle: {
+                            width: 1,
+                            color: 'rgba(128, 128, 128, 0.5)'
+                        },
+                        chordStyle: {
+                            lineStyle: {
+                                width: 1,
+                                color: 'rgba(128, 128, 128, 0.5)'
+                            }
+                        }
+                    }
+                }
+            },
+            gauge: {
+                startAngle: 225,
+                endAngle: -45,
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: [[0.2, '#86b379'], [0.8, '#68a54a'], [1, '#408829']],
+                        width: 8
+                    }
+                },
+                axisTick: {
+                    splitNumber: 10,
+                    length: 12,
+                    lineStyle: {
+                        color: 'auto'
+                    }
+                },
+                axisLabel: {
+                    textStyle: {
+                        color: 'auto'
+                    }
+                },
+                splitLine: {
+                    length: 18,
+                    lineStyle: {
+                        color: 'auto'
+                    }
+                },
+                pointer: {
+                    length: '90%',
+                    color: 'auto'
+                },
+                title: {
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                detail: {
+                    textStyle: {
+                        color: 'auto'
+                    }
+                }
+            },
+            textStyle: {
+                fontFamily: 'Arial, Verdana, sans-serif'
+            }
+        };
+
+        var echartBar1 = echarts.init(document.getElementById('mainb'), theme);
+
+        echartBar1.setOption({
+            title: {
+                text: 'Resultados por Bloques',
+                subtext: 'Resultados'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                data: ['Aciertos', 'Fallos', 'N/C']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    magicType: {
+                        show: true,
+                        title: {
+                            line: 'Line',
+                            bar: 'Bar',
+                            stack: 'Stack',
+                            tiled: 'Tiled'
+                        },
+                        type: ['line', 'bar', 'stack', 'tiled']
+                    },
+                    restore: {
+                        show: true,
+                        title: "Restore"
+                    },
+                    saveAsImage: {
+                        show: false,
+                        title: "Save Image"
+                    }
+                }
+            },
+            calculable: false,
+            xAxis: [{
+                type: 'category',
+                data: ['A1', 'A2', 'A3', 'A4', 'B1', 'B2', 'B3', 'B4']
+            }],
+            yAxis: [{
+                type: 'value'
+            }],
+            series: [{
+                name: 'Aciertos',
+                type: 'bar',
+                data: [0, 0, 0, 0, 0, 0, 0, 0],
+                markLine: {
+                    data: [{
+                        type: 'average',
+                        name: '???'
+                    }]
+                }
+            }, {
+                name: 'Fallos',
+                type: 'bar',
+                data: [0, 0, 0, 0, 0, 0, 0, 0],
+                markLine: {
+                    data: [{
+                        type: 'average',
+                        name: '???'
+                    }]
+                }
+            }, {
+                name: 'N/C',
+                type: 'bar',
+                data: [0, 0, 0, 0, 0, 0, 0, 0],
+                markLine: {
+                    data: [{
+                        type: 'average',
+                        name: '???'
+                    }]
+                }
+            }]
+        });
+
+        var echartRadar = echarts.init(document.getElementById('echart_sonar'), theme);
+
+        echartRadar.setOption({
+            title: {
+                text: 'Aciertos vs Fallos',
+                subtext: 'Desglose por Bloques'
+            },
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                orient: 'vertical',
+                x: 'right',
+                y: 'bottom',
+                data: ['Aciertos', 'Fallos', 'N/C']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    restore: {
+                        show: true,
+                        title: "Restore"
+                    },
+                    saveAsImage: {
+                        show: false,
+                        title: "Save Image"
+                    }
+                }
+            },
+            polar: [{
+                indicator: [{
+                    text: 'B1',
+                    max: 1
+                }, {
+                    text: 'B2',
+                    max: 1
+                }, {
+                    text: 'B3',
+                    max: 1
+                }, {
+                    text: 'B4',
+                    max: 1
+                }, {
+                    text: 'A1',
+                    max: 1
+                }, {
+                    text: 'A2',
+                    max: 1
+                }, {
+                    text: 'A3',
+                    max: 1
+                }, {
+                    text: 'A4',
+                    max: 1
+                }]
+            }],
+            calculable: true,
+            series: [{
+                name: 'Aciertos vs Fallos',
+                type: 'radar',
+                data: [{
+                    value: [0, 0, 0, 0, 0, 0, 0, 0],
+                    name: 'Aciertos'
+                }, {
+                    value: [0, 0, 0, 0, 0, 0, 0, 0],
+                    name: 'Fallos'
+                }, {
+                    value: [0, 0, 0, 0, 0, 0, 0, 0],
+                    name: 'N/C'
+                }]
+            }]
+        });
+
+        var echartGauge = echarts.init(document.getElementById('echart_guage'), theme);
+
+        echartGauge.setOption({
+            tooltip: {
+                formatter: "{a} <br/>{b} : {c}"
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    restore: {
+                        show: true,
+                        title: "Restore"
+                    },
+                    saveAsImage: {
+                        show: false,
+                        title: "Save Image"
+                    }
+                }
+            },
+            series: [{
+                name: 'Rendimiento',
+                type: 'gauge',
+                center: ['50%', '50%'],
+                startAngle: 140,
+                endAngle: -140,
+                min: 0,
+                max: 100,
+                precision: 0,
+                splitNumber: 10,
+                axisLine: {
+                    show: true,
+                    lineStyle: {
+                        color: [
+                          [0.2, '#ff4500'],
+                          [0.35, 'orange'],
+                          [0.5, 'skyblue'],
+                          [1, 'lightgreen'],
+                        ],
+                        width: 30
+                    }
+                },
+                axisTick: {
+                    show: true,
+                    splitNumber: 5,
+                    length: 8,
+                    lineStyle: {
+                        color: '#eee',
+                        width: 1,
+                        type: 'solid'
+                    }
+                },
+                axisLabel: {
+                    show: true,
+                    formatter: function (v) {
+                        switch (v + '') {
+                            case '90':
+                                return 'a';
+                            case '60':
+                                return 'b';
+                            case '30':
+                                return 'c';
+                            case '10':
+                                return 'd';
+                            default:
+                                return '';
+                        }
+                    },
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                splitLine: {
+                    show: true,
+                    length: 30,
+                    lineStyle: {
+                        color: '#eee',
+                        width: 2,
+                        type: 'solid'
+                    }
+                },
+                pointer: {
+                    length: '80%',
+                    width: 8,
+                    color: 'auto'
+                },
+                title: {
+                    show: true,
+                    offsetCenter: ['-65%', -10],
+                    textStyle: {
+                        color: '#333',
+                        fontSize: 15
+                    }
+                },
+                detail: {
+                    show: true,
+                    backgroundColor: 'rgba(0,0,0,0)',
+                    borderWidth: 0,
+                    borderColor: '#ccc',
+                    width: 100,
+                    height: 40,
+                    offsetCenter: ['-60%', 10],
+                    formatter: '{value}',
+                    textStyle: {
+                        color: 'auto',
+                        fontSize: 30
+                    }
+                },
+                data: [{
+                    value: 0,
+                    name: 'Rendimiento'
+                }]
+            }]
+        });
+
+        var echartBarRelevantes = echarts.init(document.getElementById('echart_bar_masrelevantes'), theme);
+
+        echartBarRelevantes.setOption({
+            title: {
+                text: 'Temas más relevantes',
+                subtext: 'Los 10 Temas más relevantes'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                x: 300,
+                data: ['Aciertos', 'Fallos', 'N/C']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: false,
+                        title: "Save Image"
+                    }
+                }
+            },
+            calculable: true,
+            xAxis: [{
+                type: 'value',
+                boundaryGap: [0, 0.01]
+            }],
+            yAxis: [{
+                type: 'category',
+                data: []
+            }],
+            series: [{
+                name: 'Aciertos',
+                type: 'bar',
+                data: []
+            }, {
+                name: 'Fallos',
+                type: 'bar',
+                data: []
+            }, {
+                name: 'N/C',
+                type: 'bar',
+                data: []
+            }]
+        });
+        var echartBarMas = echarts.init(document.getElementById('echart_bar_mastrabajados'), theme);
+
+        echartBarMas.setOption({
+            title: {
+                text: 'Temas más trabajados',
+                subtext: 'Los 10 Temas más trabajados'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                x: 300,
+                data: ['Aciertos', 'Fallos', 'N/C']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: false,
+                        title: "Save Image"
+                    }
+                }
+            },
+            calculable: true,
+            xAxis: [{
+                type: 'value',
+                boundaryGap: [0, 0.01]
+            }],
+            yAxis: [{
+                type: 'category',
+                data: []
+            }],
+            series: [{
+                name: 'Aciertos',
+                type: 'bar',
+                data: []
+            }, {
+                name: 'Fallos',
+                type: 'bar',
+                data: []
+            }, {
+                name: 'N/C',
+                type: 'bar',
+                data: []
+            }]
+        });
+
+        var echartBarMenos = echarts.init(document.getElementById('echart_bar_menostrabajados'), theme);
+
+        echartBarMenos.setOption({
+            title: {
+                text: 'Temas menos trabajados',
+                subtext: 'Los 10 Temas menos trabajados'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            legend: {
+                x: 300,
+                data: ['Aciertos', 'Fallos', 'N/C']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: false,
+                        title: "Save Image"
+                    }
+                }
+            },
+            calculable: true,
+            xAxis: [{
+                type: 'value',
+                boundaryGap: [0, 0.01]
+            }],
+            yAxis: [{
+                type: 'category',
+                data: []
+            }],
+            series: [{
+                name: 'Aciertos',
+                type: 'bar',
+                data: []
+            }, {
+                name: 'Fallos',
+                type: 'bar',
+                data: []
+            }, {
+                name: 'N/C',
+                type: 'bar',
+                data: []
+            }]
+        });
+
+    </script>
+</body>
+</html>
