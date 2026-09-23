@@ -1,0 +1,207 @@
+---
+title: Procedimiento Administrativo
+---
+
+# ¿Cuando?
+
+* Hay plazos
+* Hay que responder y notificar
+* Genera algún derecho
+
+# Mencionar
+
+| <abbr title="Ambito">Amb</abbr> | <abbr title="Normativa, estándar, guiá...">Ley...</abbr> | <abbr title="Artículo">Art</abr> | Titulo |
+|-|-------------:|----:|-----|
+|  WEB |  EU 2016/2102 |      | Accesibilidad de los sitios web y aplicaciones para dispositivos móviles de los organismos del sector público |
+|  WEB |  RD 1112/2018 |      | Accesibilidad de los sitios web y aplicaciones para dispositivos móviles del sector público (EN 301 549 V3.2.1) |
+|  WEB |      ISO 9241 |      | Recomendaciones sobre Usabilidad |
+|  ENS |   RD 311/2022 |      | Esquema Nacional de Seguridad |
+|  ENI |     RD 4/2010 |   10 | Activos semánticos |
+|  ENI |     RD 4/2010 |   17 | Directorios de aplicaciones reutilizables |
+|  PAC |   Ley 39/2015 |    9 | Sistemas de identificación de los interesados en el procedimiento |
+|  PAC |   Ley 39/2015 |   12 | Asistencia en el uso de medios electrónicos a los interesados |
+|  PAC |   Ley 39/2015 |   15 | Lengua de los procedimientos |
+|  PAC |   Ley 39/2015 |   53 | Derechos del interesado en el procedimiento administrativo |
+| RJSP |   Ley 40/2015 |  157 | Reutilización de sistemas y aplicaciones de propiedad de la Administración |
+| RGPD |   EU 2016/679 |   35 | Evaluación de impacto relativa a la protección de datos |
+| LOPD-GDD | LO 3/2018 |      | Protección de Datos Personales y garantía de los derechos digitales |
+
+# Servicios comunes
+
+| <abbr title="Servicio común">SC</abbr> | Propósito |
+|-|-|
+| Cl@ve      | autenticar ciudadanos |
+| Autentica  | autenticar funcionarios |
+| Representa / REA / RFH | funcionarios habilitados (RFH) y apoderamientos (REA / Representa) |
+| Notifica / DEHú | enviar notificaciones y comunicaciones, y comparecencia en sede única (DEHú) |
+| SIM        | enviar avisos (SMS, push, etc) |
+| Geiser     | registro electrónico |
+| Geiser+SIR | derivar a otro organismo |
+| PLATA      | multilingüismo |
+| PID        | consultar datos en otros organismos (cumple art. 28 Ley 39/2015) |
+| FIRE       | firmar |
+| Acceda     | implementar e-sede / tramitación de expedientes / workflows pequeños / generación de formularios |
+
+Usar Acceda en vez de implementar tu propia e-sede es un ejemplo de cumplir
+el Art 17 del ENI y el Art 157 Ley 40/2015, que implica haber consultado el CTT en busca de
+soluciones que podamos reutilizar.
+
+# Actores
+
+* Ciudadano:
+    * Se identifica con Cl@ve (Art 9 Ley 39/2015)
+* Funcionario habilitado:
+    * Se identifica con Autentica
+    * Se comprueba su habilitación en RFH (Registro de Funcionarios Habilitados) / Representa
+    * Recoge el consentimiento del ciudadano (Art 12 Ley 39/2015)
+* Representante del ciudadano:
+    * Se identifica con Cl@ve (Art 9 Ley 39/2015)
+    * Se comprueba el apoderamiento con REA (Registro Electrónico de Apoderamientos) / Representa
+* Funcionario:
+    * Se identifica con Autentica (desde Sara)
+    * Se identifica con LDAP (desde el propio organismo)
+
+Si el ciudadano esta obligado a relacionarse electrónicamente con la AP
+no tiene derecho a funcionario habilitado.
+
+
+![](img/actor-ciudadano.png)
+
+Figura: Ciudadano
+
+![](img/actor-funcionario.png)
+
+Figura: Funcionario
+
+![](img/actor-representante.png)
+
+Figura: Representante
+
+![](img/actor-funcionario-habilitado.png)
+
+Figura: Funcionario Habilitado
+
+![](img/actor-ciudadano-tramite.png)
+
+Figura: Ciudadano (tramite)
+
+![](img/actor-funcionario-tramite.png)
+
+Figura: Funcionario (tramite)
+
+# Secuencia
+
+![](img/secuencia-ciudadano.png)
+
+Figura: Presentar solicitud
+
+
+![](img/secuencia-funcionario.png)
+
+Figura: Resolver expediente
+
+# Expediente administrativo
+
+La idea básica es que un ciudadano realiza una solicitud, y esta inicia
+un expediente.
+
+![](img/clases-expediente.png)
+
+Figura: Diagrama de clases del Expediente electrónico
+
+![](img/entidades-expediente.png)
+
+Figura: Diagrama Entidad/Relación del Expediente electrónico
+
+# Arquitectura de red
+
+Se puede preguntar bajo el nombre de:
+
+* Arquitectura de red
+* Arquitectura física
+* Diagrama de despliegue
+* Infraestructura
+* Propuesta tecnología (incluye también arquitectura lógica)
+
+![](img/red.png)
+
+El uso de lineas de defensa (FW) da cumplimiento al Principio Básico de Defensa en Profundidad estipulado en el [Art 9 del ENS (RD 311/2022)](https://www.boe.es/buscar/act.php?id=BOE-A-2022-7191#a9).
+
+# Arquitectura lógica
+
+Se puede preguntar bajo el nombre de:
+
+* Arquitectura lógica
+* Diagrama de paquetes
+* Diagrama de componentes
+* Propuesta tecnología (incluye también arquitectura de red)
+
+![](img/logica.png)
+
+<div data-open class="col2"></div>
+<div data-open></div>
+
+## Capa de presentación
+
+* HTML + CSS3 + Javascripts:
+    * Aplicación web progresiva
+    * Diseño web responsive
+    * media-queries
+* Cumplir accesibilidad:
+    * Directiva EU 2016/2102
+    * RD 1112/2018
+    * AA WCAG 2.1 = EN 301 549 V3.2.1
+* Seguir recomendaciones de usabilidad:
+    * ISO 9241
+* Multilingüismo (Art 15 Ley 39/2015):
+    * PLATA
+
+<div data-close></div>
+<div data-open></div>
+
+## Capa lógica
+
+* Opciones de Workflow:
+    * El del organismo
+    * El que tenga el gestor documental (ej: Alfresco)
+    * Usar Acceda
+* API FIRe (si se usa FIRe)
+* Nodo SCSP (si se usa PID)
+* Gestor documental, presuponer que cumple ENI:
+    * [NTI Documento electrónico](../B1/04-ENI.md#documento-electronico)
+    * [NTI Expediente electrónico](../B1/04-ENI.md#expediente-electronico)
+
+<div data-close></div>
+<div data-open></div>
+
+## Capa de datos
+
+* Filesystem
+* LDAP
+* Base de datos
+* Cumplir Art 10 RD 4/2010:
+    * Buscar en CISE modelos de datos que podamos reutilizar
+    * [NTI de Relación de modelo de datos](../B1/04-ENI.md#relacion-de-modelos-de-datos)
+
+<div data-close></div>
+<div data-open></div>
+
+## Capas transversales
+
+* Seguridad:
+    * RGPD (Reglamento (EU) 2016/679)
+    * ENS (RD 311/2022)
+    * Guía CCN-STIC-812 (Seguridad en servicios web)
+    * Guía CCN-STIC-803 (Valoración de Sistemas en el ENS)
+    * Guía CCN-STIC-804 (Guía de implantación) + [ENS Anexo II Medidas de seguridad](https://www.boe.es/buscar/act.php?id=BOE-A-2022-7191#anii)
+    * Evaluación de impacto (Art 35 RGPD)
+* Interoperabilidad:
+    * ENI (NTIs) (RD 4/2010)
+    * Acceso a servicios comunes a través de red Sara, vía Área de conexión ([NTI Requisitos de conexión a la Red de comunicaciones de las AP](../B1/04-ENI.md#requisitos-de-conexion-a-la-red-de-comunicaciones-de-las-administraciones-publicas))
+* Mantenimiento:
+    * LOGs
+    * Ficheros para que explote un cuadro de mando externo
+
+<div data-close></div>
+
+<div data-close></div>
