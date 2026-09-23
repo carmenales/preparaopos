@@ -49,6 +49,7 @@ apps/studyassistant/data/semantic_chunks.json
 apps/studyassistant/data/semantic_embeddings.npy
 imports/**/generated/
 imports/staging/
+imports/**/data/
 
 # Cache / build artifacts
 cache/
