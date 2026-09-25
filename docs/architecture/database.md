@@ -9,18 +9,21 @@ Este documento cataloga todos los almacenes de datos del ecosistema PreparaOpos,
 
 ## Índice
 
-- [1. Resumen de Motores de Almacenamiento](#1-resumen-de-motores-de-almacenamiento)
-- [2. MariaDB Relacional (Preparador TAI)](#2-mariadb-relacional-preparador-tai)
-  - [2.1. Diagrama ER Completo](#21-diagrama-er-completo)
-  - [2.2. Descripción de Tablas](#22-descripción-de-tablas)
-  - [2.3. Exportación y Gestión del Dump Local](#23-exportación-y-gestión-del-dump-local)
-- [3. IndexedDB (PreparaTIC V3)](#3-indexeddb-preparatic-v3)
-- [4. Ficheros Markdown (Knowledge Base)](#4-ficheros-markdown-knowledge-base)
-- [5. Estructuras Vectoriales e Índices (Study Assistant)](#5-estructuras-vectoriales-e-índices-study-assistant)
-- [6. CSVs de PreparaTIC (Banco de Preguntas)](#6-csvs-de-preparatic-banco-de-preguntas)
-- [7. SQL de Exámenes Oficiales Importados](#7-sql-de-exámenes-oficiales-importados)
-- [8. Reglas de Git para Datos](#8-reglas-de-git-para-datos)
-- [9. Estado Objetivo (To-Be)](#9-estado-objetivo-to-be)
+- [Topología de Datos y Persistencia](#topología-de-datos-y-persistencia)
+  - [Índice](#índice)
+  - [1. Resumen de Motores de Almacenamiento](#1-resumen-de-motores-de-almacenamiento)
+  - [2. MariaDB Relacional (Preparador TAI)](#2-mariadb-relacional-preparador-tai)
+    - [Conexión](#conexión)
+    - [2.1. Diagrama ER Completo](#21-diagrama-er-completo)
+    - [2.2. Descripción de Tablas](#22-descripción-de-tablas)
+    - [2.3. Exportación y Gestión del Dump Local](#23-exportación-y-gestión-del-dump-local)
+  - [3. IndexedDB (PreparaTIC V3)](#3-indexeddb-preparatic-v3)
+  - [4. Ficheros Markdown (Knowledge Base)](#4-ficheros-markdown-knowledge-base)
+  - [5. Estructuras Vectoriales e Índices (Study Assistant)](#5-estructuras-vectoriales-e-índices-study-assistant)
+  - [6. CSVs de PreparaTIC (Banco de Preguntas)](#6-csvs-de-preparatic-banco-de-preguntas)
+  - [7. SQL de Exámenes Oficiales Importados](#7-sql-de-exámenes-oficiales-importados)
+  - [8. Reglas de Git para Datos](#8-reglas-de-git-para-datos)
+  - [9. Estado Objetivo (To-Be)](#9-estado-objetivo-to-be)
 
 ---
 
