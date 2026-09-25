@@ -2,9 +2,9 @@
 
 **Proyecto:** PreparaOpos — Plataforma Integral de Preparación Tecnológica de Oposiciones  
 **Estándar de Referencia:** Basado en ISO/IEC/IEEE 29148:2018 (Ingeniería de Requisitos) e ISO/IEC/IEEE 42010:2011 (Descripción de Arquitectura de Sistemas y Software)  
-**Versión del Documento:** 1.0.0  
-**Fecha:** 24 de septiembre de 2026  
-**Estado:** Baseline Arquitectónico y Análisis de Brechas (*Gap Analysis*)
+**Versión del Documento:** 2.0.0  
+**Fecha:** 25 de septiembre de 2026  
+**Estado:** Arquitectura Decidida — Referencia ADR-0001
 
 ---
 
@@ -37,7 +37,13 @@
       - [RFF-09: Portabilidad y Exportación de Datos Zero-Cloud](#rff-09-portabilidad-y-exportación-de-datos-zero-cloud)
     - [5.2. Requisitos No Funcionales Objetivo (RNFF)](#52-requisitos-no-funcionales-objetivo-rnff)
   - [6. Matriz de Trazabilidad y Análisis de Brechas (Gap Analysis)](#6-matriz-de-trazabilidad-y-análisis-de-brechas-gap-analysis)
-  - [7. Implicaciones para la Selección de la Pila Tecnológica](#7-implicaciones-para-la-selección-de-la-pila-tecnológica)
+  - [7. Arquitectura Decidida y Pila Tecnológica](#7-arquitectura-decidida-y-pila-tecnológica)
+    - [7.1. Patrón Arquitectónico: Tres Servicios por Límite de Distribución](#71-patrón-arquitectónico-tres-servicios-por-límite-de-distribución)
+    - [7.2. Pila Tecnológica Decidida](#72-pila-tecnológica-decidida)
+    - [7.3. Paquete Compartido: `libs/ai_providers`](#73-paquete-compartido-libsai_providers)
+    - [7.4. Modelo de Datos Normalizado para el Banco de Preguntas (RFF-01)](#74-modelo-de-datos-normalizado-para-el-banco-de-preguntas-rff-01)
+    - [7.5. Plan de Migración por Fases (*Strangler Fig*)](#75-plan-de-migración-por-fases-strangler-fig)
+    - [7.6. Respuesta a Brechas Identificadas (Sección 6)](#76-respuesta-a-brechas-identificadas-sección-6)
 
 ---
 
@@ -323,21 +329,132 @@ Esta matriz compara el estado actual frente a los requisitos funcionales objetiv
 
 ---
 
-## 7. Implicaciones para la Selección de la Pila Tecnológica
+## 7. Arquitectura Decidida y Pila Tecnológica
 
-A partir de este análisis formal de requisitos y brechas, se extraen las siguientes conclusiones directas sobre la arquitectura tecnológica a adoptar:
+> [!IMPORTANT]
+> La decisión arquitectónica definitiva está formalizada en el **ADR-0001** (`0001-arquitectura-nueva-generacion.md`). Esta sección resume las decisiones clave y cómo responden a los requisitos y brechas identificados en las secciones anteriores.
 
-1. **La fragmentación PHP + MariaDB + Docker es el principal cuello de botella para la movilidad:**
-   - La arquitectura actual de Preparador TAI obliga a tener un contenedor Apache y un contenedor MariaDB en ejecución en el PC, impidiendo que el opositor pueda hacer tests cómodamente en el móvil sin depender del servidor encendido.
-2. **Python es el lenguaje transversal del valor añadido:**
-   - Toda la inteligencia del sistema (búsqueda vectorial con SentenceTransformers, ingesta con PyMuPDF, refinado con Ollama, extracción OCR con pdfplumber y NLP con spaCy) está programada en Python.
-   - Unificar el backend en **FastAPI (Python)** consolida los microservicios y la API de negocio en un único entorno, eliminando la duplicidad con PHP.
-3. **El Frontend DEBE ser una PWA instalable con Local-First:**
-   - Para cumplir los requisitos **RFF-03** (Sincronización), **RFF-06** (Offline en móvil) y **RNFF-05** (Ergonomía táctil), la interfaz debe ser una SPA/PWA moderna (React o Vue 3 con Vite y Tailwind).
-   - El almacenamiento en el cliente con **IndexedDB** permite descargar el banco de preguntas al dispositivo móvil para estudiar sin conexión, y sincronizar los deltas de intentos con el backend de FastAPI en el portátil cuando haya conexión local Wi-Fi.
-4. **La base de datos relacional debe ser única y portable (SQLite en local o PostgreSQL):**
-   - Sustituir la base MariaDB por **SQLite gestionado con SQLAlchemy/SQLModel** simplifica el despliegue al máximo: una base de datos en un solo archivo físico en disco, fácilmente respaldable, sincronizable y sin necesidad de levantar contenedores pesados.
+### 7.1. Patrón Arquitectónico: Tres Servicios por Límite de Distribución
+
+Se descartaron tanto el monolito modular (no permite distribuir piezas por separado) como los microservicios de grano fino (coste de operación sin beneficio proporcional). Se adoptan **3 servicios Docker** agrupados por frontera de distribución real:
+
+| Servicio | Responsabilidad | Distribuible de forma independiente |
+| :--- | :--- | :--- |
+| `apuntes-service` | Visor de temario, búsqueda semántica, ingesta con IA, glosarios y normativa | ✅ Sí (ej. ceder al grupo PreparaTIC sin banco de preguntas) |
+| `tests-service` | Banco de preguntas unificado, simulacros, práctica temática, estadísticas, histórico de intentos | ✅ Sí (ej. compartir solo el motor de tests) |
+| `linking-service` | Trazabilidad bidireccional pregunta ↔ tema teórico (tabla `question_topic_links`) | ❌ Depende de los otros dos vía HTTP |
+
+Cada servicio se organiza internamente en **capas DDD** (`presentation/` → `domain/` → `infrastructure/`), donde `domain/` no importa nada de FastAPI ni HTTP y es testeable de forma aislada con `unittest`.
+
+### 7.2. Pila Tecnológica Decidida
+
+| Capa | Tecnología | Justificación respecto a Requisitos |
+| :--- | :--- | :--- |
+| **Backend** | Python 3.11 + FastAPI + Uvicorn | Unifica PHP y Python en un solo lenguaje; toda la IA ya está en Python (cumple RNFF-02: Stack Consolidation) |
+| **Validación / ORM** | Pydantic v2 + SQLAlchemy 2.0 (o SQLModel) | Tipado fuerte con menos boilerplate que `mysqli` |
+| **Base de datos** | SQLite (WAL) + extensión `sqlite-vec`, una BD por servicio | Un fichero por servicio, portable, sin contenedor de BD (cumple RFF-09: Exportación Zero-Cloud y RNFF-02) |
+| **Vistas** | Jinja2 + htmx + Alpine.js | Renderizado en servidor, sin pipeline de compilación JS, interactividad ligera (cumple RNFF-03: latencia de UI) |
+| **CSS** | Tailwind CLI standalone (binario, sin Node.js) | Cero dependencia de Node.js/npm |
+| **Embeddings** | `sentence-transformers` (MiniLM, dim. 384) dentro de `sqlite-vec` | Sustituye los ficheros `.npy`/`.json` sueltos; todo en la misma BD SQLite |
+| **LLM local** | Ollama vía `httpx` | Ya funcional y gratuito (cumple RNF-02: Privacidad) |
+| **Orquestación** | Docker Compose (3 servicios) + Nginx como reverse proxy | Cada servicio también ejecutable nativamente con `python main.py` (trivial con SQLite) |
+| **Tests** | `unittest` + `TestClient` de FastAPI | Continúa la convención ya establecida |
+| **Logs** | `logging` de Python a fichero rotado por servicio | Suficiente para trazabilidad monousuario |
+
+### 7.3. Paquete Compartido: `libs/ai_providers`
+
+Para evitar duplicación de código entre servicios (problema ya identificado en `ARCHITECTURE.md` §5.4 con el normalizador Markdown), los **adaptadores de IA** se empaquetan como librería Python editable:
+
+```
+libs/
+└── ai_providers/
+    ├── pyproject.toml
+    └── ai_providers/
+        ├── __init__.py
+        ├── protocol.py       # class LLMProvider(Protocol)
+        ├── ollama.py          # OllamaProvider (por defecto, gratuito)
+        ├── gemini.py          # GeminiProvider (API gratuita, próxima)
+        └── openai.py          # OpenAIProvider (bring your own key, futuro)
+```
+
+Cada servicio lo instala con `pip install -e ../../libs/ai_providers`, garantizando que un fix en `OllamaProvider` se aplica en un solo lugar. El mismo patrón se extiende a futuros adaptadores (Notion, Obsidian).
+
+### 7.4. Modelo de Datos Normalizado para el Banco de Preguntas (RFF-01)
+
+Para resolver la incompatibilidad de taxonomías entre los 3 bancos de preguntas (MariaDB TAI con bloques/temas numéricos propios, CSV PreparaTIC con bloques A1-B4 del temario A1 TIC, y AGE GSI 2024 sin categorización), se diseña un **esquema multi-taxonómico**:
+
+```mermaid
+erDiagram
+    questions {
+        int id PK
+        text statement
+        text correct_answer
+        text justification
+        text img_path
+        text source "'tai' | 'preparatic' | 'age_gsi_2024'"
+        text source_id "ID original en el sistema de origen"
+        bool is_annulled
+        text annulment_reason
+    }
+    question_options {
+        int id PK
+        int question_id FK
+        text option_text
+        bool is_correct
+        int display_order
+    }
+    question_syllabus_tags {
+        int id PK
+        int question_id FK
+        text syllabus "'A1_TIC' | 'A2_GSI' | 'TAI'"
+        text block
+        text topic
+    }
+    exams {
+        int id PK
+        text name
+        text body "'A1_TIC' | 'A2_GSI' | 'TAI'"
+        int year
+        text convocatoria
+    }
+    exam_questions {
+        int exam_id FK
+        int question_id FK
+        int position "Número de pregunta en el examen"
+    }
+
+    questions ||--o{ question_options : "tiene"
+    questions ||--o{ question_syllabus_tags : "etiquetada en"
+    exams ||--o{ exam_questions : "contiene"
+    questions ||--o{ exam_questions : "aparece en"
+```
+
+La tabla `question_syllabus_tags` permite que una misma pregunta tenga etiquetas en **múltiples temarios** simultáneamente, resolviendo el conflicto de que el tema 12 de TAI no es el tema 12 de A1 TIC ni el tema 12 de A2 GSI.
+
+### 7.5. Plan de Migración por Fases (*Strangler Fig*)
+
+Cada fase mantiene el sistema PHP existente operativo hasta que su equivalente en el nuevo sistema esté verificado. Nunca un corte total.
+
+| Fase | Alcance | Qué se retira al completar |
+| :--- | :--- | :--- |
+| **0** | Esqueleto de `apuntes-service` (capas DDD + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP y `services/embeddings`. | Nada — PHP sigue como vía principal |
+| **1** | Migración completa de datos MariaDB + CSV PreparaTIC + AGE GSI 2024 → SQLite de `tests-service`. Lectura y realización de tests contra la base nueva. Carga de todas las preguntas desde el día 1. | — |
+| **2** | Escritura en `apuntes-service`: importar, editar, borrar apuntes (sustituye el stepper de ingesta PHP y `services/knowledge`). | `services/knowledge` |
+| **3** | Escritura en `tests-service`: CRUD completo de preguntas, taxonomías y baremos. | `apps/preparadortai` + `apps/studyassistant` |
+| **4** | `linking-service` como servicio de primera clase, sustituyendo `suggest_topic_links.py` y `topic_links.php`. | Script y helper PHP |
+| **5** | Backlog aparcado (sin fecha comprometida): SM-2, simulacros adaptativos, PWA offline móvil, flashcards, detección de normativa derogada, integraciones con APIs de terceros (Notion, Obsidian, Gemini). | — |
+
+### 7.6. Respuesta a Brechas Identificadas (Sección 6)
+
+| Brecha (RFF) | Cómo la resuelve la arquitectura decidida |
+| :--- | :--- |
+| **RFF-01** Banco Unificado | Esquema normalizado multi-taxonómico en SQLite de `tests-service` (§7.4). Migración completa en Fase 1. |
+| **RFF-04** Trazabilidad Bidireccional | `linking-service` (Fase 4) conecta preguntas con secciones Markdown concretas vía `question_topic_links`. |
+| **RFF-09** Exportación Zero-Cloud | SQLite como fichero único por servicio: exportable con un simple `cp`. |
+| **RNFF-02** Stack Consolidation | De 2 lenguajes (PHP+Python) y 4 motores de persistencia a Python homogéneo + 1 SQLite por servicio. |
+| **RFF-02, 05, 06, 08** (SM-2, Adaptativos, PWA, Flashcards) | Aplazados a Fase 5 sin comprometer la arquitectura; el diseño DDD permite añadirlos como módulos de `domain/` sin reestructurar. |
 
 ---
 
-*Documento aprobado para servir de guía en la definición de la fase de migración de la plataforma.*
+*Documento actualizado para alinearse con ADR-0001 (`0001-arquitectura-nueva-generacion.md`). Sirve como línea base formal de requisitos y análisis de brechas del proyecto.*
+
