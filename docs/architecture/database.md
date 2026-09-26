@@ -1,6 +1,6 @@
 # Topología de Datos y Persistencia
 
-**Última actualización:** 25 de septiembre de 2026  
+**Última actualización:** 26 de septiembre de 2026  
 **Estado:** Inventario del sistema actual (As-Is) — previo a migración
 
 Este documento cataloga todos los almacenes de datos del ecosistema PreparaOpos, sus esquemas, formatos y ubicaciones. Se actualizará conforme avance la migración a la nueva arquitectura (ver `docs/adr/0001-arquitectura-nueva-generacion.md`).
@@ -17,13 +17,17 @@ Este documento cataloga todos los almacenes de datos del ecosistema PreparaOpos,
     - [2.1. Diagrama ER Completo](#21-diagrama-er-completo)
     - [2.2. Descripción de Tablas](#22-descripción-de-tablas)
     - [2.3. Exportación y Gestión del Dump Local](#23-exportación-y-gestión-del-dump-local)
-  - [3. IndexedDB (PreparaTIC V3)](#3-indexeddb-preparatic-v3)
-  - [4. Ficheros Markdown (Knowledge Base)](#4-ficheros-markdown-knowledge-base)
-  - [5. Estructuras Vectoriales e Índices (Study Assistant)](#5-estructuras-vectoriales-e-índices-study-assistant)
-  - [6. CSVs de PreparaTIC (Banco de Preguntas)](#6-csvs-de-preparatic-banco-de-preguntas)
-  - [7. SQL de Exámenes Oficiales Importados](#7-sql-de-exámenes-oficiales-importados)
-  - [8. Reglas de Git para Datos](#8-reglas-de-git-para-datos)
-  - [9. Estado Objetivo (To-Be)](#9-estado-objetivo-to-be)
+  - [3. Datos Inline en SPA (PreparaTIC V3) — Fuente Principal de Preguntas](#3-datos-inline-en-spa-preparatic-v3--fuente-principal-de-preguntas)
+    - [Esquema de datos verificado](#esquema-de-datos-verificado)
+    - [Datos cuantitativos verificados](#datos-cuantitativos-verificados)
+  - [4. IndexedDB (PreparaTIC V3 — Solo Progreso del Usuario)](#4-indexeddb-preparatic-v3--solo-progreso-del-usuario)
+  - [5. Ficheros Markdown (Knowledge Base)](#5-ficheros-markdown-knowledge-base)
+  - [6. Estructuras Vectoriales e Índices (Study Assistant)](#6-estructuras-vectoriales-e-índices-study-assistant)
+  - [7. CSVs de PreparaTIC (Referencia Histórica)](#7-csvs-de-preparatic-referencia-histórica)
+  - [8. SQL de Exámenes Oficiales Importados](#8-sql-de-exámenes-oficiales-importados)
+  - [9. Reglas de Git para Datos](#9-reglas-de-git-para-datos)
+  - [10. Estado Objetivo (To-Be)](#10-estado-objetivo-to-be)
+    - [Fuentes de migración para `test-engine`](#fuentes-de-migración-para-test-engine)
 
 ---
 
@@ -34,11 +38,12 @@ El estado de los datos se encuentra actualmente **fragmentado en 4 motores de al
 | # | Motor / Formato | Ubicación | Aplicación que lo consume | Volumen aproximado |
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | **MariaDB 10.4** | Contenedor Docker / XAMPP local | `apps/preparadortai` (PHP) | 7 tablas, ~1.500 preguntas |
-| 2 | **IndexedDB** (navegador) | Almacenamiento local del navegador | `apps/tests_preparatic` (V3 SPA) | +10.300 preguntas + intentos |
-| 3 | **Ficheros Markdown** | `knowledge/**/*.md` | `apps/studyassistant` (PHP) | ~200 ficheros, 4 administraciones |
-| 4 | **JSON + NumPy** | `apps/studyassistant/data/` | `services/embeddings` (Python) | 3 ficheros (índice + chunks + vectores dim. 384) |
-| 5 | **CSV** (ficheros planos) | `apps/tests_preparatic/data/` | No integrado en app; fuente de datos | 10.308 filas, 22 columnas |
-| 6 | **SQL generado** | `imports/age_a2_gsi/generated/` | No integrado; requiere import manual | 180 preguntas AGE GSI 2024 |
+| 2 | **JS inline en SPA** | `apps/tests_preparatic/v3/index.html` (86 MB) | `apps/tests_preparatic` (V3 SPA Vue 3) | **16.673 preguntas únicas** + catálogo de 133 temas |
+| 3 | **IndexedDB** (navegador) | Almacenamiento local del navegador | `apps/tests_preparatic` (V3 SPA) | Intentos, estadísticas y preferencias del usuario |
+| 4 | **Ficheros Markdown** | `knowledge/**/*.md` | `apps/studyassistant` (PHP) | ~200 ficheros, 4 administraciones |
+| 5 | **JSON + NumPy** | `apps/studyassistant/data/` | `services/embeddings` (Python) | 3 ficheros (índice + chunks + vectores dim. 384) |
+| 6 | **CSV** (ficheros planos) | `apps/tests_preparatic/data/` | ⚠️ Referencia histórica — procedencia desconocida | 10.308 filas, 22 columnas |
+| 7 | **SQL generado** | `imports/age_a2_gsi/generated/` | No integrado; requiere import manual | ~180 preguntas AGE GSI 2024 |
 
 ---
 
@@ -197,12 +202,69 @@ docker compose up --build -d
 
 ---
 
-## 3. IndexedDB (PreparaTIC V3)
+## 3. Datos Inline en SPA (PreparaTIC V3) — Fuente Principal de Preguntas
 
-La SPA Vue 3 en `apps/tests_preparatic/v3/index.html` (86.4 MB) contiene **todas las preguntas compiladas como objetos JavaScript inline**. El almacenamiento en el navegador se usa para:
+**Ubicación:** `apps/tests_preparatic/v3/index.html` (86.4 MB)
 
-- Intentos de examen realizados por el usuario.
-- Estadísticas de rendimiento (evolución temporal, gráfico de radar por bloques).
+La SPA Vue 3 compilada con Vite contiene **todas las preguntas embebidas como objetos JavaScript inline** dentro de un único `<script type="module">`. Esta es la **fuente de verdad principal** del banco de preguntas PreparaTIC.
+
+### Esquema de datos verificado
+
+Cada pregunta tiene esta estructura:
+
+```javascript
+{
+  id: "16623",                    // ID único (string numérico)
+  text: "¿Qué son las técnicas SEO?",
+  answers: [
+    {letter: "a", answer: "SEO es el acrónimo de...", right: false},
+    {letter: "b", answer: "...", right: false},
+    {letter: "c", answer: "...", right: false},
+    {letter: "d", answer: "Todas las anteriores son verdaderas.", right: true}
+  ],
+  block: "B4",                   // Bloque del temario A1 TIC
+  topic: "133",                  // Tema (string numérico, rango 1-133)
+  year: "2016",                  // Año de convocatoria
+  comments: "Guía de Comunicación Digital de la AGE"  // Opcional
+}
+```
+
+El catálogo de bloques y temas también está embebido:
+
+```javascript
+// Bloques
+{name: "B1", title: "I. Organización y Gestión de los Sistemas de Información"}
+
+// Temas
+{id: "35", name: "Dirección y gestión de proyectos TIC.", block: "B1"}
+```
+
+### Datos cuantitativos verificados
+
+| Métrica | Valor |
+| :--- | :--- |
+| Preguntas únicas (por `id`) | **16.673** |
+| Apariciones totales en el fichero | ~147.000 (duplicadas ~8-9× por artefacto del build Vite) |
+| Temas en el catálogo embebido | **133** |
+| Bloques | 8 (A1-A4, B1-B4) |
+
+> [!WARNING]
+> **Discrepancia documentada:** La documentación previa indicaba "+10.300 preguntas" y "91 temas". Los datos reales verificados del `index.html` en producción son **16.673 preguntas únicas** y **133 temas**. La cifra de 10.300 podría corresponder a los CSVs (ver §6), que son un dataset distinto con procedencia desconocida.
+
+> [!IMPORTANT]
+> **Duplicación en el fichero:** Las preguntas aparecen repetidas byte a byte múltiples veces dentro del bundle — es un artefacto del single-file build de Vite, no contenido distinto. Para migrar, se debe **deduplicar por `id`** y quedarse con una copia.
+
+> [!CAUTION]
+> **Los IDs de este JSON y los IDs de los CSVs (§6) NO son el mismo espacio de identificadores.** Se ha verificado que el `id:"22"` del JSON y el `ID:22` del CSV son preguntas completamente distintas. No se puede cruzar entre ambas fuentes por ese campo.
+
+---
+
+## 4. IndexedDB (PreparaTIC V3 — Solo Progreso del Usuario)
+
+La SPA Vue 3 usa IndexedDB en el navegador para almacenar exclusivamente **datos de progreso del usuario**:
+
+- Intentos de examen realizados.
+- Estadísticas de rendimiento (evolución temporal, gráfico de radar por bloques con ECharts).
 - Configuración local de preferencias.
 
 > [!NOTE]
@@ -210,7 +272,7 @@ La SPA Vue 3 en `apps/tests_preparatic/v3/index.html` (86.4 MB) contiene **todas
 
 ---
 
-## 4. Ficheros Markdown (Knowledge Base)
+## 5. Ficheros Markdown (Knowledge Base)
 
 **Ubicación:** `knowledge/**/*.md`
 
@@ -252,7 +314,7 @@ Los metadatos son parseados en tiempo de ejecución por `NoteRepository` (PHP) p
 
 ---
 
-## 5. Estructuras Vectoriales e Índices (Study Assistant)
+## 6. Estructuras Vectoriales e Índices (Study Assistant)
 
 **Ubicación:** `apps/studyassistant/data/`
 
@@ -274,23 +336,26 @@ knowledge/**/*.md
 
 ---
 
-## 6. CSVs de PreparaTIC (Banco de Preguntas)
+## 7. CSVs de PreparaTIC (Referencia Histórica)
+
+> [!WARNING]
+> **Procedencia desconocida.** Estos CSVs estaban en el repositorio de `utilidadesdetests-master` sin documentación sobre su origen ni propósito. No son la fuente de verdad de la app en producción (que es el `index.html`, ver §3). Se conservan como referencia histórica pero **NO se usarán como fuente principal para la migración**.
 
 **Ubicación:** `apps/tests_preparatic/data/`
 
 | Fichero | Filas | Descripción |
 | :--- | :--- | :--- |
-| `Excel_revision_preparatic24.xlsx - Excel_revision_preparatic24.csv` | 10.308 | Banco principal de preguntas PreparaTIC con 22 columnas |
+| `Excel_revision_preparatic24.xlsx - Excel_revision_preparatic24.csv` | 10.308 | Banco de preguntas con 22 columnas. Posiblemente un subset o exportación de curación/revisión. |
 | `Bloques, Temas y temáticas - PROVISIONAL - Bloques.csv` | 8 | Mapeo de bloques A1-A4 y B1-B4 del temario A1 TIC |
 | `Bloques, Temas y temáticas - PROVISIONAL - Temas.csv` | Variable | Listado de temas por bloque |
 | `Bloques, Temas y temáticas - PROVISIONAL - Tematicas.csv` | Variable | Temáticas transversales |
-| `Excel_preguntas_nuevas_preparatic24.xlsx - *.csv` | Variable | Preguntas adicionales de exámenes de años anteriores |
+| `Excel_preguntas_nuevas_preparatic24.xlsx - examenes_años_anteriores.csv` | Variable | Preguntas adicionales. Columna `ID` vacía. Columna `REVISADA` con solo 4 registros con valor "OK". Columna `SENTENCIA` con valores INSERT y DELETE. |
 
-**Esquema del CSV principal** (columnas clave):
+**Esquema del CSV principal** (columnas clave del fichero de revisión):
 
 | Columna | Tipo | Descripción |
 | :--- | :--- | :--- |
-| `ID` | Entero | Identificador original en PreparaTIC |
+| `ID` | Entero | Identificador — **NO coincide con los IDs del index.html** (espacios de IDs independientes) |
 | `PREGUNTA` | Texto | Enunciado de la pregunta |
 | `RESPUESTA_A` a `RESPUESTA_D` | Texto | Las 4 opciones de respuesta |
 | `RESPUESTA_CORRECTA` | Letra (A-D) | Indicador de la opción correcta |
@@ -302,25 +367,12 @@ knowledge/**/*.md
 | `AUTOR` | Texto | Autor de la pregunta |
 | `PROMOCION` | Texto | Promoción de PreparaTIC |
 
-**Bloques del temario A1 TIC:**
-
-| Código | Rango de temas | Nombre del bloque |
-| :--- | :--- | :--- |
-| A1 | 1-5 | Organización del Estado y Administración Electrónica |
-| A2 | 6-12 | Tecnología básica |
-| A3 | 13-18 | Desarrollo de sistemas |
-| A4 | 19-23 | Sistemas y comunicaciones |
-| B1 | 24-55 | Específicos grupo 1 |
-| B2 | 56-80 | Específicos grupo 2 |
-| B3 | 81-105 | Específicos grupo 3 |
-| B4 | 106-125+ | Específicos grupo 4 |
-
 > [!IMPORTANT]
-> Los números de bloque y tema del temario **A1 TIC** (PreparaTIC) son **incompatibles** con los de **TAI** (MariaDB) y con los de **A2 GSI** (AGE). El tema 12 de A1 TIC no es el tema 12 de TAI ni el tema 12 de A2 GSI. Esta incompatibilidad se resuelve en la arquitectura nueva con la tabla `question_syllabus_tags` (ver §9).
+> Los números de bloque y tema del temario **A1 TIC** (PreparaTIC) son **incompatibles** con los de **TAI** (MariaDB) y con los de **A2 GSI** (AGE). El tema 12 de A1 TIC no es el tema 12 de TAI ni el tema 12 de A2 GSI. Esta incompatibilidad se resuelve en la arquitectura nueva con la tabla `question_syllabus_tags` (ver §10).
 
 ---
 
-## 7. SQL de Exámenes Oficiales Importados
+## 8. SQL de Exámenes Oficiales Importados
 
 **Ubicación:** `imports/age_a2_gsi/generated/`
 
@@ -342,7 +394,7 @@ VALUES ('...', '...', '...', NULL, 'AGE A2 GSI LIBRE 2024', 0, 0, 2024);
 
 ---
 
-## 8. Reglas de Git para Datos
+## 9. Reglas de Git para Datos
 
 Los siguientes ficheros **no deben versionarse** en Git:
 
@@ -360,12 +412,12 @@ El directorio `db/local/` se mantiene con un `.gitkeep` para preservar la estruc
 
 ---
 
-## 9. Estado Objetivo (To-Be)
+## 10. Estado Objetivo (To-Be)
 
 > [!IMPORTANT]
 > Pendiente de actualización conforme avance la migración (ver ADR-0001).
 
-La arquitectura nueva (ADR-0001) sustituye los 4 motores de almacenamiento actuales + 2 fuentes de datos por **SQLite (WAL) + sqlite-vec**, con una base de datos independiente por servicio:
+La arquitectura nueva (ADR-0001) sustituye los múltiples motores de almacenamiento actuales por **SQLite (WAL) + sqlite-vec**, con una base de datos independiente por servicio:
 
 | Servicio | Base de datos | Contenido |
 | :--- | :--- | :--- |
@@ -373,7 +425,14 @@ La arquitectura nueva (ADR-0001) sustituye los 4 motores de almacenamiento actua
 | `test-engine` | `test_engine.sqlite` | Preguntas unificadas (`questions`, `question_options`, `question_syllabus_tags`, `exams`, `exam_questions`), sesiones e intentos |
 | `linking-service` | `linking.sqlite` | Tabla `question_topic_links` |
 
-El esquema normalizado multi-taxonómico del banco de preguntas se detalla en `docs/architecture/ESPECIFICACION_REQUISITOS_Y_ARQUITECTURA.md` §7.4.
+### Fuentes de migración para `test-engine`
+
+| Fuente | Preguntas | Prioridad | Notas |
+| :--- | :--- | :--- | :--- |
+| **index.html inline JS** (§3) | 16.673 únicas | 🟢 **Fuente principal** | Datos limpios, schema consistente, deduplicar por `id` |
+| **MariaDB `ptype`** (§2) | ~1.500 | 🟢 Fuente principal (TAI) | Incluye `justif`, `img_path` y datos de sesiones/intentos |
+| **SQL AGE GSI 2024** (§8) | ~180 | 🟢 Fuente principal | Sin categorización de tema (`bloque=0, tema=0`) |
+| **CSVs** (§7) | 10.308 | 🔴 Descartados | Procedencia desconocida, IDs incompatibles con index.html |
 
 ---
 
