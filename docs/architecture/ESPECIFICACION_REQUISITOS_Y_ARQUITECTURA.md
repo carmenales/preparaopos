@@ -138,7 +138,7 @@ El estado de los datos se encuentra actualmente fragmentado en **4 motores de al
    - `scoring_rules`: Parámetros de corrección (penalizaciones por fallo, puntuaciones de corte).
    - `question_topic_links`: Mapeo relacional de preguntas con bloques y temas teóricos.
 2. **IndexedDB (PreparaTIC V3):**
-   - Base de datos en el navegador del cliente que guarda intentos, exámenes terminados y estadísticas de radar/evolución para las +10.300 preguntas compiladas en la SPA.
+   - Base de datos en el navegador del cliente que guarda intentos, exámenes terminados y estadísticas de radar/evolución para las +16.600 preguntas compiladas en la SPA.
 3. **Almacenamiento de Ficheros Markdown (`knowledge/`):**
    - Archivos de texto estructurados organizados por administración (`age/a1-sti`, `age/a2-gsi`, `comunidad-madrid/administracion-digital/`, etc.) con frontmatter YAML (title, process, official_topic, tags, practice).
 4. **Estructuras Vectoriales y de Índices (`apps/studyassistant/data/`):**
@@ -180,7 +180,7 @@ Esta sección cataloga los requisitos funcionales que ya se encuentran plenament
 | **RF-TEST-07** | Modos Examen vs. Práctica | Debe soportar dos modos: *Modo Examen* (soluciones solo al entregar) y *Modo Práctica* (retroalimentación y explicación inmediata al responder cada pregunta). | `preparadortai/test.php` |
 | **RF-TEST-08** | Descarte Interactivo de Respuestas | Debe permitir tachar visualmente opciones de respuesta descartadas por el usuario para facilitar el proceso de eliminación. | `preparadortai/assets/` y `tests_preparatic` V3 |
 | **RF-TEST-09** | Test Ponderado por Relevancia | Debe calcular la probabilidad de aparición de cada pregunta según la frecuencia histórica real con la que su tema ha aparecido en exámenes oficiales en los últimos 15 años. | `tests_preparatic/v3/index.html` |
-| **RF-TEST-10** | Banco Masivo de Preguntas | Debe almacenar y consultar un repositorio de más de 10.300 preguntas catalogadas por bloque, tema y año de convocatoria. | `tests_preparatic/data/` |
+| **RF-TEST-10** | Banco Masivo de Preguntas | Debe almacenar y consultar un repositorio de más de 16.673 preguntas catalogadas por bloque, tema y año de convocatoria. | `tests_preparatic/data/` |
 
 ---
 
@@ -255,7 +255,7 @@ flowchart TD
 #### RFF-01: Modelo de Banco de Preguntas Unificado y Normalizado
 - **Descripción:** El sistema DEBE unificar en un único esquema de datos relacional y coherente los tres bancos dispersos actuales:
   1. Las preguntas de MariaDB de `preparadortai`.
-  2. Las +10.300 preguntas de los CSVs de PreparaTIC en `tests_preparatic`.
+  2. Las +16.600 preguntas de los CSVs de PreparaTIC en `tests_preparatic`.
   3. Los exámenes oficiales extraídos de `opo_tic_a2` y AGE 2024.
 - **Criterio de Aceptación:** Eliminación de duplicados, soporte de preguntas anuladas con trazabilidad de convocatoria, categorización unificada por cuerpo/bloque/tema y migración sin pérdida de los campos de justificación explicativa.
 
@@ -340,8 +340,8 @@ Se descartaron tanto el monolito modular (no permite distribuir piezas por separ
 
 | Servicio | Responsabilidad | Distribuible de forma independiente |
 | :--- | :--- | :--- |
-| `apuntes-service` | Visor de temario, búsqueda semántica, ingesta con IA, glosarios y normativa | ✅ Sí (ej. ceder al grupo PreparaTIC sin banco de preguntas) |
-| `tests-service` | Banco de preguntas unificado, simulacros, práctica temática, estadísticas, histórico de intentos | ✅ Sí (ej. compartir solo el motor de tests) |
+| `study-assistant` | Visor de temario, búsqueda semántica, ingesta con IA, glosarios y normativa | ✅ Sí (ej. ceder al grupo PreparaTIC sin banco de preguntas) |
+| `test-engine` | Banco de preguntas unificado, simulacros, práctica temática, estadísticas, histórico de intentos | ✅ Sí (ej. compartir solo el motor de tests) |
 | `linking-service` | Trazabilidad bidireccional pregunta ↔ tema teórico (tabla `question_topic_links`) | ❌ Depende de los otros dos vía HTTP |
 
 Cada servicio se organiza internamente en **capas DDD** (`presentation/` → `domain/` → `infrastructure/`), donde `domain/` no importa nada de FastAPI ni HTTP y es testeable de forma aislada con `unittest`.
@@ -437,10 +437,10 @@ Cada fase mantiene el sistema PHP existente operativo hasta que su equivalente e
 
 | Fase | Alcance | Qué se retira al completar |
 | :--- | :--- | :--- |
-| **0** | Esqueleto de `apuntes-service` (capas DDD + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP y `services/embeddings`. | Nada — PHP sigue como vía principal |
-| **1** | Migración completa de datos MariaDB + CSV PreparaTIC + AGE GSI 2024 → SQLite de `tests-service`. Lectura y realización de tests contra la base nueva. Carga de todas las preguntas desde el día 1. | — |
-| **2** | Escritura en `apuntes-service`: importar, editar, borrar apuntes (sustituye el stepper de ingesta PHP y `services/knowledge`). | `services/knowledge` |
-| **3** | Escritura en `tests-service`: CRUD completo de preguntas, taxonomías y baremos. | `apps/preparadortai` + `apps/studyassistant` |
+| **0** | Esqueleto de `study-assistant` (capas DDD + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP y `services/embeddings`. | Nada — PHP sigue como vía principal |
+| **1** | Migración completa de datos MariaDB + CSV PreparaTIC + AGE GSI 2024 → SQLite de `test-engine`. Lectura y realización de tests contra la base nueva. Carga de todas las preguntas desde el día 1. | — |
+| **2** | Escritura en `study-assistant`: importar, editar, borrar apuntes (sustituye el stepper de ingesta PHP y `services/knowledge`). | `services/knowledge` |
+| **3** | Escritura en `test-engine`: CRUD completo de preguntas, taxonomías y baremos. | `apps/preparadortai` + `apps/studyassistant` |
 | **4** | `linking-service` como servicio de primera clase, sustituyendo `suggest_topic_links.py` y `topic_links.php`. | Script y helper PHP |
 | **5** | Backlog aparcado (sin fecha comprometida): SM-2, simulacros adaptativos, PWA offline móvil, flashcards, detección de normativa derogada, integraciones con APIs de terceros (Notion, Obsidian, Gemini). | — |
 
@@ -448,7 +448,7 @@ Cada fase mantiene el sistema PHP existente operativo hasta que su equivalente e
 
 | Brecha (RFF) | Cómo la resuelve la arquitectura decidida |
 | :--- | :--- |
-| **RFF-01** Banco Unificado | Esquema normalizado multi-taxonómico en SQLite de `tests-service` (§7.4). Migración completa en Fase 1. |
+| **RFF-01** Banco Unificado | Esquema normalizado multi-taxonómico en SQLite de `test-engine` (§7.4). Migración completa en Fase 1. |
 | **RFF-04** Trazabilidad Bidireccional | `linking-service` (Fase 4) conecta preguntas con secciones Markdown concretas vía `question_topic_links`. |
 | **RFF-09** Exportación Zero-Cloud | SQLite como fichero único por servicio: exportable con un simple `cp`. |
 | **RNFF-02** Stack Consolidation | De 2 lenguajes (PHP+Python) y 4 motores de persistencia a Python homogéneo + 1 SQLite por servicio. |
