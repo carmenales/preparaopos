@@ -138,9 +138,9 @@ async def view_note(request: Request, note_id: str, process: str = ""):
     reading_time = note_service.estimate_reading_time(note)
 
     return templates.TemplateResponse(
-        "note.html",
-        {
-            "request": request,
+        request=request,
+        name="note.html",
+        context={
             "note": note,
             "rendered_html": rendered_html,
             "toc_html": toc_html,
