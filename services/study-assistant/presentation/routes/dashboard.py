@@ -27,7 +27,7 @@ async def dashboard(
             query=q, tag=tag, process=process, status=status
         )
     else:
-        filtered_notes = list(note_service._notes)
+        filtered_notes = list(note_service.notes)
 
     # Agrupar por proceso
     notes_by_process: dict[str, list] = {}
@@ -65,10 +65,12 @@ async def dashboard(
             if len(notes_by_process[proc_slug]) > 6:
                 notes_by_process[proc_slug] = notes_by_process[proc_slug][:6]
 
+    total_filtered = sum(len(notes) for notes in notes_by_process.values())
+
     return templates.TemplateResponse(
-        "dashboard.html",
-        {
-            "request": request,
+        request=request,
+        name="dashboard.html",
+        context={
             "metrics": metrics,
             "notes_by_process": notes_by_process,
             "process_titles": process_titles,
@@ -81,6 +83,7 @@ async def dashboard(
             "all_processes": all_processes,
             "all_statuses": all_statuses,
             "is_filtered": is_filtered,
+            "total_filtered": total_filtered,
         },
     )
 
