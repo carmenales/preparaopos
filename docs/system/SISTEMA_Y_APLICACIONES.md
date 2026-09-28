@@ -42,7 +42,7 @@ flowchart TD
    - Desde cualquier tema teórico se puede pulsar *"Hacer test de este tema"* para comprobar el grado de asimilación.
 4. **Ingesta Continua y Banco de Preguntas Unificado:**
    - Capacidad de ingerir nuevos exámenes oficiales conforme se publican convocatorias (mediante pipelines de extracción PDF/OCR).
-   - Fusión de los diferentes bancos históricos (+10.300 preguntas de PreparaTIC + exámenes oficiales AGE 2016-2024 + exámenes de la Comunidad de Madrid).
+   - Fusión de los diferentes bancos históricos (16.673 preguntas de PreparaTIC + exámenes oficiales AGE 2016-2024 + exámenes de la Comunidad de Madrid).
 5. **Inteligencia de Repaso Progresivo:**
    - Evolución desde un histórico básico de aciertos/fallos hacia algoritmos de repetición espaciada (SM-2 / Anki) y mapas de calor temáticos que prioricen automáticamente los temas con menor tasa de acierto.
 
@@ -111,7 +111,7 @@ Es la herramienta de estudio intensivo del temario teórico, guías de supuestos
 Motor central de práctica, simulacros cronometrados, entrenamiento focalizado y evaluación continua.
 
 #### Banco de Preguntas Agrupado:
-- **+10.300 preguntas PreparaTIC** (catalogadas por bloques A1/A2/B1-B4, temas 1 a 132 y convocatorias históricas).
+- **16.673 preguntas PreparaTIC** (catalogadas por bloques A1/A2/B1-B4, temas 1 a 132 y convocatorias históricas).
 - **Exámenes oficiales completos con plantilla de soluciones:** AGE GSI Libre 2024, AGE TAI 2023-2024, convocatorias históricas AGE 2016-2019, Junta de Andalucía, Ayuntamiento de Madrid, etc.
 - **Control de incidencias:** Preguntas anuladas por tribunal, erratas reportadas y justificación motivada de la respuesta correcta.
 
@@ -205,10 +205,10 @@ sequenceDiagram
 
 | Aplicación (Sección 2) | Servicio en la nueva arquitectura | Notas |
 | :--- | :--- | :--- |
-| **App 1: Study Assistant** | `apuntes-service` | Migración de PHP 8.2 → FastAPI + Jinja2 + htmx. Incluye búsqueda semántica con `sqlite-vec` (sustituye `services/embeddings`) y asistente de ingesta RAG con Ollama (sustituye `services/knowledge`). |
-| **App 2: Test Engine** | `tests-service` | Unificación de `preparadortai` (PHP/MariaDB) + `tests_preparatic` (Vue 3 SPA) en un solo servicio FastAPI con banco de preguntas normalizado en SQLite. |
-| **App 3: Process & Metrics Hub** | `tests-service` (subsistema de estadísticas) | Las métricas y progreso se integran como módulo del dominio de `tests-service`, ya que dependen directamente de los datos de intentos y sesiones. |
-| **App 4: Ingesta y Curación** | Repartido: extractores → scripts CLI, ingesta → `apuntes-service`, CRUD preguntas → `tests-service` | Los pipelines de extracción se mantienen como scripts independientes. Las funciones de curación se integran en el servicio correspondiente. |
+| **App 1: Study Assistant** | `study-assistant` | Migración de PHP 8.2 → FastAPI + Jinja2 + htmx. Incluye búsqueda semántica con `sqlite-vec` (sustituye `services/embeddings`) y asistente de ingesta RAG con Ollama (sustituye `services/knowledge`). |
+| **App 2: Test Engine** | `test-engine` | Unificación de `preparadortai` (PHP/MariaDB) + `tests_preparatic` (Vue 3 SPA) en un solo servicio FastAPI con banco de preguntas normalizado en SQLite. |
+| **App 3: Process & Metrics Hub** | `test-engine` (subsistema de estadísticas) | Las métricas y progreso se integran como módulo del dominio de `test-engine`, ya que dependen directamente de los datos de intentos y sesiones. |
+| **App 4: Ingesta y Curación** | Repartido: extractores → scripts CLI, ingesta → `study-assistant`, CRUD preguntas → `test-engine` | Los pipelines de extracción se mantienen como scripts independientes. Las funciones de curación se integran en el servicio correspondiente. |
 | **Enlazador (Trazabilidad)** | `linking-service` | Servicio nuevo que resuelve la trazabilidad bidireccional pregunta ↔ tema (tabla `question_topic_links`). Depende de los otros dos vía HTTP. |
 
 ### Distribución Independiente
@@ -218,8 +218,8 @@ El requisito confirmado de poder ceder piezas por separado (ej. visor de apuntes
 ### Gateway (Nginx)
 
 Cuando los 3 servicios se ejecutan juntos como suite completa, un **reverse proxy Nginx** unifica las rutas bajo un único puerto:
-- `/apuntes/*` → `apuntes-service`
-- `/tests/*` → `tests-service`
+- `/apuntes/*` → `study-assistant`
+- `/tests/*` → `test-engine`
 - `/links/*` → `linking-service`
 
 Al distribuir un servicio por separado, simplemente no se incluye el proxy — el servicio sirve directamente en su propio puerto.
@@ -242,10 +242,10 @@ Se adopta el patrón ***strangler fig***: cada fase mantiene las aplicaciones PH
 
 | Fase | Alcance | Apps que se retiran |
 | :--- | :--- | :--- |
-| **0** | Esqueleto `apuntes-service` — solo lectura (visor + búsqueda semántica) | Ninguna |
-| **1** | `tests-service` — migración completa de datos y tests funcionales | — |
-| **2** | `apuntes-service` — escritura (ingesta, edición, borrado de apuntes) | `services/knowledge` |
-| **3** | `tests-service` — CRUD completo de preguntas | `apps/preparadortai`, `apps/studyassistant` |
+| **0** | Esqueleto `study-assistant` — solo lectura (visor + búsqueda semántica) | Ninguna |
+| **1** | `test-engine` — migración completa de datos y tests funcionales | — |
+| **2** | `study-assistant` — escritura (ingesta, edición, borrado de apuntes) | `services/knowledge` |
+| **3** | `test-engine` — CRUD completo de preguntas | `apps/preparadortai`, `apps/studyassistant` |
 | **4** | `linking-service` — trazabilidad bidireccional | `suggest_topic_links.py`, `topic_links.php` |
 | **5** | Backlog futuro: SM-2, PWA offline, flashcards, simulacros adaptativos | — |
 

@@ -1,0 +1,11 @@
+{% for result in results %}
+<li class="semantic-result-item">
+    <a href="{{ result.url }}" class="semantic-result-title">
+        {{ result.note_title }}{% if result.heading %} — {{ result.heading }}{% endif %}
+    </a>
+    <span class="semantic-result-score">relevancia {{ (result.score * 100) | round | int }}%</span>
+    {% if result.text_preview %}
+        <p class="semantic-result-preview">{{ result.text_preview }}</p>
+    {% endif %}
+</li>
+{% endfor %}
