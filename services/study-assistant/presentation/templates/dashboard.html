@@ -256,7 +256,6 @@
 <!-- Agrupación por Procesos -->
 <div id="procesos" class="accordion-controls">
     <div class="summary" style="margin: 0;">
-        {% set total_filtered = notes_by_process.values() | sum(attribute='__len__') %}
         {% if process %}
             Mostrando todos los <strong>{{ total_filtered }}</strong> temas de <strong>{{ process_titles.get(process, process) }}</strong>.
         {% elif not is_filtered %}
