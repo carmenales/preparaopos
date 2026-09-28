@@ -1,0 +1,460 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if process %}{{ process_titles.get(process, process) }} · {% endif %}Dashboard de Apuntes
+{% endblock %}
+
+{% block content %}
+{% if process %}
+    <!-- Cabecera Dedicada al Proceso Seleccionado -->
+    <div class="selected-process-hero">
+        <a class="back-to-hub-link" href="/">← Volver al catálogo general de procesos</a>
+        <div class="selected-process-title-row">
+            <div>
+                <span class="selected-process-badge">Oposición / Convocatoria</span>
+                <h1 class="selected-process-title">{{ process_titles.get(process, process) }}</h1>
+            </div>
+            <div class="selected-process-stats">
+                <span class="proc-stat-pill"><strong>{{ notes_by_process.get(process, []) | length }}</strong> temas</span>
+                <!-- Faltan contar los drafts/reviewed si solo se usa metrics generales, adaptaremos el backend para pasarlos en el futuro -->
+            </div>
+        </div>
+    </div>
+{% else %}
+    <section class="hero">
+        <h1>Apuntes</h1>
+        <p>Consulta, filtra y busca en la base de conocimiento.</p>
+    </section>
+
+    <!-- Métricas del Dashboard (KPIs Objetivos) -->
+    <section class="kpi-grid">
+        <a class="kpi-card" href="/" title="Ver todos los apuntes">
+            <div class="kpi-icon kpi-icon-blue">📚</div>
+            <div class="kpi-content">
+                <span class="kpi-val">{{ metrics.total_notes }}</span>
+                <span class="kpi-label">Apuntes Totales</span>
+            </div>
+        </a>
+
+        <a class="kpi-card" href="#procesos-hub" title="Ver oposiciones y procesos indexados">
+            <div class="kpi-icon kpi-icon-purple">🏛️</div>
+            <div class="kpi-content">
+                <span class="kpi-val">{{ metrics.total_processes }}</span>
+                <span class="kpi-label">Procesos</span>
+            </div>
+        </a>
+
+        <a class="kpi-card" href="/?status=revisado" title="Filtrar apuntes revisados">
+            <div class="kpi-icon kpi-icon-green">✅</div>
+            <div class="kpi-content">
+                <span class="kpi-val">{{ metrics.reviewed_count }}</span>
+                <span class="kpi-label">Revisados</span>
+            </div>
+        </a>
+
+        <a class="kpi-card" href="/?status=borrador" title="Filtrar apuntes en borrador">
+            <div class="kpi-icon kpi-icon-amber">📝</div>
+            <div class="kpi-content">
+                <span class="kpi-val">{{ metrics.draft_count }}</span>
+                <span class="kpi-label">En Preparación</span>
+            </div>
+        </a>
+    </section>
+
+    {% if not is_filtered %}
+        <!-- Hub de Procesos Selectivos (Directorio de Convocatorias) -->
+        <section class="process-hub-section" id="procesos-hub">
+            <div class="section-header-row">
+                <div>
+                    <h2 class="section-title">🏛️ Convocatorias y Procesos Selectivos</h2>
+                    <p class="section-subtitle">Accede directamente al temario completo de cada oposición o consulta una selección de temas destacados abajo.</p>
+                </div>
+            </div>
+
+            <div class="process-hub-grid">
+                {% for p_summary in metrics.process_summaries %}
+                    <div class="process-hub-card">
+                        <div class="process-hub-card-header">
+                            <div class="process-hub-icon">🏛️</div>
+                            <div class="process-hub-title-block">
+                                <h3 class="process-hub-name">
+                                    <a href="/?process={{ p_summary.slug | urlencode }}">
+                                        {{ p_summary.title }}
+                                    </a>
+                                </h3>
+                                <span class="process-hub-slug">{{ p_summary.slug }}</span>
+                            </div>
+                        </div>
+
+                        <div class="process-hub-metrics">
+                            <span class="proc-metric" title="Total de temas disponibles">
+                                📚 <strong>{{ p_summary.total }}</strong> {% if p_summary.total == 1 %}tema{% else %}temas{% endif %}
+                            </span>
+                            <span class="proc-metric text-green" title="Temas con estado revisado">
+                                ✅ <strong>{{ p_summary.reviewed }}</strong> revisados
+                            </span>
+                            {% if p_summary.draft > 0 %}
+                                <span class="proc-metric text-amber" title="Temas en preparación">
+                                    📝 <strong>{{ p_summary.draft }}</strong> borradores
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        {% if p_summary.tags %}
+                            <div class="process-hub-tags">
+                                {% for t in p_summary.tags %}
+                                    <span class="tag-mini">#{{ t }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="process-hub-card-footer">
+                            <a class="button-process-enter" href="/?process={{ p_summary.slug | urlencode }}">
+                                Ver apuntes
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+{% endif %}
+
+{% if metrics.total_notes == 0 %}
+    <div class="alert">
+        No hay índice generado todavía. Ejecuta:
+        <code>python scripts/build_knowledge_index.py</code>
+    </div>
+{% endif %}
+
+<!-- Barra de Búsqueda y Filtros Unificada -->
+<section class="dashboard-toolbar">
+    <div class="toolbar-header">
+        <div class="search-mode-tabs">
+            <button
+                type="button"
+                id="tab-mode-standard"
+                class="search-mode-tab is-active"
+                onclick="switchSearchMode('standard')"
+            >
+                🔍 Filtros de Apuntes
+            </button>
+            <button
+                type="button"
+                id="tab-mode-semantic"
+                class="search-mode-tab"
+                onclick="switchSearchMode('semantic')"
+            >
+                🧠 Búsqueda Semántica (IA)
+            </button>
+        </div>
+
+        <div class="view-controls">
+            <span style="font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Vista:</span>
+            <button
+                type="button"
+                id="btn-view-grid"
+                class="view-btn is-active"
+                data-view="grid"
+                onclick="setViewMode('grid')"
+                title="Vista de Cuadrícula con tarjetas completas"
+            >
+                ⊞ Cuadrícula
+            </button>
+            <button
+                type="button"
+                id="btn-view-list"
+                class="view-btn"
+                data-view="list"
+                onclick="setViewMode('list')"
+                title="Vista de Lista compacta por temas"
+            >
+                ☰ Lista compacta
+            </button>
+        </div>
+    </div>
+
+    <!-- Panel de Búsqueda y Filtros Estándar -->
+    <div id="panel-search-standard">
+        <form class="filters" method="get" action="/" style="margin-bottom: 0; padding: 0; border: none; box-shadow: none;">
+            <div class="field field-wide">
+                <label for="q">Buscar por texto o título</label>
+                <input id="q" name="q" type="search" value="{{ query }}" placeholder="Ej. tokenización, redes, docker, ENS...">
+            </div>
+
+            <div class="field">
+                <label for="process">Proceso selectivo</label>
+                <select id="process" name="process">
+                    <option value="">Todos los procesos</option>
+                    {% for item in all_processes %}
+                        <option value="{{ item }}" {% if process == item %}selected{% endif %}>
+                            {{ process_titles.get(item, item) }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="tag">Etiqueta clave</label>
+                <select id="tag" name="tag">
+                    <option value="">Todas las etiquetas</option>
+                    {% for item in all_tags %}
+                        <option value="{{ item }}" {% if tag == item %}selected{% endif %}>
+                            {{ item }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field">
+                <label for="status">Estado</label>
+                <select id="status" name="status">
+                    <option value="">Todos los estados</option>
+                    {% for item in all_statuses %}
+                        <option value="{{ item }}" {% if status == item %}selected{% endif %}>
+                            {{ item | capitalize }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="actions">
+                <button type="submit">Filtrar</button>
+                <a class="button-secondary" href="/">Limpiar</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de Búsqueda Semántica Integrado -->
+    <div id="panel-search-semantic" style="display: none; margin-top: 10px;">
+        <p class="meta" style="margin-top: 0; margin-bottom: 12px;">
+            Busca por significado y conceptos clave.
+        </p>
+        <div class="field field-wide" style="display: flex; gap: 10px; align-items: flex-end;">
+            <input id="semantic-q" type="search" placeholder="Escribe tu pregunta o duda (ej. diferencia entre autenticación y autorización, cómo funciona TLS)...">
+            <button id="semantic-search-btn" type="button" style="white-space: nowrap;">Consultar IA</button>
+        </div>
+        <div id="semantic-search-status" class="semantic-search-status" hidden></div>
+        <ul id="semantic-search-results" class="semantic-results"></ul>
+    </div>
+
+    <!-- Barra de Filtros Activos (Chips) -->
+    {% if active_filters %}
+        <div class="active-filters">
+            <span class="active-filters-label">Filtros aplicados:</span>
+            {% for f in active_filters %}
+                <span class="filter-chip">
+                    {{ f.name }}: <strong>{{ f.value }}</strong>
+                    <a class="filter-chip-remove" href="{{ f.remove_url }}" title="Quitar filtro">×</a>
+                </span>
+            {% endfor %}
+            <a class="clear-all-link" href="/">Limpiar todos</a>
+        </div>
+    {% endif %}
+</section>
+
+<!-- Agrupación por Procesos -->
+<div id="procesos" class="accordion-controls">
+    <div class="summary" style="margin: 0;">
+        {% set total_filtered = notes_by_process.values() | sum(attribute='__len__') %}
+        {% if process %}
+            Mostrando todos los <strong>{{ total_filtered }}</strong> temas de <strong>{{ process_titles.get(process, process) }}</strong>.
+        {% elif not is_filtered %}
+            Mostrando temas · <strong>{{ metrics.total_notes }}</strong> temas en <strong>{{ notes_by_process | length }}</strong> convocatorias.
+        {% else %}
+            Mostrando <strong>{{ total_filtered }}</strong> apuntes
+            {% if total_filtered < metrics.total_notes %}
+                (filtrados de {{ metrics.total_notes }} totales)
+            {% endif %}
+            en <strong>{{ notes_by_process | length }}</strong> ámbito(s).
+        {% endif %}
+    </div>
+
+    {% if notes_by_process %}
+        <div>
+            <button type="button" class="accordion-toggle-all" onclick="toggleAllAccordions(true)">Expandir todos</button>
+            <span style="color: #cbd5e1;">·</span>
+            <button type="button" class="accordion-toggle-all" onclick="toggleAllAccordions(false)">Colapsar todos</button>
+        </div>
+    {% endif %}
+</div>
+
+{% if not notes_by_process %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🔎</div>
+        <h3>No se han encontrado apuntes</h3>
+        <p>No hay ningún apunte que coincida con los criterios de búsqueda o filtros seleccionados.</p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <a class="button-secondary" href="/">Restablecer filtros</a>
+            <button type="button" onclick="switchSearchMode('semantic')" style="background: #2457c5; color: white; border: none; border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer;">
+                Probar Búsqueda Semántica
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Listado de Grupos de Procesos -->
+{% for process_key, notes_in_process in notes_by_process.items() %}
+    {% set total_in_process = notes_in_process | length %}
+    {% set preview_limit = 6 %}
+    {% if not is_filtered and total_in_process > preview_limit %}
+        {% set displayed_notes = notes_in_process[:preview_limit] %}
+        {% set remaining_count = total_in_process - preview_limit %}
+    {% else %}
+        {% set displayed_notes = notes_in_process %}
+        {% set remaining_count = 0 %}
+    {% endif %}
+
+    <details open class="process-accordion" id="proc-{{ process_key | replace(' ', '-') }}">
+        <summary class="process-accordion-summary">
+            <div class="process-title-wrapper">
+                <span class="process-chevron">▶</span>
+                <span>{{ process_titles.get(process_key, process_key) }}</span>
+                <span class="process-badge-count">{{ total_in_process }}</span>
+                {% if remaining_count > 0 %}
+                    <span class="preview-badge-pill">Mostrando {{ displayed_notes | length }} de {{ total_in_process }}</span>
+                {% endif %}
+            </div>
+
+            {% if process != process_key and process_key != 'Sin proceso' %}
+                <a
+                    class="process-header-enter-btn"
+                    href="/?process={{ process_key | urlencode }}"
+                    onclick="event.stopPropagation();"
+                    title="Abrir temario completo de este ámbito"
+                >
+                    Ver todos ({{ total_in_process }}) →
+                </a>
+            {% endif %}
+        </summary>
+
+        <div class="process-accordion-body">
+            <div class="notes-view-container is-grid-view">
+                <!-- Vista Cuadrícula (Cards) -->
+                <div class="note-grid">
+                    {% for note in displayed_notes %}
+                        {% include 'partials/note_card.html' with context %}
+                    {% endfor %}
+                </div>
+
+                <!-- Vista Lista Compacta -->
+                <div class="note-list-view">
+                    {% for note in displayed_notes %}
+                        <div class="note-list-row">
+                            <div class="note-list-info">
+                                <h4 class="note-list-title">
+                                    <a href="/notes/{{ note.id }}{% if process_key != 'Sin proceso' %}?process={{ process_key | urlencode }}{% endif %}">
+                                        {{ note.title }}
+                                    </a>
+                                </h4>
+                                <div class="note-list-meta">
+                                    {% if note.official_topic %}
+                                        <span style="font-weight: 600; color: #4338ca;">
+                                            {{ note.official_topic }}
+                                        </span>
+                                        <span>·</span>
+                                    {% endif %}
+                                    <span>📑 {{ note.headings | length if note.headings else 0 }} apartados</span>
+                                    <span>·</span>
+                                    <!-- A function to estimate reading time could be added here in backend or via note object -->
+                                    <span>⏱️ {{ note.reading_time | default('5 min') }}</span>
+                                </div>
+                            </div>
+
+                            <div class="note-list-actions">
+                                {% if note.status %}
+                                    <span class="badge {% if note.status == 'revisado' %}badge-status-revisado{% elif note.status == 'borrador' %}badge-status-borrador{% else %}badge-status-default{% endif %}">
+                                        {{ note.status | capitalize }}
+                                    </span>
+                                {% endif %}
+
+                                {% if note.practice_topics %}
+                                    <!-- Assume practice_url is passed or generated somehow -->
+                                    <a class="card-action-practice" href="#" target="_blank" title="Practicar preguntas tipo test en Preparador TAI">
+                                        📝 Test
+                                    </a>
+                                {% endif %}
+
+                                <a class="button-secondary" style="padding: 6px 12px; font-size: 13px;" href="/notes/{{ note.id }}{% if process_key != 'Sin proceso' %}?process={{ process_key | urlencode }}{% endif %}">
+                                    Ver →
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if remaining_count > 0 %}
+                    <div class="process-preview-footer">
+                        <div class="process-preview-footer-text">
+                            Mostrando <strong>{{ displayed_notes | length }}</strong> de <strong>{{ total_in_process }}</strong> temas de esta convocatoria.
+                        </div>
+                        <a class="button-primary process-preview-more-btn" href="/?process={{ process_key | urlencode }}">
+                            Ver temas
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </details>
+{% endfor %}
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', path='js/semantic-search.js') }}"></script>
+<script>
+function switchSearchMode(mode) {
+    var stdPanel = document.getElementById('panel-search-standard');
+    var semPanel = document.getElementById('panel-search-semantic');
+    var stdTab = document.getElementById('tab-mode-standard');
+    var semTab = document.getElementById('tab-mode-semantic');
+
+    if (mode === 'semantic') {
+        if (stdPanel) stdPanel.style.display = 'none';
+        if (semPanel) semPanel.style.display = 'block';
+        if (stdTab) stdTab.classList.remove('is-active');
+        if (semTab) semTab.classList.add('is-active');
+        var semInput = document.getElementById('semantic-q');
+        if (semInput) semInput.focus();
+    } else {
+        if (stdPanel) stdPanel.style.display = 'block';
+        if (semPanel) semPanel.style.display = 'none';
+        if (stdTab) stdTab.classList.add('is-active');
+        if (semTab) semTab.classList.remove('is-active');
+        var stdInput = document.getElementById('q');
+        if (stdInput) stdInput.focus();
+    }
+}
+
+function setViewMode(mode) {
+    var containers = document.querySelectorAll('.notes-view-container');
+    containers.forEach(function(el) {
+        el.classList.toggle('is-list-view', mode === 'list');
+        el.classList.toggle('is-grid-view', mode === 'grid');
+    });
+
+    var btnGrid = document.getElementById('btn-view-grid');
+    var btnList = document.getElementById('btn-view-list');
+    if (btnGrid) btnGrid.classList.toggle('is-active', mode === 'grid');
+    if (btnList) btnList.classList.toggle('is-active', mode === 'list');
+
+    try {
+        localStorage.setItem('studyassistant_view_mode', mode);
+    } catch(e) {}
+}
+
+function toggleAllAccordions(open) {
+    document.querySelectorAll('.process-accordion').forEach(function(acc) {
+        acc.open = Boolean(open);
+    });
+}
+
+(function() {
+    try {
+        var savedMode = localStorage.getItem('studyassistant_view_mode');
+        if (savedMode === 'list' || savedMode === 'grid') {
+            setViewMode(savedMode);
+        }
+    } catch(e) {}
+})();
+</script>
+{% endblock %}

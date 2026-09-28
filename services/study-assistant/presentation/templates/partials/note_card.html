@@ -1,0 +1,72 @@
+<article class="note-card">
+    <div class="note-card-header">
+        <h3>
+            <a href="/notes/{{ note.id }}{% if process_key and process_key != 'Sin proceso' %}?process={{ process_key | urlencode }}{% endif %}">
+                {{ note.title }}
+            </a>
+        </h3>
+        {% if note.status %}
+            <span class="badge {% if note.status == 'revisado' %}badge-status-revisado{% elif note.status == 'borrador' %}badge-status-borrador{% else %}badge-status-default{% endif %}">
+                {{ note.status | capitalize }}
+            </span>
+        {% endif %}
+    </div>
+
+    {% if note.official_topic %}
+        <p class="meta" style="font-weight: 600; color: #4338ca; margin: 4px 0 6px;">
+            {{ note.official_topic }}
+        </p>
+    {% endif %}
+
+    <div class="note-meta-badges">
+        <span class="meta-item" title="Número de apartados en este apunte">
+            📑 {{ note.headings | length if note.headings else 0 }} apartados
+        </span>
+        <span class="meta-item" title="Tiempo estimado de lectura">
+            ⏱️ {{ note.reading_time | default('5 min') }}
+        </span>
+        {% if note.shared_with %}
+            <span class="meta-item" title="Compartido con otros perfiles">
+                🔗 {{ note.shared_with | length }} compartido(s)
+            </span>
+        {% endif %}
+    </div>
+
+    {% if note.excerpt %}
+        <p class="note-card-excerpt">{{ note.excerpt }}</p>
+    {% endif %}
+
+    {% if note.tags %}
+        <div class="tags" style="margin-top: auto; margin-bottom: 12px;">
+            {% set visible_tags = note.tags[:4] %}
+            {% set remaining_tags_count = note.tags[4:] | length %}
+            {% for note_tag in visible_tags %}
+                <a class="tag" href="/?tag={{ note_tag | urlencode }}">
+                    {{ note_tag }}
+                </a>
+            {% endfor %}
+            {% if remaining_tags_count > 0 %}
+                <span class="tag" style="background: #f1f5f9; color: #64748b;" title="Más etiquetas disponibles en el apunte">
+                    +{{ remaining_tags_count }} más
+                </span>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="note-card-footer">
+        <a class="card-action-read" href="/notes/{{ note.id }}{% if process_key and process_key != 'Sin proceso' %}?process={{ process_key | urlencode }}{% endif %}">
+            📖 Ver apunte →
+        </a>
+
+        {% if note.practice_topics %}
+            <a
+                class="card-action-practice"
+                href="#"
+                target="_blank"
+                title="Practicar preguntas tipo test de este tema en Preparador TAI"
+            >
+                📝 Practicar test
+            </a>
+        {% endif %}
+    </div>
+</article>
