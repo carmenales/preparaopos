@@ -11,8 +11,14 @@ from domain.notes.models import Note
 class NoteRepository:
     """Repositorio para acceder a las notas desde el sistema de archivos."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        index_path: Optional[Path] = None,
+        knowledge_base_path: Optional[Path] = None,
+    ) -> None:
         """Inicializa el repositorio y la caché en memoria."""
+        self._index_path: Path = Path(index_path) if index_path else KNOWLEDGE_INDEX_PATH
+        self._knowledge_base_path: Path = Path(knowledge_base_path) if knowledge_base_path else KNOWLEDGE_BASE_PATH
         self._notes_cache: List[Note] = []
         self._notes_by_id: Dict[str, Note] = {}
         self._is_loaded: bool = False
@@ -22,11 +28,11 @@ class NoteRepository:
         if self._is_loaded:
             return
 
-        if not KNOWLEDGE_INDEX_PATH.is_file():
+        if not self._index_path.is_file():
             self._is_loaded = True
             return
 
-        with open(KNOWLEDGE_INDEX_PATH, "r", encoding="utf-8") as f:
+        with open(self._index_path, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         notes_data = data.get("notes", [])
@@ -58,16 +64,16 @@ class NoteRepository:
         if not candidate.is_absolute():
             parts = candidate.parts
             if parts and parts[0] == "knowledge":
-                candidate = KNOWLEDGE_BASE_PATH / Path(*parts[1:])
+                candidate = self._knowledge_base_path / Path(*parts[1:])
             else:
-                candidate = KNOWLEDGE_BASE_PATH / candidate
+                candidate = self._knowledge_base_path / candidate
         
         try:
             resolved = candidate.resolve(strict=False)
         except Exception:
             return None
 
-        if not str(resolved).startswith(str(KNOWLEDGE_BASE_PATH.resolve(strict=False))):
+        if not str(resolved).startswith(str(self._knowledge_base_path.resolve(strict=False))):
             return None
 
         if resolved.is_file():
@@ -104,7 +110,7 @@ class NoteRepository:
         note_dir = note_path.parent
         asset_candidate = (note_dir / relative_path).resolve(strict=False)
         
-        if not str(asset_candidate).startswith(str(KNOWLEDGE_BASE_PATH.resolve(strict=False))):
+        if not str(asset_candidate).startswith(str(self._knowledge_base_path.resolve(strict=False))):
             return None
             
         allowed_extensions = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"}
