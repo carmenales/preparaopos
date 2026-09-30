@@ -5,7 +5,7 @@ from decimal import Decimal
 SEED_SYLLABI = [
     {
         "id": "preparatic-a1",
-        "code": "preparatic-a1",
+        "code": "age/a1-sti",
         "name": "A1 TIC AGE",
         "organism": "AGE",
     },
