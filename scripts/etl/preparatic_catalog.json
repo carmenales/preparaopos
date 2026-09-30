@@ -1,0 +1,703 @@
+{
+  "blocks": [
+    {
+      "name": "A1",
+      "title": "I. Marco Constitucional Español y Unión Europea"
+    },
+    {
+      "name": "A2",
+      "title": "II. Actuación Administrativa y Gestión Financiera."
+    },
+    {
+      "name": "A3",
+      "title": "III. Estructura Social y Económica de España"
+    },
+    {
+      "name": "A4",
+      "title": "IV. Dirección Pública"
+    },
+    {
+      "name": "B1",
+      "title": "I. Organización y Gestión de los Sistemas de Información"
+    },
+    {
+      "name": "B2",
+      "title": "II. Tecnología Básica"
+    },
+    {
+      "name": "B3",
+      "title": "III. Ingeniería de los Sistemas de Información"
+    },
+    {
+      "name": "B4",
+      "title": "IV. Redes, Comunicaciones e Internet"
+    }
+  ],
+  "topics": [
+    {
+      "id": "1",
+      "name": "Constitución Española (I).",
+      "block": "A1"
+    },
+    {
+      "id": "2",
+      "name": "Constitución Española (II). Poder Judicial",
+      "block": "A1"
+    },
+    {
+      "id": "3",
+      "name": "Constitución Española (III). Organización Territorial",
+      "block": "A1"
+    },
+    {
+      "id": "4",
+      "name": "Constitución Española (IV). Administración",
+      "block": "A1"
+    },
+    {
+      "id": "5",
+      "name": "Unión Europea",
+      "block": "A1"
+    },
+    {
+      "id": "6",
+      "name": "Organización territorial de la AGE.",
+      "block": "A1"
+    },
+    {
+      "id": "7",
+      "name": "Fuentes del Derecho Administrativo",
+      "block": "A2"
+    },
+    {
+      "id": "8",
+      "name": "Régimen jurídico de las AAPP. Procedimiento administrativo.",
+      "block": "A2"
+    },
+    {
+      "id": "9",
+      "name": "Revisión de los actos en vía administrativa. Recursos",
+      "block": "A2"
+    },
+    {
+      "id": "10",
+      "name": "La responsabilidad patrimonial de las Administraciones Públicas.",
+      "block": "A2"
+    },
+    {
+      "id": "11",
+      "name": "Los contratos de las Administraciones Públicas.",
+      "block": "A2"
+    },
+    {
+      "id": "12",
+      "name": "Los presupuestos generales del Estado.",
+      "block": "A2"
+    },
+    {
+      "id": "13",
+      "name": "Convenios. Encomiendas de gestión. Colaboración público-privada",
+      "block": "A2"
+    },
+    {
+      "id": "14",
+      "name": "El modelo económico español.",
+      "block": "A3"
+    },
+    {
+      "id": "15",
+      "name": "Los sectores de la economía.",
+      "block": "A3"
+    },
+    {
+      "id": "16",
+      "name": "Estructura social y políticas de igualdad.",
+      "block": "A3"
+    },
+    {
+      "id": "17",
+      "name": "El mercado de trabajo.",
+      "block": "A3"
+    },
+    {
+      "id": "18",
+      "name": "TIC y sociedad.",
+      "block": "A3"
+    },
+    {
+      "id": "19",
+      "name": "TIC, economía y mercado de trabajo.",
+      "block": "A3"
+    },
+    {
+      "id": "20",
+      "name": "La función gerencial de las AAPP.",
+      "block": "A4"
+    },
+    {
+      "id": "21",
+      "name": "Gestión de equipos.",
+      "block": "A4"
+    },
+    {
+      "id": "22",
+      "name": "La calidad en los servicios públicos.",
+      "block": "A4"
+    },
+    {
+      "id": "23",
+      "name": "Modelo burocrático, management y gobernanza.",
+      "block": "A4"
+    },
+    {
+      "id": "24",
+      "name": "Empleo Público",
+      "block": "A4"
+    },
+    {
+      "id": "25",
+      "name": "Gobernanza, Gobierno Abierto y Transparencia ",
+      "block": "A4"
+    },
+    {
+      "id": "26",
+      "name": "Emprendimiento y unidad de mercado.",
+      "block": "A4"
+    },
+    {
+      "id": "27",
+      "name": "Protección de Datos",
+      "block": "A4"
+    },
+    {
+      "id": "28",
+      "name": "Conceptos de sistemas de información.",
+      "block": "B1"
+    },
+    {
+      "id": "29",
+      "name": "La información en las organizaciones.",
+      "block": "B1"
+    },
+    {
+      "id": "30",
+      "name": "Gobernanza TIC.",
+      "block": "B1"
+    },
+    {
+      "id": "31",
+      "name": "Reutilización de la información del sector público.",
+      "block": "B1"
+    },
+    {
+      "id": "32",
+      "name": "Directivo TIC.",
+      "block": "B1"
+    },
+    {
+      "id": "33",
+      "name": "Herramientas para el directivo TIC.",
+      "block": "B1"
+    },
+    {
+      "id": "34",
+      "name": "Centro de sistemas de información.",
+      "block": "B1"
+    },
+    {
+      "id": "35",
+      "name": "Dirección y gestión de proyectos TIC.",
+      "block": "B1"
+    },
+    {
+      "id": "36",
+      "name": "Metodologías predictivas para la gestión de proyectos.",
+      "block": "B1"
+    },
+    {
+      "id": "37",
+      "name": "Metodologías lean.",
+      "block": "B1"
+    },
+    {
+      "id": "38",
+      "name": "Auditoría informática.",
+      "block": "B1"
+    },
+    {
+      "id": "39",
+      "name": "Ley de contratos.",
+      "block": "B1"
+    },
+    {
+      "id": "40",
+      "name": "Adquisición de sistemas.",
+      "block": "B1"
+    },
+    {
+      "id": "41",
+      "name": "Alternativas de decisión.",
+      "block": "B1"
+    },
+    {
+      "id": "42",
+      "name": "Rentabilidad de las inversiones.",
+      "block": "B1"
+    },
+    {
+      "id": "43",
+      "name": "Protección jurídica del software.",
+      "block": "B1"
+    },
+    {
+      "id": "44",
+      "name": "Accesibilidad y usabilidad.",
+      "block": "B1"
+    },
+    {
+      "id": "45",
+      "name": "ENI",
+      "block": "B1"
+    },
+    {
+      "id": "46",
+      "name": "NTI",
+      "block": "B1"
+    },
+    {
+      "id": "47",
+      "name": "Análisis y gestión de riesgos.",
+      "block": "B1"
+    },
+    {
+      "id": "48",
+      "name": "ENS.",
+      "block": "B1"
+    },
+    {
+      "id": "49",
+      "name": "Infraestructuras y servicios comunes.",
+      "block": "B1"
+    },
+    {
+      "id": "50",
+      "name": "Organizaciónes de normalización.",
+      "block": "B1"
+    },
+    {
+      "id": "51",
+      "name": "Agenda Digital para España. Mercado Único Digital",
+      "block": "B1"
+    },
+    {
+      "id": "52",
+      "name": "Sistemas de altas prestaciones.",
+      "block": "B2"
+    },
+    {
+      "id": "53",
+      "name": "Equipos departamentales y servidores.",
+      "block": "B2"
+    },
+    {
+      "id": "54",
+      "name": "Dispositivos personales y móviles.",
+      "block": "B2"
+    },
+    {
+      "id": "55",
+      "name": "Cloud computing.",
+      "block": "B2"
+    },
+    {
+      "id": "56",
+      "name": "Sistemas de almacenamiento.",
+      "block": "B2"
+    },
+    {
+      "id": "57",
+      "name": "Sistemas de información multiusuario.",
+      "block": "B2"
+    },
+    {
+      "id": "58",
+      "name": "Arquitectura SOA.",
+      "block": "B2"
+    },
+    {
+      "id": "59",
+      "name": "Sistemas Operativos.",
+      "block": "B2"
+    },
+    {
+      "id": "60",
+      "name": "UNIX-LINUX.",
+      "block": "B2"
+    },
+    {
+      "id": "61",
+      "name": "Microsoft.",
+      "block": "B2"
+    },
+    {
+      "id": "62",
+      "name": "Sistemas Operativos para móviles.",
+      "block": "B2"
+    },
+    {
+      "id": "63",
+      "name": "Sistemas de gestión de bases de datos.",
+      "block": "B2"
+    },
+    {
+      "id": "64",
+      "name": "El modelo relacional.",
+      "block": "B2"
+    },
+    {
+      "id": "65",
+      "name": "Arquitectura de desarrollo en la web.",
+      "block": "B2"
+    },
+    {
+      "id": "66",
+      "name": "Entorno de desarrollo Microsoft.NET.",
+      "block": "B2"
+    },
+    {
+      "id": "67",
+      "name": "Entorno de desarrollo JAVA.",
+      "block": "B2"
+    },
+    {
+      "id": "68",
+      "name": "Entorno de desarrollo PHP.",
+      "block": "B2"
+    },
+    {
+      "id": "69",
+      "name": "Software de código abierto y libre.",
+      "block": "B2"
+    },
+    {
+      "id": "70",
+      "name": "Inteligencia artificial.",
+      "block": "B2"
+    },
+    {
+      "id": "71",
+      "name": "Big Data.",
+      "block": "B2"
+    },
+    {
+      "id": "72",
+      "name": "Sistemas CRM y ERP.",
+      "block": "B2"
+    },
+    {
+      "id": "73",
+      "name": "E-learning.",
+      "block": "B2"
+    },
+    {
+      "id": "74",
+      "name": "Los sistemas GIS.",
+      "block": "B2"
+    },
+    {
+      "id": "75",
+      "name": "Datawarehouse y minería de datos.",
+      "block": "B2"
+    },
+    {
+      "id": "76",
+      "name": "Estrategia del dato.",
+      "block": "B2"
+    },
+    {
+      "id": "77",
+      "name": "Lenguajes de marcado.",
+      "block": "B2"
+    },
+    {
+      "id": "78",
+      "name": "Comercio electrónico.",
+      "block": "B2"
+    },
+    {
+      "id": "79",
+      "name": "El cifrado.",
+      "block": "B2"
+    },
+    {
+      "id": "80",
+      "name": "Identificación y firma electrónica I.",
+      "block": "B2"
+    },
+    {
+      "id": "81",
+      "name": "Identificación y firma electrónica II.",
+      "block": "B2"
+    },
+    {
+      "id": "82",
+      "name": "Adaptación LOPD.",
+      "block": "B2"
+    },
+    {
+      "id": "83",
+      "name": "El tratamiento de imágenes.",
+      "block": "B2"
+    },
+    {
+      "id": "84",
+      "name": "Reconocimiento óptico de caracteres.",
+      "block": "B2"
+    },
+    {
+      "id": "85",
+      "name": "Blockchain.",
+      "block": "B3"
+    },
+    {
+      "id": "86",
+      "name": "Modelos de ciclo de vida.",
+      "block": "B3"
+    },
+    {
+      "id": "87",
+      "name": "Plan de sistemas de información.",
+      "block": "B3"
+    },
+    {
+      "id": "88",
+      "name": "Análisis de sistemas y metodologías ágiles.",
+      "block": "B3"
+    },
+    {
+      "id": "89",
+      "name": "Análisis del dominio de los sistemas.",
+      "block": "B3"
+    },
+    {
+      "id": "90",
+      "name": "Análisis dinámico de sistemas.",
+      "block": "B3"
+    },
+    {
+      "id": "91",
+      "name": "Análisis de aspectos no funcionales.",
+      "block": "B3"
+    },
+    {
+      "id": "92",
+      "name": "Diseño arquitectónico de sistemas.",
+      "block": "B3"
+    },
+    {
+      "id": "93",
+      "name": "Técnicas de diseño de software.",
+      "block": "B3"
+    },
+    {
+      "id": "94",
+      "name": "Prototipos en el desarrollo de sistemas.",
+      "block": "B3"
+    },
+    {
+      "id": "95",
+      "name": "Metrica",
+      "block": "B3"
+    },
+    {
+      "id": "96",
+      "name": "Pruebas de software.",
+      "block": "B3"
+    },
+    {
+      "id": "97",
+      "name": "Integración Continua.",
+      "block": "B3"
+    },
+    {
+      "id": "98",
+      "name": "Evaluación de la calidad del software.",
+      "block": "B3"
+    },
+    {
+      "id": "99",
+      "name": "Estimación de recursos.",
+      "block": "B3"
+    },
+    {
+      "id": "100",
+      "name": "Migración de aplicaciones y ajuste dimensional.",
+      "block": "B3"
+    },
+    {
+      "id": "101",
+      "name": "Mantenimiento de sistemas.",
+      "block": "B3"
+    },
+    {
+      "id": "102",
+      "name": "Gestión de cambios",
+      "block": "B3"
+    },
+    {
+      "id": "103",
+      "name": "Calidad de los servicios.",
+      "block": "B3"
+    },
+    {
+      "id": "104",
+      "name": "Gestión documental.",
+      "block": "B3"
+    },
+    {
+      "id": "105",
+      "name": "Sistemas de recuperación de la información.",
+      "block": "B3"
+    },
+    {
+      "id": "106",
+      "name": "ITIL y COBIT.",
+      "block": "B3"
+    },
+    {
+      "id": "107",
+      "name": "Tecnologías emergentes.",
+      "block": "B3"
+    },
+    {
+      "id": "108",
+      "name": "Redes de telecomunicaciones.",
+      "block": "B4"
+    },
+    {
+      "id": "109",
+      "name": "Internet.",
+      "block": "B4"
+    },
+    {
+      "id": "110",
+      "name": "Cableado.",
+      "block": "B4"
+    },
+    {
+      "id": "111",
+      "name": "Modelo OSI.",
+      "block": "B4"
+    },
+    {
+      "id": "112",
+      "name": "Tecnologías de acceso.",
+      "block": "B4"
+    },
+    {
+      "id": "113",
+      "name": "Redes de transporte.",
+      "block": "B4"
+    },
+    {
+      "id": "114",
+      "name": "Redes inalámbricas.",
+      "block": "B4"
+    },
+    {
+      "id": "115",
+      "name": "Redes IP.",
+      "block": "B4"
+    },
+    {
+      "id": "116",
+      "name": "Redes de nueva generación.",
+      "block": "B4"
+    },
+    {
+      "id": "117",
+      "name": "Transformación digital.",
+      "block": "B4"
+    },
+    {
+      "id": "118",
+      "name": "Redes de área local.",
+      "block": "B4"
+    },
+    {
+      "id": "119",
+      "name": "Intranet y extranet.",
+      "block": "B4"
+    },
+    {
+      "id": "120",
+      "name": "Redes públicas.",
+      "block": "B4"
+    },
+    {
+      "id": "121",
+      "name": "CATV.",
+      "block": "B4"
+    },
+    {
+      "id": "122",
+      "name": "Correo electrónico.",
+      "block": "B4"
+    },
+    {
+      "id": "123",
+      "name": "Comunicaciones móviles.",
+      "block": "B4"
+    },
+    {
+      "id": "124",
+      "name": "Aplicaciones móviles.",
+      "block": "B4"
+    },
+    {
+      "id": "125",
+      "name": "Seguridad en redes.",
+      "block": "B4"
+    },
+    {
+      "id": "126",
+      "name": "Seguridad en el nivel de aplicación.",
+      "block": "B4"
+    },
+    {
+      "id": "127",
+      "name": "Ciberseguridad.",
+      "block": "B4"
+    },
+    {
+      "id": "128",
+      "name": "Continuidad del Negocio.",
+      "block": "B4"
+    },
+    {
+      "id": "129",
+      "name": "Regulación de las telecomunicaciones.",
+      "block": "B4"
+    },
+    {
+      "id": "130",
+      "name": "Videoconferencia.",
+      "block": "B4"
+    },
+    {
+      "id": "131",
+      "name": "Single sign-on.",
+      "block": "B4"
+    },
+    {
+      "id": "132",
+      "name": "Virtualización de sistemas.",
+      "block": "B4"
+    },
+    {
+      "id": "133",
+      "name": "Trabajo colaborativo y redes sociales.",
+      "block": "B4"
+    }
+  ]
+}
