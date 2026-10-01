@@ -121,6 +121,7 @@ class QuestionSyllabusTag(Base):
 
 class Exam(Base):
     __tablename__ = "exams"
+    __table_args__ = (UniqueConstraint("name", "syllabus_id", name="uq_exam_name_syllabus"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -154,6 +155,7 @@ class ExamQuestion(Base):
         primary_key=True,
     )
     position: Mapped[int] = mapped_column(Integer, nullable=False)
+    is_reserve: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     exam: Mapped[Exam] = relationship(back_populates="questions")
 

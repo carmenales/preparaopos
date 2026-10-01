@@ -10,14 +10,14 @@ SEED_SYLLABI = [
         "organism": "AGE",
     },
     {
-        "id": "preparatic-b-gsi",
-        "code": "preparatic-b-gsi",
-        "name": "A2 GSI AGE",
+        "id": "age-gsi-official",
+        "code": "age/a2-gsi",
+        "name": "AGE A2 GSI",
         "organism": "AGE",
     },
     {
         "id": "tai-legacy",
-        "code": "tai-legacy",
+        "code": "age/c1-tai",
         "name": "TAI AGE",
         "organism": "AGE",
     },
