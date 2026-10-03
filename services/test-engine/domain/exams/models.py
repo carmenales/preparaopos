@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 class ExamQuestion:
     question_id: int
     position: int
+    is_reserve: bool = False
 
 
 @dataclass
