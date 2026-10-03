@@ -164,11 +164,16 @@ class TestSession(Base):
     __tablename__ = "test_sessions"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    mode: Mapped[str] = mapped_column(String(32), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="open")
+    source: Mapped[str] = mapped_column(String(32), nullable=False, default="random")
+    source_ref: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    question_ids: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     duration_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    mode: Mapped[str] = mapped_column(String(32), nullable=False)
-    status: Mapped[str] = mapped_column(String(16), nullable=False, default="open")
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    final_score: Mapped[Decimal | None] = mapped_column(Numeric(10, 4), nullable=True)
     scoring_rule_id: Mapped[int | None] = mapped_column(
         ForeignKey("scoring_rules.id"),
         nullable=True,

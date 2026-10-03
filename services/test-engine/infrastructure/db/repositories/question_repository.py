@@ -20,6 +20,7 @@ class QuestionRepository:
         block: str | None = None,
         topic: str | None = None,
         exam_id: int | None = None,
+        is_reserve: bool | None = None,
         pending_classification: bool | None = None,
     ) -> list[QuestionDTO]:
         stmt = select(orm.Question).options(
@@ -31,11 +32,12 @@ class QuestionRepository:
             stmt = stmt.where(orm.Question.pending_classification == pending_classification)
 
         if exam_id is not None:
-            stmt = (
-                stmt.join(orm.ExamQuestion, orm.ExamQuestion.question_id == orm.Question.id)
-                .where(orm.ExamQuestion.exam_id == exam_id)
-                .order_by(orm.ExamQuestion.position)
+            stmt = stmt.join(orm.ExamQuestion, orm.ExamQuestion.question_id == orm.Question.id).where(
+                orm.ExamQuestion.exam_id == exam_id
             )
+            if is_reserve is not None:
+                stmt = stmt.where(orm.ExamQuestion.is_reserve == is_reserve)
+            stmt = stmt.order_by(orm.ExamQuestion.position)
 
         if syllabus_id or block or topic:
             stmt = stmt.join(orm.QuestionSyllabusTag)
@@ -48,6 +50,32 @@ class QuestionRepository:
 
         rows = self._session.scalars(stmt).unique().all()
         return [self._to_domain(row) for row in rows]
+
+    def get_by_id(self, question_id: int) -> QuestionDTO | None:
+        stmt = (
+            select(orm.Question)
+            .options(
+                selectinload(orm.Question.options),
+                selectinload(orm.Question.tags),
+            )
+            .where(orm.Question.id == question_id)
+        )
+        row = self._session.scalar(stmt)
+        return self._to_domain(row) if row else None
+
+    def get_by_ids(self, question_ids: list[int]) -> dict[int, QuestionDTO]:
+        if not question_ids:
+            return {}
+        stmt = (
+            select(orm.Question)
+            .options(
+                selectinload(orm.Question.options),
+                selectinload(orm.Question.tags),
+            )
+            .where(orm.Question.id.in_(question_ids))
+        )
+        rows = self._session.scalars(stmt).unique().all()
+        return {row.id: self._to_domain(row) for row in rows}
 
     def count(self) -> int:
         from sqlalchemy import func

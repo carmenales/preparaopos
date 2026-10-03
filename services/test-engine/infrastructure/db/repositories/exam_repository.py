@@ -30,7 +30,11 @@ class ExamRepository:
             scoring_rule_id=row.scoring_rule_id,
             duration_seconds=row.duration_seconds,
             questions=[
-                ExamQuestion(question_id=eq.question_id, position=eq.position)
+                ExamQuestion(
+                    question_id=eq.question_id,
+                    position=eq.position,
+                    is_reserve=eq.is_reserve,
+                )
                 for eq in row.questions
             ],
         )
