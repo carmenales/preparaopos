@@ -27,8 +27,8 @@ from sentence_transformers import SentenceTransformer
 import os
 
 MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
-_DEFAULT_LOCAL_DATA = Path(__file__).resolve().parents[2] / "apps" / "studyassistant" / "data"
-DATA_DIR = Path(os.getenv("DATA_DIR", _DEFAULT_LOCAL_DATA if _DEFAULT_LOCAL_DATA.exists() else "/workspace/apps/studyassistant/data"))
+_LOCAL_DATA = Path(__file__).resolve().parents[2] / "apps" / "studyassistant" / "data"
+DATA_DIR = Path(os.getenv("DATA_DIR", _LOCAL_DATA if _LOCAL_DATA.exists() else "/workspace/apps/studyassistant/data"))
 CHUNKS_PATH = DATA_DIR / "semantic_chunks.json"
 EMBEDDINGS_PATH = DATA_DIR / "semantic_embeddings.npy"
 
