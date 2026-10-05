@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Catálogo de exámenes{% endblock %}
+
+{% block content %}
+<section class="catalog">
+  <h1>Exámenes disponibles</h1>
+
+  {% if exams %}
+  <ul class="exam-list">
+    {% for exam in exams %}
+    <li class="exam-card">
+      <div class="exam-card__info">
+        <strong>{{ exam.name }}</strong>
+        {% if exam.year %}<span class="tag">{{ exam.year }}</span>{% endif %}
+        {% if exam.convocatoria %}<span class="tag">{{ exam.convocatoria }}</span>{% endif %}
+        {% if exam.duration_min %}<span class="tag">⏱ {{ exam.duration_min }} min</span>{% endif %}
+      </div>
+      <div class="exam-card__actions">
+        <form method="post" action="/sessions/">
+          <input type="hidden" name="source" value="exam">
+          <input type="hidden" name="source_ref" value="{{ exam.id }}">
+          <button type="submit" name="mode" value="exam" class="btn btn--primary">
+            🎯 Simulacro oficial
+          </button>
+          <button type="submit" name="mode" value="practice" class="btn btn--secondary">
+            📖 Práctica con corrección
+          </button>
+        </form>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="empty-state">No hay exámenes importados aún.</p>
+  {% endif %}
+</section>
+{% endblock %}
+

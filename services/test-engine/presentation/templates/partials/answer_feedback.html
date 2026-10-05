@@ -1,0 +1,51 @@
+{# Fragmento htmx: respuesta al POST /sessions/{id}/answer
+   En modo práctica muestra corrección inline.
+   En modo examen solo confirma guardado y ofrece navegar. #}
+
+{% if session.mode == "practice" %}
+
+  {% if result.is_correct is not none %}
+    <div class="feedback {% if result.is_correct %}feedback--correct{% else %}feedback--wrong{% endif %}">
+      {% if result.is_correct %}
+        <p class="feedback__verdict">✅ Respuesta correcta</p>
+      {% else %}
+        <p class="feedback__verdict">❌ Respuesta incorrecta</p>
+        {% if result.correct_option_id and question %}
+          {% for opt in question.options %}
+            {% if opt.id == result.correct_option_id %}
+            <p class="feedback__correct-answer">Respuesta correcta: <strong>{{ opt.text }}</strong></p>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+
+      {% if result.explanation %}
+      <p class="feedback__explanation">{{ result.explanation }}</p>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="feedback feedback--blank">
+      <p class="feedback__verdict">⬜ Guardado en blanco</p>
+    </div>
+  {% endif %}
+
+{% else %}
+  {# Modo examen: sin corrección, solo confirmación de guardado #}
+  <div class="feedback feedback--saved">
+    <p class="feedback__verdict">💾 Respuesta guardada</p>
+  </div>
+{% endif %}
+
+{# Botón de navegación inyectado por htmx para no recargar la página #}
+<div class="feedback__nav">
+  {% if next_n <= total %}
+  <a href="/sessions/{{ session.id }}/question/{{ next_n }}" class="btn btn--primary">
+    Siguiente → ({{ next_n }}/{{ total }})
+  </a>
+  {% else %}
+  <a href="/sessions/{{ session.id }}/result" class="btn btn--danger">
+    Finalizar y ver resultados
+  </a>
+  {% endif %}
+</div>
+
