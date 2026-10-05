@@ -66,7 +66,42 @@ class SessionRepository:
         )
         if row is None:
             return None
+        return self._to_domain(row)
 
+    def list_all(self, limit: int = 50) -> list[TestSession]:
+        rows = self._session.scalars(
+            select(orm.TestSession)
+            .options(selectinload(orm.TestSession.attempts))
+            .order_by(orm.TestSession.started_at.desc())
+            .limit(limit)
+        ).all()
+        return [self._to_domain(row) for row in rows]
+
+    def save_attempt(self, attempt: TestAttempt) -> None:
+        """Inserta o actualiza un intento de respuesta por (test_session_id, question_id)."""
+        existing = self._session.scalar(
+            select(orm.TestAttempt).where(
+                orm.TestAttempt.test_session_id == attempt.session_id,
+                orm.TestAttempt.question_id == attempt.question_id,
+            )
+        )
+        if existing is not None:
+            existing.selected_option_id = attempt.selected_option_id
+            existing.is_correct = attempt.is_correct
+            existing.answered_at = attempt.answered_at
+        else:
+            new_att = orm.TestAttempt(
+                test_session_id=attempt.session_id,
+                question_id=attempt.question_id,
+                selected_option_id=attempt.selected_option_id,
+                is_correct=attempt.is_correct,
+                answered_at=attempt.answered_at,
+            )
+            self._session.add(new_att)
+        self._session.commit()
+
+    @staticmethod
+    def _to_domain(row: orm.TestSession) -> TestSession:
         q_ids = []
         if row.question_ids:
             try:
@@ -99,26 +134,3 @@ class SessionRepository:
                 for att in row.attempts
             ],
         )
-
-    def save_attempt(self, attempt: TestAttempt) -> None:
-        """Inserta o actualiza un intento de respuesta por (test_session_id, question_id)."""
-        existing = self._session.scalar(
-            select(orm.TestAttempt).where(
-                orm.TestAttempt.test_session_id == attempt.session_id,
-                orm.TestAttempt.question_id == attempt.question_id,
-            )
-        )
-        if existing is not None:
-            existing.selected_option_id = attempt.selected_option_id
-            existing.is_correct = attempt.is_correct
-            existing.answered_at = attempt.answered_at
-        else:
-            new_att = orm.TestAttempt(
-                test_session_id=attempt.session_id,
-                question_id=attempt.question_id,
-                selected_option_id=attempt.selected_option_id,
-                is_correct=attempt.is_correct,
-                answered_at=attempt.answered_at,
-            )
-            self._session.add(new_att)
-        self._session.commit()
