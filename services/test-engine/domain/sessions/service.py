@@ -246,6 +246,29 @@ class TestSessionService:
                 explanation=None,
             )
 
+    def get_session(self, session_id: str, now: datetime | None = None) -> TestSession | None:
+        """Obtiene una sesión. Si ha expirado y sigue abierta, la cierra perezosamente."""
+        session = self._sessions.get_by_id(session_id)
+        if session is None:
+            return None
+
+        clock = now or datetime.now(timezone.utc)
+        if session.closed_at is None and self.is_expired(session, clock):
+            session = self.close_session(session_id, now=clock)
+
+        return session
+
+    def list_sessions(self, limit: int = 50, now: datetime | None = None) -> list[TestSession]:
+        """Lista sesiones recientes, cerrando perezosamente las que hayan expirado."""
+        clock = now or datetime.now(timezone.utc)
+        sessions = self._sessions.list_all(limit=limit)
+        results: list[TestSession] = []
+        for s in sessions:
+            if s.closed_at is None and self.is_expired(s, clock):
+                s = self.close_session(s.id, now=clock)
+            results.append(s)
+        return results
+
     def close_session(self, session_id: str, now: datetime | None = None) -> TestSession:
         """Cierra la sesión y calcula la calificación con ScoringService (idempotente)."""
         session = self._sessions.get_by_id(session_id)
@@ -256,6 +279,18 @@ class TestSessionService:
             return session
 
         clock = now or datetime.now(timezone.utc)
+        if clock.tzinfo is None:
+            clock = clock.replace(tzinfo=timezone.utc)
+
+        # Si expiró, la fecha de cierre oficial queda fijada a la hora de expiración exacta
+        if session.duration_seconds is not None and self.is_expired(session, clock):
+            started = session.started_at
+            if started.tzinfo is None:
+                started = started.replace(tzinfo=timezone.utc)
+            expiry_time = started + timedelta(seconds=session.duration_seconds)
+            if clock > expiry_time:
+                clock = expiry_time
+
         questions_map = self._questions.get_by_ids(session.question_ids)
         attempts_map = {att.question_id: att for att in session.attempts}
 
@@ -300,14 +335,15 @@ class TestSessionService:
         self._sessions.save_session(session)
         return session
 
-    def get_result(self, session_id: str) -> SessionResult:
+    def get_result(self, session_id: str, now: datetime | None = None) -> SessionResult:
         """Devuelve la hoja de resultados completa con desglose por pregunta."""
         session = self._sessions.get_by_id(session_id)
         if session is None:
             raise ValueError(f"Sesión {session_id} no encontrada")
 
+        clock = now or datetime.now(timezone.utc)
         if session.closed_at is None:
-            session = self.close_session(session_id)
+            session = self.close_session(session_id, now=clock)
 
         questions_map = self._questions.get_by_ids(session.question_ids)
         attempts_map = {att.question_id: att for att in session.attempts}
