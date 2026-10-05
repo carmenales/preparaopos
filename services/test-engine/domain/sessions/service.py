@@ -301,6 +301,11 @@ class TestSessionService:
 
         for qid in session.question_ids:
             q = questions_map.get(qid)
+            # NOTE: Para el examen 53 (AGE GSI 2024), ninguna pregunta tiene is_annulled=True:
+            # las 4 anuladas del tribunal (posiciones 17, 27, 86, 90) NO se importaron como filas
+            # en `questions` — se registraron solo en `scripts/etl/age_gsi_2024_anuladas.json`.
+            # Este bloque existe para fuentes futuras donde sí se importen preguntas anuladas
+            # con flag explícito (ej. bancos históricos donde la anulación ocurrió tras el import).
             if q and q.is_annulled:
                 annulled_count += 1
                 continue
