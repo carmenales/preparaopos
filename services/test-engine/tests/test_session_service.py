@@ -257,3 +257,75 @@ def test_exam_mode_hides_correction_until_close(session_service: TestSessionServ
     first_q_res = next(qr for qr in result.questions if qr.question_id == qid)
     assert first_q_res.is_correct is True
     assert first_q_res.correct_option_id == corr_opt.id
+
+
+def test_close_session_counts_unattempted_questions_as_blank(session_service: TestSessionService):
+    """9. Preguntas nunca abiertas (0 filas TestAttempt) se cuentan como blancos y se evalúan sobre las 96 totales."""
+    session = session_service.start_session(
+        mode="exam",
+        source="exam",
+        source_ref="53",
+    )
+    # El opositor responde 30 preguntas de 96 (20 aciertos, 10 fallos):
+    q_map = session_service._questions.get_by_ids(session.question_ids[:30])
+    for i, qid in enumerate(session.question_ids[:30]):
+        q = q_map[qid]
+        corr_opt = next(o for o in q.options if o.is_correct)
+        wrong_opt = next(o for o in q.options if not o.is_correct)
+
+        chosen = corr_opt.id if i < 20 else wrong_opt.id
+        session_service.submit_answer(
+            session_id=session.id,
+            question_id=qid,
+            selected_option_id=chosen,
+        )
+
+    # Las 66 preguntas restantes NUNCA fueron respondidas (sin fila TestAttempt)
+    closed = session_service.close_session(session.id)
+    res = session_service.get_result(session.id)
+
+    assert res.correct_count == 20
+    assert res.wrong_count == 10
+    assert res.blank_count == 66  # 96 - 30 = 66 en blanco
+    assert res.total_evaluable == 96
+
+    # Nota: (20 - 10/3) / 96 * 10 = (16.6666... / 96) * 10 = 1.7361... -> 1.74
+    expected = (Decimal("20") - Decimal("10") / Decimal("3")) / Decimal("96") * Decimal("10")
+    assert closed.final_score == expected.quantize(Decimal("0.01"))
+    assert res.final_score == closed.final_score
+
+    # Verificar que exactamente 66 QuestionResult tienen is_blank=True y selected_option_id=None
+    blanks = [qr for qr in res.questions if qr.is_blank]
+    assert len(blanks) == 66
+    for b in blanks:
+        assert b.selected_option_id is None
+        assert b.is_correct is None
+
+
+def test_abandoned_expired_session_is_lazily_closed(session_service: TestSessionService):
+    """10. Sesión abandonada tras expirar: al consultarse (get_session o get_result) se cierra de forma perezosa."""
+    session = session_service.start_session(
+        mode="exam",
+        source="exam",
+        source_ref="53",
+    )
+    # Sesión abierta inicialmente
+    assert session.closed_at is None
+    assert session.status == "open"
+
+    # Simular que el usuario cierra la pestaña y 2 horas después (7200s > 6000s) consulta su sesión
+    start_time = session.started_at
+    if start_time.tzinfo is None:
+        start_time = start_time.replace(tzinfo=timezone.utc)
+    future_time = start_time + timedelta(seconds=7200)
+
+    # get_session debe detectar la expiración y cerrarla automáticamente
+    lazy_closed = session_service.get_session(session.id, now=future_time)
+    assert lazy_closed is not None
+    assert lazy_closed.closed_at is not None
+    assert lazy_closed.status == "closed"
+    # El closed_at queda fijado a la expiración exacta (started + 6000s)
+    expected_expiry = start_time + timedelta(seconds=6000)
+    assert lazy_closed.closed_at == expected_expiry
+    # Al no responder ninguna pregunta, las 96 son blancos -> nota 0.00
+    assert lazy_closed.final_score == Decimal("0.00")
