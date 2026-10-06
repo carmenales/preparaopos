@@ -155,14 +155,14 @@ No se crea ningún servicio nuevo por este motivo. Si en el futuro se implementa
 
 Patrón *strangler fig*: cada fase mantiene el sistema PHP existente operativo hasta que su equivalente en el sistema nuevo esté probado. Nunca un corte total.
 
-| Fase | Alcance | Qué se retira al terminar |
-|---|---|---|
-| **0** | Esqueleto de `apuntes-service` (capas + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP/`services/embeddings`. | Nada aún — PHP sigue siendo la vía principal |
-| **1** | Migración de datos MariaDB → SQLite de `tests-service`. Lectura y realización de tests contra la base nueva. | — |
-| **2** | Escritura en `apuntes-service`: importar, editar, borrar apuntes (sustituye al stepper de ingesta PHP y a `services/knowledge`) | `services/knowledge` |
-| **3** | Escritura en `tests-service`: alta/edición/baja de preguntas | `apps/preparadortai` |
-| **4** | `linking-service` como servicio de primera clase, sustituyendo `suggest_topic_links.py` y `topic_links.php` | El script y el helper PHP |
-| **5** | Backlog aparcado, solo si se retoma: SM-2, simulacros adaptativos, PWA offline móvil, flashcards, detección de normativa derogada | — |
+| Fase | Alcance | Estado | Qué se retira al terminar |
+|---|---|---|---|
+| **0** | Esqueleto de `apuntes-service` (capas + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP/`services/embeddings`. | **Verificada** | Nada aún — PHP sigue siendo la vía principal |
+| **1** | Migración de datos MariaDB → SQLite de `tests-service` (`test-engine`). Lectura y realización de tests contra la base nueva. | **Verificada** | — |
+| **2** | Escritura en `apuntes-service`: importar, editar, borrar apuntes (sustituye al stepper de ingesta PHP y a `services/knowledge`) | Pendiente | `services/knowledge` |
+| **3** | Escritura en `tests-service`: alta/edición/baja de preguntas | Pendiente | `apps/preparadortai` |
+| **4** | `linking-service` como servicio de primera clase, sustituyendo `suggest_topic_links.py` y `topic_links.php` | Pendiente | El script y el helper PHP |
+| **5** | Backlog aparcado, solo si se retoma: SM-2, simulacros adaptativos, PWA offline móvil, flashcards, detección de normativa derogada | Pendiente | — |
 
 `apps/studyassistant` (PHP) se retira al completar la Fase 2; `apps/preparadortai` (PHP) al completar la Fase 3.
 
@@ -182,3 +182,33 @@ Patrón *strangler fig*: cada fase mantiene el sistema PHP existente operativo h
 - Sin RBAC ni observabilidad — válido mientras el sistema sea de un único usuario en una única máquina; revisar si eso cambia.
 
 **Explícitamente fuera de alcance por ahora:** RBAC, sincronización multidispositivo, PWA offline, SM-2, simulacros adaptativos, flashcards, detección de normativa derogada — todo en Fase 5, sin fecha comprometida.
+
+---
+
+## 8. Estado de Implementación y Seguimiento
+
+A fecha de octubre de 2026, las **Fases 0 y 1** se encuentran implementadas y verificadas:
+
+1. **`apuntes-service` (Fase 0):**
+   - Servicio de lectura de apuntes y búsqueda semántica vectorial verificado.
+
+2. **`test-engine` / `tests-service` (Fase 1):**
+   - **Persistencia e Ingesta:** Base de datos SQLite unificada (`test_engine.sqlite`, modo WAL) con 18.112 preguntas consolidadas (MariaDB TAI, PreparaTIC, AGE GSI 2024 con 96 ordinarias válidas y 5 reservas).
+   - **Capa de Dominio:** 
+     - `ScoringService`: Aritmética exacta con `Decimal` (fórmula oficial AGE $A - F/3$, escala configurable a 10, redondeo bancario/half-up configurable y suelo en 0).
+     - `TestSessionService`: Gestión inmutable de orden de preguntas, autoridad de tiempos estricta en servidor (`remaining_seconds`), tratamiento de no respondidas como blancos y cierre perezoso (*lazy close*) de sesiones expiradas.
+   - **Capa de Presentación:** FastAPI + Jinja2 + htmx con plantilla unificada (`question.html`), temporizador visual en cliente que redirige al cierre, feedback inline interactivo en modo práctica, ocultamiento estricto en modo examen (defensa en profundidad sin inyección del objeto de la pregunta en contexto) y hoja de resultados con desglose de opciones y justificaciones.
+   - **Suite de pruebas:** 23 tests automatizados pasando al 100% (`test_scoring_service.py`, `test_session_service.py`, `test_presentation.py`).
+
+### 8.1. Deuda Técnica y Backlog Identificado para la UI y Catálogo
+Tras la verificación manual de la interfaz de `test-engine`, se registran formalmente los siguientes puntos para iteraciones posteriores:
+
+1. **Alineación de UI/UX con aplicaciones de referencia (PreparaTIC y preparadortai):**
+   - La interfaz actual es un scaffolding funcional mínimo (MVP limpio con htmx y CSS base).
+   - Queda pendiente rediseñar la UI para acercarla al estilo, ergonomía y riqueza visual de las aplicaciones de referencia (**PreparaTIC** y **preparadortai**), mejorando la navegación, controles y presentación de las preguntas.
+2. **Exposición del catálogo histórico completo de exámenes:**
+   - Aunque la base de datos contiene más de 18.000 preguntas de diversas convocatorias históricas, la UI actual del catálogo solo expone de forma directa el examen AGE GSI 2024 (ID 53).
+   - Queda pendiente mapear y habilitar en la interfaz el resto de exámenes oficiales históricos de PreparaTIC y preparadortai, así como selectores para práctica libre por bloques y temas de temario.
+3. **Gateway Nginx (Cableado Operativo):**
+   - Pendiente de configurar `nginx.conf` (`:8080`) enrutando `/` a `apuntes-service` y `/tests` a `test-engine` cuando ambos servicios convivan en el mismo entorno.
+
