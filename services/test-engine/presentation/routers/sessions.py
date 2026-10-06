@@ -153,7 +153,8 @@ async def submit_answer(
             headers=NO_CACHE,
         )
 
-    question = q_repo.get_by_id(question_id)
+    # En modo examen no se carga ni se pasa el objeto question al contexto (defensa en profundidad)
+    question = q_repo.get_by_id(question_id) if (session and session.mode == "practice") else None
     total = len(session.question_ids) if session else 0
 
     return templates.TemplateResponse(
