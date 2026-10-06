@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from contextlib import contextmanager
 from pathlib import Path
 
 from sqlalchemy import create_engine, event, func, select, text
@@ -77,6 +78,7 @@ def count_questions(session: Session) -> int:
     return int(session.scalar(select(func.count()).select_from(Question)) or 0)
 
 
+@contextmanager
 def session_scope(engine: Engine) -> Generator[Session, None, None]:
     SessionLocal = sessionmaker(bind=engine, autoflush=False, future=True)
     session = SessionLocal()
