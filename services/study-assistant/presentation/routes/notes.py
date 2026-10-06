@@ -171,3 +171,43 @@ def _build_practice_url(note, note_service) -> str | None:
         f"?topics={topics_param}&source=studyassistant"
     )
 
+
+# ---------------------------------------------------------------------------
+# API JSON para consumo entre servicios (linking-service, etc.)
+# ---------------------------------------------------------------------------
+
+@router.get("/api/notes")
+async def list_notes_api(request: Request, process: str = ""):
+    """Devuelve el catálogo de notas en formato JSON, opcionalmente filtrado por proceso."""
+    note_service = request.app.state.note_service
+    notes = note_service.filter_notes(process=process) if process else list(note_service.notes)
+    return [
+        {
+            "id": n.id,
+            "title": n.title,
+            "official_topic": n.official_topic,
+            "block": n.block,
+            "processes": n.processes,
+            "path": n.path,
+        }
+        for n in notes
+    ]
+
+
+@router.get("/api/notes/{note_id}")
+async def get_note_api(request: Request, note_id: str):
+    """Devuelve los metadatos de una nota en formato JSON."""
+    note_service = request.app.state.note_service
+    n = note_service.find_by_id(note_id)
+    if not n:
+        raise HTTPException(status_code=404, detail=f"Nota {note_id} no encontrada")
+    return {
+        "id": n.id,
+        "title": n.title,
+        "official_topic": n.official_topic,
+        "block": n.block,
+        "processes": n.processes,
+        "path": n.path,
+    }
+
+
