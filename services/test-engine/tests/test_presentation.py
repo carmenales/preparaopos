@@ -114,20 +114,41 @@ def test_exam_mode_timer_and_no_inline_correction(client):
     assert opts and qid_match
 
     qid = int(qid_match.group(1))
-    opt_id = int(opts[0])
 
-    # 3. Enviar respuesta vía htmx
+    # Obtenemos la pregunta de BD para conocer la opción correcta real
+    from infrastructure.db.engine import create_sqlite_engine, session_scope
+    from infrastructure.db.repositories.question_repository import QuestionRepository
+    from config import SQLITE_PATH
+    engine = create_sqlite_engine(SQLITE_PATH)
+    with session_scope(engine) as db:
+        q_repo = QuestionRepository(db)
+        question = q_repo.get_by_id(qid)
+
+    correct_opt = next(o for o in question.options if o.is_correct)
+    # Elegimos deliberadamente una opción incorrecta distinta de la correcta
+    wrong_opt = next(o for o in question.options if not o.is_correct)
+
+    # 3. Enviar respuesta errónea vía htmx
     ans_res = client.post(
         f"/sessions/{session_id}/answer",
-        data={"question_id": qid, "selected_option_id": opt_id, "n": 1},
+        data={"question_id": qid, "selected_option_id": wrong_opt.id, "n": 1},
         headers={"HX-Request": "true"},
     )
     assert ans_res.status_code == 200
     assert ans_res.headers.get("cache-control") == "no-store"
-    # En modo examen solo se confirma guardado, NO se muestra corrección
+
+    # En modo examen solo se confirma guardado, NUNCA se muestra corrección ni texto de la opción correcta
     assert "feedback--saved" in ans_res.text or "Respuesta guardada" in ans_res.text
     assert "feedback--correct" not in ans_res.text
     assert "feedback--wrong" not in ans_res.text
+    assert "Respuesta correcta:" not in ans_res.text
+    assert "Respuesta incorrecta" not in ans_res.text
+
+    # Anti-leak estricto: el texto de la opción correcta NO debe aparecer en el HTML devuelto
+    assert correct_opt.text not in ans_res.text
+    if question.justification:
+        assert question.justification not in ans_res.text
+
 
 
 def test_result_sheet_and_subsequent_question_access_redirects(client):
