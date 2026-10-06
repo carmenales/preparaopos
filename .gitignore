@@ -12,7 +12,11 @@ venv/
 *.bak
 *.backup
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
 *.db
+*.db-wal
+*.db-shm
 db/local/*
 !db/local/.gitkeep
 !db/migrations/*.sql
