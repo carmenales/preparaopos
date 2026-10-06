@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if session.mode == "exam" %}Simulacro{% else %}Práctica{% endif %}
+  — Pregunta {{ n }}/{{ total }}
+{% endblock %}
+
+{% block content %}
+<section class="question-page">
+
+  {# ── Barra de progreso + temporizador ─────────────────────────── #}
+  <div class="question-header">
+    <div class="progress-bar">
+      <div class="progress-bar__fill" style="width: {{ (n / total * 100)|round|int }}%"></div>
+    </div>
+    <span class="question-counter">{{ n }} / {{ total }}</span>
+
+    {% if session.mode == "exam" and remaining_seconds is not none %}
+    {# El temporizador es solo visual: al llegar a 0 redirige al cliente.
+       La autoridad real del tiempo está en el servidor (submit_answer + close_session). #}
+    <div class="timer" id="timer" data-seconds="{{ remaining_seconds }}">
+      <span id="timer-display">--:--</span>
+    </div>
+    {% endif %}
+  </div>
+
+  {# ── Enunciado ─────────────────────────────────────────────────── #}
+  <article class="question-card" id="question-card">
+    <p class="question-statement">{{ question.statement }}</p>
+
+    {# ── Formulario de respuesta ───────────────────────────────────── #}
+    {#
+      En modo práctica: htmx POST → fragmento con feedback inline.
+      En modo examen: htmx POST → fragmento mínimo (solo confirma guardado) + avanza.
+      En ambos casos el form no recarga la página.
+    #}
+    <form id="answer-form"
+          hx-post="/sessions/{{ session.id }}/answer"
+          hx-target="#feedback"
+          hx-swap="innerHTML"
+          hx-include="#answer-form">
+      <input type="hidden" name="question_id" value="{{ question.id }}">
+      <input type="hidden" name="n" value="{{ n }}">
+
+      <fieldset class="options">
+        <legend class="sr-only">Opciones de respuesta</legend>
+        {% for opt in question.options %}
+        <label class="option {% if previous_attempt and previous_attempt.selected_option_id == opt.id %}option--selected{% endif %}"
+               data-option-id="{{ opt.id }}">
+          <input type="radio" name="selected_option_id" value="{{ opt.id }}" {% if previous_attempt and previous_attempt.selected_option_id == opt.id %}checked{% endif %}>
+          <span class="option__text">{{ opt.text }}</span>
+        </label>
+        {% endfor %}
+
+        {# Opción "en blanco" siempre disponible #}
+        <label class="option option--blank {% if previous_attempt and previous_attempt.selected_option_id is none %}option--selected{% endif %}">
+          <input type="radio" name="selected_option_id" value="" {% if previous_attempt and previous_attempt.selected_option_id is none %}checked{% endif %}>
+          <span class="option__text">⬜ Dejar en blanco</span>
+        </label>
+      </fieldset>
+
+      <div class="question-actions">
+        <button type="submit" class="btn btn--primary">Confirmar</button>
+        {% if n > 1 %}
+        <a href="/sessions/{{ session.id }}/question/{{ n - 1 }}" class="btn btn--ghost">← Anterior</a>
+        {% endif %}
+        {% if n < total %}
+        <a href="/sessions/{{ session.id }}/question/{{ n + 1 }}" class="btn btn--ghost">Siguiente →</a>
+        {% else %}
+        <a href="/sessions/{{ session.id }}/result" class="btn btn--danger">Finalizar examen</a>
+        {% endif %}
+      </div>
+    </form>
+
+    {# ── Zona de feedback (htmx swap target) ─────────────────────── #}
+    <div id="feedback" class="feedback">
+      {# Se rellena por htmx tras confirmar la respuesta #}
+    </div>
+  </article>
+
+</section>
+
+{# ── Timer JS (solo modo examen) ──────────────────────────────── #}
+{% if session.mode == "exam" and remaining_seconds is not none %}
+<script>
+(function () {
+  const display = document.getElementById("timer-display");
+  const container = document.getElementById("timer");
+  let remaining = parseInt(container.dataset.seconds, 10);
+
+  function fmt(s) {
+    const m = Math.floor(s / 60);
+    const ss = s % 60;
+    return String(m).padStart(2, "0") + ":" + String(ss).padStart(2, "0");
+  }
+
+  function tick() {
+    if (remaining <= 0) {
+      display.textContent = "00:00";
+      container.classList.add("timer--expired");
+      // Redirigir al cliente: el servidor cerrará perezosamente la sesión
+      // en el GET /result gracias al lazy close ya implementado en get_result().
+      window.location.href = "/sessions/{{ session.id }}/result";
+      return;
+    }
+    display.textContent = fmt(remaining);
+    if (remaining <= 300) {          // últimos 5 min
+      container.classList.add("timer--warning");
+    }
+    remaining--;
+    setTimeout(tick, 1000);
+  }
+
+  display.textContent = fmt(remaining);
+  setTimeout(tick, 1000);
+})();
+</script>
+{% endif %}
+{% endblock %}

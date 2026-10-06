@@ -435,14 +435,14 @@ La tabla `question_syllabus_tags` permite que una misma pregunta tenga etiquetas
 
 Cada fase mantiene el sistema PHP existente operativo hasta que su equivalente en el nuevo sistema esté verificado. Nunca un corte total.
 
-| Fase | Alcance | Qué se retira al completar |
-| :--- | :--- | :--- |
-| **0** | Esqueleto de `study-assistant` (capas DDD + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP y `services/embeddings`. | Nada — PHP sigue como vía principal |
-| **1** | Migración completa de datos MariaDB + CSV PreparaTIC + AGE GSI 2024 → SQLite de `test-engine`. Lectura y realización de tests contra la base nueva. Carga de todas las preguntas desde el día 1. | — |
-| **2** | Escritura en `study-assistant`: importar, editar, borrar apuntes (sustituye el stepper de ingesta PHP y `services/knowledge`). | `services/knowledge` |
-| **3** | Escritura en `test-engine`: CRUD completo de preguntas, taxonomías y baremos. | `apps/preparadortai` + `apps/studyassistant` |
-| **4** | `linking-service` como servicio de primera clase, sustituyendo `suggest_topic_links.py` y `topic_links.php`. | Script y helper PHP |
-| **5** | Backlog aparcado (sin fecha comprometida): SM-2, simulacros adaptativos, PWA offline móvil, flashcards, detección de normativa derogada, integraciones con APIs de terceros (Notion, Obsidian, Gemini). | — |
+| Fase | Alcance | Estado | Qué se retira al completar |
+| :--- | :--- | :--- | :--- |
+| **0** | Esqueleto de `study-assistant` (capas DDD + Docker). Solo lectura: visor de apuntes y búsqueda semántica migrados desde PHP y `services/embeddings`. | **Verificada** | Nada — PHP sigue como vía principal |
+| **1** | Migración completa de datos MariaDB + CSV PreparaTIC + AGE GSI 2024 → SQLite de `test-engine`. Lectura y realización de tests contra la base nueva. Carga de todas las preguntas desde el día 1. | **Verificada** | — |
+| **2** | Escritura en `study-assistant`: importar, editar, borrar apuntes (sustituye el stepper de ingesta PHP y `services/knowledge`). | Pendiente | `services/knowledge` |
+| **3** | Escritura en `test-engine`: CRUD completo de preguntas, taxonomías y baremos. | Pendiente | `apps/preparadortai` + `apps/studyassistant` |
+| **4** | `linking-service` como servicio de primera clase, sustituyendo `suggest_topic_links.py` y `topic_links.php`. | Pendiente | Script y helper PHP |
+| **5** | Backlog aparcado (sin fecha comprometida): SM-2, simulacros adaptativos, PWA offline móvil, flashcards, detección de normativa derogada, integraciones con APIs de terceros (Notion, Obsidian, Gemini). | Pendiente | — |
 
 ### 7.6. Respuesta a Brechas Identificadas (Sección 6)
 

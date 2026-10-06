@@ -12,6 +12,7 @@ Uso local:
 
 import logging
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -42,26 +43,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger("study-assistant")
 
-# --- Aplicación FastAPI ---
-app = FastAPI(
-    title="Study Assistant",
-    description="Visor de apuntes y búsqueda semántica — PreparaOpos",
-    version="0.1.0",
-)
-
-# --- Archivos estáticos ---
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
-
-# --- Templates Jinja2 ---
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
-@app.on_event("startup")
-async def startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Carga inicial: índice de notas y servicio de dominio."""
     logger.info("Cargando índice de notas desde %s", KNOWLEDGE_INDEX_PATH)
 
-    # Repositorio de sistema de ficheros
     repo = KnowledgeFSRepository(
         index_path=KNOWLEDGE_INDEX_PATH,
         knowledge_base_path=KNOWLEDGE_BASE_PATH,
@@ -69,16 +58,15 @@ async def startup():
     notes = repo.load_index()
     logger.info("Cargadas %d notas del índice.", len(notes))
 
-    # Servicio de dominio
     note_service = NoteService(notes)
+    metrics = note_service.get_dashboard_metrics()
 
-    # Almacenar en estado de la app para acceso desde rutas
     app.state.repository = repo
     app.state.note_service = note_service
     app.state.templates = templates
+    app.state.notes_loaded = metrics.total_notes
+    app.state.processes_count = metrics.total_processes
 
-    # Métricas rápidas
-    metrics = note_service.get_dashboard_metrics()
     logger.info(
         "Dashboard: %d notas, %d procesos, %d revisadas, %d borradores",
         metrics.total_notes,
@@ -86,6 +74,17 @@ async def startup():
         metrics.reviewed_count,
         metrics.draft_count,
     )
+    yield
+
+
+app = FastAPI(
+    title="Study Assistant",
+    description="Visor de apuntes y búsqueda semántica — PreparaOpos",
+    version="0.1.0",
+    lifespan=lifespan,
+)
+
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 # --- Registrar routers ---
@@ -102,14 +101,12 @@ app.include_router(assets_router)
 
 @app.get("/health")
 async def health():
-    """Endpoint de salud del servicio."""
-    note_service: NoteService = app.state.note_service
-    metrics = note_service.get_dashboard_metrics()
+    """Liveness: el índice ya está en memoria; no recalcula métricas del dashboard."""
     return {
         "status": "ok",
         "service": "study-assistant",
-        "notes_loaded": metrics.total_notes,
-        "processes": metrics.total_processes,
+        "notes_loaded": app.state.notes_loaded,
+        "processes": app.state.processes_count,
     }
 
 

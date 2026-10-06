@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Resultados{% endblock %}
+
+{% block content %}
+<section class="result-page">
+  <h1>Resultado del simulacro</h1>
+
+  {# ── Marcador global ─────────────────────────────────────────── #}
+  <div class="scoreboard">
+    {% if result.final_score is not none %}
+    <div class="scoreboard__score
+      {% if result.final_score|float >= 5 %}scoreboard__score--pass{% else %}scoreboard__score--fail{% endif %}">
+      {{ "%.2f"|format(result.final_score|float) }}
+      <span class="scoreboard__scale">/ 10</span>
+    </div>
+    {% endif %}
+
+    <div class="scoreboard__breakdown">
+      <span class="tag tag--correct">✅ {{ result.correct_count }} correctas</span>
+      <span class="tag tag--wrong">❌ {{ result.wrong_count }} erróneas</span>
+      <span class="tag tag--blank">⬜ {{ result.blank_count }} en blanco</span>
+      {% if result.annulled_count > 0 %}
+      <span class="tag tag--annulled">🚫 {{ result.annulled_count }} anuladas</span>
+      {% endif %}
+    </div>
+    <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas</p>
+  </div>
+
+  <a href="/" class="btn btn--secondary">← Volver al catálogo</a>
+
+  {# ── Desglose pregunta a pregunta ────────────────────────────── #}
+  <h2>Desglose</h2>
+  <ol class="result-list">
+    {% for qr in result.questions %}
+    {% set q = questions_map.get(qr.question_id) %}
+    <li class="result-item
+      {% if qr.is_blank %}result-item--blank
+      {% elif qr.is_correct %}result-item--correct
+      {% else %}result-item--wrong{% endif %}">
+
+      <div class="result-item__header">
+        {% if qr.is_blank %}
+          <span class="result-icon">⬜</span>
+        {% elif qr.is_correct %}
+          <span class="result-icon">✅</span>
+        {% else %}
+          <span class="result-icon">❌</span>
+        {% endif %}
+        <span class="result-item__statement">
+          {{ q.statement if q else "(pregunta no disponible)" }}
+        </span>
+      </div>
+
+      {% if q and not qr.is_blank %}
+      <div class="result-item__options">
+        {% for opt in q.options %}
+        <div class="result-opt
+          {% if opt.id == qr.correct_option_id %}result-opt--correct{% endif %}
+          {% if opt.id == qr.selected_option_id and opt.id != qr.correct_option_id %}result-opt--selected-wrong{% endif %}
+          {% if opt.id == qr.selected_option_id and opt.id == qr.correct_option_id %}result-opt--selected-correct{% endif %}">
+          {{ opt.text }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if qr.explanation %}
+      <details class="result-item__explanation">
+        <summary>Ver explicación</summary>
+        <p>{{ qr.explanation }}</p>
+      </details>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+</section>
+{% endblock %}
+
