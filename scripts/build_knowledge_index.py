@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-EXCLUDED_PARTS = {"_template", "sources"}
+EXCLUDED_PARTS = {"_template", "sources", "archivo_duplicados"}
 DEFAULT_OUTPUT = Path("apps/studyassistant/data/knowledge_index.json")
 
 
