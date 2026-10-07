@@ -200,8 +200,14 @@ A fecha de octubre de 2026, las **Fases 0 y 1** se encuentran implementadas y ve
    - **Capa de Presentación:** FastAPI + Jinja2 + htmx con plantilla unificada (`question.html`), temporizador visual en cliente que redirige al cierre, feedback inline interactivo en modo práctica, ocultamiento estricto en modo examen (defensa en profundidad sin inyección del objeto de la pregunta en contexto) y hoja de resultados con desglose de opciones y justificaciones.
    - **Suite de pruebas:** 23 tests automatizados pasando al 100% (`test_scoring_service.py`, `test_session_service.py`, `test_presentation.py`).
 
+3. **`linking-service` (Fase 4 - Piloto AGE GSI completado):**
+   - **Persistencia propia:** Base de datos SQLite (`linking.sqlite`, modo WAL) con esquema `question_note_links` y clave única `(question_id, note_id)`.
+   - **Consumo desacoplado por HTTP:** Resuelve correspondencias consumiendo exclusivamente `apuntes-service` y `test-engine` a través de endpoints REST, sin tocar bases de datos ajenas ni ficheros de conocimiento directamente.
+   - **Resultados del piloto (AGE GSI 2024 vs A2-GSI):** 100 preguntas evaluadas con tema no nulo; 87 resueltas con enlace unívoco (confianza 1.0), 13 resueltas con correspondencia a múltiples subtemas legítimos (confianza 0.8), y 0 preguntas sin resolver. 118 enlaces totales persistidos.
+   - **API REST:** Rutas `GET /links/by-question/{question_id}` y `GET /links/by-note/{note_id}` operativas y enriquecidas con metadatos de ambos servicios.
+
 ### 8.1. Deuda Técnica y Backlog Identificado para la UI y Catálogo
-Tras la verificación manual de la interfaz de `test-engine`, se registran formalmente los siguientes puntos para iteraciones posteriores:
+Tras la verificación manual de la interfaz de `test-engine` y del enlazador, se registran formalmente los siguientes puntos para iteraciones posteriores:
 
 1. **Alineación de UI/UX con aplicaciones de referencia (PreparaTIC y preparadortai):**
    - La interfaz actual es un scaffolding funcional mínimo (MVP limpio con htmx y CSS base).
@@ -211,4 +217,8 @@ Tras la verificación manual de la interfaz de `test-engine`, se registran forma
    - Queda pendiente mapear y habilitar en la interfaz el resto de exámenes oficiales históricos de PreparaTIC y preparadortai, así como selectores para práctica libre por bloques y temas de temario.
 3. **Gateway Nginx (Cableado Operativo):**
    - Pendiente de configurar `nginx.conf` (`:8080`) enrutando `/` a `apuntes-service` y `/tests` a `test-engine` cuando ambos servicios convivan en el mismo entorno.
+4. **Decisión de UX para enlaces 1-a-varios al construir rutas de navegación:**
+   - En casos donde un número de tema cubre legítimamente varios subtemas complementarios (como el Tema I.09 de ENS con 3 notas candidatas: Datos Abiertos, Administración Digital y ENS-ENI), `linking-service` preserva la correspondencia fidedigna asignando `confidence=0.8` a todos ellos.
+   - Queda pendiente definir el comportamiento en la interfaz de usuario de `apuntes-service` y `test-engine` cuando se implementen las rutas de 'ver apunte relacionado'/'ver preguntas relacionadas' (ej. listar menú desplegable o modal para que el opositor elija el subtema específico vs ordenar por similitud semántica contextual).
+
 
