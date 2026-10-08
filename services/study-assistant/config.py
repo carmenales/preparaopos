@@ -33,6 +33,12 @@ EMBEDDINGS_SERVICE_URL = os.getenv("EMBEDDINGS_SERVICE_URL", "http://localhost:8
 # URL base de Preparador TAI (para enlaces de práctica)
 PREPARADORTAI_BASE_URL = os.getenv("PREPARADORTAI_BASE_URL", "http://localhost:8080")
 
+# URL del microservicio de linking (para navegación cruzada)
+LINKING_SERVICE_URL = os.getenv("LINKING_SERVICE_URL", "http://localhost:8097")
+
+# URL del motor de tests (para sesiones de práctica oficial)
+TEST_ENGINE_URL = os.getenv("TEST_ENGINE_URL", "http://localhost:8096")
+
 # --- Servidor ---
 
 HOST = os.getenv("SA_HOST", "0.0.0.0")

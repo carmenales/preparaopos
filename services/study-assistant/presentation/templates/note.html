@@ -39,7 +39,19 @@
                 <a class="button-secondary button-back" href="/">← Volver al listado</a>
             {% endif %}
 
-            {% if practice_url %}
+            {% if practice_test_engine_url %}
+                <div class="note-actions" style="margin: 1.2rem 0;">
+                    <a
+                        class="button-primary"
+                        style="width: 100%; text-align: center; display: block;"
+                        href="{{ practice_test_engine_url }}"
+                        target="_blank"
+                        rel="noopener"
+                        title="Practicar las {{ linked_questions_count }} preguntas de examen oficial vinculadas a este apunte"
+                    > 📝 Practicar preguntas ({{ linked_questions_count }}) ↗
+                    </a>
+                </div>
+            {% elif practice_url %}
                 <div class="note-actions" style="margin: 1.2rem 0;">
                     <a
                         class="button-primary"
