@@ -152,6 +152,32 @@ class LinkingService:
             })
         return results
 
+    def get_links_by_question_ids(self, question_ids: list[int]) -> dict[str, list[dict[str, Any]]]:
+        """Devuelve los enlaces para múltiples preguntas agrupados por question_id."""
+        if not question_ids:
+            return {}
+        grouped = self._repo.get_by_question_ids(question_ids)
+        notes_cache: dict[str, dict[str, Any]] = {}
+        results: dict[str, list[dict[str, Any]]] = {}
+
+        for q_id, links in grouped.items():
+            results[str(q_id)] = []
+            for l in links:
+                n_id = l["note_id"]
+                if n_id not in notes_cache:
+                    note = self._apuntes_client.get_note(n_id)
+                    notes_cache[n_id] = note or {}
+                note = notes_cache[n_id]
+                title = note.get("title") if note else n_id
+                official_topic = note.get("official_topic") if note else None
+                results[str(q_id)].append({
+                    "note_id": n_id,
+                    "title": title,
+                    "official_topic": official_topic,
+                    "confidence": l["confidence"],
+                })
+        return results
+
     def get_links_by_note(self, note_id: str) -> list[dict[str, Any]]:
         """Devuelve los enlaces para un apunte enriquecidos con datos de la pregunta."""
         links = self._repo.get_by_note_id(note_id)

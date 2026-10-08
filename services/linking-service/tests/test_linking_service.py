@@ -190,7 +190,17 @@ def test_linking_api_endpoints(memory_db):
     assert data_n[0]["exam_name"] == "AGE GSI 2024"
     assert data_n[0]["confidence"] == 1.0
 
-    # 3. GET /health
+    # 3. POST /links/by-questions
+    resp_batch = client.post("/links/by-questions", json={"question_ids": [101, 999]})
+    assert resp_batch.status_code == 200
+    data_batch = resp_batch.json()
+    assert "101" in data_batch
+    assert len(data_batch["101"]) == 1
+    assert data_batch["101"][0]["note_id"] == "tema-i-01-constitución"
+    assert "999" in data_batch
+    assert len(data_batch["999"]) == 0
+
+    # 4. GET /health
     resp_h = client.get("/health")
     assert resp_h.status_code == 200
     assert resp_h.json()["links_count"] == 1
