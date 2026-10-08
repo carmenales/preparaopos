@@ -8,14 +8,45 @@ from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from config import TEMPLATES_DIR
-from presentation.dependencies import QuestionRepoDep, SessionServiceDep
+from config import STUDY_ASSISTANT_URL, TEMPLATES_DIR
+from presentation.dependencies import LinkingClientDep, QuestionRepoDep, SessionServiceDep
 
 router = APIRouter(prefix="/sessions")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Cabeceras para rutas GET que pueden producir escritura (cierre perezoso de sesiones)
 NO_CACHE = {"Cache-Control": "no-store"}
+
+
+# ---------------------------------------------------------------------------
+# Práctica por apunte (navegación cruzada desde Study Assistant)
+# ---------------------------------------------------------------------------
+
+@router.get("/practice/by-note/{note_id}", response_class=HTMLResponse)
+async def practice_by_note(
+    request: Request,
+    note_id: str,
+    svc: SessionServiceDep,
+    linking_client: LinkingClientDep,
+):
+    """Inicia una sesión de práctica con las preguntas vinculadas a un apunte."""
+    links = linking_client.get_links_by_note(note_id)
+    if not links:
+        return RedirectResponse(url="/", status_code=303)
+
+    q_ids = [str(l["question_id"]) for l in links if "question_id" in l]
+    if not q_ids:
+        return RedirectResponse(url="/", status_code=303)
+
+    session = svc.start_session(
+        mode="practice",
+        source="questions",
+        source_ref=",".join(q_ids),
+    )
+    return RedirectResponse(
+        url=f"/sessions/{session.id}/question/1",
+        status_code=303,
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -127,13 +158,14 @@ async def submit_answer(
     session_id: str,
     svc: SessionServiceDep,
     q_repo: QuestionRepoDep,
+    linking_client: LinkingClientDep,
     question_id: Annotated[int, Form()],
     selected_option_id: Annotated[int | None, Form()] = None,
     n: Annotated[int, Form()] = 1,
 ):
     """Registra la respuesta vía htmx y devuelve el fragmento de feedback.
 
-    En modo práctica devuelve corrección inline.
+    En modo práctica devuelve corrección inline y notas relacionadas.
     En modo examen solo confirma que la respuesta se guardó.
     """
     result = svc.submit_answer(
@@ -157,6 +189,11 @@ async def submit_answer(
     question = q_repo.get_by_id(question_id) if (session and session.mode == "practice") else None
     total = len(session.question_ids) if session else 0
 
+    # En modo práctica, obtener notas vinculadas vía linking-service
+    linked_notes = []
+    if session and session.mode == "practice":
+        linked_notes = linking_client.get_links_by_question(question_id)
+
     return templates.TemplateResponse(
         request,
         "partials/answer_feedback.html",
@@ -167,6 +204,8 @@ async def submit_answer(
             "n": n,
             "next_n": n + 1,
             "total": total,
+            "linked_notes": linked_notes,
+            "study_assistant_url": STUDY_ASSISTANT_URL,
         },
         headers=NO_CACHE,
     )
@@ -182,12 +221,14 @@ async def show_result(
     session_id: str,
     svc: SessionServiceDep,
     q_repo: QuestionRepoDep,
+    linking_client: LinkingClientDep,
 ):
     """Hoja de resultados. Cierra la sesión si aún estaba abierta (lazy close)."""
     result = svc.get_result(session_id)
 
     question_ids = [qr.question_id for qr in result.questions]
     questions_map = q_repo.get_by_ids(question_ids)
+    linked_notes_map = linking_client.get_links_by_questions(question_ids)
 
     return templates.TemplateResponse(
         request,
@@ -195,6 +236,8 @@ async def show_result(
         {
             "result": result,
             "questions_map": questions_map,
+            "linked_notes_map": linked_notes_map,
+            "study_assistant_url": STUDY_ASSISTANT_URL,
         },
         headers=NO_CACHE,
     )

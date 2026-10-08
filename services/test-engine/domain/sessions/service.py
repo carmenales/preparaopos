@@ -50,7 +50,7 @@ class TestSessionService:
         self,
         *,
         mode: Literal["practice", "exam"],
-        source: Literal["block", "exam", "random"],
+        source: Literal["block", "exam", "random", "questions", "note"],
         source_ref: str | None = None,
         question_count: int | None = None,
         include_reserves: bool = False,
@@ -118,6 +118,16 @@ class TestSessionService:
             random.shuffle(q_ids)
             count = question_count if (question_count and question_count > 0) else 30
             question_ids = q_ids[:count]
+
+        elif source == "questions":
+            if not source_ref:
+                raise ValueError("source='questions' requiere source_ref con IDs de preguntas separados por comas")
+            try:
+                question_ids = [int(x.strip()) for x in source_ref.split(",") if x.strip()]
+            except ValueError:
+                raise ValueError("source_ref contiene IDs de preguntas no válidos")
+            if not question_ids:
+                raise ValueError("No se encontraron preguntas válidas")
 
         else:
             raise ValueError(f"Fuente no soportada: {source}")

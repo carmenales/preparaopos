@@ -172,3 +172,90 @@ def test_result_sheet_and_subsequent_question_access_redirects(client):
     q_after_close = client.get(f"/sessions/{session_id}/question/1")
     assert q_after_close.status_code == 303
     assert q_after_close.headers["location"] == f"/sessions/{session_id}/result"
+
+
+def test_cross_navigation_ui_components(client):
+    from presentation.dependencies import get_linking_client
+
+    class FakeLinkingClient:
+        def get_links_by_question(self, q_id):
+            if q_id == 18012:
+                return [{
+                    "note_id": "tema-i-01-derecho-constitucional",
+                    "title": "Tema I.01 Derecho Constitucional",
+                    "official_topic": "I.01 Derecho Constitucional",
+                    "confidence": 1.0,
+                }]
+            elif q_id == 18044:
+                return [
+                    {
+                        "note_id": "tema-i-09-admin-digital",
+                        "title": "Tema I.09 Administración Digital",
+                        "official_topic": "I.09.II Administración Digital",
+                        "confidence": 0.8,
+                    },
+                    {
+                        "note_id": "tema-i-09-ens-eni",
+                        "title": "Tema I.09 ENS-ENI",
+                        "official_topic": "I.09.II ENS-ENI",
+                        "confidence": 0.8,
+                    },
+                ]
+            return []
+
+        def get_links_by_questions(self, q_ids):
+            return {qid: self.get_links_by_question(qid) for qid in q_ids}
+
+        def get_links_by_note(self, note_id):
+            if note_id == "tema-i-01-derecho-constitucional":
+                return [{"question_id": 18012, "confidence": 1.0}]
+            return []
+
+    app.dependency_overrides[get_linking_client] = lambda: FakeLinkingClient()
+
+    try:
+        # 1. Crear sesión de práctica
+        res = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
+        session_id = res.headers["location"].split("/sessions/")[1].split("/")[0]
+
+        # 2. Responder pregunta 18012 (enlace único -> note-pill)
+        ans_single = client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
+        )
+        assert ans_single.status_code == 200
+        assert "note-pill" in ans_single.text
+        assert "tema-i-01-derecho-constitucional" in ans_single.text
+        assert "note-dropdown" not in ans_single.text
+
+        # 3. Responder pregunta 18044 (enlace múltiple -> note-dropdown)
+        ans_multi = client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18044, "selected_option_id": 1, "n": 2},
+        )
+        assert ans_multi.status_code == 200
+        assert "note-dropdown" in ans_multi.text
+        assert "Ver apuntes relacionados (2)" in ans_multi.text
+        assert "tema-i-09-admin-digital" in ans_multi.text
+        assert "tema-i-09-ens-eni" in ans_multi.text
+
+        # 4. Ver hoja de resultados y comprobar que incluye los enlaces
+        res_sheet = client.get(f"/sessions/{session_id}/result")
+        assert res_sheet.status_code == 200
+        assert "note-pill" in res_sheet.text
+        assert "note-dropdown" in res_sheet.text
+
+        # 5. Práctica por apunte: GET /practice/by-note/tema-i-01-derecho-constitucional
+        res_by_note = client.get("/practice/by-note/tema-i-01-derecho-constitucional")
+        assert res_by_note.status_code == 303
+        loc = res_by_note.headers["location"]
+        # Redirige a /sessions/practice/... o /sessions/{id}/question/1
+        assert "/question/1" in loc or "/sessions/practice" in loc
+
+        # 6. Práctica por apunte sin preguntas vinculadas -> redirige a /
+        res_empty = client.get("/practice/by-note/no-existe")
+        assert res_empty.status_code == 303
+
+    finally:
+        app.dependency_overrides.pop(get_linking_client, None)
+

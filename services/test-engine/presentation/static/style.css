@@ -155,3 +155,44 @@ a { color: inherit; }
 .result-item__explanation summary { cursor: pointer; color: #2563eb; font-weight: 500; }
 .result-item__explanation p { margin-top: .4rem; color: #374151; }
 
+/* ── Navegación cruzada a Study Assistant ──────────────────────── */
+.feedback__notes {
+  margin-top: .75rem; padding-top: .6rem; border-top: 1px dashed rgba(0,0,0,.15);
+}
+.result-item__notes {
+  margin-top: .6rem; padding-top: .5rem; border-top: 1px solid #f1f5f9;
+}
+.note-pill {
+  display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .75rem;
+  background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 9999px;
+  font-size: .85rem; font-weight: 500; text-decoration: none;
+  transition: background .15s ease, border-color .15s ease;
+}
+.note-pill:hover { background: #dbeafe; border-color: #93c5fd; text-decoration: none; }
+
+.note-dropdown {
+  position: relative; display: inline-block;
+}
+.note-dropdown__summary {
+  cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: .35rem;
+  padding: .35rem .75rem; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe;
+  border-radius: 9999px; font-size: .85rem; font-weight: 500; user-select: none;
+  transition: background .15s ease;
+}
+.note-dropdown__summary::-webkit-details-marker { display: none; }
+.note-dropdown__summary:hover { background: #dbeafe; }
+
+.note-dropdown__menu {
+  position: absolute; left: 0; top: calc(100% + 4px); z-index: 50;
+  min-width: 260px; max-width: 440px; background: #fff; border: 1px solid #cbd5e1;
+  border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.12); list-style: none;
+  padding: .4rem 0; margin: 0;
+}
+.note-dropdown__menu li { margin: 0; padding: 0; }
+.note-dropdown__link {
+  display: block; padding: .45rem .85rem; font-size: .85rem; color: #1e293b;
+  text-decoration: none; line-height: 1.35; transition: background .1s;
+}
+.note-dropdown__link:hover { background: #f1f5f9; color: #2563eb; text-decoration: none; }
+
+

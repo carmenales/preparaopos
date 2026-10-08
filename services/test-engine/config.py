@@ -18,3 +18,7 @@ PORT = int(os.getenv("TE_PORT", "8096"))
 
 TEMPLATES_DIR = SERVICE_ROOT / "presentation" / "templates"
 STATIC_DIR = SERVICE_ROOT / "presentation" / "static"
+
+LINKING_SERVICE_URL = os.getenv("LINKING_SERVICE_URL", "http://localhost:8097")
+STUDY_ASSISTANT_URL = os.getenv("STUDY_ASSISTANT_URL", "http://localhost:8095")
+

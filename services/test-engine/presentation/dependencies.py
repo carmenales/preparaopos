@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import Depends
 from sqlalchemy.orm import Session, sessionmaker
 
 from config import SQLITE_PATH
+from infrastructure.clients.linking_client import LinkingClient
 from infrastructure.db.engine import create_sqlite_engine
 from infrastructure.db.repositories.exam_repository import ExamRepository
 from infrastructure.db.repositories.question_repository import QuestionRepository
@@ -57,3 +58,12 @@ def get_session_service(db: DbDep) -> TestSessionService:
 
 
 SessionServiceDep = Annotated[TestSessionService, Depends(get_session_service)]
+
+
+@lru_cache(maxsize=1)
+def get_linking_client() -> LinkingClient:
+    return LinkingClient()
+
+
+LinkingClientDep = Annotated[LinkingClient, Depends(get_linking_client)]
+
