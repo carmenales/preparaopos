@@ -246,15 +246,21 @@ def test_cross_navigation_ui_components(client):
         assert "note-dropdown" in res_sheet.text
 
         # 5. Práctica por apunte: POST /practice/by-note/tema-i-01-derecho-constitucional
+        # 5a. Sin seguir redirecciones: verifica el 307 inicial del router catalog
         res_by_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional")
-        assert res_by_note.status_code in (303, 307)
-        loc = res_by_note.headers["location"]
-        # Redirige a /sessions/practice/... o /sessions/{id}/question/1
-        assert "/question/1" in loc or "/sessions/practice" in loc
+        assert res_by_note.status_code == 307
+        assert res_by_note.headers["location"] == "/sessions/practice/by-note/tema-i-01-derecho-constitucional"
 
-        # 6. Práctica por apunte sin preguntas vinculadas -> redirige a /
-        res_empty = client.post("/practice/by-note/no-existe")
-        assert res_empty.status_code in (303, 307)
+        # 5b. Cadena completa (POST 307 -> POST 303 -> GET 200 a /sessions/{id}/question/1)
+        res_full_chain = client.post("/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
+        assert res_full_chain.status_code == 200
+        assert re.search(r"/sessions/[^/]+/question/1$", str(res_full_chain.url))
+        assert "Pregunta" in res_full_chain.text
+
+        # 6. Práctica por apunte sin preguntas vinculadas -> redirige a / con 303
+        res_empty = client.post("/practice/by-note/no-existe", follow_redirects=True)
+        assert res_empty.status_code == 200
+        assert str(res_empty.url).endswith("/")
 
     finally:
         app.dependency_overrides.pop(get_linking_client, None)
@@ -271,14 +277,10 @@ def test_cross_navigation_graceful_degradation_when_linking_offline(client):
 
     try:
         # 1. POST /practice/by-note con linking-service caído:
-        # No debe lanzar 500; debe degradar elegantemente y redirigir a /
-        res_dead_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional")
-        assert res_dead_note.status_code in (303, 307)
-        if res_dead_note.status_code == 307:
-            # Sigue la redirección a /sessions/practice/by-note/...
-            res_dead_note = client.post(res_dead_note.headers["location"])
-        assert res_dead_note.status_code == 303
-        assert res_dead_note.headers["location"] == "/"
+        # No debe lanzar 500; debe degradar elegantemente y terminar en GET 200 en / (POST 307 -> POST 303 -> GET 200)
+        res_dead_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
+        assert res_dead_note.status_code == 200
+        assert str(res_dead_note.url).endswith("/")
 
         # 2. Crear sesión de práctica y responder con linking-service caído
         res_session = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
