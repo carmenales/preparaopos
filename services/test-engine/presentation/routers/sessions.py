@@ -22,7 +22,7 @@ NO_CACHE = {"Cache-Control": "no-store"}
 # Práctica por apunte (navegación cruzada desde Study Assistant)
 # ---------------------------------------------------------------------------
 
-@router.get("/practice/by-note/{note_id}", response_class=HTMLResponse)
+@router.post("/practice/by-note/{note_id}", response_class=HTMLResponse)
 async def practice_by_note(
     request: Request,
     note_id: str,
