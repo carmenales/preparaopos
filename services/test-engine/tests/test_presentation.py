@@ -245,17 +245,61 @@ def test_cross_navigation_ui_components(client):
         assert "note-pill" in res_sheet.text
         assert "note-dropdown" in res_sheet.text
 
-        # 5. Práctica por apunte: GET /practice/by-note/tema-i-01-derecho-constitucional
-        res_by_note = client.get("/practice/by-note/tema-i-01-derecho-constitucional")
-        assert res_by_note.status_code == 303
+        # 5. Práctica por apunte: POST /practice/by-note/tema-i-01-derecho-constitucional
+        res_by_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional")
+        assert res_by_note.status_code in (303, 307)
         loc = res_by_note.headers["location"]
         # Redirige a /sessions/practice/... o /sessions/{id}/question/1
         assert "/question/1" in loc or "/sessions/practice" in loc
 
         # 6. Práctica por apunte sin preguntas vinculadas -> redirige a /
-        res_empty = client.get("/practice/by-note/no-existe")
-        assert res_empty.status_code == 303
+        res_empty = client.post("/practice/by-note/no-existe")
+        assert res_empty.status_code in (303, 307)
 
     finally:
         app.dependency_overrides.pop(get_linking_client, None)
+
+
+def test_cross_navigation_graceful_degradation_when_linking_offline(client):
+    """Comprueba que si linking-service está apagado, no se produce ningún error 500 y se degrada elegantemente."""
+    from presentation.dependencies import get_linking_client
+    from infrastructure.clients.linking_client import LinkingClient
+
+    # Cliente real apuntando a un puerto sin servicio escuchando y con timeout corto
+    dead_client = LinkingClient(base_url="http://127.0.0.1:59999", timeout=0.05)
+    app.dependency_overrides[get_linking_client] = lambda: dead_client
+
+    try:
+        # 1. POST /practice/by-note con linking-service caído:
+        # No debe lanzar 500; debe degradar elegantemente y redirigir a /
+        res_dead_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional")
+        assert res_dead_note.status_code in (303, 307)
+        if res_dead_note.status_code == 307:
+            # Sigue la redirección a /sessions/practice/by-note/...
+            res_dead_note = client.post(res_dead_note.headers["location"])
+        assert res_dead_note.status_code == 303
+        assert res_dead_note.headers["location"] == "/"
+
+        # 2. Crear sesión de práctica y responder con linking-service caído
+        res_session = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
+        session_id = res_session.headers["location"].split("/sessions/")[1].split("/")[0]
+
+        # Al responder, responde 200 sin lanzar 500 y sin pintar píldoras de apuntes
+        ans_res = client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
+        )
+        assert ans_res.status_code == 200
+        assert "note-pill" not in ans_res.text
+        assert "note-dropdown" not in ans_res.text
+
+        # 3. Al ver resultados, responde 200 sin lanzar 500 y sin píldoras
+        res_sheet = client.get(f"/sessions/{session_id}/result")
+        assert res_sheet.status_code == 200
+        assert "note-pill" not in res_sheet.text
+        assert "note-dropdown" not in res_sheet.text
+
+    finally:
+        app.dependency_overrides.pop(get_linking_client, None)
+
 

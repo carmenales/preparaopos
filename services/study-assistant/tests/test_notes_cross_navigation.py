@@ -31,6 +31,7 @@ def test_note_view_cross_navigation_with_mocked_linking(client, monkeypatch):
     resp = client.get("/notes/tema-i-01-derecho-constitucional")
     if resp.status_code == 200:
         assert "Practicar preguntas (" in resp.text
+        assert 'method="post"' in resp.text
         assert "http://localhost:8096/practice/by-note/tema-i-01-derecho-constitucional" in resp.text
     else:
         # Si el ID difiere en el índice local, comprobar cualquier nota existente
@@ -62,3 +63,19 @@ def test_note_view_fallback_when_linking_empty(client, monkeypatch):
         assert resp.status_code == 200
         # No debe romper ni mostrar enlace erróneo
         assert "http://localhost:8096/practice/by-note/" not in resp.text
+
+
+def test_note_view_graceful_degradation_when_linking_offline(client, monkeypatch):
+    """Comprueba que si linking-service está apagado (conexión rechazada), no produce 500 y degrada limpiamente."""
+    from infrastructure.linking.client import LinkingClient
+    from infrastructure.linking import client as linking_module
+
+    dead_client_factory = lambda: LinkingClient(base_url="http://127.0.0.1:59999", timeout=0.05)
+    monkeypatch.setattr(linking_module, "LinkingClient", dead_client_factory)
+
+    resp = client.get("/notes/tema-i-01-derecho-constitucional")
+    assert resp.status_code == 200
+    # No lanza 500, renderiza la nota normalmente
+    assert "practice/by-note" not in resp.text
+
+
