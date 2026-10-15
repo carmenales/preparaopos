@@ -80,7 +80,7 @@ def _render_toc_tree(nodes: list[dict]) -> str:
 
 
 @router.get("/notes/{note_id}", response_class=HTMLResponse)
-async def view_note(request: Request, note_id: str, process: str = ""):
+def view_note(request: Request, note_id: str, process: str = ""):
     """Visor de apunte individual con TOC, renderizado Markdown y paginación."""
     from domain.notes.service import NoteService
 
@@ -142,7 +142,7 @@ async def view_note(request: Request, note_id: str, process: str = ""):
     linked_questions = linking_client.get_links_by_note(note.id)
     linked_questions_count = len(linked_questions)
     practice_test_engine_url = (
-        f"{TEST_ENGINE_URL}/practice/by-note/{note.id}"
+        f"{TEST_ENGINE_URL.rstrip('/')}/practice/by-note/{note.id}"
         if linked_questions_count > 0
         else None
     )

@@ -9,14 +9,11 @@ from typing import Any
 class ApuntesClient:
     def __init__(self, base_url: str, client: httpx.Client | None = None) -> None:
         self._base_url = base_url.rstrip("/")
-        self._client = client
+        self._client = client or httpx.Client(timeout=10.0)
 
     def _get(self, path: str, params: dict | None = None) -> httpx.Response:
         url = f"{self._base_url}{path}"
-        if self._client is not None:
-            return self._client.get(url, params=params)
-        with httpx.Client(timeout=10.0) as client:
-            return client.get(url, params=params)
+        return self._client.get(url, params=params)
 
     def get_notes_by_process(self, process: str = "") -> list[dict[str, Any]]:
         """Consulta el catálogo de notas por proceso."""
