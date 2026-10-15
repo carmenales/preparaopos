@@ -40,6 +40,8 @@ db/local/*
 *.tmp
 *.old
 *.orig
+test_tmp.txt
+ultimos_commits.txt
 .DS_Store
 Thumbs.db
 .vscode/
