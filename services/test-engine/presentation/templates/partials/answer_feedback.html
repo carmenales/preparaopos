@@ -70,11 +70,11 @@
 {# Botón de navegación inyectado por htmx para no recargar la página #}
 <div class="feedback__nav">
   {% if next_n <= total %}
-  <a href="/sessions/{{ session.id }}/question/{{ next_n }}" class="btn btn--primary">
+  <a href="{{ url('/sessions/' ~ session.id ~ '/question/' ~ next_n) }}" class="btn btn--primary">
     Siguiente → ({{ next_n }}/{{ total }})
   </a>
   {% else %}
-  <a href="/sessions/{{ session.id }}/result" class="btn btn--danger">
+  <a href="{{ url('/sessions/' ~ session.id ~ '/result') }}" class="btn btn--danger">
     Finalizar y ver resultados
   </a>
   {% endif %}

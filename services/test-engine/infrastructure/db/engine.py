@@ -30,7 +30,10 @@ def create_sqlite_engine(path: Path) -> Engine:
     @event.listens_for(engine, "connect")
     def _enable_sqlite_pragmas(dbapi_connection, _connection_record) -> None:
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
+        try:
+            cursor.execute("PRAGMA journal_mode=WAL")
+        except Exception:
+            pass
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 

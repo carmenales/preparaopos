@@ -305,3 +305,106 @@ def test_cross_navigation_graceful_degradation_when_linking_offline(client):
         app.dependency_overrides.pop(get_linking_client, None)
 
 
+def test_root_path_prefix_guardian(monkeypatch):
+    """Test guardián: renderizar cada página con ROOT_PATH=/tests y comprobar por regex que no queda ninguna URL interna sin el prefijo."""
+    import config
+    from presentation.dependencies import get_linking_client
+
+    monkeypatch.setenv("ROOT_PATH", "/tests")
+    monkeypatch.setattr(config, "ROOT_PATH", "/tests")
+
+    class FakeLinkingClient:
+        def get_links_by_question(self, question_id):
+            return [{"note_id": "tema-i-01", "title": "Nota 1", "official_topic": "I.01", "confidence": 1.0}]
+
+        def get_links_by_questions(self, q_ids):
+            return {qid: self.get_links_by_question(qid) for qid in q_ids}
+
+        def get_links_by_note(self, note_id):
+            return [{"question_id": 18012, "confidence": 1.0}]
+
+    app.dependency_overrides[get_linking_client] = lambda: FakeLinkingClient()
+
+    unprefixed_attr_pattern = re.compile(
+        r"""(?:href|src|action|hx-get|hx-post)=["']/(?!tests/|#)([^"']*)["']""",
+        re.IGNORECASE,
+    )
+    unprefixed_js_pattern = re.compile(
+        r"""window\.location(?:\.href)?\s*=\s*["']/(?!tests/)([^"']*)["']""",
+        re.IGNORECASE,
+    )
+
+    def assert_no_unprefixed_urls(html_content: str, context: str):
+        attr_matches = unprefixed_attr_pattern.findall(html_content)
+        js_matches = unprefixed_js_pattern.findall(html_content)
+        assert not attr_matches, f"Encontradas URLs de atributo sin prefijo /tests/ en {context}: {attr_matches}"
+        assert not js_matches, f"Encontradas URLs de JavaScript sin prefijo /tests/ en {context}: {js_matches}"
+
+    t_client = TestClient(app, follow_redirects=False)
+
+    try:
+        # 1. Catálogo (/)
+        res_cat = t_client.get("/")
+        assert res_cat.status_code == 200
+        assert_no_unprefixed_urls(res_cat.text, "Catálogo (/)")
+        assert 'href="/tests/static/style.css"' in res_cat.text
+        assert 'href="/tests/"' in res_cat.text
+        assert 'action="/tests/sessions/"' in res_cat.text
+
+        # 2. Redirección de inicio de sesión: POST /sessions/
+        res_create = t_client.post(
+            "/sessions/",
+            data={"mode": "exam", "source": "exam", "source_ref": "53"},
+        )
+        assert res_create.status_code == 303
+        loc_create = res_create.headers["location"]
+        assert loc_create.startswith("/tests/sessions/"), f"Location sin prefijo: {loc_create}"
+        assert loc_create.endswith("/question/1")
+        session_id = loc_create.split("/sessions/")[1].split("/")[0]
+
+        # 3. Pregunta 1 en modo examen con cronómetro
+        res_q = t_client.get(f"/sessions/{session_id}/question/1")
+        assert res_q.status_code == 200
+        assert_no_unprefixed_urls(res_q.text, "Pregunta examen")
+        assert f'hx-post="/tests/sessions/{session_id}/answer"' in res_q.text
+        assert f'window.location.href = "/tests/sessions/{session_id}/result"' in res_q.text
+
+        # 4. Enviar respuesta por htmx (POST /sessions/{id}/answer)
+        res_ans = t_client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
+        )
+        assert res_ans.status_code == 200
+        assert_no_unprefixed_urls(res_ans.text, "Feedback respuesta")
+        assert f'href="/tests/sessions/{session_id}/question/2"' in res_ans.text
+
+        # 5. Redirecciones bounds checking
+        res_under = t_client.get(f"/sessions/{session_id}/question/0")
+        assert res_under.status_code == 303
+        assert res_under.headers["location"] == f"/tests/sessions/{session_id}/question/1"
+
+        res_over = t_client.get(f"/sessions/{session_id}/question/9999")
+        assert res_over.status_code == 303
+        assert res_over.headers["location"] == f"/tests/sessions/{session_id}/result"
+
+        # 6. Hoja de resultados (/sessions/{id}/result)
+        res_res = t_client.get(f"/sessions/{session_id}/result")
+        assert res_res.status_code == 200
+        assert_no_unprefixed_urls(res_res.text, "Hoja de resultados")
+        assert 'href="/tests/"' in res_res.text
+
+        # 7. Redirección de práctica por apunte
+        res_by_note = t_client.post("/practice/by-note/tema-i-01")
+        assert res_by_note.status_code == 307
+        assert res_by_note.headers["location"] == "/tests/sessions/practice/by-note/tema-i-01"
+
+        # 8. Práctica por apunte - resolución canónica y cadena completa
+        res_by_note_proc = t_client.post("/sessions/practice/by-note/tema-i-01")
+        assert res_by_note_proc.status_code == 303
+        assert res_by_note_proc.headers["location"].startswith("/tests/sessions/")
+        assert res_by_note_proc.headers["location"].endswith("/question/1")
+
+    finally:
+        app.dependency_overrides.pop(get_linking_client, None)
+
+

@@ -7,11 +7,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 
-from config import TEMPLATES_DIR
+from config import TEMPLATES_DIR, prefix_url
 from presentation.dependencies import DbDep
+from presentation.templating import templates
 
 router = APIRouter()
-templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -42,6 +42,6 @@ async def catalog(request: Request, db: DbDep):
 @router.post("/practice/by-note/{note_id}")
 async def practice_by_note_redirect(note_id: str):
     from fastapi.responses import RedirectResponse
-    return RedirectResponse(url=f"/sessions/practice/by-note/{note_id}", status_code=307)
+    return RedirectResponse(url=prefix_url(f"/sessions/practice/by-note/{note_id}"), status_code=307)
 
 

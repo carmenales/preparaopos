@@ -24,3 +24,8 @@ app.include_router(catalog.router)
 app.include_router(sessions_router.router)
 app.include_router(api_router.router)
 
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "test-engine"}
+
