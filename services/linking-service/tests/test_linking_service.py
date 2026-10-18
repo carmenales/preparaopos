@@ -190,10 +190,16 @@ def test_linking_api_endpoints(memory_db):
     assert data_n[0]["exam_name"] == "AGE GSI 2024"
     assert data_n[0]["confidence"] == 1.0
 
-    # 3. GET /health
+    # 3. GET /links/by-note/{note_id}/question-ids
+    resp_ids = client.get("/links/by-note/tema-i-01-constitución/question-ids")
+    assert resp_ids.status_code == 200
+    assert resp_ids.json() == [101]
+
+    # 4. GET /health
     resp_h = client.get("/health")
     assert resp_h.status_code == 200
     assert resp_h.json()["links_count"] == 1
+
 
 
 def test_linking_batch_endpoint(memory_db):

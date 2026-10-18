@@ -30,23 +30,21 @@ def practice_by_note(
     linking_client: LinkingClientDep,
 ):
     """Inicia una sesión de práctica con las preguntas vinculadas a un apunte."""
-    links = linking_client.get_links_by_note(note_id)
-    if not links:
-        return RedirectResponse(url=prefix_url("/"), status_code=303)
-
-    q_ids = [str(l["question_id"]) for l in links if "question_id" in l]
+    q_ids = linking_client.get_question_ids_by_note(note_id)
     if not q_ids:
         return RedirectResponse(url=prefix_url("/"), status_code=303)
 
     session = svc.start_session(
         mode="practice",
-        source="questions",
-        source_ref=",".join(q_ids),
+        source="note",
+        source_ref=note_id,
+        explicit_question_ids=q_ids,
     )
     return RedirectResponse(
         url=prefix_url(f"/sessions/{session.id}/question/1"),
         status_code=303,
     )
+
 
 
 # ---------------------------------------------------------------------------

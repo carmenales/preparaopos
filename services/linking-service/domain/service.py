@@ -193,3 +193,9 @@ class LinkingService:
                 "confidence": l["confidence"],
             })
         return results
+
+    def get_question_ids_by_note(self, note_id: str) -> list[int]:
+        """Devuelve únicamente los IDs de pregunta enlazados a una nota sin enriquecimiento externo."""
+        links = self._repo.get_by_note_id(note_id)
+        return [l["question_id"] for l in links if "question_id" in l]
+

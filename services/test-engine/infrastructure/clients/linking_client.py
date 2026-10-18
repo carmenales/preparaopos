@@ -49,3 +49,14 @@ class LinkingClient:
         except Exception:
             pass
         return []
+
+    def get_question_ids_by_note(self, note_id: str) -> list[int]:
+        """Obtiene los IDs de preguntas enlazadas para un apunte sin sobrecarga ni llamadas circulares."""
+        try:
+            resp = self._client.get(f"/links/by-note/{note_id}/question-ids")
+            if resp.status_code == 200:
+                return [int(x) for x in resp.json()]
+        except Exception:
+            pass
+        return []
+

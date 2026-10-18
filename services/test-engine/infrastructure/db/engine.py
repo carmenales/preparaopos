@@ -14,12 +14,16 @@ from infrastructure.db.orm_models import Base, Question, ScoringRule, Syllabus
 from infrastructure.db.seed import SEED_SCORING_RULES, SEED_SYLLABI
 
 
+import os
+
+
 def sqlite_url(path: Path) -> str:
     return f"sqlite:///{path.as_posix()}"
 
 
-def create_sqlite_engine(path: Path) -> Engine:
+def create_sqlite_engine(path: Path, journal_mode: str | None = None) -> Engine:
     path.parent.mkdir(parents=True, exist_ok=True)
+    mode = (journal_mode or os.getenv("SQLITE_JOURNAL_MODE", "WAL")).upper()
     engine = create_engine(
         sqlite_url(path),
         echo=False,
@@ -31,7 +35,7 @@ def create_sqlite_engine(path: Path) -> Engine:
     def _enable_sqlite_pragmas(dbapi_connection, _connection_record) -> None:
         cursor = dbapi_connection.cursor()
         try:
-            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute(f"PRAGMA journal_mode={mode}")
         except Exception:
             pass
         cursor.execute("PRAGMA foreign_keys=ON")

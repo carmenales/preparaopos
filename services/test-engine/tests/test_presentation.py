@@ -211,6 +211,11 @@ def test_cross_navigation_ui_components(client):
                 return [{"question_id": 18012, "confidence": 1.0}]
             return []
 
+        def get_question_ids_by_note(self, note_id):
+            if note_id in ("tema-i-01-derecho-constitucional", "tema-i-01"):
+                return [18012]
+            return []
+
     app.dependency_overrides[get_linking_client] = lambda: FakeLinkingClient()
 
     try:
@@ -245,20 +250,20 @@ def test_cross_navigation_ui_components(client):
         assert "note-pill" in res_sheet.text
         assert "note-dropdown" in res_sheet.text
 
-        # 5. Práctica por apunte: POST /practice/by-note/tema-i-01-derecho-constitucional
-        # 5a. Sin seguir redirecciones: verifica el 307 inicial del router catalog
-        res_by_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional")
-        assert res_by_note.status_code == 307
-        assert res_by_note.headers["location"] == "/sessions/practice/by-note/tema-i-01-derecho-constitucional"
+        # 5. Práctica por apunte: POST /sessions/practice/by-note/tema-i-01-derecho-constitucional
+        # 5a. Sin seguir redirecciones: verifica el 303 que redirige a la pregunta 1
+        res_by_note = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional")
+        assert res_by_note.status_code == 303
+        assert re.search(r"/sessions/[^/]+/question/1$", res_by_note.headers["location"])
 
-        # 5b. Cadena completa (POST 307 -> POST 303 -> GET 200 a /sessions/{id}/question/1)
-        res_full_chain = client.post("/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
+        # 5b. Cadena completa (POST 303 -> GET 200 a /sessions/{id}/question/1)
+        res_full_chain = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
         assert res_full_chain.status_code == 200
         assert re.search(r"/sessions/[^/]+/question/1$", str(res_full_chain.url))
         assert "Pregunta" in res_full_chain.text
 
         # 6. Práctica por apunte sin preguntas vinculadas -> redirige a / con 303
-        res_empty = client.post("/practice/by-note/no-existe", follow_redirects=True)
+        res_empty = client.post("/sessions/practice/by-note/no-existe", follow_redirects=True)
         assert res_empty.status_code == 200
         assert str(res_empty.url).endswith("/")
 
@@ -276,9 +281,9 @@ def test_cross_navigation_graceful_degradation_when_linking_offline(client):
     app.dependency_overrides[get_linking_client] = lambda: dead_client
 
     try:
-        # 1. POST /practice/by-note con linking-service caído:
-        # No debe lanzar 500; debe degradar elegantemente y terminar en GET 200 en / (POST 307 -> POST 303 -> GET 200)
-        res_dead_note = client.post("/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
+        # 1. POST /sessions/practice/by-note con linking-service caído:
+        # No debe lanzar 500; debe degradar elegantemente y terminar en GET 200 en / (POST 303 -> GET 200)
+        res_dead_note = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
         assert res_dead_note.status_code == 200
         assert str(res_dead_note.url).endswith("/")
 
@@ -322,6 +327,9 @@ def test_root_path_prefix_guardian(monkeypatch):
 
         def get_links_by_note(self, note_id):
             return [{"question_id": 18012, "confidence": 1.0}]
+
+        def get_question_ids_by_note(self, note_id):
+            return [18012]
 
     app.dependency_overrides[get_linking_client] = lambda: FakeLinkingClient()
 
@@ -393,12 +401,7 @@ def test_root_path_prefix_guardian(monkeypatch):
         assert_no_unprefixed_urls(res_res.text, "Hoja de resultados")
         assert 'href="/tests/"' in res_res.text
 
-        # 7. Redirección de práctica por apunte
-        res_by_note = t_client.post("/practice/by-note/tema-i-01")
-        assert res_by_note.status_code == 307
-        assert res_by_note.headers["location"] == "/tests/sessions/practice/by-note/tema-i-01"
-
-        # 8. Práctica por apunte - resolución canónica y cadena completa
+        # 7. Práctica por apunte - resolución canónica y prefijada
         res_by_note_proc = t_client.post("/sessions/practice/by-note/tema-i-01")
         assert res_by_note_proc.status_code == 303
         assert res_by_note_proc.headers["location"].startswith("/tests/sessions/")

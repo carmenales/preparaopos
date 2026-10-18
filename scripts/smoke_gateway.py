@@ -108,7 +108,7 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
     log_step("4. Segregación de estilos CSS estáticos")
     try:
         r_css_te = client.get(f"{base_url}/tests/static/style.css")
-        r_css_sa = client.get(f"{base_url}/static/style.css")
+        r_css_sa = client.get(f"{base_url}/static/css/styles.css")
 
         te_ok = (
             r_css_te.status_code == 200
@@ -125,14 +125,14 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
             and ("search" in r_css_sa.text or "prose" in r_css_sa.text or "nested-toc" in r_css_sa.text or "note-card" in r_css_sa.text)
         )
         if sa_ok:
-            log_ok("/static/style.css devolvió el CSS distintivo de Study Assistant")
+            log_ok("/static/css/styles.css devolvió el CSS distintivo de Study Assistant")
         else:
-            errors.append(f"/static/style.css erróneo (status {r_css_sa.status_code})")
+            errors.append(f"/static/css/styles.css erróneo (status {r_css_sa.status_code})")
             log_err(errors[-1])
 
         # Asegurar que no se confunden
         if ".scoreboard" in r_css_sa.text:
-            errors.append("/static/style.css contiene estilos de Test Engine (.scoreboard)")
+            errors.append("/static/css/styles.css contiene estilos de Test Engine (.scoreboard)")
             log_err(errors[-1])
 
     except Exception as e:
@@ -201,9 +201,9 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
     try:
         # A) Study Assistant -> Test Engine (Práctica por apunte)
         client_follow = httpx.Client(timeout=10.0, follow_redirects=True)
-        r_cross = client_follow.post(f"{base_url}/tests/practice/by-note/tema-i-01-derecho-constitucional")
+        r_cross = client_follow.post(f"{base_url}/tests/sessions/practice/by-note/tema-i-01-derecho-constitucional")
         if r_cross.status_code == 200 and "/tests/sessions/" in str(r_cross.url) and "/question/1" in str(r_cross.url):
-            log_ok("Navegación cruzada SA -> TE resolvió con éxito cadena 307 -> 303 -> 200 en /tests/sessions/.../question/1")
+            log_ok("Navegación cruzada SA -> TE resolvió con éxito cadena 303 -> 200 en /tests/sessions/.../question/1")
         else:
             errors.append(f"Práctica por apunte no finalizó en la pregunta esperada: {r_cross.status_code} ({r_cross.url})")
             log_err(errors[-1])
@@ -212,10 +212,10 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
         r_note = client.get(f"{base_url}/notes/tema-i-01-derecho-constitucional")
         if r_note.status_code == 200 and ("tema-i-01" in r_note.text or "Constitucional" in r_note.text):
             log_ok("Acceso al apunte vía Gateway (TE -> SA) respondió 200 OK")
-            if 'action="/tests/practice/by-note/' in r_note.text:
-                log_ok("El formulario de práctica en el apunte apunta correctamente a /tests/practice/by-note/...")
+            if 'action="/tests/sessions/practice/by-note/' in r_note.text:
+                log_ok("El formulario de práctica en el apunte apunta correctamente a /tests/sessions/practice/by-note/...")
             else:
-                errors.append("El formulario de práctica en el apunte no incluye la URL prefijada /tests/...")
+                errors.append("El formulario de práctica en el apunte no incluye la URL prefijada /tests/sessions/practice/by-note/...")
                 log_err(errors[-1])
         else:
             errors.append(f"Acceso a la nota vía Gateway devolvió {r_note.status_code}")

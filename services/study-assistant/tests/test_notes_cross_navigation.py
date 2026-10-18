@@ -32,7 +32,7 @@ def test_note_view_cross_navigation_with_mocked_linking(client, monkeypatch):
     if resp.status_code == 200:
         assert "Practicar preguntas (" in resp.text
         assert 'method="post"' in resp.text
-        assert "http://localhost:8096/practice/by-note/tema-i-01-derecho-constitucional" in resp.text
+        assert "http://localhost:8096/sessions/practice/by-note/tema-i-01-derecho-constitucional" in resp.text
     else:
         # Si el ID difiere en el índice local, comprobar cualquier nota existente
         notes_resp = client.get("/api/notes")

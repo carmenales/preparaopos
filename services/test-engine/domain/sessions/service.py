@@ -54,6 +54,7 @@ class TestSessionService:
         source_ref: str | None = None,
         question_count: int | None = None,
         include_reserves: bool = False,
+        explicit_question_ids: list[int] | None = None,
     ) -> TestSession:
         """Crea una nueva sesión con un conjunto inmutable de preguntas ordenadas."""
         duration_seconds: int | None = None
@@ -120,14 +121,27 @@ class TestSessionService:
             question_ids = q_ids[:count]
 
         elif source == "questions":
-            if not source_ref:
+            if explicit_question_ids:
+                question_ids = [int(x) for x in explicit_question_ids]
+            elif not source_ref:
                 raise ValueError("source='questions' requiere source_ref con IDs de preguntas separados por comas")
-            try:
-                question_ids = [int(x.strip()) for x in source_ref.split(",") if x.strip()]
-            except ValueError:
-                raise ValueError("source_ref contiene IDs de preguntas no válidos")
+            else:
+                try:
+                    question_ids = [int(x.strip()) for x in source_ref.split(",") if x.strip()]
+                except ValueError:
+                    raise ValueError("source_ref contiene IDs de preguntas no válidos")
             if not question_ids:
                 raise ValueError("No se encontraron preguntas válidas")
+
+        elif source == "note":
+            if explicit_question_ids:
+                question_ids = [int(x) for x in explicit_question_ids]
+            elif source_ref and "," in source_ref:
+                question_ids = [int(x.strip()) for x in source_ref.split(",") if x.strip()]
+            else:
+                question_ids = []
+            if not question_ids:
+                raise ValueError(f"No se encontraron preguntas válidas para el apunte '{source_ref}'")
 
         else:
             raise ValueError(f"Fuente no soportada: {source}")

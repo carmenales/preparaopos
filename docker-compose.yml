@@ -147,6 +147,7 @@ services:
       - STUDY_ASSISTANT_INTERNAL_URL=http://study-assistant:8095
       - STUDY_ASSISTANT_PUBLIC_URL=
       - TEST_ENGINE_SQLITE_PATH=/app/data/test_engine.sqlite
+      - SQLITE_JOURNAL_MODE=DELETE
     volumes:
       - ./services/test-engine/data:/app/data
     healthcheck:

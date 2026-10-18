@@ -39,9 +39,3 @@ async def catalog(request: Request, db: DbDep):
     )
 
 
-@router.post("/practice/by-note/{note_id}")
-async def practice_by_note_redirect(note_id: str):
-    from fastapi.responses import RedirectResponse
-    return RedirectResponse(url=prefix_url(f"/sessions/practice/by-note/{note_id}"), status_code=307)
-
-
