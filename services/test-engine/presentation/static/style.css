@@ -209,3 +209,32 @@ a { color: inherit; }
 .alert { padding: .75rem 1rem; border-radius: 6px; margin-bottom: 1rem; }
 .alert--error { background: #fee2e2; color: #991b1b; }
 .catalog__generator { margin-bottom: 1.5rem; }
+
+/* ── Historial y estadísticas ─────────────────────────────────── */
+.history h1, .stats h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+.stats h2 { font-size: 1.1rem; margin: 1.75rem 0 .75rem; }
+.stats h2 small { font-weight: 400; color: #64748b; }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+.data-table th, .data-table td { padding: .5rem .6rem; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: middle; }
+.data-table th { color: #475569; font-weight: 600; background: #f8fafc; }
+.data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+.data-table .nowrap { white-space: nowrap; }
+.data-table .actions { display: flex; gap: .35rem; justify-content: flex-end; }
+.data-table .actions form { margin: 0; }
+.btn--small { padding: .25rem .55rem; font-size: .8rem; }
+.alert--ok { background: #dcfce7; color: #166534; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin: 1rem 0; }
+.kpi { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: .9rem; display: flex; flex-direction: column; gap: .2rem; }
+.kpi__value { font-size: 1.4rem; font-weight: 700; color: #1e3a8a; font-variant-numeric: tabular-nums; }
+.kpi__label { color: #475569; font-size: .85rem; }
+.bar { display: inline-block; width: 120px; height: .6rem; background: #e2e8f0; border-radius: 4px; overflow: hidden; vertical-align: middle; }
+.bar__fill { display: block; height: 100%; background: #16a34a; }
+.bar__fill--mid { background: #f59e0b; }
+.bar__fill--low { background: #dc2626; }
+.bar__label { margin-left: .4rem; font-variant-numeric: tabular-nums; }
+.evolution { list-style: none; display: flex; align-items: flex-end; gap: 4px; height: 140px; padding: 0; margin: 0 0 1.6rem; border-bottom: 1px solid #cbd5e1; overflow-x: auto; }
+.evolution__item { flex: 0 0 22px; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; position: relative; }
+.evolution__bar { display: block; width: 100%; background: #2563eb; border-radius: 3px 3px 0 0; min-height: 2px; }
+.evolution__bar.bar__fill--low { background: #dc2626; }
+.evolution__date { font-size: .6rem; color: #64748b; position: absolute; bottom: -1.1rem; white-space: nowrap; }

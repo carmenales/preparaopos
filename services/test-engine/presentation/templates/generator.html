@@ -30,9 +30,9 @@
       <select id="scope" name="scope">
         <option value="">Todo el temario</option>
         {% for b in facets.blocks %}
-        <option value="{{ b.block }}">Bloque {{ b.block }} ({{ b.count }})</option>
+        <option value="{{ b.block }}" {% if preset_scope == b.block %}selected{% endif %}>Bloque {{ b.block }} ({{ b.count }})</option>
         {% for t in b.topics %}
-        <option value="{{ b.block }}|{{ t.topic }}">&nbsp;&nbsp;&nbsp;Bloque {{ b.block }} · Tema {{ t.topic }} ({{ t.count }})</option>
+        <option value="{{ b.block }}|{{ t.topic }}" {% if preset_scope == b.block ~ '|' ~ t.topic %}selected{% endif %}>&nbsp;&nbsp;&nbsp;Bloque {{ b.block }} · Tema {{ t.topic }} ({{ t.count }})</option>
         {% endfor %}
         {% endfor %}
       </select>
@@ -50,7 +50,7 @@
     <div class="field field--checks">
       <label><input type="checkbox" name="official" value="1" {% if not facets.official %}disabled{% endif %}>
         Solo preguntas de examen oficial ({{ facets.official }})</label>
-      <label><input type="checkbox" name="failed" value="1" {% if not facets.failed %}disabled{% endif %}>
+      <label><input type="checkbox" name="failed" value="1" {% if not facets.failed %}disabled{% elif preset_failed %}checked{% endif %}>
         Solo las que fallé la última vez ({{ facets.failed }})</label>
     </div>
 
