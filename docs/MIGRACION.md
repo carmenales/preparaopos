@@ -31,7 +31,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 - Si hay intentos con fechas de estudio real, hay que migrar el historial.
 
 ### Incidencias de datos detectadas
-- **Opción correcta siempre en primera posición en TAI (1.331) y AGE GSI 2024 (101):** sus importadores guardaron la correcta con `display_order = 0` y la interfaz no baraja las opciones, así que en el simulacro GSI 2024 la correcta es siempre la «A». Requiere una rama de corrección propia: restaurar el orden oficial en GSI 2024 (la plantilla da la letra) y decidir para TAI entre barajar al mostrar o reconstruir el orden.
+- ✅ **Opción correcta siempre en primera posición en TAI (1.331) y AGE GSI 2024 (101)** (corregido en `feature/fix-option-order`). GSI 2024 recupera el orden oficial A-D, comprobado contra el JSON del examen. TAI no conserva el orden original en ninguna fuente: se baraja de forma determinista por pregunta, y en 3 preguntas cuya explicación cita la letra («opción C») la correcta se coloca en esa letra. Los importadores generan ya este mismo orden.
 - Ayto. Madrid 2024 práctico, pregunta 16, opción C: el texto lleva un resto de la extracción del PDF («…aún no es oficial. economía, innovación 8»). Revisar en origen.
 - Ayto. Madrid: el SQL `_fixed` corrige tres textos frente a `review_questions.csv` (RD 193/2023, WCAG 2.2 2023 y 2.1 actualizada en 2025). Se importa el texto del SQL.
 

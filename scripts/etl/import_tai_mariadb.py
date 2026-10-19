@@ -32,6 +32,9 @@ import sys
 import time
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from option_order import letter_hint, stable_positions  # noqa: E402
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -299,19 +302,23 @@ def main() -> None:
             existing_q_map[q_id_str] = db_question_id
             inserted_questions += 1
 
-            # Insertar opción correcta (display_order = 0)
+            # MariaDB no guarda el orden A-D original: se baraja de forma determinista
+            # por pregunta (mismo orden que aplica scripts/etl/fix_option_order.py).
+            n_options = 1 + len(incorrect_list)
+            positions = stable_positions(
+                f"{SOURCE_NAME}:{q_id_str}", n_options, letter_hint(justification, n_options)
+            )
             cursor.execute(
                 """
                 INSERT INTO question_options (
                     question_id, option_text, is_correct, display_order, justification
-                ) VALUES (?, ?, 1, 0, NULL)
+                ) VALUES (?, ?, 1, ?, NULL)
                 """,
-                (db_question_id, q["respuesta"].strip()),
+                (db_question_id, q["respuesta"].strip(), positions[0]),
             )
             inserted_options += 1
 
-            # Insertar opciones incorrectas (display_order = 1, 2, 3...)
-            for idx, inc in enumerate(incorrect_list, 1):
+            for idx, inc in zip(positions[1:], incorrect_list):
                 inc_text = inc["respuesta"].strip()
                 inc_justif = inc["justif"].strip() if inc["justif"] else None
                 cursor.execute(

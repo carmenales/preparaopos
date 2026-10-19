@@ -14,7 +14,7 @@ Tablas pobladas:
   - exams (Examen oficial 'AGE A2 GSI LIBRE 2024')
   - exam_questions (con posición oficial exacta 1-105 y bandera is_reserve)
   - questions (source = 'age-gsi-2024', source_id = '1..105', pending_classification = 1)
-  - question_options (opción correcta + 3 incorrectas con su justificación)
+  - question_options (opción correcta + 3 incorrectas con su justificación, en el orden oficial A-D)
   - question_syllabus_tags (asociadas a age-gsi-official)
 
 Ejecución:
@@ -30,6 +30,9 @@ import sqlite3
 import sys
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from option_order import official_positions  # noqa: E402
 
 logging.basicConfig(
     level=logging.INFO,
@@ -259,26 +262,29 @@ def main() -> None:
             existing_q_map[source_id] = db_question_id
             inserted_questions += 1
 
-            # Insertar opción correcta (display_order = 0)
+            # Orden oficial A-D según las letras de las justificaciones de la plantilla
+            positions = official_positions(q["justification"], [inc["justif"] for inc in q["incorrectas"]])
+            if positions is None:
+                raise ValueError(f"Pregunta {q_num}: las justificaciones no permiten reconstruir el orden oficial")
+
             cursor.execute(
                 """
                 INSERT INTO question_options (
                     question_id, option_text, is_correct, display_order, justification
-                ) VALUES (?, ?, 1, 0, NULL)
+                ) VALUES (?, ?, 1, ?, NULL)
                 """,
-                (db_question_id, q["correct_answer"]),
+                (db_question_id, q["correct_answer"], positions[0]),
             )
             inserted_options += 1
 
-            # Insertar opciones incorrectas (display_order = 1, 2, 3...)
-            for idx, inc in enumerate(q["incorrectas"], 1):
+            for inc, position in zip(q["incorrectas"], positions[1:]):
                 cursor.execute(
                     """
                     INSERT INTO question_options (
                         question_id, option_text, is_correct, display_order, justification
                     ) VALUES (?, ?, 0, ?, ?)
                     """,
-                    (db_question_id, inc["texto"], idx, inc["justif"]),
+                    (db_question_id, inc["texto"], position, inc["justif"]),
                 )
                 inserted_options += 1
 

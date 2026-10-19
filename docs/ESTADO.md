@@ -35,6 +35,11 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `scripts/etl/import_local_exams.py`: 708 preguntas en 12 exámenes y 4 temarios nuevos, con el orden original de las opciones, año y marca de examen oficial, pendientes de clasificar. Validación por defecto, copia previa, todo o nada e idempotente. Probado sobre una copia de la BD real: los datos existentes no cambian y la app abre y puntúa los exámenes nuevos.
 - Bug detectado, fuera de este paso: en TAI y en GSI 2024 la opción correcta es siempre la primera (ver `docs/MIGRACION.md`, «Incidencias de datos»).
 
+## Corrección del orden de opciones (rama `feature/fix-option-order`)
+- `scripts/etl/option_order.py`: orden oficial a partir de las letras de las justificaciones, o barajado determinista cuando no hay orden original.
+- `scripts/etl/fix_option_order.py`: corrige la BD existente (solo `display_order` de GSI 2024 y TAI). Simulación por defecto, copia previa, verificación contra el JSON oficial e idempotente. Los intentos no se ven afectados porque guardan el id de la opción, no su posición.
+- `import_age_gsi_2024.py` e `import_tai_mariadb.py` insertan ya ese mismo orden (verificado: 101/101 y 1.331/1.331).
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
