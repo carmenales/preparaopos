@@ -40,6 +40,12 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `scripts/etl/fix_option_order.py`: corrige la BD existente (solo `display_order` de GSI 2024 y TAI). Simulación por defecto, copia previa, verificación contra el JSON oficial e idempotente. Los intentos no se ven afectados porque guardan el id de la opción, no su posición.
 - `import_age_gsi_2024.py` e `import_tai_mariadb.py` insertan ya ese mismo orden (verificado: 101/101 y 1.331/1.331).
 
+## Paso 3 de la migración: generador de tests (rama `feature/test-generator`)
+- Origen de sesión `generated` (`domain/sessions/generator.py`) con filtros de temario, bloque/tema, año, solo examen oficial y solo falladas (último intento incorrecto), de 10 a 100 preguntas en la interfaz (máximo 200). Excluye anuladas.
+- Modo examen: 60 s por pregunta. Puntuación: la regla común de los exámenes del temario si es única; si no, A−F/3.
+- Pantalla `/generator` (enlazada desde la cabecera y el catálogo) con recuento en vivo de preguntas disponibles (htmx).
+- Ojo: el smoke test responde preguntas en la BD real, así que también alimenta el refuerzo (la 18012 aparece como fallada). Se suma a la tarea pendiente de que el smoke marque o limpie sus sesiones.
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.

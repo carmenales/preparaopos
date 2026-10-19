@@ -41,9 +41,9 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 | Página antigua | Qué hace | En test-engine |
 |---|---|---|
 | `examenes.php` | Catálogo de exámenes y simulacro | ✅ Catálogo, simulacro y práctica |
-| `temas.php`, `practica_tematica.php` | Test por tema o bloque | ❌ (solo hay práctica desde un apunte) |
+| `temas.php`, `practica_tematica.php` | Test por tema o bloque | ✅ Generador (`/generator`) |
 | `practica.php` | Ejercicios por categoría | ⚠️ Cubierto por los cuestionarios del catálogo |
-| `refuerzo.php` | Test con preguntas falladas | ❌ |
+| `refuerzo.php` | Test con preguntas falladas | ✅ Generador: «solo las que fallé la última vez» |
 | `historial_sesiones.php`, `detalle_sesion.php`, `delete_test_session.php` | Historial de tests | ❌ (solo la hoja de resultados de cada sesión) |
 | `estadisticas.php`, `progreso_cuestionarios.php` | Estadísticas y progreso | ❌ |
 | `gestionar.php`, `agregar.php`, `editar.php` | Alta y edición de preguntas | ❌ |
@@ -54,10 +54,10 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 ### PreparaTIC V3 (Vue) → test-engine
 | Modo | En test-engine |
 |---|---|
-| Aleatorio | ❌ |
-| Ponderado por frecuencia histórica | ❌ (necesita `year`) |
-| Por bloque / por tema | ❌ |
-| Por año de convocatoria | ❌ (necesita `year`) |
+| Aleatorio | ✅ Generador (todo el temario) |
+| Ponderado por frecuencia histórica | ❌ Pendiente: no estaba en el paso 3; ya hay datos (`year`, `is_official_exam`) para hacerlo |
+| Por bloque / por tema | ✅ Generador |
+| Por año de convocatoria | ✅ Generador (+ «solo examen oficial») |
 | Examen oficial íntegro | ➖ No reconstruible (§1) |
 | Historial y estadísticas con gráficos | ❌ |
 
@@ -76,7 +76,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 ## 3. Plan propuesto (por orden)
 1. ✅ **Metadatos de PreparaTIC**: columnas `questions.year` e `is_official_exam`. Reimportar solo esos campos desde `preparatic_bundle_extracted.json`, sin tocar ids ni etiquetas.
 2. ✅ **Importar las preguntas de `imports/`** (708; las 44 del `_template` quedan fuera): un importador que lea los `.sql` directamente (sin pasar por MariaDB), con un temario por proceso (`ayto-madrid/aux-tic`, `majadahonda/tecnico-informatico`, `comunidad-madrid/...`, `uc3m/a2-gsi`) y un examen por cuestionario, respetando las anuladas.
-3. **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
+3. ✅ **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
 4. **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
 5. **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
 6. **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
