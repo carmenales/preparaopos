@@ -6,7 +6,7 @@ _Inventario del 2026-10-19 sobre `develop` (`9afaab23`). La migración se da por
 
 | Fuente | Preguntas | En test-engine | Estado |
 |---|---:|---:|---|
-| PreparaTIC (bundle V3) | 16.680 | 16.680 | ⚠️ Faltan metadatos: `year` (22 años) y `exam` (8.152 preguntas de examen oficial). El extractor los saca (`preparatic_bundle_extracted.json`), pero `import_preparatic.py` no los guarda. |
+| PreparaTIC (bundle V3) | 16.680 | 16.680 | ✅ Con `year` e `is_official_exam` (8.152 de examen oficial) desde el paso 1 (`scripts/etl/backfill_preparatic_metadata.py`). |
 | TAI (MariaDB `ptype`) | 1.331 | 1.331 | ✅ 52 cuestionarios. 1.267 pendientes de clasificar por tema. |
 | AGE A2 GSI 2024 | 101 | 101 | ✅ Clasificado y enlazado con apuntes. |
 | Ayto. Madrid Aux. TIC 2023/2025 (`imports/ayto_madrid_aux_tic`) | 294 | 0 | ❌ Solo existe como SQL para MariaDB (6 cuestionarios). |
@@ -68,7 +68,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 `services/embeddings` (lo usa study-assistant) y `services/knowledge` (lo usará el asistente de ingesta).
 
 ## 3. Plan propuesto (por orden)
-1. **Metadatos de PreparaTIC**: columnas `questions.year` e `is_official_exam`. Reimportar solo esos campos desde `preparatic_bundle_extracted.json`, sin tocar ids ni etiquetas.
+1. ✅ **Metadatos de PreparaTIC**: columnas `questions.year` e `is_official_exam`. Reimportar solo esos campos desde `preparatic_bundle_extracted.json`, sin tocar ids ni etiquetas.
 2. **Importar las 752 preguntas de `imports/`**: un importador que lea los `.sql` directamente (sin pasar por MariaDB), con un temario por proceso (`ayto-madrid/aux-tic`, `majadahonda/tecnico-informatico`, `comunidad-madrid/...`, `uc3m/a2-gsi`) y un examen por cuestionario, respetando las anuladas.
 3. **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
 4. **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
