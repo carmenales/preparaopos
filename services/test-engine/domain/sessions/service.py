@@ -21,7 +21,7 @@ DEFAULT_AGE_SCORING_RULE = ScoringRule(
     correct_score=Decimal("1"),
     wrong_penalty=Decimal("1") / Decimal("3"),
     blank_score=Decimal("0"),
-    score_scale=Decimal("100"),
+    score_scale=Decimal("10"),  # la hoja de resultados muestra la nota sobre 10
     min_score_zero=True,
     # TODO: confirmar regla de redondeo oficial de la convocatoria específica,
     # asumido ROUND_HALF_UP provisionalmente
