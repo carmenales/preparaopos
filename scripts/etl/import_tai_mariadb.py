@@ -16,7 +16,7 @@ Tablas pobladas:
   - exam_questions (vinculación examen-pregunta con orden)
   - questions (source = 'tai-mariadb-legacy')
   - question_options (opción correcta de ptype + incorrectas con justificaciones)
-  - question_syllabus_tags (para preguntas con bloque y tema válidos)
+  - question_syllabus_tags (todas las preguntas; bloque/tema vacíos si no constan)
 
 Ejecución:
   python scripts/etl/import_tai_mariadb.py
@@ -47,6 +47,16 @@ SYLLABUS_ID = "tai-legacy"
 SYLLABUS_CODE = "age/c1-tai"
 SYLLABUS_NAME = "TAI AGE"
 ORGANISM = "AGE"
+
+
+# Exámenes de otros organismos que también acabaron en ptype de MariaDB. Tienen su
+# propio importador (import_local_exams.py, desde imports/*/generated/*.sql); si
+# entraran aquí se duplicarían como preguntas de TAI.
+LOCAL_EXAM_CATEGORY_PREFIXES = ("AYTO MADRID", "AYTO MAJADAHONDA", "CM MADRID DIGITAL", "UC3M")
+
+
+def is_local_exam_category(categoria: str | None) -> bool:
+    return bool(categoria) and categoria.strip().upper().startswith(LOCAL_EXAM_CATEGORY_PREFIXES)
 
 
 def get_db_connection(db_path: Path) -> sqlite3.Connection:
@@ -128,7 +138,11 @@ def parse_mysql_dump(dump_path: Path) -> tuple[list[dict], dict[int, list[dict]]
         "SELECT id, pregunta, respuesta, justif, img_path, categoria, bloque, tema FROM ptype ORDER BY id"
     ).fetchall()
     questions = []
+    skipped_local = 0
     for r in ptype_rows:
+        if is_local_exam_category(r[5]):
+            skipped_local += 1
+            continue
         questions.append({
             "id": r[0],
             "pregunta": r[1],
@@ -153,6 +167,11 @@ def parse_mysql_dump(dump_path: Path) -> tuple[list[dict], dict[int, list[dict]]
         })
 
     mem_db.close()
+    if skipped_local:
+        logger.info(
+            "Omitidas %d preguntas de exámenes locales (las importa scripts/etl/import_local_exams.py).",
+            skipped_local,
+        )
     logger.info("Dump parseado con éxito: %d preguntas en ptype y %d opciones incorrectas.", len(questions), len(inc_rows))
     return questions, incorrectas_by_q
 
@@ -346,24 +365,24 @@ def main() -> None:
         if cursor.rowcount > 0:
             inserted_exam_questions += 1
 
-        # Si tiene bloque y tema válidos, insertar etiqueta de temario
-        if has_bloque or has_tema:
-            block_str = f"B{q['bloque']}" if has_bloque else None
-            topic_str = str(q["tema"]) if has_tema else None
+        # Etiqueta de temario siempre (bloque/tema vacíos si no constan): el
+        # generador de test-engine busca las preguntas de un temario por ella.
+        block_str = f"B{q['bloque']}" if has_bloque else None
+        topic_str = str(q["tema"]) if has_tema else None
+        cursor.execute(
+            "SELECT id FROM question_syllabus_tags WHERE question_id = ? AND syllabus_id = ?",
+            (db_question_id, SYLLABUS_ID),
+        )
+        if not cursor.fetchone():
             cursor.execute(
-                "SELECT id FROM question_syllabus_tags WHERE question_id = ? AND syllabus_id = ?",
-                (db_question_id, SYLLABUS_ID),
+                """
+                INSERT INTO question_syllabus_tags (
+                    question_id, syllabus_id, block, topic
+                ) VALUES (?, ?, ?, ?)
+                """,
+                (db_question_id, SYLLABUS_ID, block_str, topic_str),
             )
-            if not cursor.fetchone():
-                cursor.execute(
-                    """
-                    INSERT INTO question_syllabus_tags (
-                        question_id, syllabus_id, block, topic
-                    ) VALUES (?, ?, ?, ?)
-                    """,
-                    (db_question_id, SYLLABUS_ID, block_str, topic_str),
-                )
-                inserted_tags += 1
+            inserted_tags += 1
 
     conn.commit()
 

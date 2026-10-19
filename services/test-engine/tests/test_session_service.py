@@ -329,3 +329,17 @@ def test_abandoned_expired_session_is_lazily_closed(session_service: TestSession
     assert lazy_closed.closed_at == expected_expiry
     # Al no responder ninguna pregunta, las 96 son blancos -> nota 0.00
     assert lazy_closed.final_score == Decimal("0.00")
+
+
+def test_session_without_scoring_rule_is_scored_out_of_ten(session_service: TestSessionService, db_session: Session):
+    """Sin regla propia se usa la regla por defecto, y la nota es sobre 10 como muestra la hoja de resultados."""
+    from sqlalchemy import text
+
+    qid, correct_option = db_session.execute(text(
+        "SELECT question_id, id FROM question_options WHERE is_correct = 1 ORDER BY id LIMIT 1"
+    )).one()
+    session = session_service.start_session(mode="practice", source="questions", source_ref=str(qid))
+    assert session.scoring_rule_id is None
+    session_service.submit_answer(session_id=session.id, question_id=qid, selected_option_id=correct_option)
+    closed = session_service.close_session(session.id)
+    assert closed.final_score == Decimal("10.00")

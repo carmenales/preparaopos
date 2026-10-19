@@ -22,7 +22,8 @@ class TestAttempt:
 class TestSession:
     id: str
     mode: Literal["practice", "exam"]
-    source: Literal["block", "exam", "random", "questions", "note", "generated"]
+    # 'legacy': sesiones migradas de preparadortai (scripts/etl/import_mariadb_history.py)
+    source: Literal["block", "exam", "random", "questions", "note", "generated", "legacy"]
     source_ref: str | None  # código de bloque/tema, o exam_id — según 'source'
     question_ids: list[int]  # orden fijado al crear la sesión, no se recalcula después
     started_at: datetime
