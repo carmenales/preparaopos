@@ -47,6 +47,9 @@
       </div>
     </div>
 
+    <label class="checkbox-label"><input type="checkbox" name="needs_human_review" value="1" {% if v.needs_human_review %}checked{% endif %}>
+      Necesita revisión (lo marcaré como revisado cuando lo repase)</label>
+
     <div class="ingest-actions">
       <a href="/ingest/" class="btn btn-ghost">Empezar de nuevo</a>
       <button type="submit" id="publish-btn" class="btn btn-primary">Publicar apunte</button>

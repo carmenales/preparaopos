@@ -258,6 +258,22 @@ class TestIngestService(unittest.TestCase):
             self.assertIn('id: "tema-iv-17-nuevas-tecnologias-en-la-age"', content)
             self.assertIn('- "nuevas-tecnologias"', content)
             self.assertIn("## 1. Introducción", content)
+            # Sin refinado con IA ni marca de revisión, la cabecera no debe afirmar lo contrario
+            self.assertIn("ai_cleaned: false", content)
+            self.assertIn("needs_human_review: false", content)
+
+    def test_publish_note_records_ai_cleaning_and_review_flag(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_root = Path(tmpdir).resolve()
+            object.__setattr__(settings, "knowledge_dir", tmp_root / "knowledge")
+            object.__setattr__(settings, "index_output_path", tmp_root / "index.json")
+            resp = IngestService().publish_note(PublishNoteRequest(
+                process_slug="age/a2-gsi", title="Tema I.09 Refinado", markdown_body="Texto refinado.",
+                status="borrador", ai_cleaned=True, needs_human_review=True,
+            ))
+            content = ((tmp_root / "knowledge").parent / resp.file_path).resolve().read_text(encoding="utf-8")
+            self.assertIn("ai_cleaned: true", content)
+            self.assertIn("needs_human_review: true", content)
 
 
 if __name__ == "__main__":

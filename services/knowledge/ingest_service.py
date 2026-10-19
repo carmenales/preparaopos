@@ -190,9 +190,9 @@ class IngestService:
             f'created_at: "{today}"',
             f'last_reviewed: "{today}"',
             "ai_generated: false",
-            "ai_cleaned: true",
+            f"ai_cleaned: {str(request.ai_cleaned).lower()}",
             "ai_sources: []",
-            "needs_human_review: false",
+            f"needs_human_review: {str(request.needs_human_review).lower()}",
             "---",
         ])
 

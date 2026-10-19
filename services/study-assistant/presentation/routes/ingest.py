@@ -89,6 +89,7 @@ def extract(
         "process_slug": process, "source": source.strip() or "academia",
         "title": data.get("detected_title", ""), "official_topic": data.get("official_topic", ""),
         "tags": "", "status": "borrador", "markdown": data.get("markdown", ""),
+        "ai_cleaned": False, "needs_human_review": False,
     }
     info = {"filename": pdf_file.filename, "page_count": data.get("page_count"),
             "headings": len(data.get("headings", [])), "warnings": data.get("warnings", [])}
@@ -135,9 +136,12 @@ def publish(
     tags: Annotated[str, Form()] = "",
     status: Annotated[str, Form()] = "borrador",
     markdown: Annotated[str, Form()] = "",
+    ai_cleaned: Annotated[str | None, Form()] = None,
+    needs_human_review: Annotated[str | None, Form()] = None,
 ):
     v = {"process_slug": process_slug, "source": source, "title": title, "official_topic": official_topic,
-         "tags": tags, "status": status, "markdown": markdown}
+         "tags": tags, "status": status, "markdown": markdown, "ai_cleaned": bool(ai_cleaned),
+         "needs_human_review": bool(needs_human_review)}
     errors = [msg for ok, msg in (
         (title.strip(), "El título es obligatorio."),
         (markdown.strip(), "El apunte está vacío."),
@@ -151,6 +155,8 @@ def publish(
         "process_slug": process_slug.strip(), "title": title.strip(), "official_topic": official_topic.strip(),
         "markdown_body": markdown, "status": status, "source": source.strip() or "academia",
         "tags": [t.strip().lower() for t in tags.split(",") if t.strip()],
+        "ai_cleaned": bool(ai_cleaned),
+        "needs_human_review": bool(needs_human_review),
     }
     try:
         result = client.publish(payload)
