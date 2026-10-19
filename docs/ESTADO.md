@@ -67,6 +67,7 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - study-assistant `/ingest/`: subir PDF (proceso existente u otro nuevo, origen, limpieza) → revisión con título, tema, etiquetas, estado, editor Markdown con vista previa en vivo (htmx) y «Refinar con Ollama» → publicar. Tras publicar se recarga el índice en memoria y se abre el apunte, sin reiniciar el contenedor.
 - Si knowledge-service u Ollama no responden, se muestra un aviso y no se pierde el texto.
 - `docker-compose.yml`: `KNOWLEDGE_SERVICE_INTERNAL_URL` para study-assistant.
+- Gateway: `location /ingest/` con `client_max_body_size 50m` y `proxy_read_timeout 1000s` (por defecto Nginx rechaza más de 1 MB con 413 y corta a los 60 s, menos de lo que tarda el refinado con Ollama).
 
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
