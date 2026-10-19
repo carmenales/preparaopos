@@ -80,7 +80,7 @@ def _render_toc_tree(nodes: list[dict]) -> str:
 
 
 @router.get("/notes/{note_id}", response_class=HTMLResponse)
-async def view_note(request: Request, note_id: str, process: str = ""):
+def view_note(request: Request, note_id: str, process: str = ""):
     """Visor de apunte individual con TOC, renderizado Markdown y paginación."""
     from domain.notes.service import NoteService
 
@@ -134,6 +134,19 @@ async def view_note(request: Request, note_id: str, process: str = ""):
     # URL de práctica en Preparador TAI
     practice_url = _build_practice_url(note, note_service)
 
+    # Navegación cruzada hacia Test Engine
+    from infrastructure.linking.client import LinkingClient
+    from config import TEST_ENGINE_URL
+
+    linking_client = LinkingClient()
+    linked_questions = linking_client.get_links_by_note(note.id)
+    linked_questions_count = len(linked_questions)
+    practice_test_engine_url = (
+        f"{TEST_ENGINE_URL.rstrip('/')}/sessions/practice/by-note/{note.id}"
+        if linked_questions_count > 0
+        else None
+    )
+
     # Tiempo de lectura
     reading_time = note_service.estimate_reading_time(note)
 
@@ -153,6 +166,8 @@ async def view_note(request: Request, note_id: str, process: str = ""):
             "progress_percent": progress_percent,
             "practice_url": practice_url,
             "reading_time": reading_time,
+            "linked_questions_count": linked_questions_count,
+            "practice_test_engine_url": practice_test_engine_url,
         },
     )
 

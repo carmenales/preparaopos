@@ -9,6 +9,7 @@ from typing import Any
 class QuestionNoteLinkRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
+        self._conn.row_factory = sqlite3.Row
 
     def upsert_link(
         self,
@@ -48,6 +49,27 @@ class QuestionNoteLinkRepository:
             (question_id,),
         )
         return [dict(row) for row in cur.fetchall()]
+
+    def get_by_question_ids(self, question_ids: list[int]) -> dict[int, list[dict[str, Any]]]:
+        """Devuelve los enlaces registrados para una lista de preguntas."""
+        if not question_ids:
+            return {}
+        placeholders = ",".join("?" for _ in question_ids)
+        cur = self._conn.cursor()
+        cur.execute(
+            f"""
+            SELECT id, question_id, note_id, syllabus_id, confidence, source, created_at
+            FROM question_note_links
+            WHERE question_id IN ({placeholders})
+            ORDER BY question_id ASC, confidence DESC, note_id ASC;
+            """,
+            question_ids,
+        )
+        res: dict[int, list[dict[str, Any]]] = {qid: [] for qid in question_ids}
+        for row in cur.fetchall():
+            d = dict(row)
+            res[d["question_id"]].append(d)
+        return res
 
     def get_by_note_id(self, note_id: str) -> list[dict[str, Any]]:
         """Devuelve los enlaces registrados para un apunte."""

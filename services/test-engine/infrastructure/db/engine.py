@@ -1,4 +1,4 @@
-"""Motor SQLite en modo WAL y fábrica de sesiones SQLAlchemy."""
+"""Motor SQLite (journal_mode configurable, WAL por defecto) y fábrica de sesiones SQLAlchemy."""
 
 from __future__ import annotations
 
@@ -10,16 +10,22 @@ from sqlalchemy import create_engine, event, func, select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
+import logging
+import os
+
 from infrastructure.db.orm_models import Base, Question, ScoringRule, Syllabus
 from infrastructure.db.seed import SEED_SCORING_RULES, SEED_SYLLABI
+
+logger = logging.getLogger(__name__)
 
 
 def sqlite_url(path: Path) -> str:
     return f"sqlite:///{path.as_posix()}"
 
 
-def create_sqlite_engine(path: Path) -> Engine:
+def create_sqlite_engine(path: Path, journal_mode: str | None = None) -> Engine:
     path.parent.mkdir(parents=True, exist_ok=True)
+    mode = (journal_mode or os.getenv("SQLITE_JOURNAL_MODE", "WAL")).upper()
     engine = create_engine(
         sqlite_url(path),
         echo=False,
@@ -30,7 +36,18 @@ def create_sqlite_engine(path: Path) -> Engine:
     @event.listens_for(engine, "connect")
     def _enable_sqlite_pragmas(dbapi_connection, _connection_record) -> None:
         cursor = dbapi_connection.cursor()
-        cursor.execute("PRAGMA journal_mode=WAL")
+        try:
+            cursor.execute(f"PRAGMA journal_mode={mode}")
+            row = cursor.fetchone()
+            effective = str(row[0]).upper() if row else None
+            if effective != mode:
+                logger.warning(
+                    "SQLite %s: journal_mode pedido=%s, efectivo=%s", path, mode, effective
+                )
+        except Exception as exc:
+            logger.warning(
+                "SQLite %s: no se pudo aplicar journal_mode=%s (%s)", path, mode, exc
+            )
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
 

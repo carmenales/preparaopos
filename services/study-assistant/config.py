@@ -33,6 +33,15 @@ EMBEDDINGS_SERVICE_URL = os.getenv("EMBEDDINGS_SERVICE_URL", "http://localhost:8
 # URL base de Preparador TAI (para enlaces de práctica)
 PREPARADORTAI_BASE_URL = os.getenv("PREPARADORTAI_BASE_URL", "http://localhost:8080")
 
+# Microservicio de linking (comunicación interna)
+LINKING_SERVICE_INTERNAL_URL = os.getenv("LINKING_SERVICE_INTERNAL_URL", os.getenv("LINKING_SERVICE_URL", "http://localhost:8097"))
+LINKING_SERVICE_URL = LINKING_SERVICE_INTERNAL_URL
+
+# Motor de tests (separación entre URL interna y URL pública vista por el navegador)
+TEST_ENGINE_INTERNAL_URL = os.getenv("TEST_ENGINE_INTERNAL_URL", os.getenv("TEST_ENGINE_URL", "http://localhost:8096"))
+TEST_ENGINE_PUBLIC_URL = os.getenv("TEST_ENGINE_PUBLIC_URL", os.getenv("TEST_ENGINE_URL", "http://localhost:8096"))
+TEST_ENGINE_URL = TEST_ENGINE_PUBLIC_URL
+
 # --- Servidor ---
 
 HOST = os.getenv("SA_HOST", "0.0.0.0")

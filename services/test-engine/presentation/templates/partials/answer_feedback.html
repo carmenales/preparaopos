@@ -22,6 +22,37 @@
       {% if result.explanation %}
       <p class="feedback__explanation">{{ result.explanation }}</p>
       {% endif %}
+
+      {# ── Apuntes relacionados (navegación cruzada a Study Assistant) ── #}
+      {% if linked_notes and linked_notes|length > 0 %}
+      <div class="feedback__notes">
+        {% if linked_notes|length == 1 %}
+        <a href="{{ study_assistant_url }}/notes/{{ linked_notes[0].note_id }}"
+           target="_blank" rel="noopener"
+           class="note-pill"
+           title="Ver apunte relacionado en Study Assistant">
+          📖 Ver apunte: {{ linked_notes[0].official_topic or linked_notes[0].title }} ↗
+        </a>
+        {% else %}
+        <details class="note-dropdown">
+          <summary class="note-dropdown__summary">
+            📖 Ver apuntes relacionados ({{ linked_notes|length }}) ▾
+          </summary>
+          <ul class="note-dropdown__menu">
+            {% for note in linked_notes %}
+            <li>
+              <a href="{{ study_assistant_url }}/notes/{{ note.note_id }}"
+                 target="_blank" rel="noopener"
+                 class="note-dropdown__link">
+                {{ note.official_topic or note.title }} ↗
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+      </div>
+      {% endif %}
     </div>
   {% else %}
     <div class="feedback feedback--blank">
@@ -39,11 +70,11 @@
 {# Botón de navegación inyectado por htmx para no recargar la página #}
 <div class="feedback__nav">
   {% if next_n <= total %}
-  <a href="/sessions/{{ session.id }}/question/{{ next_n }}" class="btn btn--primary">
+  <a href="{{ url('/sessions/' ~ session.id ~ '/question/' ~ next_n) }}" class="btn btn--primary">
     Siguiente → ({{ next_n }}/{{ total }})
   </a>
   {% else %}
-  <a href="/sessions/{{ session.id }}/result" class="btn btn--danger">
+  <a href="{{ url('/sessions/' ~ session.id ~ '/result') }}" class="btn btn--danger">
     Finalizar y ver resultados
   </a>
   {% endif %}

@@ -172,3 +172,246 @@ def test_result_sheet_and_subsequent_question_access_redirects(client):
     q_after_close = client.get(f"/sessions/{session_id}/question/1")
     assert q_after_close.status_code == 303
     assert q_after_close.headers["location"] == f"/sessions/{session_id}/result"
+
+
+def test_cross_navigation_ui_components(client):
+    from presentation.dependencies import get_linking_client
+
+    class FakeLinkingClient:
+        def get_links_by_question(self, q_id):
+            if q_id == 18012:
+                return [{
+                    "note_id": "tema-i-01-derecho-constitucional",
+                    "title": "Tema I.01 Derecho Constitucional",
+                    "official_topic": "I.01 Derecho Constitucional",
+                    "confidence": 1.0,
+                }]
+            elif q_id == 18044:
+                return [
+                    {
+                        "note_id": "tema-i-09-admin-digital",
+                        "title": "Tema I.09 Administración Digital",
+                        "official_topic": "I.09.II Administración Digital",
+                        "confidence": 0.8,
+                    },
+                    {
+                        "note_id": "tema-i-09-ens-eni",
+                        "title": "Tema I.09 ENS-ENI",
+                        "official_topic": "I.09.II ENS-ENI",
+                        "confidence": 0.8,
+                    },
+                ]
+            return []
+
+        def get_links_by_questions(self, q_ids):
+            return {qid: self.get_links_by_question(qid) for qid in q_ids}
+
+        def get_links_by_note(self, note_id):
+            if note_id == "tema-i-01-derecho-constitucional":
+                return [{"question_id": 18012, "confidence": 1.0}]
+            return []
+
+        def get_question_ids_by_note(self, note_id):
+            if note_id in ("tema-i-01-derecho-constitucional", "tema-i-01"):
+                return [18012]
+            return []
+
+    app.dependency_overrides[get_linking_client] = lambda: FakeLinkingClient()
+
+    try:
+        # 1. Crear sesión de práctica
+        res = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
+        session_id = res.headers["location"].split("/sessions/")[1].split("/")[0]
+
+        # 2. Responder pregunta 18012 (enlace único -> note-pill)
+        ans_single = client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
+        )
+        assert ans_single.status_code == 200
+        assert "note-pill" in ans_single.text
+        assert "tema-i-01-derecho-constitucional" in ans_single.text
+        assert "note-dropdown" not in ans_single.text
+
+        # 3. Responder pregunta 18044 (enlace múltiple -> note-dropdown)
+        ans_multi = client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18044, "selected_option_id": 1, "n": 2},
+        )
+        assert ans_multi.status_code == 200
+        assert "note-dropdown" in ans_multi.text
+        assert "Ver apuntes relacionados (2)" in ans_multi.text
+        assert "tema-i-09-admin-digital" in ans_multi.text
+        assert "tema-i-09-ens-eni" in ans_multi.text
+
+        # 4. Ver hoja de resultados y comprobar que incluye los enlaces
+        res_sheet = client.get(f"/sessions/{session_id}/result")
+        assert res_sheet.status_code == 200
+        assert "note-pill" in res_sheet.text
+        assert "note-dropdown" in res_sheet.text
+
+        # 5. Práctica por apunte: POST /sessions/practice/by-note/tema-i-01-derecho-constitucional
+        # 5a. Sin seguir redirecciones: verifica el 303 que redirige a la pregunta 1
+        res_by_note = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional")
+        assert res_by_note.status_code == 303
+        assert re.search(r"/sessions/[^/]+/question/1$", res_by_note.headers["location"])
+
+        # 5b. Cadena completa (POST 303 -> GET 200 a /sessions/{id}/question/1)
+        res_full_chain = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
+        assert res_full_chain.status_code == 200
+        assert re.search(r"/sessions/[^/]+/question/1$", str(res_full_chain.url))
+        assert "Pregunta" in res_full_chain.text
+
+        # 6. Práctica por apunte sin preguntas vinculadas -> redirige a / con 303
+        res_empty = client.post("/sessions/practice/by-note/no-existe", follow_redirects=True)
+        assert res_empty.status_code == 200
+        assert str(res_empty.url).endswith("/")
+
+    finally:
+        app.dependency_overrides.pop(get_linking_client, None)
+
+
+def test_cross_navigation_graceful_degradation_when_linking_offline(client):
+    """Comprueba que si linking-service está apagado, no se produce ningún error 500 y se degrada elegantemente."""
+    from presentation.dependencies import get_linking_client
+    from infrastructure.clients.linking_client import LinkingClient
+
+    # Cliente real apuntando a un puerto sin servicio escuchando y con timeout corto
+    dead_client = LinkingClient(base_url="http://127.0.0.1:59999", timeout=0.05)
+    app.dependency_overrides[get_linking_client] = lambda: dead_client
+
+    try:
+        # 1. POST /sessions/practice/by-note con linking-service caído:
+        # No debe lanzar 500; debe degradar elegantemente y terminar en GET 200 en / (POST 303 -> GET 200)
+        res_dead_note = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
+        assert res_dead_note.status_code == 200
+        assert str(res_dead_note.url).endswith("/")
+
+        # 2. Crear sesión de práctica y responder con linking-service caído
+        res_session = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
+        session_id = res_session.headers["location"].split("/sessions/")[1].split("/")[0]
+
+        # Al responder, responde 200 sin lanzar 500 y sin pintar píldoras de apuntes
+        ans_res = client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
+        )
+        assert ans_res.status_code == 200
+        assert "note-pill" not in ans_res.text
+        assert "note-dropdown" not in ans_res.text
+
+        # 3. Al ver resultados, responde 200 sin lanzar 500 y sin píldoras
+        res_sheet = client.get(f"/sessions/{session_id}/result")
+        assert res_sheet.status_code == 200
+        assert "note-pill" not in res_sheet.text
+        assert "note-dropdown" not in res_sheet.text
+
+    finally:
+        app.dependency_overrides.pop(get_linking_client, None)
+
+
+def test_root_path_prefix_guardian(monkeypatch):
+    """Test guardián: renderizar cada página con ROOT_PATH=/tests y comprobar por regex que no queda ninguna URL interna sin el prefijo."""
+    import config
+    from presentation.dependencies import get_linking_client
+
+    monkeypatch.setenv("ROOT_PATH", "/tests")
+    monkeypatch.setattr(config, "ROOT_PATH", "/tests")
+    # El enlace a Study Assistant cruza de servicio: debe salir de su URL pública
+    # configurada, no de una ruta escrita a mano en la plantilla.
+    monkeypatch.setattr(config, "STUDY_ASSISTANT_PUBLIC_URL", "http://study-assistant.example")
+
+    class FakeLinkingClient:
+        def get_links_by_question(self, question_id):
+            return [{"note_id": "tema-i-01", "title": "Nota 1", "official_topic": "I.01", "confidence": 1.0}]
+
+        def get_links_by_questions(self, q_ids):
+            return {qid: self.get_links_by_question(qid) for qid in q_ids}
+
+        def get_links_by_note(self, note_id):
+            return [{"question_id": 18012, "confidence": 1.0}]
+
+        def get_question_ids_by_note(self, note_id):
+            return [18012]
+
+    app.dependency_overrides[get_linking_client] = lambda: FakeLinkingClient()
+
+    unprefixed_attr_pattern = re.compile(
+        r"""(?:href|src|action|hx-get|hx-post)=["']/(?!tests/|#)([^"']*)["']""",
+        re.IGNORECASE,
+    )
+    unprefixed_js_pattern = re.compile(
+        r"""window\.location(?:\.href)?\s*=\s*["']/(?!tests/)([^"']*)["']""",
+        re.IGNORECASE,
+    )
+
+    def assert_no_unprefixed_urls(html_content: str, context: str):
+        attr_matches = unprefixed_attr_pattern.findall(html_content)
+        js_matches = unprefixed_js_pattern.findall(html_content)
+        assert not attr_matches, f"Encontradas URLs de atributo sin prefijo /tests/ en {context}: {attr_matches}"
+        assert not js_matches, f"Encontradas URLs de JavaScript sin prefijo /tests/ en {context}: {js_matches}"
+
+    t_client = TestClient(app, follow_redirects=False)
+
+    try:
+        # 1. Catálogo (/)
+        res_cat = t_client.get("/")
+        assert res_cat.status_code == 200
+        assert 'href="http://study-assistant.example/"' in res_cat.text
+        assert_no_unprefixed_urls(res_cat.text, "Catálogo (/)")
+        assert 'href="/tests/static/style.css"' in res_cat.text
+        assert 'href="/tests/"' in res_cat.text
+        assert 'action="/tests/sessions/"' in res_cat.text
+
+        # 2. Redirección de inicio de sesión: POST /sessions/
+        res_create = t_client.post(
+            "/sessions/",
+            data={"mode": "exam", "source": "exam", "source_ref": "53"},
+        )
+        assert res_create.status_code == 303
+        loc_create = res_create.headers["location"]
+        assert loc_create.startswith("/tests/sessions/"), f"Location sin prefijo: {loc_create}"
+        assert loc_create.endswith("/question/1")
+        session_id = loc_create.split("/sessions/")[1].split("/")[0]
+
+        # 3. Pregunta 1 en modo examen con cronómetro
+        res_q = t_client.get(f"/sessions/{session_id}/question/1")
+        assert res_q.status_code == 200
+        assert_no_unprefixed_urls(res_q.text, "Pregunta examen")
+        assert f'hx-post="/tests/sessions/{session_id}/answer"' in res_q.text
+        assert f'window.location.href = "/tests/sessions/{session_id}/result"' in res_q.text
+
+        # 4. Enviar respuesta por htmx (POST /sessions/{id}/answer)
+        res_ans = t_client.post(
+            f"/sessions/{session_id}/answer",
+            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
+        )
+        assert res_ans.status_code == 200
+        assert_no_unprefixed_urls(res_ans.text, "Feedback respuesta")
+        assert f'href="/tests/sessions/{session_id}/question/2"' in res_ans.text
+
+        # 5. Redirecciones bounds checking
+        res_under = t_client.get(f"/sessions/{session_id}/question/0")
+        assert res_under.status_code == 303
+        assert res_under.headers["location"] == f"/tests/sessions/{session_id}/question/1"
+
+        res_over = t_client.get(f"/sessions/{session_id}/question/9999")
+        assert res_over.status_code == 303
+        assert res_over.headers["location"] == f"/tests/sessions/{session_id}/result"
+
+        # 6. Hoja de resultados (/sessions/{id}/result)
+        res_res = t_client.get(f"/sessions/{session_id}/result")
+        assert res_res.status_code == 200
+        assert_no_unprefixed_urls(res_res.text, "Hoja de resultados")
+        assert 'href="/tests/"' in res_res.text
+
+        # 7. Práctica por apunte - resolución canónica y prefijada
+        res_by_note_proc = t_client.post("/sessions/practice/by-note/tema-i-01")
+        assert res_by_note_proc.status_code == 303
+        assert res_by_note_proc.headers["location"].startswith("/tests/sessions/")
+        assert res_by_note_proc.headers["location"].endswith("/question/1")
+
+    finally:
+        app.dependency_overrides.pop(get_linking_client, None)
+
+

@@ -217,8 +217,9 @@ Tras la verificación manual de la interfaz de `test-engine` y del enlazador, se
    - Queda pendiente mapear y habilitar en la interfaz el resto de exámenes oficiales históricos de PreparaTIC y preparadortai, así como selectores para práctica libre por bloques y temas de temario.
 3. **Gateway Nginx (Cableado Operativo):**
    - Pendiente de configurar `nginx.conf` (`:8080`) enrutando `/` a `apuntes-service` y `/tests` a `test-engine` cuando ambos servicios convivan en el mismo entorno.
-4. **Decisión de UX para enlaces 1-a-varios al construir rutas de navegación:**
-   - En casos donde un número de tema cubre legítimamente varios subtemas complementarios (como el Tema I.09 de ENS con 3 notas candidatas: Datos Abiertos, Administración Digital y ENS-ENI), `linking-service` preserva la correspondencia fidedigna asignando `confidence=0.8` a todos ellos.
-   - Queda pendiente definir el comportamiento en la interfaz de usuario de `apuntes-service` y `test-engine` cuando se implementen las rutas de 'ver apunte relacionado'/'ver preguntas relacionadas' (ej. listar menú desplegable o modal para que el opositor elija el subtema específico vs ordenar por similitud semántica contextual).
+4. **Decisión de UX y cobertura para enlaces 1-a-varios en la navegación cruzada:**
+   - **En `test-engine` (pregunta → apuntes):** Se implementó el patrón de **desplegable nativo contextual (`<details class="note-dropdown">`)** para preguntas con múltiples notas candidatas (`confidence=0.8`), manteniendo la píldora directa (`.note-pill`) para enlaces unívocos (`confidence=1.0`). Esto permite al opositor elegir el subtema complementario específico sin salir del flujo de examen.
+   - **En `study-assistant` (apunte → preguntas de práctica):** Se tomó la **decisión consciente** de incluir en la sesión de práctica (`POST /practice/by-note`) todas las preguntas vinculadas a esa nota, incluidas las compartidas con `confidence=0.8` entre subtemas complementarios (p. ej., las 13 preguntas de I.09 que cubren a la vez *ENS-ENI*, *Datos Abiertos* y *Administración Digital*). Se asume este solapamiento porque para el estudio de oposiciones prima maximizar la cobertura de preguntas oficiales relevantes antes que descartar preguntas por ambigüedad fina de subtema.
+
 
 

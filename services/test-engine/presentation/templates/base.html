@@ -4,12 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Test Engine{% endblock %}</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="{{ url('/static/style.css') }}">
   <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
 </head>
 <body>
-  <header class="site-header">
-    <a href="/" class="site-logo">📋 Test Engine</a>
+  <header class="site-header" style="justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <a href="{{ url('/') }}" class="site-logo">📋 Test Engine</a>
+    </div>
+    <nav style="display: flex; align-items: center; gap: 1.2rem;">
+      <a href="{{ url('/') }}" style="color: #fff; text-decoration: none; font-size: 0.95rem; font-weight: 500;">Exámenes</a>
+      <a href="{{ study_assistant_home() }}" style="color: #93c5fd; text-decoration: none; font-size: 0.95rem; font-weight: 500;">📚 Volver a Apuntes</a>
+    </nav>
   </header>
   <main class="site-main">
     {% block content %}{% endblock %}

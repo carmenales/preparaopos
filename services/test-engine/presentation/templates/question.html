@@ -34,7 +34,7 @@
       En ambos casos el form no recarga la página.
     #}
     <form id="answer-form"
-          hx-post="/sessions/{{ session.id }}/answer"
+          hx-post="{{ url('/sessions/' ~ session.id ~ '/answer') }}"
           hx-target="#feedback"
           hx-swap="innerHTML"
           hx-include="#answer-form">
@@ -61,12 +61,12 @@
       <div class="question-actions">
         <button type="submit" class="btn btn--primary">Confirmar</button>
         {% if n > 1 %}
-        <a href="/sessions/{{ session.id }}/question/{{ n - 1 }}" class="btn btn--ghost">← Anterior</a>
+        <a href="{{ url('/sessions/' ~ session.id ~ '/question/' ~ (n - 1)) }}" class="btn btn--ghost">← Anterior</a>
         {% endif %}
         {% if n < total %}
-        <a href="/sessions/{{ session.id }}/question/{{ n + 1 }}" class="btn btn--ghost">Siguiente →</a>
+        <a href="{{ url('/sessions/' ~ session.id ~ '/question/' ~ (n + 1)) }}" class="btn btn--ghost">Siguiente →</a>
         {% else %}
-        <a href="/sessions/{{ session.id }}/result" class="btn btn--danger">Finalizar examen</a>
+        <a href="{{ url('/sessions/' ~ session.id ~ '/result') }}" class="btn btn--danger">Finalizar examen</a>
         {% endif %}
       </div>
     </form>
@@ -99,7 +99,7 @@
       container.classList.add("timer--expired");
       // Redirigir al cliente: el servidor cerrará perezosamente la sesión
       // en el GET /result gracias al lazy close ya implementado en get_result().
-      window.location.href = "/sessions/{{ session.id }}/result";
+      window.location.href = "{{ url('/sessions/' ~ session.id ~ '/result') }}";
       return;
     }
     display.textContent = fmt(remaining);

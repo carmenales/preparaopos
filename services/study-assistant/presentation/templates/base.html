@@ -52,7 +52,7 @@
         });
     </script>
 
-    <link href="{{ url_for('static', path='css/styles.css') }}" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
 </head>
 <body>
 <header class="topbar">
@@ -62,7 +62,7 @@
     </div>
     <nav class="topbar-nav">
         <a href="/" class="active">Apuntes</a>
-        <!-- Agregaremos enlaces a ingest o más cosas según sea necesario -->
+        <a href="{{ test_engine_home() }}" title="Catálogo de exámenes y simulacros oficiales">Simulacros y Tests</a>
     </nav>
 </header>
 <main class="container">

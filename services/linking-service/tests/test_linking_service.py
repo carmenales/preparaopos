@@ -190,7 +190,47 @@ def test_linking_api_endpoints(memory_db):
     assert data_n[0]["exam_name"] == "AGE GSI 2024"
     assert data_n[0]["confidence"] == 1.0
 
-    # 3. GET /health
+    # 3. GET /links/by-note/{note_id}/question-ids
+    resp_ids = client.get("/links/by-note/tema-i-01-constitución/question-ids")
+    assert resp_ids.status_code == 200
+    assert resp_ids.json() == [101]
+
+    # 4. GET /health
     resp_h = client.get("/health")
     assert resp_h.status_code == 200
     assert resp_h.json()["links_count"] == 1
+
+
+
+def test_linking_batch_endpoint(memory_db):
+    from presentation.app import app
+
+    repo = QuestionNoteLinkRepository(memory_db)
+    ap_client = FakeApuntesClient()
+    te_client = FakeTestEngineClient()
+    service = LinkingService(repo, ap_client, te_client)
+
+    repo.upsert_link(
+        question_id=101,
+        note_id="tema-i-01-constitución",
+        syllabus_id="age-gsi-official",
+        confidence=1.0,
+        source="topic-match",
+    )
+
+    app.state.db_conn = memory_db
+    app.state.repo = repo
+    app.state.linking_service = service
+
+    client = TestClient(app)
+
+    # POST /links/by-questions
+    resp_batch = client.post("/links/by-questions", json={"question_ids": [101, 999]})
+    assert resp_batch.status_code == 200
+    data_batch = resp_batch.json()
+    assert "101" in data_batch
+    assert len(data_batch["101"]) == 1
+    assert data_batch["101"][0]["note_id"] == "tema-i-01-constitución"
+    assert "999" in data_batch
+    assert len(data_batch["999"]) == 0
+

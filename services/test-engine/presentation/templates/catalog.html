@@ -16,7 +16,7 @@
         {% if exam.duration_min %}<span class="tag">⏱ {{ exam.duration_min }} min</span>{% endif %}
       </div>
       <div class="exam-card__actions">
-        <form method="post" action="/sessions/">
+        <form method="post" action="{{ url('/sessions/') }}">
           <input type="hidden" name="source" value="exam">
           <input type="hidden" name="source_ref" value="{{ exam.id }}">
           <button type="submit" name="mode" value="exam" class="btn btn--primary">

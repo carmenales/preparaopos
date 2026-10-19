@@ -14,6 +14,7 @@ venv/
 *.sqlite
 *.sqlite-wal
 *.sqlite-shm
+*.sqlite-journal
 *.db
 *.db-wal
 *.db-shm
@@ -40,6 +41,8 @@ db/local/*
 *.tmp
 *.old
 *.orig
+test_tmp.txt
+ultimos_commits.txt
 .DS_Store
 Thumbs.db
 .vscode/
@@ -59,3 +62,6 @@ imports/**/data/
 cache/
 __pycache__/
 .llm_cache/
+
+# Copias de seguridad locales de las BD
+backups/

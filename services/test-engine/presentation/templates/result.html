@@ -26,7 +26,7 @@
     <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas</p>
   </div>
 
-  <a href="/" class="btn btn--secondary">← Volver al catálogo</a>
+  <a href="{{ url('/') }}" class="btn btn--secondary">← Volver al catálogo</a>
 
   {# ── Desglose pregunta a pregunta ────────────────────────────── #}
   <h2>Desglose</h2>
@@ -69,6 +69,37 @@
         <summary>Ver explicación</summary>
         <p>{{ qr.explanation }}</p>
       </details>
+      {% endif %}
+
+      {% set q_notes = linked_notes_map.get(qr.question_id) if linked_notes_map else [] %}
+      {% if q_notes and q_notes|length > 0 %}
+      <div class="result-item__notes">
+        {% if q_notes|length == 1 %}
+        <a href="{{ study_assistant_url }}/notes/{{ q_notes[0].note_id }}"
+           target="_blank" rel="noopener"
+           class="note-pill"
+           title="Ver apunte relacionado en Study Assistant">
+          📖 Ver apunte: {{ q_notes[0].official_topic or q_notes[0].title }} ↗
+        </a>
+        {% else %}
+        <details class="note-dropdown">
+          <summary class="note-dropdown__summary">
+            📖 Ver apuntes relacionados ({{ q_notes|length }}) ▾
+          </summary>
+          <ul class="note-dropdown__menu">
+            {% for note in q_notes %}
+            <li>
+              <a href="{{ study_assistant_url }}/notes/{{ note.note_id }}"
+                 target="_blank" rel="noopener"
+                 class="note-dropdown__link">
+                {{ note.official_topic or note.title }} ↗
+              </a>
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endif %}
+      </div>
       {% endif %}
     </li>
     {% endfor %}
