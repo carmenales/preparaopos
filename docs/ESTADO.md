@@ -62,6 +62,12 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `/manage/exams/`: alta y edición de cuestionarios (temario, año, convocatoria, regla de puntuación y duración), lista de sus preguntas con «Quitar» y borrado si no tiene sesiones.
 - Fuera de alcance: crear temarios nuevos y reordenar preguntas dentro de un cuestionario.
 
+## Paso 6 de la migración: asistente de ingesta (rama `feature/ingest-assistant`)
+- `services/knowledge/pdf_extractor.py` y `markdown_normalizer.py` **nunca se habían commiteado**: `ingest_service.py` (commit `f7429cd5`) ya los importaba, pero estaban como ficheros sin seguimiento en `stash@{1}` (`feature/knowledge-source-ui`). Sin ellos knowledge-service no arrancaba. Recuperados del stash tal cual (el stash no se ha tocado); pasan los 16 tests de `tests/test_ingest_service.py`.
+- study-assistant `/ingest/`: subir PDF (proceso existente u otro nuevo, origen, limpieza) → revisión con título, tema, etiquetas, estado, editor Markdown con vista previa en vivo (htmx) y «Refinar con Ollama» → publicar. Tras publicar se recarga el índice en memoria y se abre el apunte, sin reiniciar el contenedor.
+- Si knowledge-service u Ollama no responden, se muestra un aviso y no se pierde el texto.
+- `docker-compose.yml`: `KNOWLEDGE_SERVICE_INTERNAL_URL` para study-assistant.
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
