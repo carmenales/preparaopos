@@ -35,6 +35,12 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 - Ayto. Madrid 2024 práctico, pregunta 16, opción C: el texto lleva un resto de la extracción del PDF («…aún no es oficial. economía, innovación 8»). Revisar en origen.
 - Ayto. Madrid: el SQL `_fixed` corrige tres textos frente a `review_questions.csv` (RD 193/2023, WCAG 2.2 2023 y 2.1 actualizada en 2025). Se importa el texto del SQL.
 
+### Pendientes detectados al probar el generador (2026-10-19)
+1. **Pie de página del PDF en opciones de GSI 2024:** 9 opciones terminan en «2024 - GSI-L Página N de 10» (siempre el mismo patrón y solo en esa fuente). Limpiar en la BD, en `import_age_gsi_2024.py` y en el JSON del examen.
+2. **Enlaces pregunta→apunte:** hoy significan «apuntes del mismo tema oficial» (clasificación semántica revisada a mano → todos los apuntes de ese tema; confianza 1,0 si hay uno y 0,8 si hay varios), no «el apunte contiene la respuesta». Solo existen para GSI 2024 (118 enlaces, 100 preguntas, 51 apuntes). Primero, etiquetarlos en la interfaz como «Apuntes del tema». Después, enlace a nivel de sección: fragmento más parecido por embeddings, ancla al apartado y aviso de «sin cobertura en tus apuntes» por debajo de un umbral.
+3. **Generador: menos preguntas de las pedidas sin avisar** (se pidieron 10 y salieron 6). Avisar o limitar el número al disponible antes de crear el test y mostrar «N de M pedidas» en la sesión.
+4. **UX de test-engine escasa:** el rediseño ya estaba en el backlog y sube de prioridad (formularios, recuento visible, navegación de la sesión).
+
 ## 2. Funcionalidad
 
 ### preparadortai (PHP) → test-engine
