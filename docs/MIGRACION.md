@@ -14,12 +14,12 @@ _Inventario del 2026-10-19 sobre `develop` (`9afaab23`). La migración se da por
 | Comunidad de Madrid P01/P02 IA (`imports/cm_madrid_digital`) | 100 | 100 | ✅ Paso 2. A−F/3. |
 | Comunidad de Madrid TIC P01 Analista (`_template`) | 44 | 0 | ⏸️ Excluido: sin plantilla oficial (`[PENDIENTE DE PLANTILLA OFICIAL]`). Importar cuando se publique. |
 | UC3M A2 GSI 2021/2024 (`imports/uc3m_gsi`) | 270 | 270 | ✅ Paso 2. 3 exámenes, A−F/4 (regla nueva `oficial-cuarto`). |
-| Historial de tests en MariaDB (`test_sessions`, `test_attempts`, `question_sets`) | — | 0 | ❓ Sin comprobar si hay uso real que conservar. |
+| Historial de tests en MariaDB (`test_sessions`, `test_attempts`) | 332 intentos | 332 | ✅ Paso 7. 11 sesiones de práctica (17-jun a 22-jul) con `source = 'legacy'`, desde `backups/mariadb/*.tsv` (`scripts/etl/import_mariadb_history.py`). Todos los intentos casan de forma exacta. |
 | Historial de PreparaTIC V3 (IndexedDB del navegador) | — | 0 | ➖ Se queda en el navegador; no se migra. |
 
 **Lo que no se puede recuperar:** los exámenes completos de PreparaTIC. Las preguntas marcadas como de examen se mezclan dentro de cada año (p. ej. 2023 tiene 1.171, de varias convocatorias) y no hay nada que las separe por examen. Sí se pueden ofrecer tests por año y solo con preguntas de examen oficial.
 
-### Comprobación pendiente en MariaDB
+### Comprobación en MariaDB (hecha el 2026-10-19)
 Con la suite levantada, en PowerShell:
 ```powershell
 docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
@@ -39,6 +39,8 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 1. **Pie de página del PDF en opciones de GSI 2024:** 9 opciones terminan en «2024 - GSI-L Página N de 10» (siempre el mismo patrón y solo en esa fuente). Limpiar en la BD, en `import_age_gsi_2024.py` y en el JSON del examen.
 2. **Enlaces pregunta→apunte:** hoy significan «apuntes del mismo tema oficial» (clasificación semántica revisada a mano → todos los apuntes de ese tema; confianza 1,0 si hay uno y 0,8 si hay varios), no «el apunte contiene la respuesta». Solo existen para GSI 2024 (118 enlaces, 100 preguntas, 51 apuntes). Primero, etiquetarlos en la interfaz como «Apuntes del tema». Después, enlace a nivel de sección: fragmento más parecido por embeddings, ancla al apartado y aviso de «sin cobertura en tus apuntes» por debajo de un umbral.
 3. **Generador: menos preguntas de las pedidas sin avisar** (se pidieron 10 y salieron 6). Avisar o limitar el número al disponible antes de crear el test y mostrar «N de M pedidas» en la sesión.
+5. **Regla de puntuación por defecto sobre 100:** `DEFAULT_AGE_SCORING_RULE` (`domain/sessions/service.py`) tiene `score_scale = 100`, pero la hoja de resultados pinta «/ 10». Afecta a cualquier sesión sin regla propia (p. ej. Majadahonda). Aún no hay ninguna sesión cerrada con ella.
+6. **1.147 preguntas de TAI sin etiqueta de temario:** `import_tai_mariadb.py` solo etiqueta las que tienen bloque y tema, y el generador busca por etiqueta, así que esas preguntas no aparecen ni en «todo el temario» ni en el refuerzo (TAI muestra 184 preguntas y 7 falladas en vez de 1.331 y 48). Las demás fuentes crean la etiqueta con bloque y tema vacíos.
 4. **UX de test-engine escasa:** el rediseño ya estaba en el backlog y sube de prioridad (formularios, recuento visible, navegación de la sesión).
 
 ## 2. Funcionalidad
@@ -86,7 +88,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 4. **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
 5. **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
 6. **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
-7. **Historial de MariaDB**, solo si la comprobación de §1 muestra uso real.
+7. ✅ **Historial de MariaDB**: 332 intentos reales de junio y julio (ver §1).
 
 ## 4. Criterios para dar la migración por terminada
 - [ ] Todas las preguntas de §1 están en test-engine, con su origen, año y anuladas.
