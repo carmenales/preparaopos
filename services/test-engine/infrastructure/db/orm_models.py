@@ -60,6 +60,12 @@ class Question(Base):
     is_annulled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     annulment_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     pending_classification: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Año de la convocatoria de origen y marca de pregunta de examen oficial
+    # (PreparaTIC los trae por pregunta; en otras fuentes pueden ser NULL / False).
+    year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    is_official_exam: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default="0"
+    )
 
     options: Mapped[list[QuestionOption]] = relationship(
         back_populates="question",

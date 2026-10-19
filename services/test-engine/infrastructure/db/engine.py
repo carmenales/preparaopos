@@ -84,8 +84,37 @@ def seed_master_data(session: Session) -> None:
     session.commit()
 
 
+# Columnas añadidas después de crear la BD. create_all() no altera tablas
+# existentes, así que se añaden aquí de forma idempotente y solo aditiva
+# (sin Alembic todavía: ver backlog en docs/ESTADO.md).
+ADDITIVE_COLUMNS: dict[str, list[tuple[str, str]]] = {
+    "questions": [
+        ("year", "INTEGER"),
+        ("is_official_exam", "BOOLEAN NOT NULL DEFAULT 0"),
+    ],
+}
+
+
+def ensure_additive_columns(engine: Engine) -> list[str]:
+    """Añade las columnas de ADDITIVE_COLUMNS que falten. Devuelve las añadidas."""
+    added: list[str] = []
+    with engine.begin() as conn:
+        for table, columns in ADDITIVE_COLUMNS.items():
+            existing = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+            if not existing:
+                continue
+            for name, ddl in columns:
+                if name not in existing:
+                    conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {name} {ddl}"))
+                    added.append(f"{table}.{name}")
+    for column in added:
+        logger.info("Columna añadida al esquema: %s", column)
+    return added
+
+
 def init_schema(engine: Engine) -> None:
     Base.metadata.create_all(engine)
+    ensure_additive_columns(engine)
     SessionLocal = sessionmaker(bind=engine, autoflush=False, future=True)
     with SessionLocal() as session:
         seed_master_data(session)
