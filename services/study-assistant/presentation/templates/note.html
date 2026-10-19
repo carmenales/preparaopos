@@ -5,6 +5,9 @@
 {% endblock %}
 
 {% block content %}
+    {% if request.query_params.get('published') %}
+    <div class="alert alert-ok" role="status">Apunte publicado y añadido al índice.</div>
+    {% endif %}
     <!-- Ruta de navegación (Breadcrumbs) -->
     <nav class="note-breadcrumbs" aria-label="Ruta de navegación">
         <ol class="breadcrumb-list">

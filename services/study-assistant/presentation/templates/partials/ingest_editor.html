@@ -1,0 +1,5 @@
+{% if refine_error %}<div class="alert alert-error" role="alert">{{ refine_error }}</div>{% endif %}
+{% if refined %}<div class="alert" role="status">Texto refinado. Revísalo antes de publicar: el modelo puede equivocarse.</div>{% endif %}
+<textarea id="markdown" name="markdown" form="ingest-form" class="markdown-textarea" rows="28" required
+          hx-post="/ingest/preview" hx-trigger="load, input changed delay:600ms" hx-target="#preview" hx-swap="innerHTML"
+          aria-label="Texto del apunte en Markdown">{{ v.markdown if v is defined else markdown }}</textarea>

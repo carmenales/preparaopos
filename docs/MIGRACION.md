@@ -41,6 +41,8 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 3. **Generador: menos preguntas de las pedidas sin avisar** (se pidieron 10 y salieron 6). Avisar o limitar el número al disponible antes de crear el test y mostrar «N de M pedidas» en la sesión.
 5. ✅ **Regla de puntuación por defecto sobre 100** (corregido: ahora sobre 10): `DEFAULT_AGE_SCORING_RULE` (`domain/sessions/service.py`) tiene `score_scale = 100`, pero la hoja de resultados pinta «/ 10». Afecta a cualquier sesión sin regla propia (p. ej. Majadahonda). Aún no hay ninguna sesión cerrada con ella.
 6. ✅ **1.147 preguntas de TAI sin etiqueta de temario** (corregido: el importador etiqueta siempre y `scripts/etl/fix_tai_syllabus_tags.py` repara la BD existente): `import_tai_mariadb.py` solo etiqueta las que tienen bloque y tema, y el generador busca por etiqueta, así que esas preguntas no aparecen ni en «todo el temario» ni en el refuerzo (TAI muestra 184 preguntas y 7 falladas en vez de 1.331 y 48). Las demás fuentes crean la etiqueta con bloque y tema vacíos.
+7. **knowledge-service escribe siempre `ai_cleaned: true` y `needs_human_review: false`** en el frontmatter, aunque el apunte no se haya refinado y se publique como borrador.
+8. **La ingesta no extrae las imágenes del PDF** (igual que la versión PHP): hay que añadirlas a mano al apunte.
 4. **UX de test-engine escasa:** el rediseño ya estaba en el backlog y sube de prioridad (formularios, recuento visible, navegación de la sesión).
 
 ## 2. Funcionalidad
@@ -76,7 +78,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 | `note.php` (TOC, anterior/siguiente, Mermaid, MathJax) | ✅ + práctica desde el apunte |
 | `search.php` (búsqueda semántica) | ✅ `/api/search` → embeddings |
 | `asset.php` | ✅ |
-| `ingest.php` (asistente PDF → apunte con knowledge-service y Ollama) | ❌ |
+| `ingest.php` (asistente PDF → apunte con knowledge-service y Ollama) | ✅ `/ingest/` (subir PDF, revisar con vista previa, refinar con Ollama, publicar; el apunte se ve sin reiniciar) |
 
 ### Servicios Python que se quedan
 `services/embeddings` (lo usa study-assistant) y `services/knowledge` (lo usará el asistente de ingesta).
@@ -87,7 +89,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 3. ✅ **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
 4. ✅ **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
 5. ✅ **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
-6. **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
+6. ✅ **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
 7. ✅ **Historial de MariaDB**: 332 intentos reales de junio y julio (ver §1).
 
 ## 4. Criterios para dar la migración por terminada
