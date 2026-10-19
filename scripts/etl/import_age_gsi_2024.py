@@ -106,6 +106,15 @@ def extract_single_quoted_strings(text: str) -> list[str]:
     return strings
 
 
+# Pie de página del PDF oficial que la extracción dejó pegado al final de la última
+# opción de cada página: "… 2024 - GSI-L  Página 7 de 10".
+PDF_FOOTER_RE = re.compile(r"\s*\d{4}\s*-\s*GSI-L\s+P[áa]gina\s+\d+\s+de\s+\d+\s*$", re.IGNORECASE)
+
+
+def strip_pdf_footer(text: str) -> str:
+    return PDF_FOOTER_RE.sub("", text).strip()
+
+
 def parse_age_gsi_sql(sql_path: Path) -> tuple[list[dict], list[int]]:
     """Parsea el fichero SQL extrayendo preguntas activas y números anulados."""
     logger.info("Leyendo y parseando SQL oficial: %s...", sql_path.name)
@@ -137,7 +146,7 @@ def parse_age_gsi_sql(sql_path: Path) -> tuple[list[dict], list[int]]:
             raise ValueError(f"Pregunta {q_num}: se esperaban >= 3 cadenas en ptype, obtenidas {len(ptype_strings)}")
 
         statement = ptype_strings[0].strip()
-        correct_answer = ptype_strings[1].strip()
+        correct_answer = strip_pdf_footer(ptype_strings[1])
         justif = ptype_strings[2].strip()
 
         # Extraer número oficial de pregunta mediante regex sobre justif (Requisito obligatorio)
@@ -156,7 +165,7 @@ def parse_age_gsi_sql(sql_path: Path) -> tuple[list[dict], list[int]]:
         incorrectas = []
         for k in range(0, len(inc_strings), 2):
             incorrectas.append({
-                "texto": inc_strings[k].strip(),
+                "texto": strip_pdf_footer(inc_strings[k]),
                 "justif": inc_strings[k + 1].strip() if inc_strings[k + 1].strip() else None,
             })
 
