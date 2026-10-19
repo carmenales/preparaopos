@@ -4,6 +4,7 @@
 {% block content %}
 <section class="catalog">
   <h1>Exámenes disponibles</h1>
+  <p class="catalog__generator"><a href="{{ url('/generator/') }}" class="btn btn--ghost">🧪 Generar test por temario, bloque, tema, año o falladas</a></p>
 
   {% if exams %}
   <ul class="exam-list">

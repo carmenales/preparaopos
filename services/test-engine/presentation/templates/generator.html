@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Generar test{% endblock %}
+
+{% block content %}
+<section class="generator">
+  <h1>Generar test</h1>
+  <p class="generator__intro">Elige el temario y, si quieres, acota por bloque o tema, año de convocatoria, solo preguntas de examen oficial o solo las que fallaste la última vez.</p>
+
+  {% if error %}<p class="alert alert--error" role="alert">{{ error }}</p>{% endif %}
+
+  {% if not syllabi %}
+  <p class="empty-state">No hay preguntas importadas aún.</p>
+  {% else %}
+  <form method="get" action="{{ url('/generator/') }}" class="generator__syllabus">
+    <label for="syllabus_id">Temario</label>
+    <select id="syllabus_id" name="syllabus_id" onchange="this.form.submit()">
+      {% for s in syllabi %}
+      <option value="{{ s.id }}" {% if s.id == selected %}selected{% endif %}>{{ s.organism }} · {{ s.name }} ({{ s.count }})</option>
+      {% endfor %}
+    </select>
+    <noscript><button type="submit" class="btn btn--ghost">Cambiar</button></noscript>
+  </form>
+
+  <form method="post" action="{{ url('/generator/') }}" class="generator__form"
+        hx-get="{{ url('/generator/count') }}" hx-trigger="change, load" hx-target="#available" hx-swap="innerHTML">
+    <input type="hidden" name="syllabus_id" value="{{ selected }}">
+
+    <div class="field">
+      <label for="scope">Bloque o tema</label>
+      <select id="scope" name="scope">
+        <option value="">Todo el temario</option>
+        {% for b in facets.blocks %}
+        <option value="{{ b.block }}">Bloque {{ b.block }} ({{ b.count }})</option>
+        {% for t in b.topics %}
+        <option value="{{ b.block }}|{{ t.topic }}">&nbsp;&nbsp;&nbsp;Bloque {{ b.block }} · Tema {{ t.topic }} ({{ t.count }})</option>
+        {% endfor %}
+        {% endfor %}
+      </select>
+      {% if not facets.blocks %}<small class="field__hint">Este temario aún no tiene preguntas clasificadas por bloque.</small>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="year">Año de convocatoria</label>
+      <select id="year" name="year">
+        <option value="">Todos</option>
+        {% for y in facets.years %}<option value="{{ y.year }}">{{ y.year }} ({{ y.count }})</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="field field--checks">
+      <label><input type="checkbox" name="official" value="1" {% if not facets.official %}disabled{% endif %}>
+        Solo preguntas de examen oficial ({{ facets.official }})</label>
+      <label><input type="checkbox" name="failed" value="1" {% if not facets.failed %}disabled{% endif %}>
+        Solo las que fallé la última vez ({{ facets.failed }})</label>
+    </div>
+
+    <div class="field">
+      <label for="count">Número de preguntas</label>
+      <select id="count" name="count">
+        {% for n in count_choices %}<option value="{{ n }}" {% if n == default_count %}selected{% endif %}>{{ n }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <p id="available" class="generator__available" aria-live="polite"></p>
+
+    <div class="generator__actions">
+      <button type="submit" name="mode" value="practice" class="btn btn--primary">📖 Práctica con corrección</button>
+      <button type="submit" name="mode" value="exam" class="btn btn--secondary">🎯 Modo examen (1 min por pregunta)</button>
+    </div>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

@@ -35,15 +35,21 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 - Ayto. Madrid 2024 práctico, pregunta 16, opción C: el texto lleva un resto de la extracción del PDF («…aún no es oficial. economía, innovación 8»). Revisar en origen.
 - Ayto. Madrid: el SQL `_fixed` corrige tres textos frente a `review_questions.csv` (RD 193/2023, WCAG 2.2 2023 y 2.1 actualizada en 2025). Se importa el texto del SQL.
 
+### Pendientes detectados al probar el generador (2026-10-19)
+1. **Pie de página del PDF en opciones de GSI 2024:** 9 opciones terminan en «2024 - GSI-L Página N de 10» (siempre el mismo patrón y solo en esa fuente). Limpiar en la BD, en `import_age_gsi_2024.py` y en el JSON del examen.
+2. **Enlaces pregunta→apunte:** hoy significan «apuntes del mismo tema oficial» (clasificación semántica revisada a mano → todos los apuntes de ese tema; confianza 1,0 si hay uno y 0,8 si hay varios), no «el apunte contiene la respuesta». Solo existen para GSI 2024 (118 enlaces, 100 preguntas, 51 apuntes). Primero, etiquetarlos en la interfaz como «Apuntes del tema». Después, enlace a nivel de sección: fragmento más parecido por embeddings, ancla al apartado y aviso de «sin cobertura en tus apuntes» por debajo de un umbral.
+3. **Generador: menos preguntas de las pedidas sin avisar** (se pidieron 10 y salieron 6). Avisar o limitar el número al disponible antes de crear el test y mostrar «N de M pedidas» en la sesión.
+4. **UX de test-engine escasa:** el rediseño ya estaba en el backlog y sube de prioridad (formularios, recuento visible, navegación de la sesión).
+
 ## 2. Funcionalidad
 
 ### preparadortai (PHP) → test-engine
 | Página antigua | Qué hace | En test-engine |
 |---|---|---|
 | `examenes.php` | Catálogo de exámenes y simulacro | ✅ Catálogo, simulacro y práctica |
-| `temas.php`, `practica_tematica.php` | Test por tema o bloque | ❌ (solo hay práctica desde un apunte) |
+| `temas.php`, `practica_tematica.php` | Test por tema o bloque | ✅ Generador (`/generator`) |
 | `practica.php` | Ejercicios por categoría | ⚠️ Cubierto por los cuestionarios del catálogo |
-| `refuerzo.php` | Test con preguntas falladas | ❌ |
+| `refuerzo.php` | Test con preguntas falladas | ✅ Generador: «solo las que fallé la última vez» |
 | `historial_sesiones.php`, `detalle_sesion.php`, `delete_test_session.php` | Historial de tests | ❌ (solo la hoja de resultados de cada sesión) |
 | `estadisticas.php`, `progreso_cuestionarios.php` | Estadísticas y progreso | ❌ |
 | `gestionar.php`, `agregar.php`, `editar.php` | Alta y edición de preguntas | ❌ |
@@ -54,10 +60,10 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 ### PreparaTIC V3 (Vue) → test-engine
 | Modo | En test-engine |
 |---|---|
-| Aleatorio | ❌ |
-| Ponderado por frecuencia histórica | ❌ (necesita `year`) |
-| Por bloque / por tema | ❌ |
-| Por año de convocatoria | ❌ (necesita `year`) |
+| Aleatorio | ✅ Generador (todo el temario) |
+| Ponderado por frecuencia histórica | ❌ Pendiente: no estaba en el paso 3; ya hay datos (`year`, `is_official_exam`) para hacerlo |
+| Por bloque / por tema | ✅ Generador |
+| Por año de convocatoria | ✅ Generador (+ «solo examen oficial») |
 | Examen oficial íntegro | ➖ No reconstruible (§1) |
 | Historial y estadísticas con gráficos | ❌ |
 
@@ -76,7 +82,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 ## 3. Plan propuesto (por orden)
 1. ✅ **Metadatos de PreparaTIC**: columnas `questions.year` e `is_official_exam`. Reimportar solo esos campos desde `preparatic_bundle_extracted.json`, sin tocar ids ni etiquetas.
 2. ✅ **Importar las preguntas de `imports/`** (708; las 44 del `_template` quedan fuera): un importador que lea los `.sql` directamente (sin pasar por MariaDB), con un temario por proceso (`ayto-madrid/aux-tic`, `majadahonda/tecnico-informatico`, `comunidad-madrid/...`, `uc3m/a2-gsi`) y un examen por cuestionario, respetando las anuladas.
-3. **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
+3. ✅ **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
 4. **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
 5. **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
 6. **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
