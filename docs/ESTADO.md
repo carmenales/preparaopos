@@ -51,6 +51,11 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Corregidos dos bugs: la regla de puntuación por defecto calculaba sobre 100 (ahora sobre 10), y 1.147 preguntas de TAI no tenían etiqueta de temario y no aparecían en el generador (`scripts/etl/fix_tai_syllabus_tags.py`).
 - `import_tai_mariadb.py` omite ya las categorías de exámenes locales (AYTO, CM, UC3M) que también están en `ptype`, para no duplicarlas como TAI.
 
+## Paso 4 de la migración: historial y estadísticas (rama `feature/history-and-stats`)
+- `/history/`: todas las sesiones con su descripción (examen, filtros del generador, apunte o preparadortai), modo, aciertos, fallos y blancos, y nota. Se puede ver el resultado, continuar las abiertas y borrar (con confirmación; borra también los intentos).
+- `/stats/`: por temario, acierto, respuestas y sesiones, cobertura de preguntas vistas, falladas pendientes (misma definición que el refuerzo), acierto por bloque y tema con los más flojos primero y enlace «Repasar» al generador ya filtrado, y evolución de la nota.
+- Las sesiones del smoke test aparecen en el historial; ahora se pueden borrar desde ahí.
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
