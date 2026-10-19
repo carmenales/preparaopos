@@ -238,3 +238,23 @@ a { color: inherit; }
 .evolution__bar { display: block; width: 100%; background: #2563eb; border-radius: 3px 3px 0 0; min-height: 2px; }
 .evolution__bar.bar__fill--low { background: #dc2626; }
 .evolution__date { font-size: .6rem; color: #64748b; position: absolute; bottom: -1.1rem; white-space: nowrap; }
+
+/* ── Gestión de preguntas y cuestionarios ─────────────────────── */
+.manage h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+.manage h2 { font-size: 1.1rem; margin: 1.75rem 0 .75rem; }
+.manage__head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.manage__links { display: flex; gap: .5rem; flex-wrap: wrap; }
+.manage__filters { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0 .5rem; }
+.manage__filters input, .manage__filters select { padding: .45rem; border: 1px solid #cbd5e1; border-radius: 6px; font-size: .9rem; max-width: 100%; }
+.manage__filters input[type=search] { flex: 1 1 240px; }
+.manage__form .field { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; border: 0; padding: 0; }
+.manage__form input, .manage__form select, .manage__form textarea { padding: .5rem; border: 1px solid #cbd5e1; border-radius: 6px; font: inherit; font-size: .95rem; max-width: 100%; }
+.manage__form legend { font-weight: 600; margin-bottom: .5rem; }
+.field-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .75rem; }
+.option-row { display: flex; gap: .5rem; align-items: flex-start; margin-bottom: .6rem; }
+.option-row input[type=radio] { margin-top: .65rem; }
+.option-row__letter { font-weight: 700; width: 1.2rem; margin-top: .45rem; }
+.option-row__fields { flex: 1; display: flex; flex-direction: column; gap: .3rem; }
+.manage__danger { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; }
+.pager { display: flex; gap: .5rem; margin-top: 1rem; }
+.alert ul { margin: 0; padding-left: 1.2rem; }
