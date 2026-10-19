@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Historial{% endblock %}
+
+{% block content %}
+<section class="history">
+  <h1>Historial de sesiones</h1>
+  {% if deleted %}<p class="alert alert--ok" role="status">Sesión borrada.</p>{% endif %}
+
+  {% if not sessions %}
+  <p class="empty-state">Aún no has hecho ningún test.</p>
+  {% else %}
+  <div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Fecha</th><th>Test</th><th>Modo</th>
+        <th class="num">Preg.</th><th class="num">✔</th><th class="num">✘</th><th class="num">—</th>
+        <th class="num">Nota</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessions %}
+      <tr>
+        <td class="nowrap">{{ s.started_at }}</td>
+        <td>{{ s.label }}</td>
+        <td>{{ "Examen" if s.mode == "exam" else "Práctica" }}</td>
+        <td class="num">{{ s.total }}</td>
+        <td class="num">{{ s.correct }}</td>
+        <td class="num">{{ s.wrong }}</td>
+        <td class="num">{{ s.blank }}</td>
+        <td class="num">{% if s.final_score is not none %}<strong>{{ "%.2f"|format(s.final_score|float) }}</strong>{% else %}<span class="tag">en curso</span>{% endif %}</td>
+        <td class="actions">
+          {% if s.is_closed %}
+          <a href="{{ url('/sessions/' ~ s.id ~ '/result') }}" class="btn btn--ghost btn--small">Ver</a>
+          {% else %}
+          <a href="{{ url('/sessions/' ~ s.id ~ '/question/1') }}" class="btn btn--ghost btn--small">Continuar</a>
+          {% endif %}
+          <form method="post" action="{{ url('/history/' ~ s.id ~ '/delete') }}"
+                onsubmit="return confirm('¿Borrar esta sesión y sus respuestas? No se puede deshacer.');">
+            <button type="submit" class="btn btn--ghost btn--small" aria-label="Borrar sesión">🗑</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

@@ -50,6 +50,8 @@ def generator_form(
     repo: QuestionRepoDep,
     syllabus_id: str | None = None,
     error: str | None = None,
+    scope: str | None = None,
+    failed: str | None = None,
 ):
     syllabi = repo.list_syllabi_with_counts()
     ids = {s["id"] for s in syllabi}
@@ -65,6 +67,8 @@ def generator_form(
             "count_choices": COUNT_CHOICES,
             "default_count": DEFAULT_COUNT,
             "error": error,
+            "preset_scope": scope or "",
+            "preset_failed": failed == "1",
         },
         headers={"Cache-Control": "no-store"},
     )
