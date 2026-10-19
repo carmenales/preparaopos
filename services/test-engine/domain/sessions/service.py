@@ -9,6 +9,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Literal
 
 from domain.scoring.models import ScoringRule
+from domain.sessions.generator import SECONDS_PER_QUESTION, GeneratorFilters, NoQuestionsForFilters
 from domain.sessions.models import AnswerResult, QuestionResult, SessionResult, TestAttempt, TestSession
 
 
@@ -50,7 +51,7 @@ class TestSessionService:
         self,
         *,
         mode: Literal["practice", "exam"],
-        source: Literal["block", "exam", "random", "questions", "note"],
+        source: Literal["block", "exam", "random", "questions", "note", "generated"],
         source_ref: str | None = None,
         question_count: int | None = None,
         include_reserves: bool = False,
@@ -112,6 +113,19 @@ class TestSessionService:
             if question_count and question_count > 0:
                 q_ids = q_ids[:question_count]
             question_ids = q_ids
+
+        elif source == "generated":
+            filters = GeneratorFilters.from_source_ref(source_ref or "")
+            q_ids = self._questions.list_ids_for_generator(filters)
+            if not q_ids:
+                raise NoQuestionsForFilters("Ninguna pregunta cumple los filtros elegidos")
+            random.shuffle(q_ids)
+            question_ids = q_ids[: filters.count]
+            source_ref = filters.to_source_ref()
+            if self._exams is not None:
+                scoring_rule_id = self._exams.single_scoring_rule_for_syllabus(filters.syllabus_id)
+            if mode == "exam":
+                duration_seconds = len(question_ids) * SECONDS_PER_QUESTION
 
         elif source == "random":
             questions = self._questions.list_by_filters()

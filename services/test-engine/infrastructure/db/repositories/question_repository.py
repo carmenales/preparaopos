@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session, selectinload
 
 from domain.questions.models import Option, Question as QuestionDTO, SyllabusTag
@@ -50,6 +50,115 @@ class QuestionRepository:
 
         rows = self._session.scalars(stmt).unique().all()
         return [self._to_domain(row) for row in rows]
+
+    # ------------------------------------------------------------------
+    # Generador de tests
+    # ------------------------------------------------------------------
+
+    # Pregunta fallada = su último intento respondido fue incorrecto (si después
+    # se acierta, sale del refuerzo). Los intentos en blanco no cuentan.
+    _FAILED_SQL = """
+        SELECT a.question_id FROM test_attempts a
+        WHERE a.selected_option_id IS NOT NULL
+          AND a.is_correct = 0
+          AND a.answered_at = (
+              SELECT MAX(b.answered_at) FROM test_attempts b
+              WHERE b.question_id = a.question_id AND b.selected_option_id IS NOT NULL
+          )
+    """
+
+    def _generator_where(self, filters) -> tuple[str, dict]:
+        clauses = ["t.syllabus_id = :syllabus_id", "q.is_annulled = 0"]
+        params: dict = {"syllabus_id": filters.syllabus_id}
+        if filters.block:
+            clauses.append("t.block = :block")
+            params["block"] = filters.block
+        if filters.topic:
+            clauses.append("t.topic = :topic")
+            params["topic"] = filters.topic
+        if filters.year is not None:
+            clauses.append("q.year = :year")
+            params["year"] = filters.year
+        if filters.official_only:
+            clauses.append("q.is_official_exam = 1")
+        if filters.failed_only:
+            clauses.append(f"q.id IN ({self._FAILED_SQL})")
+        return " AND ".join(clauses), params
+
+    def list_ids_for_generator(self, filters) -> list[int]:
+        """Ids (sin repetir y ordenados) de las preguntas que cumplen los filtros del generador."""
+        where, params = self._generator_where(filters)
+        rows = self._session.execute(
+            text(
+                "SELECT DISTINCT q.id FROM questions q "
+                "JOIN question_syllabus_tags t ON t.question_id = q.id "
+                f"WHERE {where} ORDER BY q.id"
+            ),
+            params,
+        )
+        return [row[0] for row in rows]
+
+    def count_for_generator(self, filters) -> int:
+        where, params = self._generator_where(filters)
+        return int(self._session.execute(
+            text(
+                "SELECT COUNT(DISTINCT q.id) FROM questions q "
+                "JOIN question_syllabus_tags t ON t.question_id = q.id "
+                f"WHERE {where}"
+            ),
+            params,
+        ).scalar() or 0)
+
+    def list_syllabi_with_counts(self) -> list[dict]:
+        rows = self._session.execute(text(
+            "SELECT s.id, s.name, s.organism, COUNT(DISTINCT q.id) AS n "
+            "FROM syllabi s JOIN question_syllabus_tags t ON t.syllabus_id = s.id "
+            "JOIN questions q ON q.id = t.question_id AND q.is_annulled = 0 "
+            "GROUP BY s.id ORDER BY s.organism, s.name"
+        ))
+        return [{"id": r.id, "name": r.name, "organism": r.organism, "count": r.n} for r in rows]
+
+    def generator_facets(self, syllabus_id: str) -> dict:
+        """Bloques, temas y años disponibles en un temario, con su número de preguntas."""
+        base = (
+            "FROM questions q JOIN question_syllabus_tags t ON t.question_id = q.id "
+            "WHERE t.syllabus_id = :s AND q.is_annulled = 0"
+        )
+        params = {"s": syllabus_id}
+        topic_rows = self._session.execute(text(
+            f"SELECT t.block, t.topic, COUNT(DISTINCT q.id) AS n {base} AND t.block IS NOT NULL "
+            "GROUP BY t.block, t.topic"
+        ), params).fetchall()
+        block_rows = self._session.execute(text(
+            f"SELECT t.block, COUNT(DISTINCT q.id) AS n {base} AND t.block IS NOT NULL GROUP BY t.block"
+        ), params).fetchall()
+        year_rows = self._session.execute(text(
+            f"SELECT q.year, COUNT(DISTINCT q.id) AS n {base} AND q.year IS NOT NULL GROUP BY q.year ORDER BY q.year DESC"
+        ), params).fetchall()
+        official = self._session.execute(text(
+            f"SELECT COUNT(DISTINCT q.id) {base} AND q.is_official_exam = 1"
+        ), params).scalar() or 0
+        failed = self._session.execute(text(
+            f"SELECT COUNT(DISTINCT q.id) {base} AND q.id IN ({self._FAILED_SQL})"
+        ), params).scalar() or 0
+
+        def _num(value):
+            return (0, int(value), "") if value and str(value).isdigit() else (1, 0, str(value or ""))
+
+        topics_by_block: dict[str, list[dict]] = {}
+        for r in topic_rows:
+            if r.topic is not None:
+                topics_by_block.setdefault(r.block, []).append({"topic": r.topic, "count": r.n})
+        blocks = []
+        for r in sorted(block_rows, key=lambda r: _num(r.block)):
+            topics = sorted(topics_by_block.get(r.block, []), key=lambda t: _num(t["topic"]))
+            blocks.append({"block": r.block, "count": r.n, "topics": topics})
+        return {
+            "blocks": blocks,
+            "years": [{"year": r.year, "count": r.n} for r in year_rows],
+            "official": int(official),
+            "failed": int(failed),
+        }
 
     def get_by_id(self, question_id: int) -> QuestionDTO | None:
         stmt = (

@@ -13,6 +13,13 @@ class ExamRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
+    def single_scoring_rule_for_syllabus(self, syllabus_id: str) -> int | None:
+        """Regla de puntuación común a todos los exámenes del temario, o None si no hay una única."""
+        rule_ids = set(self._session.scalars(
+            select(orm.Exam.scoring_rule_id).where(orm.Exam.syllabus_id == syllabus_id)
+        ).all())
+        return rule_ids.pop() if len(rule_ids) == 1 else None
+
     def get_by_id(self, exam_id: int) -> Exam | None:
         row = self._session.scalar(
             select(orm.Exam)
