@@ -49,6 +49,16 @@ SYLLABUS_NAME = "TAI AGE"
 ORGANISM = "AGE"
 
 
+# Exámenes de otros organismos que también acabaron en ptype de MariaDB. Tienen su
+# propio importador (import_local_exams.py, desde imports/*/generated/*.sql); si
+# entraran aquí se duplicarían como preguntas de TAI.
+LOCAL_EXAM_CATEGORY_PREFIXES = ("AYTO MADRID", "AYTO MAJADAHONDA", "CM MADRID DIGITAL", "UC3M")
+
+
+def is_local_exam_category(categoria: str | None) -> bool:
+    return bool(categoria) and categoria.strip().upper().startswith(LOCAL_EXAM_CATEGORY_PREFIXES)
+
+
 def get_db_connection(db_path: Path) -> sqlite3.Connection:
     """Abre conexión SQLite configurando pragmas para WAL y claves foráneas."""
     conn = sqlite3.connect(str(db_path))
@@ -128,7 +138,11 @@ def parse_mysql_dump(dump_path: Path) -> tuple[list[dict], dict[int, list[dict]]
         "SELECT id, pregunta, respuesta, justif, img_path, categoria, bloque, tema FROM ptype ORDER BY id"
     ).fetchall()
     questions = []
+    skipped_local = 0
     for r in ptype_rows:
+        if is_local_exam_category(r[5]):
+            skipped_local += 1
+            continue
         questions.append({
             "id": r[0],
             "pregunta": r[1],
@@ -153,6 +167,11 @@ def parse_mysql_dump(dump_path: Path) -> tuple[list[dict], dict[int, list[dict]]
         })
 
     mem_db.close()
+    if skipped_local:
+        logger.info(
+            "Omitidas %d preguntas de exámenes locales (las importa scripts/etl/import_local_exams.py).",
+            skipped_local,
+        )
     logger.info("Dump parseado con éxito: %d preguntas en ptype y %d opciones incorrectas.", len(questions), len(inc_rows))
     return questions, incorrectas_by_q
 
