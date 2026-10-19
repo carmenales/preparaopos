@@ -42,6 +42,16 @@ SYLLABUS_NAME = "A1 TIC AGE"
 ORGANISM = "AGE"
 
 
+def parse_question_metadata(q: dict) -> tuple[int | None, bool]:
+    """Año de convocatoria y marca de examen oficial de una pregunta del bundle.
+
+    El bundle trae ``year`` como texto de 4 cifras y ``exam`` como ``True`` o ausente.
+    """
+    raw_year = str(q.get("year") or "").strip()
+    year = int(raw_year) if raw_year.isdigit() and len(raw_year) == 4 else None
+    return year, q.get("exam") is True
+
+
 def get_db_connection(db_path: Path) -> sqlite3.Connection:
     """Abre conexión SQLite configurando pragmas para WAL y claves foráneas."""
     conn = sqlite3.connect(str(db_path))
@@ -177,14 +187,16 @@ def main() -> None:
             skipped_existing += 1
             db_question_id = existing_map[q_id]
         else:
+            year, is_official_exam = parse_question_metadata(q)
             cursor.execute(
                 """
                 INSERT INTO questions (
                     statement, justification, img_path, source, source_id,
-                    is_annulled, annulment_reason, pending_classification
-                ) VALUES (?, ?, NULL, ?, ?, 0, NULL, 0)
+                    is_annulled, annulment_reason, pending_classification,
+                    year, is_official_exam
+                ) VALUES (?, ?, NULL, ?, ?, 0, NULL, 0, ?, ?)
                 """,
-                (statement, justification, SOURCE_NAME, q_id),
+                (statement, justification, SOURCE_NAME, q_id, year, int(is_official_exam)),
             )
             db_question_id = cursor.lastrowid
             existing_map[q_id] = db_question_id
