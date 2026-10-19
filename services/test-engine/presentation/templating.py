@@ -13,3 +13,13 @@ templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 templates.env.globals["url"] = prefix_url
 templates.env.globals["prefix_url"] = prefix_url
 templates.env.globals["root_path"] = lambda: os.getenv("ROOT_PATH", ROOT_PATH).rstrip("/")
+
+
+def study_assistant_home() -> str:
+    """URL pública de la portada de Study Assistant (servicio distinto, sin ROOT_PATH)."""
+    import config
+
+    return f"{config.STUDY_ASSISTANT_PUBLIC_URL.rstrip('/')}/"
+
+
+templates.env.globals["study_assistant_home"] = study_assistant_home

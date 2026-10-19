@@ -317,6 +317,9 @@ def test_root_path_prefix_guardian(monkeypatch):
 
     monkeypatch.setenv("ROOT_PATH", "/tests")
     monkeypatch.setattr(config, "ROOT_PATH", "/tests")
+    # El enlace a Study Assistant cruza de servicio: debe salir de su URL pública
+    # configurada, no de una ruta escrita a mano en la plantilla.
+    monkeypatch.setattr(config, "STUDY_ASSISTANT_PUBLIC_URL", "http://study-assistant.example")
 
     class FakeLinkingClient:
         def get_links_by_question(self, question_id):
@@ -354,6 +357,7 @@ def test_root_path_prefix_guardian(monkeypatch):
         # 1. Catálogo (/)
         res_cat = t_client.get("/")
         assert res_cat.status_code == 200
+        assert 'href="http://study-assistant.example/"' in res_cat.text
         assert_no_unprefixed_urls(res_cat.text, "Catálogo (/)")
         assert 'href="/tests/static/style.css"' in res_cat.text
         assert 'href="/tests/"' in res_cat.text

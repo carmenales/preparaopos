@@ -78,4 +78,15 @@ def test_note_view_graceful_degradation_when_linking_offline(client, monkeypatch
     # No lanza 500, renderiza la nota normalmente
     assert "practice/by-note" not in resp.text
 
+def test_topbar_links_to_test_engine_public_url(client, monkeypatch):
+    """El enlace a Tests sale de TEST_ENGINE_PUBLIC_URL, no de una ruta fija."""
+    import config
 
+    monkeypatch.setattr(config, "TEST_ENGINE_PUBLIC_URL", "http://test-engine.example")
+    resp = client.get("/")
+    assert resp.status_code == 200
+    assert 'href="http://test-engine.example/"' in resp.text
+
+    monkeypatch.setattr(config, "TEST_ENGINE_PUBLIC_URL", "/tests")
+    resp = client.get("/")
+    assert 'href="/tests/"' in resp.text

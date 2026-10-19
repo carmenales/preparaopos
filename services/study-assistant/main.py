@@ -46,6 +46,16 @@ logger = logging.getLogger("study-assistant")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
+def test_engine_home() -> str:
+    """URL pública del catálogo de Test Engine (servicio distinto)."""
+    import config
+
+    return f"{config.TEST_ENGINE_PUBLIC_URL.rstrip('/')}/"
+
+
+templates.env.globals["test_engine_home"] = test_engine_home
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Carga inicial: índice de notas y servicio de dominio."""
