@@ -54,8 +54,8 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 | `refuerzo.php` | Test con preguntas falladas | ✅ Generador: «solo las que fallé la última vez» |
 | `historial_sesiones.php`, `detalle_sesion.php`, `delete_test_session.php` | Historial de tests | ✅ `/history/` (ver, continuar y borrar sesiones) |
 | `estadisticas.php`, `progreso_cuestionarios.php` | Estadísticas y progreso | ✅ `/stats/` (acierto, cobertura, falladas pendientes, bloque/tema y evolución) |
-| `gestionar.php`, `agregar.php`, `editar.php` | Alta y edición de preguntas | ❌ |
-| `categorias.php`, `nueva_categoria.php`, `editar_cuestionario.php` | Gestión de cuestionarios | ❌ |
+| `gestionar.php`, `agregar.php`, `editar.php` | Alta y edición de preguntas | ✅ `/manage/questions/` (buscar, alta, edición, anular, borrar si no tiene respuestas) |
+| `categorias.php`, `nueva_categoria.php`, `editar_cuestionario.php` | Gestión de cuestionarios | ✅ `/manage/exams/` (alta, edición, quitar preguntas, borrar si no tiene sesiones) |
 | `relacionar.php` | Repaso pregunta↔tema | ⚠️ El enlace con apuntes lo da linking-service |
 | `changelog.php` | Novedades | ➖ No se migra |
 
@@ -86,7 +86,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 2. ✅ **Importar las preguntas de `imports/`** (708; las 44 del `_template` quedan fuera): un importador que lea los `.sql` directamente (sin pasar por MariaDB), con un temario por proceso (`ayto-madrid/aux-tic`, `majadahonda/tecnico-informatico`, `comunidad-madrid/...`, `uc3m/a2-gsi`) y un examen por cuestionario, respetando las anuladas.
 3. ✅ **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
 4. ✅ **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
-5. **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
+5. ✅ **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
 6. **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
 7. ✅ **Historial de MariaDB**: 332 intentos reales de junio y julio (ver §1).
 

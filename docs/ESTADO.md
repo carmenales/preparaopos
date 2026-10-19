@@ -56,6 +56,12 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `/stats/`: por temario, acierto, respuestas y sesiones, cobertura de preguntas vistas, falladas pendientes (misma definición que el refuerzo), acierto por bloque y tema con los más flojos primero y enlace «Repasar» al generador ya filtrado, y evolución de la nota.
 - Las sesiones del smoke test aparecen en el historial; ahora se pueden borrar desde ahí.
 
+## Paso 5 de la migración: gestión de preguntas y cuestionarios (rama `feature/question-management`)
+- `/manage/questions/`: búsqueda por enunciado, temario y cuestionario (50 por página); alta y edición con 2-6 opciones, correcta, justificaciones, temario/bloque/tema, año, examen oficial, anulación con motivo y añadir a un cuestionario. Las preguntas nuevas llevan `source = 'manual'`.
+- Protección del historial: las opciones se editan sobre la misma fila (los intentos apuntan a su id), no se puede quitar una opción ya elegida ni borrar una pregunta con respuestas (se anula). Cambiar la correcta no reescribe los aciertos ya guardados.
+- `/manage/exams/`: alta y edición de cuestionarios (temario, año, convocatoria, regla de puntuación y duración), lista de sus preguntas con «Quitar» y borrado si no tiene sesiones.
+- Fuera de alcance: crear temarios nuevos y reordenar preguntas dentro de un cuestionario.
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
