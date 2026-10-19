@@ -15,6 +15,7 @@ from infrastructure.db.repositories.exam_repository import ExamRepository
 from infrastructure.db.repositories.question_repository import QuestionRepository
 from infrastructure.db.repositories.scoring_rule_repository import ScoringRuleRepository
 from infrastructure.db.repositories.session_repository import SessionRepository
+from infrastructure.db.repositories.stats_repository import StatsRepository
 from domain.scoring.service import ScoringService
 from domain.sessions.service import TestSessionService
 
@@ -45,6 +46,13 @@ def get_question_repo(db: DbDep) -> QuestionRepository:
 
 
 QuestionRepoDep = Annotated[QuestionRepository, Depends(get_question_repo)]
+
+
+def get_stats_repo(db: DbDep) -> StatsRepository:
+    return StatsRepository(db)
+
+
+StatsRepoDep = Annotated[StatsRepository, Depends(get_stats_repo)]
 
 
 def get_session_service(db: DbDep) -> TestSessionService:
