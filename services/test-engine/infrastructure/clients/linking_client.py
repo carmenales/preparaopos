@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
+
 import httpx
 
 from config import LINKING_SERVICE_URL
@@ -60,3 +62,46 @@ class LinkingClient:
             pass
         return []
 
+
+    # --- Edición manual de enlaces (gestión de preguntas) -------------------
+    # A diferencia de las lecturas de arriba, aquí hay que distinguir «sin enlaces»
+    # de «linking-service no responde», así que se devuelve None o un mensaje de error.
+
+    def links_for_question(self, question_id: int) -> list[dict[str, Any]] | None:
+        """Enlaces activos de la pregunta, o None si linking-service no responde."""
+        try:
+            resp = self._client.get(f"/links/by-question/{question_id}")
+            if resp.status_code == 200:
+                return resp.json()
+        except Exception:
+            pass
+        return None
+
+    def add_link(self, question_id: int, note_id: str, syllabus_id: str) -> str | None:
+        """Enlaza a mano pregunta y apunte. Devuelve None si va bien o el motivo del fallo."""
+        try:
+            resp = self._client.post("/links", json={
+                "question_id": question_id, "note_id": note_id, "syllabus_id": syllabus_id})
+        except Exception:
+            return "linking-service no responde."
+        if resp.status_code in (200, 201):
+            return None
+        return _detail(resp)
+
+    def remove_link(self, question_id: int, note_id: str) -> str | None:
+        """Quita un enlace. Devuelve None si va bien o el motivo del fallo."""
+        try:
+            resp = self._client.delete(f"/links/{question_id}/{quote(note_id, safe='')}")
+        except Exception:
+            return "linking-service no responde."
+        if resp.status_code in (200, 204):
+            return None
+        return _detail(resp)
+
+
+def _detail(resp: httpx.Response) -> str:
+    try:
+        detail = resp.json().get("detail")
+    except Exception:
+        detail = None
+    return detail if isinstance(detail, str) and detail else f"linking-service respondió {resp.status_code}."

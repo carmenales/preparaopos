@@ -187,3 +187,126 @@ def test_management_urls_are_prefixed_behind_gateway(client, monkeypatch):
     for path in ("/manage/questions/", f"/manage/questions/{qid}/edit", "/manage/questions/new",
                  "/manage/exams/", "/manage/exams/53/edit", "/manage/exams/new"):
         assert pattern.findall(client.get(path).text) == [], path
+
+
+# --- Enlaces pregunta-apunte (edición manual) ------------------------------------
+
+class FakeLinking:
+    def __init__(self, links=None, down=False):
+        self.links = {k: list(v) for k, v in (links or {}).items()}
+        self.down = down
+        self.calls = []
+
+    def links_for_question(self, question_id):
+        return None if self.down else list(self.links.get(question_id, []))
+
+    def add_link(self, question_id, note_id, syllabus_id):
+        self.calls.append(("add", question_id, note_id, syllabus_id))
+        if self.down:
+            return "linking-service no responde."
+        if note_id == "no-existe":
+            return "No se encuentra el apunte «no-existe»"
+        self.links.setdefault(question_id, []).append(
+            {"note_id": note_id, "title": note_id.upper(), "official_topic": None, "confidence": 1.0, "source": "manual"})
+        return None
+
+    def remove_link(self, question_id, note_id):
+        self.calls.append(("remove", question_id, note_id))
+        before = self.links.get(question_id, [])
+        self.links[question_id] = [l for l in before if l["note_id"] != note_id]
+        return None if len(before) != len(self.links[question_id]) else "Ese enlace no existe"
+
+
+class FakeCatalog:
+    def __init__(self, notes=None):
+        self.notes = notes
+
+    def list_notes(self):
+        return self.notes
+
+
+NOTES = [
+    {"id": "tema-i-01-constitucion", "title": "Constitución", "official_topic": "I.01", "processes": ["age/a2-gsi"]},
+    {"id": "tema-b4-redes", "title": "Redes", "official_topic": "B4.03", "processes": ["uc3m/a2-gsi"]},
+    {"id": "suelto", "title": "Suelto", "official_topic": None, "processes": []},
+]
+
+
+@pytest.fixture
+def fakes():
+    from presentation.dependencies import get_linking_client, get_notes_catalog_client
+
+    linking, catalog = FakeLinking(), FakeCatalog(NOTES)
+    app.dependency_overrides[get_linking_client] = lambda: linking
+    app.dependency_overrides[get_notes_catalog_client] = lambda: catalog
+    yield linking, catalog
+    app.dependency_overrides.pop(get_linking_client, None)
+    app.dependency_overrides.pop(get_notes_catalog_client, None)
+
+
+def test_edit_page_lists_links_and_offers_unlinked_notes(client, fakes):
+    linking, _ = fakes
+    qid = _create(client)
+    linking.links[qid] = [{"note_id": "tema-i-01-constitucion", "title": "Constitución", "official_topic": "I.01",
+                           "confidence": 0.8, "source": "topic-match"}]
+    html = client.get(f"/manage/questions/{qid}/edit").text
+    assert "Apuntes enlazados" in html
+    assert "automático por tema (80 %)" in html
+    assert 'name="note_id" value="tema-i-01-constitucion"' in html  # botón Quitar
+    assert '<option value="tema-i-01-constitucion"' not in html     # ya enlazado: no se ofrece
+    assert '<optgroup label="uc3m/a2-gsi">' in html and '<optgroup label="Sin proceso">' in html
+    assert '<option value="tema-b4-redes">B4.03 — Redes</option>' in html
+
+
+def test_add_several_links_and_remove_one(client, fakes):
+    linking, _ = fakes
+    qid = _create(client)
+    for note in ("tema-b4-redes", "suelto"):
+        res = client.post(f"/manage/questions/{qid}/links/add", data={"note_id": note})
+        assert res.status_code == 303 and "Apunte+enlazado" in res.headers["location"]
+    assert [l["note_id"] for l in linking.links[qid]] == ["tema-b4-redes", "suelto"]
+    assert linking.calls[0] == ("add", qid, "tema-b4-redes", "uc3m-a2-gsi")  # temario de la etiqueta
+
+    res = client.post(f"/manage/questions/{qid}/links/remove", data={"note_id": "suelto"})
+    assert "Enlace+quitado" in res.headers["location"]
+    assert [l["note_id"] for l in linking.links[qid]] == ["tema-b4-redes"]
+    html = client.get(res.headers["location"]).text
+    assert "alert--ok" in html and "a mano" in html
+
+
+def test_link_errors_are_reported(client, fakes):
+    qid = _create(client)
+    res = client.post(f"/manage/questions/{qid}/links/add", data={"note_id": "no-existe"})
+    assert "No+se+ha+podido+enlazar" in res.headers["location"]
+    assert "alert--error" in client.get(res.headers["location"]).text
+    res = client.post(f"/manage/questions/{qid}/links/remove", data={"note_id": "suelto"})
+    assert "No+se+ha+podido+quitar" in res.headers["location"]
+    assert client.post("/manage/questions/999999/links/add", data={"note_id": "suelto"}).status_code == 404
+
+
+def test_edit_page_survives_services_down(client, fakes):
+    linking, catalog = fakes
+    qid = _create(client)
+    catalog.notes = None
+    html = client.get(f"/manage/questions/{qid}/edit").text
+    assert "study-assistant no responde" in html and "Enlazar otro apunte" not in html
+    linking.down = True
+    res = client.get(f"/manage/questions/{qid}/edit")
+    assert res.status_code == 200 and "linking-service no responde" in res.text
+    assert "Guardar" in res.text  # el resto del formulario sigue funcionando
+
+
+def test_link_forms_are_prefixed_behind_gateway(client, fakes, monkeypatch):
+    import config
+
+    linking, _ = fakes
+    qid = _create(client)
+    linking.links[qid] = [{"note_id": "suelto", "title": "Suelto", "official_topic": None,
+                           "confidence": 1.0, "source": "manual"}]
+    monkeypatch.setenv("ROOT_PATH", "/tests")
+    monkeypatch.setattr(config, "ROOT_PATH", "/tests")
+    html = client.get(f"/manage/questions/{qid}/edit").text
+    assert f'action="/tests/manage/questions/{qid}/links/add"' in html
+    assert f'action="/tests/manage/questions/{qid}/links/remove"' in html
+    res = client.post(f"/manage/questions/{qid}/links/remove", data={"note_id": "suelto"})
+    assert res.headers["location"].startswith(f"/tests/manage/questions/{qid}/edit")
