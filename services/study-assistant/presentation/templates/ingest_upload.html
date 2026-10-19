@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Añadir apunte{% endblock %}
+
+{% block content %}
+<section class="ingest-container">
+  <header class="ingest-header">
+    <h1>Añadir apunte desde PDF</h1>
+    <p class="ingest-subtitle">1 · Subir el PDF → 2 · Revisar y editar (refinado opcional con Ollama) → 3 · Publicar en <code>knowledge/</code></p>
+  </header>
+
+  {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+
+  <form method="post" action="/ingest/extract" enctype="multipart/form-data" class="ingest-card"
+        onsubmit="this.querySelector('button[type=submit]').disabled = true; this.querySelector('.ingest-busy').hidden = false;">
+    <div class="form-group">
+      <label for="pdf_file">PDF del apunte</label>
+      <input type="file" id="pdf_file" name="pdf_file" accept=".pdf,application/pdf" required>
+    </div>
+
+    <div class="form-group">
+      <label for="process_slug">Proceso</label>
+      <select id="process_slug" name="process_slug" required
+              onchange="document.getElementById('custom_process_group').hidden = this.value !== '__otro__'">
+        <option value="">Elige…</option>
+        {% for p in processes %}<option value="{{ p.slug }}" {% if p.slug == v.process_slug %}selected{% endif %}>{{ p.title }} ({{ p.slug }})</option>{% endfor %}
+        <option value="__otro__" {% if v.process_slug == "__otro__" %}selected{% endif %}>Otro…</option>
+      </select>
+    </div>
+    <div class="form-group" id="custom_process_group" {% if v.process_slug != "__otro__" %}hidden{% endif %}>
+      <label for="custom_process">Ruta del proceso nuevo</label>
+      <input type="text" id="custom_process" name="custom_process" value="{{ v.custom_process }}" placeholder="p. ej. age/c1-tai">
+      <p class="form-hint">Se creará <code>knowledge/processes/&lt;ruta&gt;/apuntes/</code>.</p>
+    </div>
+
+    <div class="form-group">
+      <label for="source">Origen</label>
+      <input type="text" id="source" name="source" value="{{ v.source }}" placeholder="p. ej. cetic, preparatic, boe">
+    </div>
+
+    <label class="checkbox-label"><input type="checkbox" name="normalize" value="true" {% if v.normalize %}checked{% endif %}>
+      Limpiar cabeceras, pies y párrafos partidos</label>
+
+    <div class="ingest-actions">
+      <button type="submit" class="btn btn-primary">Extraer texto</button>
+      <span class="ingest-busy form-hint" hidden>Extrayendo… (unos segundos)</span>
+    </div>
+    <p class="form-hint">Las imágenes del PDF no se extraen: si el tema las necesita, añádelas después al apunte.</p>
+  </form>
+</section>
+{% endblock %}
