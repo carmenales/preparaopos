@@ -30,6 +30,11 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `scripts/etl/backfill_preparatic_metadata.py` rellena las 16.680 preguntas de PreparaTIC desde el bundle (simulación por defecto y copia previa). Probado sobre una copia de la BD real: el resto de tablas y columnas no cambia.
 - `import_preparatic.py` guarda ya ambos campos en importaciones nuevas.
 
+## Paso 2 de la migración (rama `feature/import-local-exams`)
+- `scripts/etl/mysql_dump_parser.py`: lector de los SQL de MariaDB de `imports/` (sin ejecutarlos).
+- `scripts/etl/import_local_exams.py`: 708 preguntas en 12 exámenes y 4 temarios nuevos, con el orden original de las opciones, año y marca de examen oficial, pendientes de clasificar. Validación por defecto, copia previa, todo o nada e idempotente. Probado sobre una copia de la BD real: los datos existentes no cambian y la app abre y puntúa los exámenes nuevos.
+- Bug detectado, fuera de este paso: en TAI y en GSI 2024 la opción correcta es siempre la primera (ver `docs/MIGRACION.md`, «Incidencias de datos»).
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.

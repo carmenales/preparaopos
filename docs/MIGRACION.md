@@ -9,10 +9,11 @@ _Inventario del 2026-10-19 sobre `develop` (`9afaab23`). La migración se da por
 | PreparaTIC (bundle V3) | 16.680 | 16.680 | ✅ Con `year` e `is_official_exam` (8.152 de examen oficial) desde el paso 1 (`scripts/etl/backfill_preparatic_metadata.py`). |
 | TAI (MariaDB `ptype`) | 1.331 | 1.331 | ✅ 52 cuestionarios. 1.267 pendientes de clasificar por tema. |
 | AGE A2 GSI 2024 | 101 | 101 | ✅ Clasificado y enlazado con apuntes. |
-| Ayto. Madrid Aux. TIC 2023/2025 (`imports/ayto_madrid_aux_tic`) | 294 | 0 | ❌ Solo existe como SQL para MariaDB (6 cuestionarios). |
-| Ayto. Majadahonda Técnico Informático (`imports/ayto_majadahonda`) | 44 | 0 | ❌ Ídem. |
-| Comunidad de Madrid P01/P02 IA y P01 TIC (`imports/cm_madrid_digital`) | 144 | 0 | ❌ Ídem. El de TIC P01 se llama `_template`: confirmar que es real. |
-| UC3M A2 GSI 2021/2024 (`imports/uc3m_gsi`) | 270 | 0 | ❌ Ídem (3 exámenes). |
+| Ayto. Madrid Aux. TIC 2021/2024 (`imports/ayto_madrid_aux_tic`) | 294 | 294 | ✅ Paso 2. 6 cuestionarios, 3 opciones, A−F/3. |
+| Ayto. Majadahonda Técnico Informático (`imports/ayto_majadahonda`) | 44 | 44 | ✅ Paso 2. ⚠️ Baremo no consta: sin regla (test-engine aplica A−F/3 por defecto). |
+| Comunidad de Madrid P01/P02 IA (`imports/cm_madrid_digital`) | 100 | 100 | ✅ Paso 2. A−F/3. |
+| Comunidad de Madrid TIC P01 Analista (`_template`) | 44 | 0 | ⏸️ Excluido: sin plantilla oficial (`[PENDIENTE DE PLANTILLA OFICIAL]`). Importar cuando se publique. |
+| UC3M A2 GSI 2021/2024 (`imports/uc3m_gsi`) | 270 | 270 | ✅ Paso 2. 3 exámenes, A−F/4 (regla nueva `oficial-cuarto`). |
 | Historial de tests en MariaDB (`test_sessions`, `test_attempts`, `question_sets`) | — | 0 | ❓ Sin comprobar si hay uso real que conservar. |
 | Historial de PreparaTIC V3 (IndexedDB del navegador) | — | 0 | ➖ Se queda en el navegador; no se migra. |
 
@@ -28,6 +29,11 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 ```
 - Si aparecen categorías AYTO/CM/UC3M/MAJADAHONDA, esos SQL se cargaron después de la importación a test-engine.
 - Si hay intentos con fechas de estudio real, hay que migrar el historial.
+
+### Incidencias de datos detectadas
+- **Opción correcta siempre en primera posición en TAI (1.331) y AGE GSI 2024 (101):** sus importadores guardaron la correcta con `display_order = 0` y la interfaz no baraja las opciones, así que en el simulacro GSI 2024 la correcta es siempre la «A». Requiere una rama de corrección propia: restaurar el orden oficial en GSI 2024 (la plantilla da la letra) y decidir para TAI entre barajar al mostrar o reconstruir el orden.
+- Ayto. Madrid 2024 práctico, pregunta 16, opción C: el texto lleva un resto de la extracción del PDF («…aún no es oficial. economía, innovación 8»). Revisar en origen.
+- Ayto. Madrid: el SQL `_fixed` corrige tres textos frente a `review_questions.csv` (RD 193/2023, WCAG 2.2 2023 y 2.1 actualizada en 2025). Se importa el texto del SQL.
 
 ## 2. Funcionalidad
 
@@ -69,7 +75,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 
 ## 3. Plan propuesto (por orden)
 1. ✅ **Metadatos de PreparaTIC**: columnas `questions.year` e `is_official_exam`. Reimportar solo esos campos desde `preparatic_bundle_extracted.json`, sin tocar ids ni etiquetas.
-2. **Importar las 752 preguntas de `imports/`**: un importador que lea los `.sql` directamente (sin pasar por MariaDB), con un temario por proceso (`ayto-madrid/aux-tic`, `majadahonda/tecnico-informatico`, `comunidad-madrid/...`, `uc3m/a2-gsi`) y un examen por cuestionario, respetando las anuladas.
+2. ✅ **Importar las preguntas de `imports/`** (708; las 44 del `_template` quedan fuera): un importador que lea los `.sql` directamente (sin pasar por MariaDB), con un temario por proceso (`ayto-madrid/aux-tic`, `majadahonda/tecnico-informatico`, `comunidad-madrid/...`, `uc3m/a2-gsi`) y un examen por cuestionario, respetando las anuladas.
 3. **Generador de tests**: por bloque o tema, por año, aleatorio, solo preguntas de examen oficial y falladas (refuerzo). Esto cubre `temas`, `practica_tematica`, `refuerzo` y los modos de V3.
 4. **Historial y estadísticas**: lista de sesiones con borrado y aciertos por bloque/tema (sustituye a `historial_sesiones`, `estadisticas` y `progreso`).
 5. **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
