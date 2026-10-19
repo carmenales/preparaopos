@@ -5,6 +5,8 @@ Lee primero `docs/ESTADO.md` (estado actual y próximos pasos) y `docs/adr/0001-
 ## Reglas de trabajo
 - Idioma: español en docs y UI; mensajes de commit en inglés (Conventional Commits).
 - GitFlow: `feature/*` desde `develop`; `hotfix/*` solo para bugs de release. Merge a `develop` con `--no-ff`.
+- **Antes del primer cambio en ficheros, la rama `feature/*` tiene que existir y estar activa.** Nunca se edita en `develop` ni en `main`: si no hay rama, se crea (o se pide a Carmen) antes de tocar nada.
+- Cada propuesta de commits debe cubrir todos los ficheros cambiados; se comprueba con `git status -s` antes de darla.
 - **Los commits los hace Carmen con su usuario.** Ninguna IA hace commits ni añade trailers `Co-Authored-By`, IDs de sesión ni otra marca de IA. Las IA proponen el mensaje de commit.
 - No matar procesos por PID sin inspeccionarlos antes. No hacer merge, push ni borrar ramas sin petición explícita.
 - Las clasificaciones semánticas (pregunta↔tema, pregunta↔apunte) nunca se aplican por umbral: CSV con columna `confirmar` → revisión manual → `apply`.

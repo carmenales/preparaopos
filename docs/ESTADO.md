@@ -25,6 +25,15 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Ficheros sueltos: `ultimos_commits.txt`, `…/02_Metodologia_Proyecto copy.md`.
 - Untracked de `knowledge/` (a1-sti, a2-gsi/apuntes, mapping, majadahonda, p06): decidir qué se versiona (el repo es privado).
 
+## Paso 1 de la migración (rama `feature/preparatic-year-metadata`)
+- `questions.year` y `questions.is_official_exam`. `init_schema` añade las columnas que falten en BD existentes (`ensure_additive_columns`, solo aditivo).
+- `scripts/etl/backfill_preparatic_metadata.py` rellena las 16.680 preguntas de PreparaTIC desde el bundle (simulación por defecto y copia previa). Probado sobre una copia de la BD real: el resto de tablas y columnas no cambia.
+- `import_preparatic.py` guarda ya ambos campos en importaciones nuevas.
+
+## CI (fuera de alcance; anotado)
+- `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
+- La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
+
 ## Después
 La migración no está completa: ver `docs/MIGRACION.md` (datos sin importar, funcionalidades de las apps PHP sin equivalente y criterios para etiquetar la versión).
 
