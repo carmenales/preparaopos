@@ -42,6 +42,11 @@ TEST_ENGINE_INTERNAL_URL = os.getenv("TEST_ENGINE_INTERNAL_URL", os.getenv("TEST
 TEST_ENGINE_PUBLIC_URL = os.getenv("TEST_ENGINE_PUBLIC_URL", os.getenv("TEST_ENGINE_URL", "http://localhost:8096"))
 TEST_ENGINE_URL = TEST_ENGINE_PUBLIC_URL
 
+# Servicio de ingesta (PDF → Markdown, refinado con Ollama y publicación en knowledge/)
+KNOWLEDGE_SERVICE_INTERNAL_URL = os.getenv("KNOWLEDGE_SERVICE_INTERNAL_URL", "http://localhost:8100")
+# El refinado con Ollama en CPU puede tardar minutos (knowledge-service usa 900 s de lectura)
+KNOWLEDGE_SERVICE_REFINE_TIMEOUT = float(os.getenv("KNOWLEDGE_SERVICE_REFINE_TIMEOUT", "960"))
+
 # --- Servidor ---
 
 HOST = os.getenv("SA_HOST", "0.0.0.0")

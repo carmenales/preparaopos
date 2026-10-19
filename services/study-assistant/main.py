@@ -56,9 +56,8 @@ def test_engine_home() -> str:
 templates.env.globals["test_engine_home"] = test_engine_home
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Carga inicial: índice de notas y servicio de dominio."""
+def load_notes(app: FastAPI) -> None:
+    """(Re)carga el índice de notas en memoria. Se usa al arrancar y tras publicar un apunte."""
     logger.info("Cargando índice de notas desde %s", KNOWLEDGE_INDEX_PATH)
 
     repo = KnowledgeFSRepository(
@@ -73,7 +72,6 @@ async def lifespan(app: FastAPI):
 
     app.state.repository = repo
     app.state.note_service = note_service
-    app.state.templates = templates
     app.state.notes_loaded = metrics.total_notes
     app.state.processes_count = metrics.total_processes
 
@@ -84,6 +82,14 @@ async def lifespan(app: FastAPI):
         metrics.reviewed_count,
         metrics.draft_count,
     )
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Carga inicial: índice de notas y servicio de dominio."""
+    app.state.templates = templates
+    app.state.reload_notes = lambda: load_notes(app)
+    load_notes(app)
     yield
 
 
@@ -102,11 +108,13 @@ from presentation.routes.dashboard import router as dashboard_router
 from presentation.routes.notes import router as notes_router
 from presentation.routes.search import router as search_router
 from presentation.routes.assets import router as assets_router
+from presentation.routes.ingest import router as ingest_router
 
 app.include_router(dashboard_router)
 app.include_router(notes_router)
 app.include_router(search_router)
 app.include_router(assets_router)
+app.include_router(ingest_router)
 
 
 @app.get("/health")
