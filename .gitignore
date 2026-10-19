@@ -62,3 +62,6 @@ imports/**/data/
 cache/
 __pycache__/
 .llm_cache/
+
+# Copias de seguridad locales de las BD
+backups/

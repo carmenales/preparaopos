@@ -13,14 +13,15 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `engine.py`: el fallo o la discrepancia de `journal_mode` se registra como WARNING con el modo pedido y el efectivo.
 - Enlaces entre servicios en la barra superior: ya no se escriben a mano (`/` y `/tests/`); salen de `STUDY_ASSISTANT_PUBLIC_URL` y `TEST_ENGINE_PUBLIC_URL`. Antes, test-engine ejecutándose solo en :8096 enviaba «Volver a Apuntes» a su propio catálogo.
 - `.gitattributes` (LF) y `*.sqlite-journal` en `.gitignore`.
+- `scripts/backup_test_engine.py` (API de backup, `integrity_check`, retención 14, en `backups/`, ignorada por git) y `scripts/purge_test_sessions.py` (simulación por defecto, `--before`, copia previa obligatoria).
 
 ## Antes de mergear a `develop`
-1. Ejecutar `python scripts/smoke_gateway.py` con `docker compose up -d --build`.
-2. Limpiar las sesiones y los intentos creados por tests en `test_engine.sqlite`: 441 sesiones y 2.496 intentos desde el 3-oct. Antes, hacer copia con la API de backup. El `.bak` del 16-oct también está contaminado.
+1. ~~Smoke del gateway~~: OK al 100 % el 2026-10-19. Ojo: los pasos 5 y 6 crean sesiones reales en la BD.
+2. Purgar las sesiones creadas por tests y por el smoke: `docker compose stop test-engine` → `python scripts/purge_test_sessions.py --apply` → `docker compose start test-engine`. La purga hace antes una copia verificada en `backups/test-engine/`.
 
 ## Pendiente menor
 - `docker-compose.dev.yml` está vacío (0 bytes): rellenar u eliminar.
-- `scripts/backup_test_engine.py`: API de backup de SQLite, carpeta `backups/` ignorada y fuera del bind mount, retención 14, `PRAGMA integrity_check` tras copiar.
+- Smoke test: marcar sus sesiones (p. ej. `source_ref='smoke'`) o limpiarlas al terminar, para que no se mezclen con el uso real.
 - Ficheros sueltos: `ultimos_commits.txt`, `…/02_Metodologia_Proyecto copy.md`.
 - Untracked de `knowledge/` (a1-sti, a2-gsi/apuntes, mapping, majadahonda, p06): decidir qué se versiona (el repo es privado).
 
