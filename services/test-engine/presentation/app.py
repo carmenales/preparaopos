@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 
 from config import SQLITE_PATH, STATIC_DIR
 from infrastructure.db.engine import create_sqlite_engine, init_schema
-from presentation.routers import api as api_router, catalog, generator as generator_router, history as history_router, sessions as sessions_router
+from presentation.routers import api as api_router, catalog, generator as generator_router, history as history_router, management as management_router, sessions as sessions_router
 
 # Inicializar esquema y datos semilla al arrancar
 _engine = create_sqlite_engine(SQLITE_PATH)
@@ -24,6 +24,7 @@ app.include_router(catalog.router)
 app.include_router(sessions_router.router)
 app.include_router(generator_router.router)
 app.include_router(history_router.router)
+app.include_router(management_router.router)
 app.include_router(api_router.router)
 
 

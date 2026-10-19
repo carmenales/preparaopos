@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar cuestionario" if exam else "Nuevo cuestionario" }}{% endblock %}
+
+{% block content %}
+<section class="manage">
+  <p><a href="{{ url('/manage/exams/') }}">← Cuestionarios</a></p>
+  <h1>{{ exam.name if exam else "Nuevo cuestionario" }}</h1>
+  {% if msg %}<p class="alert {% if 'no se puede' in msg %}alert--error{% else %}alert--ok{% endif %}" role="status">{{ msg }}</p>{% endif %}
+  {% if errors %}<div class="alert alert--error" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+  <form method="post" action="{{ url('/manage/exams/' ~ exam.id ~ '/edit') if exam else url('/manage/exams/new') }}" class="manage__form">
+    <div class="field"><label for="name">Nombre</label><input id="name" name="name" value="{{ v.name }}" required maxlength="255"></div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="syllabus_id">Temario</label>
+        <select id="syllabus_id" name="syllabus_id" required>
+          <option value="">Elige…</option>
+          {% for s in syllabi %}<option value="{{ s.id }}" {% if s.id == v.syllabus_id %}selected{% endif %}>{{ s.organism }} · {{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field"><label for="year">Año</label><input id="year" name="year" value="{{ v.year }}" inputmode="numeric"></div>
+      <div class="field"><label for="convocatoria">Convocatoria / turno</label><input id="convocatoria" name="convocatoria" value="{{ v.convocatoria }}"></div>
+      <div class="field">
+        <label for="scoring_rule_id">Puntuación</label>
+        <select id="scoring_rule_id" name="scoring_rule_id">
+          <option value="">Por defecto (A − F/3)</option>
+          {% for r in rules %}<option value="{{ r.id }}" {% if r.id|string == v.scoring_rule_id|string %}selected{% endif %}>{{ r.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="field"><label for="duration_minutes">Duración del simulacro (min)</label><input id="duration_minutes" name="duration_minutes" value="{{ v.duration_minutes }}" inputmode="numeric" placeholder="sin límite"></div>
+    </div>
+    <div class="generator__actions"><button type="submit" class="btn btn--primary">Guardar</button></div>
+  </form>
+
+  {% if exam %}
+  <h2>Preguntas ({{ exam.questions|length }})</h2>
+  <p><a href="{{ url('/manage/questions/new?exam_id=' ~ exam.id) }}" class="btn btn--ghost btn--small">＋ Nueva pregunta en este cuestionario</a></p>
+  <div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th class="num">Nº</th><th>Enunciado</th><th></th></tr></thead>
+    <tbody>
+      {% for q in exam.questions %}
+      <tr>
+        <td class="num">{{ q.position }}{% if q.is_reserve %} (R){% endif %}</td>
+        <td>{{ q.statement[:150] }}{% if q.statement|length > 150 %}…{% endif %}{% if q.is_annulled %} <span class="tag tag--annulled">anulada</span>{% endif %}</td>
+        <td class="actions">
+          <a href="{{ url('/manage/questions/' ~ q.id ~ '/edit') }}" class="btn btn--ghost btn--small">Editar</a>
+          <form method="post" action="{{ url('/manage/exams/' ~ exam.id ~ '/questions/' ~ q.id ~ '/remove') }}"
+                onsubmit="return confirm('¿Quitar esta pregunta del cuestionario? La pregunta no se borra.');">
+            <button type="submit" class="btn btn--ghost btn--small">Quitar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <form method="post" action="{{ url('/manage/exams/' ~ exam.id ~ '/delete') }}" class="manage__danger"
+        onsubmit="return confirm('¿Borrar el cuestionario? Sus preguntas no se borran.');">
+    <button type="submit" class="btn btn--danger btn--small" {% if exam.n_sessions %}disabled title="Tiene sesiones en tu historial"{% endif %}>Borrar cuestionario</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}
