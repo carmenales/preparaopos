@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request, Response
+from pydantic import BaseModel, Field
 
 router = APIRouter(prefix="/links")
 
@@ -35,3 +36,28 @@ async def get_question_ids_by_note(request: Request, note_id: str):
     linking_service = request.app.state.linking_service
     return linking_service.get_question_ids_by_note(note_id)
 
+
+
+class ManualLinkIn(BaseModel):
+    question_id: int
+    note_id: str = Field(..., min_length=1)
+    syllabus_id: str = Field(..., min_length=1)
+
+
+# Handlers síncronos: consultan study-assistant con un cliente HTTP síncrono y no deben
+# bloquear el bucle de eventos (ver docs/ESTADO.md, bloqueo con async def).
+@router.post("", status_code=201)
+def add_manual_link(request: Request, body: ManualLinkIn):
+    """Añade a mano un enlace pregunta-apunte (o restaura uno retirado)."""
+    try:
+        return request.app.state.linking_service.add_manual_link(body.question_id, body.note_id, body.syllabus_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.delete("/{question_id}/{note_id}", status_code=204)
+def remove_link(request: Request, question_id: int, note_id: str):
+    """Retira un enlace; queda como lápida para que la resolución automática no lo recree."""
+    if not request.app.state.linking_service.remove_link(question_id, note_id):
+        raise HTTPException(status_code=404, detail="Ese enlace no existe")
+    return Response(status_code=204)

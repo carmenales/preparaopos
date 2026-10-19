@@ -149,8 +149,24 @@ class LinkingService:
                 "title": title,
                 "official_topic": official_topic,
                 "confidence": l["confidence"],
+                "source": l["source"],
             })
         return results
+
+    def add_manual_link(self, question_id: int, note_id: str, syllabus_id: str) -> dict[str, Any]:
+        """Añade (o restaura) un enlace a mano. El apunte debe existir en study-assistant."""
+        try:
+            note = self._apuntes_client.get_note(note_id)
+        except Exception as exc:  # study-assistant caído o respondiendo con error
+            raise LookupError(f"No se puede comprobar el apunte «{note_id}»: study-assistant no responde") from exc
+        if not note:
+            raise LookupError(f"No se encuentra el apunte «{note_id}» (¿está study-assistant levantado?)")
+        self._repo.set_manual_link(question_id=question_id, note_id=note_id, syllabus_id=syllabus_id)
+        return {"question_id": question_id, "note_id": note_id, "title": note.get("title"),
+                "official_topic": note.get("official_topic"), "confidence": 1.0, "source": "manual"}
+
+    def remove_link(self, question_id: int, note_id: str) -> bool:
+        return self._repo.remove_link(question_id, note_id)
 
     def get_links_by_question_ids(self, question_ids: list[int]) -> dict[str, list[dict[str, Any]]]:
         """Devuelve los enlaces para múltiples preguntas agrupados por question_id."""
