@@ -83,16 +83,21 @@ def available_count(
     year: Annotated[str | None, Query()] = None,
     official: Annotated[str | None, Query()] = None,
     failed: Annotated[str | None, Query()] = None,
+    count: Annotated[str | None, Query()] = None,
 ):
-    """Fragmento htmx: cuántas preguntas cumplen los filtros actuales."""
+    """Fragmento htmx: cuántas preguntas cumplen los filtros actuales y si alcanzan para el test pedido."""
     try:
         n = repo.count_for_generator(_build_filters(syllabus_id, scope, year, official, failed, None))
     except ValueError:
         n = 0
-    return HTMLResponse(
-        f'<strong>{n}</strong> pregunta{"s" if n != 1 else ""} disponible{"s" if n != 1 else ""}',
-        headers={"Cache-Control": "no-store"},
-    )
+    text = f'<strong>{n}</strong> pregunta{"s" if n != 1 else ""} disponible{"s" if n != 1 else ""}'
+    requested = int(count) if count and count.isdigit() else None
+    if n == 0:
+        text += ' <span class="generator__warning">· ninguna cumple los filtros: amplíalos</span>'
+    elif requested and n < requested:
+        text += (f' <span class="generator__warning">· has pedido {requested}, pero solo hay {n}: '
+                 f'el test tendrá {n} pregunta{"s" if n != 1 else ""}</span>')
+    return HTMLResponse(text, headers={"Cache-Control": "no-store"})
 
 
 @router.post("/", response_class=HTMLResponse)
@@ -116,5 +121,8 @@ def generate(
         session = svc.start_session(mode=mode, source="generated", source_ref=filters.to_source_ref())  # type: ignore[arg-type]
     except NoQuestionsForFilters:
         return _back_to_form(syllabus_id, "Ninguna pregunta cumple esos filtros. Prueba a ampliarlos.")
-    return RedirectResponse(url=prefix_url(f"/sessions/{session.id}/question/1"), status_code=303)
+    url = f"/sessions/{session.id}/question/1"
+    if len(session.question_ids) < filters.count:
+        url += f"?requested={filters.count}"
+    return RedirectResponse(url=prefix_url(url), status_code=303)
 

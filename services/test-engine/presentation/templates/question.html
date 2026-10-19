@@ -6,6 +6,9 @@
 
 {% block content %}
 <section class="question-page">
+  {% if requested %}
+  <p class="alert alert--warning" role="status">Has pedido {{ requested }} preguntas, pero solo hay {{ total }} con esos filtros: este test tiene {{ total }} de {{ requested }} pedidas.</p>
+  {% endif %}
 
   {# ── Barra de progreso + temporizador ─────────────────────────── #}
   <div class="question-header">

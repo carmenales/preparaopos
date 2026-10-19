@@ -258,3 +258,5 @@ a { color: inherit; }
 .manage__danger { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e2e8f0; }
 .pager { display: flex; gap: .5rem; margin-top: 1rem; }
 .alert ul { margin: 0; padding-left: 1.2rem; }
+.alert--warning { background: #fef3c7; color: #92400e; }
+.generator__warning { color: #b45309; font-weight: 600; }
