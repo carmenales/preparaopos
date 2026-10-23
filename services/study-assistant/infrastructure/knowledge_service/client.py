@@ -53,3 +53,7 @@ class KnowledgeServiceClient:
 
     def publish(self, payload: dict[str, Any]) -> dict[str, Any]:
         return self._post("/ingest/publish", timeout=120, json=payload)
+
+    def delete_note(self, path: str) -> dict[str, Any]:
+        """Borra definitivamente el fichero del apunte (ruta del índice) y regenera el índice."""
+        return self._post("/notes/delete", timeout=120, json={"path": path})
