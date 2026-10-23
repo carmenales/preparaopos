@@ -24,6 +24,89 @@ def _natural_sort_key(s: str) -> List[str]:
     return [int(text) if text.isdigit() else text.lower() for text in re.split(r"(\d+)", str(s))]
 
 
+_ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50}
+# «I.05», «Tema I.05», «TEMA III.01», «II.16.», «I.06.II_Identidad», «B4.03»
+_TOPIC_WITH_BLOCK_RE = re.compile(r"(?<![A-Za-z])([IVXL]+|[A-Z]\d+)\.(\d+)(?:\.([IVXL]+|\d+)(?![A-Za-z]))?")
+# «Tema 5. Esquema…», «Tema 11. Real Decreto…»
+_TOPIC_NUMBER_RE = re.compile(r"\btema\s+(\d+)\b", re.IGNORECASE)
+# Respaldo con el id: «tema-i-06-ii-identidad», «cm-ad-ia-p01-tema-006-arquitectura»
+_ID_WITH_BLOCK_RE = re.compile(r"(?:^|-)tema-([ivxl]+)-(\d+)(?:-([ivxl]+)(?=-|$))?")
+_ID_NUMBER_RE = re.compile(r"(?:^|-)tema-(\d+)(?=-|$)")
+_ID_PROFILE_RE = re.compile(r"(?:^|-)p(\d+)(?=-)")
+
+
+def _roman_to_int(value: str) -> int:
+    total, prev = 0, 0
+    for ch in reversed(value.upper()):
+        n = _ROMAN.get(ch, 0)
+        total = total - n if n < prev else total + n
+        prev = max(prev, n)
+    return total
+
+
+def _block_key(block: str) -> Tuple[int, int]:
+    """Bloques romanos (I, II…) antes que bloques con letra (B4…)."""
+    if block[0].upper() in _ROMAN and block.upper().strip("IVXL") == "":
+        return (0, _roman_to_int(block))
+    return (ord(block[0].upper()), int(block[1:] or 0))
+
+
+def _subpart_key(sub: Optional[str]) -> int:
+    if not sub:
+        return 0
+    return int(sub) if sub.isdigit() else _roman_to_int(sub)
+
+
+def parse_topic_position(note: Note) -> Optional[Tuple[Tuple[int, int], int, int]]:
+    """(bloque, tema, subparte) a partir del tema oficial o, si no se puede, del id. None si no hay numeración."""
+    topic = note.official_topic or ""
+    m = _TOPIC_WITH_BLOCK_RE.search(topic)
+    if m:
+        return _block_key(m.group(1)), int(m.group(2)), _subpart_key(m.group(3))
+    m = _TOPIC_NUMBER_RE.search(topic)
+    if m:
+        return (0, 0), int(m.group(1)), 0
+    note_id = (note.id or "").lower()
+    m = _ID_WITH_BLOCK_RE.search(note_id)
+    if m:
+        return _block_key(m.group(1)), int(m.group(2)), _subpart_key(m.group(3))
+    m = _ID_NUMBER_RE.search(note_id)
+    if m:
+        return (0, 0), int(m.group(1)), 0
+    return None
+
+
+def _profile(note: Note) -> int:
+    """Perfil del id («cm-ad-tic-p04-tema-…» → 4); 0 si es temario común."""
+    m = _ID_PROFILE_RE.search((note.id or "").lower())
+    return int(m.group(1)) if m else 0
+
+
+def sort_by_topic(notes: List[Note]) -> List[Note]:
+    """Ordena por bloque, tema y subparte; los apuntes sin numeración van al final, en orden alfabético.
+
+    Los temas de un perfil (p01, p04…) van seguidos y se colocan donde empieza su numeración,
+    en vez de intercalarse tema a tema con los de otro perfil: en Comunidad de Madrid cada perfil
+    es un temario propio (TIC p01 temas 2-6 y luego p04 temas 2-7; IA comunes 1-3, p01 4-7, p02 4-7, comunes 8-11).
+    """
+    positions = {id(n): parse_topic_position(n) for n in notes}
+    profile_start: Dict[int, tuple] = {}
+    for n in notes:
+        pos, prof = positions[id(n)], _profile(n)
+        if pos is not None and prof and (prof not in profile_start or pos < profile_start[prof]):
+            profile_start[prof] = pos
+
+    def key(n: Note) -> tuple:
+        pos = positions[id(n)]
+        if pos is None:
+            return (1, _normalize_text(n.title or n.official_topic or n.id), _natural_sort_key(n.id or ""))
+        prof = _profile(n)
+        anchor = profile_start.get(prof, pos) if prof else pos
+        return (0, anchor, prof, pos, _natural_sort_key(n.id or ""), _natural_sort_key(n.title or ""))
+
+    return sorted(notes, key=key)
+
+
 class NoteService:
     """Servicio de dominio que implementa la lógica de negocio para las notas."""
 
@@ -76,14 +159,8 @@ class NoteService:
         return [note for note in self.notes if process_slug in note.processes]
 
     def sort_sequentially(self, notes: List[Note]) -> List[Note]:
-        """Ordena notas secuencialmente por tema oficial, id y título."""
-        def sort_key(n: Note) -> Tuple[List[str], List[str], List[str]]:
-            return (
-                _natural_sort_key(n.official_topic or ""),
-                _natural_sort_key(n.id or ""),
-                _natural_sort_key(n.title or "")
-            )
-        return sorted(notes, key=sort_key)
+        """Ordena por bloque/tema/subparte (ver sort_by_topic); sin numeración, al final."""
+        return sort_by_topic(notes)
 
     def collect_unique(self, field: str) -> List[str]:
         """Recolecta valores únicos ordenados de forma natural para un campo específico."""
