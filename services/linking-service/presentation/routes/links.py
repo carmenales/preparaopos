@@ -55,6 +55,13 @@ def add_manual_link(request: Request, body: ManualLinkIn):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+# Va antes de DELETE /{question_id}/{note_id}: si no, «by-note» se tomaría como question_id (422).
+@router.delete("/by-note/{note_id}")
+def delete_links_by_note(request: Request, note_id: str):
+    """Borra todos los enlaces de un apunte que se ha borrado."""
+    return {"deleted": request.app.state.linking_service.delete_links_by_note(note_id)}
+
+
 @router.delete("/{question_id}/{note_id}", status_code=204)
 def remove_link(request: Request, question_id: int, note_id: str):
     """Retira un enlace; queda como lápida para que la resolución automática no lo recree."""

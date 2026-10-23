@@ -168,6 +168,9 @@ class LinkingService:
     def remove_link(self, question_id: int, note_id: str) -> bool:
         return self._repo.remove_link(question_id, note_id)
 
+    def delete_links_by_note(self, note_id: str) -> int:
+        return self._repo.delete_by_note(note_id)
+
     def get_links_by_question_ids(self, question_ids: list[int]) -> dict[str, list[dict[str, Any]]]:
         """Devuelve los enlaces para múltiples preguntas agrupados por question_id."""
         if not question_ids:

@@ -66,6 +66,12 @@ class QuestionNoteLinkRepository:
         self._conn.commit()
         return cur.rowcount > 0
 
+    def delete_by_note(self, note_id: str) -> int:
+        """Borra todos los enlaces de un apunte, lápidas incluidas (el apunte ya no existe)."""
+        cur = self._conn.execute("DELETE FROM question_note_links WHERE note_id = ?", (note_id,))
+        self._conn.commit()
+        return cur.rowcount
+
     def get_by_question_id(self, question_id: int) -> list[dict[str, Any]]:
         """Devuelve los enlaces registrados para una pregunta."""
         cur = self._conn.cursor()

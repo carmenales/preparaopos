@@ -293,3 +293,24 @@ def test_manual_link_when_study_assistant_is_down(memory_db):
     res = TestClient(app).post("/links", json={"question_id": 1, "note_id": "x", "syllabus_id": "s"})
     assert res.status_code == 404 and "study-assistant no responde" in res.json()["detail"]
     assert repo.count() == 0
+
+
+def test_delete_links_of_a_deleted_note(memory_db):
+    from presentation.app import app
+
+    repo = QuestionNoteLinkRepository(memory_db)
+    app.state.db_conn = memory_db
+    app.state.repo = repo
+    app.state.linking_service = LinkingService(repo, FakeApuntesClient(), FakeTestEngineClient())
+    client = TestClient(app)
+    auto = dict(syllabus_id="age-gsi-official", confidence=0.8, source="topic-match")
+    repo.upsert_link(question_id=1, note_id="borrado", **auto)
+    repo.upsert_link(question_id=2, note_id="borrado", **auto)
+    repo.upsert_link(question_id=1, note_id="se-queda", **auto)
+    client.delete("/links/2/borrado")  # lápida: también se borra
+
+    res = client.delete("/links/by-note/borrado")
+    assert res.status_code == 200 and res.json() == {"deleted": 2}
+    assert client.get("/links/by-note/borrado").json() == []
+    assert [l["note_id"] for l in client.get("/links/by-question/1").json()] == ["se-queda"]
+    assert client.delete("/links/by-note/borrado").json() == {"deleted": 0}
