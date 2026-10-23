@@ -72,6 +72,12 @@ class TestMysqlDumpParser(unittest.TestCase):
             parse_dump("INSERT INTO ptype (categoria) VALUES (@nope);")
 
 
+# imports/ son datos locales que no están en git: en CI (o en un clon limpio) estas pruebas se saltan.
+HAS_IMPORTS = importer.IMPORTS.is_dir()
+NO_IMPORTS = "imports/ no está en el repositorio (datos locales, no versionados)"
+
+
+@unittest.skipUnless(HAS_IMPORTS, NO_IMPORTS)
 class TestLoadRealSources(unittest.TestCase):
     """Valida los ficheros reales de imports/ (sin tocar ninguna BD)."""
 
@@ -99,6 +105,7 @@ class TestLoadRealSources(unittest.TestCase):
         self.assertFalse(any("ANALISTA APLICACIONES" in e.name for e in self.exams))
 
 
+@unittest.skipUnless(HAS_IMPORTS, NO_IMPORTS)
 class TestApplyImport(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
