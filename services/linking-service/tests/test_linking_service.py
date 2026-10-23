@@ -234,3 +234,62 @@ def test_linking_batch_endpoint(memory_db):
     assert "999" in data_batch
     assert len(data_batch["999"]) == 0
 
+
+
+def test_manual_links_and_tombstones(memory_db):
+    from presentation.app import app
+
+    repo = QuestionNoteLinkRepository(memory_db)
+    app.state.db_conn = memory_db
+    app.state.repo = repo
+    app.state.linking_service = LinkingService(repo, FakeApuntesClient(), FakeTestEngineClient())
+    client = TestClient(app)
+    auto = dict(question_id=102, syllabus_id="age-gsi-official", confidence=0.8, source="topic-match")
+    repo.upsert_link(note_id="tema-i-09-admin-digital", **auto)
+    repo.upsert_link(note_id="tema-i-09-ens-eni", **auto)
+
+    # Retirar un enlace automático que no tiene sentido
+    assert client.delete("/links/102/tema-i-09-admin-digital").status_code == 204
+    assert [l["note_id"] for l in client.get("/links/by-question/102").json()] == ["tema-i-09-ens-eni"]
+    assert client.delete("/links/102/tema-i-09-admin-digital").status_code == 404
+    assert client.get("/links/by-note/tema-i-09-admin-digital/question-ids").json() == []
+
+    # La resolución automática no lo resucita
+    repo.upsert_link(note_id="tema-i-09-admin-digital", **auto)
+    assert len(client.get("/links/by-question/102").json()) == 1
+
+    # Añadir a mano: a otro tema, y restaurar el retirado
+    res = client.post("/links", json={"question_id": 102, "note_id": "tema-i-01-constitución",
+                                      "syllabus_id": "age-gsi-official"})
+    assert res.status_code == 201 and res.json()["source"] == "manual"
+    client.post("/links", json={"question_id": 102, "note_id": "tema-i-09-admin-digital",
+                                "syllabus_id": "age-gsi-official"})
+    links = {l["note_id"]: l for l in client.get("/links/by-question/102").json()}
+    assert set(links) == {"tema-i-01-constitución", "tema-i-09-admin-digital", "tema-i-09-ens-eni"}
+    assert links["tema-i-09-admin-digital"]["source"] == "manual"
+    assert links["tema-i-09-admin-digital"]["confidence"] == 1.0
+
+    # Un enlace manual no lo rebaja la resolución automática
+    repo.upsert_link(note_id="tema-i-09-admin-digital", **auto)
+    assert {l["note_id"]: l for l in client.get("/links/by-question/102").json()}["tema-i-09-admin-digital"]["source"] == "manual"
+
+    # Apunte inexistente
+    assert client.post("/links", json={"question_id": 102, "note_id": "no-existe",
+                                       "syllabus_id": "age-gsi-official"}).status_code == 404
+    assert client.get("/health").json()["links_count"] == 3
+
+
+def test_manual_link_when_study_assistant_is_down(memory_db):
+    from presentation.app import app
+
+    class DownApuntesClient(FakeApuntesClient):
+        def get_note(self, note_id):
+            raise RuntimeError("connection refused")
+
+    repo = QuestionNoteLinkRepository(memory_db)
+    app.state.db_conn = memory_db
+    app.state.repo = repo
+    app.state.linking_service = LinkingService(repo, DownApuntesClient(), FakeTestEngineClient())
+    res = TestClient(app).post("/links", json={"question_id": 1, "note_id": "x", "syllabus_id": "s"})
+    assert res.status_code == 404 and "study-assistant no responde" in res.json()["detail"]
+    assert repo.count() == 0

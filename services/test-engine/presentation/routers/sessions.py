@@ -82,6 +82,7 @@ def show_question(
     n: int,
     svc: SessionServiceDep,
     q_repo: QuestionRepoDep,
+    requested: int | None = None,
 ):
     """Muestra la pregunta n-ésima de la sesión (1-indexed).
 
@@ -139,6 +140,8 @@ def show_question(
             "question": question,
             "n": n,
             "total": total,
+            # Test generado con menos preguntas de las pedidas (ver routers/generator.py)
+            "requested": requested if (requested and n == 1 and requested > total) else None,
             "previous_attempt": previous_attempt,
             "remaining_seconds": remaining_seconds,
         },

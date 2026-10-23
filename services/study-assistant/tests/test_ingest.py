@@ -125,3 +125,21 @@ def test_publish_validation_keeps_form(client, fake):
     assert "El título es obligatorio." in res.text
     assert "Mi texto" in res.text
     assert fake.published == []
+
+
+def test_ai_cleaned_only_after_refine_and_review_flag_from_user(client, fake):
+    base = {"process_slug": "age/a2-gsi", "source": "cetic", "title": "Tema 9", "status": "borrador",
+            "markdown": "## Tema 9"}
+    client.post("/ingest/publish", data=base)
+    assert fake.published[-1]["ai_cleaned"] is False
+    assert fake.published[-1]["needs_human_review"] is False
+
+    refined = client.post("/ingest/refine", data={"markdown": "## Tema 9"}).text
+    assert 'name="ai_cleaned" value="1"' in refined
+    client.post("/ingest/publish", data=base | {"ai_cleaned": "1", "needs_human_review": "1"})
+    assert fake.published[-1]["ai_cleaned"] is True
+    assert fake.published[-1]["needs_human_review"] is True
+
+    failed = FakeKnowledgeClient(fail="refine")
+    app.dependency_overrides[get_knowledge_client] = lambda: failed
+    assert 'name="ai_cleaned"' not in client.post("/ingest/refine", data={"markdown": "x"}).text

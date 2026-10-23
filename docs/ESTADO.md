@@ -69,6 +69,14 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `docker-compose.yml`: `KNOWLEDGE_SERVICE_INTERNAL_URL` para study-assistant.
 - Gateway: `location /ingest/` con `client_max_body_size 50m` y `proxy_read_timeout 1000s` (por defecto Nginx rechaza más de 1 MB con 413 y corta a los 60 s, menos de lo que tarda el refinado con Ollama).
 
+## Correcciones de la migración (rama `feature/migration-fixes`)
+- Pie de página del PDF en 9 opciones de GSI 2024 y aviso «N de M pedidas» en el generador (ya commiteados y aplicados).
+- **Edición manual de enlaces pregunta↔apunte** (los automáticos los generó una IA y algunos no tienen sentido). En `/manage/questions/{id}/edit`, sección «Apuntes enlazados»: lista con título, tema y origen (a mano / automático por tema con su confianza), «Quitar» en cada uno y un desplegable con todos los apuntes de study-assistant agrupados por proceso para enlazar otro. Una pregunta puede tener varios.
+  - linking-service: `POST /links` (manual, confianza 1,0, comprueba que el apunte existe) y `DELETE /links/{question_id}/{note_id}`. Quitar deja una lápida (`source='removed'`) que las lecturas ignoran, para que `resolve_links.py` no lo vuelva a crear; la resolución automática tampoco rebaja un enlace manual. Si study-assistant no responde, `POST /links` devuelve 404 con el motivo en vez de 500.
+  - test-engine: si linking-service o study-assistant no responden, la página de edición se sigue mostrando con un aviso. Cambiar el bloque o el tema de una pregunta no cambia sus enlaces.
+- **Frontmatter de la ingesta**: `ai_cleaned` solo es `true` si el texto se ha refinado con Ollama, y `needs_human_review` lo marca el usuario con una casilla al publicar (antes eran siempre `true` y `false`).
+- Tests: test-engine 68, linking-service 7, study-assistant 14 y `tests/test_ingest_service.py`. Probado también de extremo a extremo con linking-service real.
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.

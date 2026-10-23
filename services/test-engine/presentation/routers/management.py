@@ -9,10 +9,11 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
+import config
 from config import prefix_url
 from domain.management.forms import MAX_OPTIONS, ExamInput, OptionInput, QuestionInput, ValidationError
 from infrastructure.db.repositories.management_repository import PAGE_SIZE, ManagementRepository
-from presentation.dependencies import DbDep
+from presentation.dependencies import DbDep, LinkingClientDep, NotesCatalogDep
 from presentation.templating import templates
 
 router = APIRouter(prefix="/manage")
@@ -53,8 +54,31 @@ def list_questions(request: Request, repo: RepoDep, q: str | None = None, syllab
     }, headers=NO_CACHE)
 
 
+LINK_SOURCES = {"manual": "a mano", "topic-match": "automático por tema",
+                "semantic-suggestion": "sugerencia automática"}
+
+
+def _links_panel(question, linking, catalog) -> dict:
+    """Datos de la sección «Apuntes enlazados». Cada servicio puede faltar sin romper la página."""
+    links = linking.links_for_question(question["id"])
+    notes = catalog.list_notes()
+    groups = None
+    if notes is not None:
+        linked = {l["note_id"] for l in links or []}
+        by_group: dict[str, list[dict]] = {}
+        for n in notes:
+            if n["id"] in linked:
+                continue
+            label = ", ".join(sorted(n.get("processes") or [])) or "Sin proceso"
+            by_group.setdefault(label, []).append(n)
+        groups = [(label, sorted(items, key=lambda n: ((n.get("official_topic") or "").lower(), n["title"].lower())))
+                  for label, items in sorted(by_group.items())]
+    return {"links": links, "groups": groups, "sources": LINK_SOURCES,
+            "study_assistant_url": config.STUDY_ASSISTANT_PUBLIC_URL.rstrip("/")}
+
+
 def _question_form(request, repo, *, question=None, values=None, errors=None, exam_id=None, msg=None,
-                   status_code=200):
+                   status_code=200, links_panel=None):
     if values is None:
         if question:
             tag = question["tags"][0] if question["tags"] else {}
@@ -77,7 +101,7 @@ def _question_form(request, repo, *, question=None, values=None, errors=None, ex
     values = values | {"options": rows[:MAX_OPTIONS]}
     return templates.TemplateResponse(request, "manage_question_form.html", {
         "question": question, "v": values, "errors": errors or [], "msg": msg,
-        "syllabi": repo.syllabi(), "exams": repo.exams(),
+        "syllabi": repo.syllabi(), "exams": repo.exams(), "lp": links_panel,
     }, status_code=status_code, headers=NO_CACHE)
 
 
@@ -110,14 +134,16 @@ def new_question(request: Request, repo: RepoDep, exam_id: str | None = None):
 
 
 @router.get("/questions/{question_id}/edit", response_class=HTMLResponse)
-def edit_question(request: Request, question_id: int, repo: RepoDep, msg: str | None = None):
+def edit_question(request: Request, question_id: int, repo: RepoDep, linking: LinkingClientDep,
+                  catalog: NotesCatalogDep, msg: str | None = None):
     question = repo.get_question(question_id)
     if question is None:
         raise HTTPException(status_code=404, detail="Pregunta no encontrada")
-    return _question_form(request, repo, question=question, msg=msg)
+    return _question_form(request, repo, question=question, msg=msg,
+                          links_panel=_links_panel(question, linking, catalog))
 
 
-def _save_question(request, repo, question_id, form_args):
+def _save_question(request, repo, question_id, form_args, links_panel=None):
     data, values = _parse_question(**form_args)
     question = repo.get_question(question_id) if question_id else None
     try:
@@ -131,7 +157,8 @@ def _save_question(request, repo, question_id, form_args):
             attempts = {o["id"]: o["n_attempts"] for o in question["options"]}
             for o in values["options"]:
                 o["n_attempts"] = attempts.get(o["id"], 0)
-        return _question_form(request, repo, question=question, values=values, errors=exc.errors, status_code=422)
+        return _question_form(request, repo, question=question, values=values, errors=exc.errors, status_code=422,
+                              links_panel=links_panel(question) if links_panel and question else None)
     return _redirect(f"/manage/questions/{saved_id}/edit", msg="Pregunta guardada.")
 
 
@@ -166,10 +193,40 @@ def create_question(request: Request, repo: RepoDep, form: FormDep):
 
 
 @router.post("/questions/{question_id}/edit", response_class=HTMLResponse)
-def update_question(request: Request, question_id: int, repo: RepoDep, form: FormDep):
+def update_question(request: Request, question_id: int, repo: RepoDep, form: FormDep, linking: LinkingClientDep,
+                    catalog: NotesCatalogDep):
     if repo.get_question(question_id) is None:
         raise HTTPException(status_code=404, detail="Pregunta no encontrada")
-    return _save_question(request, repo, question_id, form)
+    return _save_question(request, repo, question_id, form,
+                          links_panel=lambda q: _links_panel(q, linking, catalog))
+
+
+# Enlaces pregunta-apunte: los guarda linking-service; aquí solo se editan a mano.
+# Handlers síncronos porque el cliente HTTP es síncrono.
+
+@router.post("/questions/{question_id}/links/add", response_class=HTMLResponse)
+def add_question_link(question_id: int, repo: RepoDep, linking: LinkingClientDep,
+                      note_id: Annotated[str, Form()] = ""):
+    question = repo.get_question(question_id)
+    if question is None:
+        raise HTTPException(status_code=404, detail="Pregunta no encontrada")
+    note_id = note_id.strip()
+    if not note_id:
+        return _redirect(f"/manage/questions/{question_id}/edit", msg="No se ha podido enlazar: elige un apunte.")
+    syllabus_id = question["tags"][0]["syllabus_id"] if question["tags"] else "manual"
+    error = linking.add_link(question_id, note_id, syllabus_id)
+    msg = f"No se ha podido enlazar: {error}" if error else "Apunte enlazado."
+    return _redirect(f"/manage/questions/{question_id}/edit", msg=msg)
+
+
+@router.post("/questions/{question_id}/links/remove", response_class=HTMLResponse)
+def remove_question_link(question_id: int, repo: RepoDep, linking: LinkingClientDep,
+                         note_id: Annotated[str, Form()] = ""):
+    if repo.get_question(question_id) is None:
+        raise HTTPException(status_code=404, detail="Pregunta no encontrada")
+    error = linking.remove_link(question_id, note_id.strip()) if note_id.strip() else "falta el apunte."
+    msg = f"No se ha podido quitar el enlace: {error}" if error else "Enlace quitado."
+    return _redirect(f"/manage/questions/{question_id}/edit", msg=msg)
 
 
 @router.post("/questions/{question_id}/delete", response_class=HTMLResponse)

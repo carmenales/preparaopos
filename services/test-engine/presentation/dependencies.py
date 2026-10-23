@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from config import SQLITE_PATH
 from infrastructure.clients.linking_client import LinkingClient
+from infrastructure.clients.notes_catalog_client import NotesCatalogClient
 from infrastructure.db.engine import create_sqlite_engine
 from infrastructure.db.repositories.exam_repository import ExamRepository
 from infrastructure.db.repositories.question_repository import QuestionRepository
@@ -74,4 +75,12 @@ def get_linking_client() -> LinkingClient:
 
 
 LinkingClientDep = Annotated[LinkingClient, Depends(get_linking_client)]
+
+
+@lru_cache(maxsize=1)
+def get_notes_catalog_client() -> NotesCatalogClient:
+    return NotesCatalogClient()
+
+
+NotesCatalogDep = Annotated[NotesCatalogClient, Depends(get_notes_catalog_client)]
 

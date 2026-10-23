@@ -189,3 +189,25 @@ def test_generator_urls_are_prefixed_behind_gateway(client, monkeypatch):
     assert unprefixed == []
     res = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "count": "10", "mode": "practice"})
     assert res.headers["location"].startswith("/tests/sessions/")
+
+
+# --- Aviso cuando hay menos preguntas de las pedidas --------------------------------
+
+def test_count_fragment_warns_when_fewer_than_requested(client):
+    params = {"syllabus_id": "age-gsi-official", "scope": "I|9"}
+    available = int(re.search(r"<strong>(\d+)</strong>", client.get("/generator/count", params=params).text).group(1))
+    warned = client.get("/generator/count", params=params | {"count": str(available + 5)}).text
+    assert f"has pedido {available + 5}, pero solo hay {available}" in warned
+    assert "has pedido" not in client.get("/generator/count", params=params | {"count": str(available)}).text
+    assert "ninguna cumple" in client.get("/generator/count", params={"syllabus_id": "age-gsi-official",
+                                                                       "year": "1999"}).text
+
+
+def test_short_test_shows_n_of_requested_on_first_question(client):
+    res = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "scope": "I|9", "count": "200",
+                                           "mode": "practice"})
+    assert res.headers["location"].endswith("/question/1?requested=200")
+    page = client.get(res.headers["location"]).text
+    assert "pedidas" in page and "de 200 pedidas" in page
+    full = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "count": "10", "mode": "practice"})
+    assert "requested" not in full.headers["location"]

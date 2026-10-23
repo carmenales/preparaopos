@@ -5,7 +5,7 @@
 <section class="manage">
   <p><a href="{{ url('/manage/questions/') }}">← Preguntas</a></p>
   <h1>{{ "Editar pregunta " ~ question.id if question else "Nueva pregunta" }}</h1>
-  {% if msg %}<p class="alert {% if 'No se puede' in msg or 'anúlala' in msg %}alert--error{% else %}alert--ok{% endif %}" role="status">{{ msg }}</p>{% endif %}
+  {% if msg %}<p class="alert {% if 'No se puede' in msg or 'No se ha podido' in msg or 'anúlala' in msg %}alert--error{% else %}alert--ok{% endif %}" role="status">{{ msg }}</p>{% endif %}
   {% if errors %}
   <div class="alert alert--error" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
   {% endif %}
@@ -71,6 +71,55 @@
 
     <div class="generator__actions"><button type="submit" class="btn btn--primary">Guardar</button></div>
   </form>
+
+  {% if question and lp %}
+  <section class="manage__links-panel" id="enlaces" aria-labelledby="enlaces-titulo">
+    <h2 id="enlaces-titulo">Apuntes enlazados</h2>
+    <p class="field__hint">Son los apuntes que se ofrecen al corregir esta pregunta. Los automáticos pueden estar mal:
+      quita los que no tengan sentido y añade los que falten. Lo que quites no vuelve a aparecer aunque se recalculen los enlaces.
+      Cambiar el bloque o el tema de arriba no cambia estos enlaces.</p>
+    {% if lp.links is none %}
+    <p class="alert alert--error" role="status">linking-service no responde: ahora no se pueden ver ni editar los enlaces.</p>
+    {% else %}
+      {% if lp.links %}
+      <ul class="link-list">
+        {% for l in lp.links %}
+        <li class="link-list__item">
+          <span>
+            <a href="{{ lp.study_assistant_url }}/notes/{{ l.note_id }}" target="_blank" rel="noopener">{{ l.title or l.note_id }}</a>
+            {% if l.official_topic %}<small class="field__hint">{{ l.official_topic }}</small>{% endif %}
+            <small class="field__hint">· {{ lp.sources.get(l.source, l.source or "automático") }}{% if l.source != 'manual' and l.confidence is not none %} ({{ (l.confidence * 100)|round|int }} %){% endif %}</small>
+          </span>
+          <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/links/remove') }}">
+            <input type="hidden" name="note_id" value="{{ l.note_id }}">
+            <button type="submit" class="btn btn--small">Quitar</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No tiene apuntes enlazados.</p>
+      {% endif %}
+
+      {% if lp.groups is none %}
+      <p class="alert alert--error" role="status">study-assistant no responde: no se puede cargar la lista de apuntes para añadir uno.</p>
+      {% elif lp.groups %}
+      <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/links/add') }}" class="link-add">
+        <label for="note_id">Enlazar otro apunte</label>
+        <select id="note_id" name="note_id" required>
+          <option value="">Elige un apunte…</option>
+          {% for label, notes in lp.groups %}
+          <optgroup label="{{ label }}">
+            {% for n in notes %}<option value="{{ n.id }}">{% if n.official_topic %}{{ n.official_topic }} — {% endif %}{{ n.title }}</option>{% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn--primary btn--small">Enlazar</button>
+      </form>
+      {% endif %}
+    {% endif %}
+  </section>
+  {% endif %}
 
   {% if question %}
   <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/delete') }}" class="manage__danger"

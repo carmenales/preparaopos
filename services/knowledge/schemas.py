@@ -157,6 +157,8 @@ class PublishNoteRequest(BaseModel):
     status: str = Field(default="revisado")
     source: str = Field(default="cetic")
     custom_filename: str | None = Field(default=None)
+    ai_cleaned: bool = Field(default=False, description="True solo si el texto se ha refinado con IA (Ollama)")
+    needs_human_review: bool = Field(default=False, description="Lo marca el usuario al publicar")
 
 
 class PublishNoteResponse(BaseModel):

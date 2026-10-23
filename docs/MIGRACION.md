@@ -36,14 +36,19 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 - Ayto. Madrid: el SQL `_fixed` corrige tres textos frente a `review_questions.csv` (RD 193/2023, WCAG 2.2 2023 y 2.1 actualizada en 2025). Se importa el texto del SQL.
 
 ### Pendientes detectados al probar el generador (2026-10-19)
-1. **Pie de página del PDF en opciones de GSI 2024:** 9 opciones terminan en «2024 - GSI-L Página N de 10» (siempre el mismo patrón y solo en esa fuente). Limpiar en la BD, en `import_age_gsi_2024.py` y en el JSON del examen.
-2. **Enlaces pregunta→apunte:** hoy significan «apuntes del mismo tema oficial» (clasificación semántica revisada a mano → todos los apuntes de ese tema; confianza 1,0 si hay uno y 0,8 si hay varios), no «el apunte contiene la respuesta». Solo existen para GSI 2024 (118 enlaces, 100 preguntas, 51 apuntes). Primero, etiquetarlos en la interfaz como «Apuntes del tema». Después, enlace a nivel de sección: fragmento más parecido por embeddings, ancla al apartado y aviso de «sin cobertura en tus apuntes» por debajo de un umbral.
-3. **Generador: menos preguntas de las pedidas sin avisar** (se pidieron 10 y salieron 6). Avisar o limitar el número al disponible antes de crear el test y mostrar «N de M pedidas» en la sesión.
+1. ✅ **Pie de página del PDF en opciones de GSI 2024** (corregido en `feature/migration-fixes`: lo limpia `import_age_gsi_2024.py` y `scripts/etl/clean_gsi_pdf_footer.py` repara la BD; los originales de `imports/` se conservan tal cual): 9 opciones terminan en «2024 - GSI-L Página N de 10» (siempre el mismo patrón y solo en esa fuente). Limpiar en la BD, en `import_age_gsi_2024.py` y en el JSON del examen.
+2. ✅ **Enlaces pregunta→apunte** (en `feature/migration-fixes`, como decidió Carmen: no se cambia el significado, se pueden **editar a mano** desde la ficha de la pregunta: quitar los que no tengan sentido y añadir uno o varios apuntes; lo quitado no lo recrea la resolución automática). Contexto: hoy significan «apuntes del mismo tema oficial» (clasificación semántica revisada a mano → todos los apuntes de ese tema; confianza 1,0 si hay uno y 0,8 si hay varios), no «el apunte contiene la respuesta». Solo existen para GSI 2024 (118 enlaces, 100 preguntas, 51 apuntes). Primero, etiquetarlos en la interfaz como «Apuntes del tema». Después, enlace a nivel de sección: fragmento más parecido por embeddings, ancla al apartado y aviso de «sin cobertura en tus apuntes» por debajo de un umbral.
+3. ✅ **Generador: menos preguntas de las pedidas sin avisar** (corregido: el recuento avisa antes de crear el test y la primera pregunta muestra «N de M pedidas») (se pidieron 10 y salieron 6). Avisar o limitar el número al disponible antes de crear el test y mostrar «N de M pedidas» en la sesión.
 5. ✅ **Regla de puntuación por defecto sobre 100** (corregido: ahora sobre 10): `DEFAULT_AGE_SCORING_RULE` (`domain/sessions/service.py`) tiene `score_scale = 100`, pero la hoja de resultados pinta «/ 10». Afecta a cualquier sesión sin regla propia (p. ej. Majadahonda). Aún no hay ninguna sesión cerrada con ella.
 6. ✅ **1.147 preguntas de TAI sin etiqueta de temario** (corregido: el importador etiqueta siempre y `scripts/etl/fix_tai_syllabus_tags.py` repara la BD existente): `import_tai_mariadb.py` solo etiqueta las que tienen bloque y tema, y el generador busca por etiqueta, así que esas preguntas no aparecen ni en «todo el temario» ni en el refuerzo (TAI muestra 184 preguntas y 7 falladas en vez de 1.331 y 48). Las demás fuentes crean la etiqueta con bloque y tema vacíos.
-7. **knowledge-service escribe siempre `ai_cleaned: true` y `needs_human_review: false`** en el frontmatter, aunque el apunte no se haya refinado y se publique como borrador.
+7. ✅ (corregido: `ai_cleaned` solo tras refinar con IA; `needs_human_review` lo marca el usuario al publicar) **knowledge-service escribía siempre `ai_cleaned: true` y `needs_human_review: false`** en el frontmatter, aunque el apunte no se haya refinado y se publique como borrador.
 8. **La ingesta no extrae las imágenes del PDF** (igual que la versión PHP): hay que añadirlas a mano al apunte.
 4. **UX de test-engine escasa:** el rediseño ya estaba en el backlog y sube de prioridad (formularios, recuento visible, navegación de la sesión).
+
+### Decisiones pendientes de implementar (Carmen, 2026-10-19)
+- **Orden de los apuntes** en study-assistant: hoy se ordena por el texto de `official_topic`, que mezcla formatos («I.05_Estructura», «Tema I.05 …», «ESQUEMA NACIONAL DE SEGURIDAD»). Decidido: interpretar bloque/tema/subparte para que «I.05» y «Tema I.05» ocupen el mismo lugar; los apuntes sin numeración (ENS, Agenda 2030…) al final, en orden alfabético. Queda abierto agrupar por bloques con etiquetas o un campo propio.
+- **Borrar apuntes** (no existía tampoco en la versión PHP): prioridad borrar; archivar solo como opción adicional, no en su lugar. Lo hará knowledge-service (es quien escribe en `knowledge/`), con confirmación y aviso si el apunte tiene preguntas enlazadas.
+- Rama prevista: `feature/notes-order-and-archive`.
 
 ## 2. Funcionalidad
 
@@ -97,5 +102,5 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 - [ ] Cada página de §2 marcada ❌ tiene equivalente o se decide explícitamente no migrarla.
 - [ ] Simulacro completo hecho a mano por :8080 sin incidencias.
 - [ ] Una semana de uso real sin volver a las apps PHP.
-- [ ] Se retiran de `docker-compose.yml` `preparadortai-web`, `studyassistant-web`, MariaDB y phpMyAdmin, con un volcado final de MariaDB guardado en `backups/`.
+- [ ] Solo cuando todo lo anterior esté validado (decisión de Carmen: no antes), se retiran de `docker-compose.yml` `preparadortai-web`, `studyassistant-web`, MariaDB y phpMyAdmin, con un volcado final de MariaDB guardado en `backups/`.
 - [ ] Etiqueta `v1.0.0`.
