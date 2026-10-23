@@ -134,6 +134,9 @@
                         </dd>
                     {% endif %}
                 </dl>
+                <p class="note-delete-link">
+                    <a href="/notes/{{ note.id | urlencode }}/delete?path={{ note.path | urlencode }}">🗑️ Borrar apunte</a>
+                </p>
             </div>
         </aside>
 
