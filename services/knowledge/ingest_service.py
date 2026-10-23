@@ -26,7 +26,7 @@ from markdown_normalizer import (
 )
 from ollama_client import OllamaClient, OllamaClientError
 from pdf_extractor import ExtractedDocument, PdfExtractor
-from schemas import PublishNoteRequest, PublishNoteResponse
+from schemas import DeleteNoteResponse, PublishNoteRequest, PublishNoteResponse
 from text_utils import slugify
 
 try:
@@ -199,19 +199,8 @@ class IngestService:
         full_content = "\n".join(frontmatter_lines) + "\n\n" + clean_body + "\n"
         target_file.write_text(full_content, encoding="utf-8")
 
-        # Reconstruir índice si el indexador está disponible
-        index_rebuilt = False
         warnings: list[str] = []
-
-        if build_index is not None:
-            try:
-                index_output = Path(settings.index_output_path).resolve()
-                build_index(knowledge_root, index_output)
-                index_rebuilt = True
-            except Exception as exc:
-                warnings.append(f"No se pudo regenerar el índice automáticamente: {exc}")
-        else:
-            warnings.append("build_index no disponible para regenerar knowledge_index.json.")
+        index_rebuilt = _rebuild_index(knowledge_root, warnings)
 
         # Ruta relativa al repo
         repo_root = knowledge_root.parent
@@ -231,3 +220,40 @@ class IngestService:
             note_url=note_url,
             warnings=warnings,
         )
+
+    def delete_note(self, note_path: str) -> DeleteNoteResponse:
+        """Borra definitivamente el fichero .md de un apunte y regenera knowledge_index.json.
+
+        note_path es la ruta del índice, relativa a la raíz del repo («knowledge/processes/…/x.md»).
+        Se borra por ruta y no por id porque hay ids repetidos en el índice. No toca las imágenes:
+        pueden estar compartidas con otros apuntes de la misma carpeta.
+        """
+        knowledge_root = Path(settings.knowledge_dir).resolve()
+        target = (knowledge_root.parent / note_path.strip().lstrip("/\\")).resolve()
+        try:
+            rel_to_knowledge = target.relative_to(knowledge_root)
+        except ValueError as exc:
+            raise ValueError("La ruta no está dentro de la base de conocimiento.") from exc
+        if target.suffix.lower() != ".md" or not rel_to_knowledge.parts:
+            raise ValueError("Solo se pueden borrar ficheros .md de apuntes.")
+        if not target.is_file():
+            raise FileNotFoundError(f"No existe el apunte {note_path}")
+
+        target.unlink()
+        warnings: list[str] = []
+        index_rebuilt = _rebuild_index(knowledge_root, warnings)
+        rel_path = str(target.relative_to(knowledge_root.parent)).replace("\\", "/")
+        return DeleteNoteResponse(success=True, file_path=rel_path, index_rebuilt=index_rebuilt, warnings=warnings)
+
+
+def _rebuild_index(knowledge_root: Path, warnings: list[str]) -> bool:
+    """Regenera knowledge_index.json si el indexador está disponible; anota el fallo en warnings."""
+    if build_index is None:
+        warnings.append("build_index no disponible para regenerar knowledge_index.json.")
+        return False
+    try:
+        build_index(knowledge_root, Path(settings.index_output_path).resolve())
+        return True
+    except Exception as exc:
+        warnings.append(f"No se pudo regenerar el índice automáticamente: {exc}")
+        return False
