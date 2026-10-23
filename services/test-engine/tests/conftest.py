@@ -48,5 +48,25 @@ def _guard_real_database():
     yield
 
 
+# Sin la BD real (no está en git: CI o un clon limpio) se saltan los tests que la usan: los que
+# piden alguno de estos fixtures (también de forma indirecta) o llevan @pytest.mark.real_db.
+# Los demás se ejecutan igual.
+DB_FIXTURES = {"client", "db", "db_session", "session_service", "svc"}
+NO_REAL_DB = "Necesita la BD real de test-engine (data/test_engine.sqlite, no versionada)"
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "real_db: el test necesita la BD real de test-engine")
+
+
+def pytest_collection_modifyitems(config, items):
+    if REAL_DB.exists():
+        return
+    skip = pytest.mark.skip(reason=NO_REAL_DB)
+    for item in items:
+        if DB_FIXTURES & set(getattr(item, "fixturenames", ())) or item.get_closest_marker("real_db"):
+            item.add_marker(skip)
+
+
 def pytest_sessionfinish(session, exitstatus):
     shutil.rmtree(_TMP_DIR, ignore_errors=True)

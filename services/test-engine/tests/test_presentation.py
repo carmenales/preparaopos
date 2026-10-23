@@ -310,6 +310,7 @@ def test_cross_navigation_graceful_degradation_when_linking_offline(client):
         app.dependency_overrides.pop(get_linking_client, None)
 
 
+@pytest.mark.real_db
 def test_root_path_prefix_guardian(monkeypatch):
     """Test guardián: renderizar cada página con ROOT_PATH=/tests y comprobar por regex que no queda ninguna URL interna sin el prefijo."""
     import config
