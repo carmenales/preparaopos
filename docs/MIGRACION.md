@@ -46,9 +46,8 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 4. **UX de test-engine escasa:** el rediseño ya estaba en el backlog y sube de prioridad (formularios, recuento visible, navegación de la sesión).
 
 ### Decisiones pendientes de implementar (Carmen, 2026-10-19)
-- **Orden de los apuntes** en study-assistant: hoy se ordena por el texto de `official_topic`, que mezcla formatos («I.05_Estructura», «Tema I.05 …», «ESQUEMA NACIONAL DE SEGURIDAD»). Decidido: interpretar bloque/tema/subparte para que «I.05» y «Tema I.05» ocupen el mismo lugar; los apuntes sin numeración (ENS, Agenda 2030…) al final, en orden alfabético. Queda abierto agrupar por bloques con etiquetas o un campo propio.
-- **Borrar apuntes** (no existía tampoco en la versión PHP): prioridad borrar; archivar solo como opción adicional, no en su lugar. Lo hará knowledge-service (es quien escribe en `knowledge/`), con confirmación y aviso si el apunte tiene preguntas enlazadas.
-- Rama prevista: `feature/notes-order-and-archive`.
+- ✅ **Orden de los apuntes** (hecho en `feature/notes-order-and-archive`; los temas de cada perfil de Comunidad de Madrid van seguidos, donde empieza su numeración) en study-assistant: se ordenaba por el texto de `official_topic`, que mezcla formatos («I.05_Estructura», «Tema I.05 …», «ESQUEMA NACIONAL DE SEGURIDAD»). Decidido: interpretar bloque/tema/subparte para que «I.05» y «Tema I.05» ocupen el mismo lugar; los apuntes sin numeración (ENS, Agenda 2030…) al final, en orden alfabético. Queda abierto agrupar por bloques con etiquetas o un campo propio.
+- ✅ **Borrar apuntes** (hecho en `feature/notes-order-and-archive`; no existía tampoco en la versión PHP). **Sin archivado** (Carmen, 2026-10-23: archivar acabaría en acumular apuntes que nunca se borran): se pide confirmación y se borra. Lo hará knowledge-service (es quien escribe en `knowledge/`), con confirmación y aviso si el apunte tiene preguntas enlazadas.
 
 ## 2. Funcionalidad
 

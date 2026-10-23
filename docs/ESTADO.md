@@ -77,6 +77,14 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - **Frontmatter de la ingesta**: `ai_cleaned` solo es `true` si el texto se ha refinado con Ollama, y `needs_human_review` lo marca el usuario con una casilla al publicar (antes eran siempre `true` y `false`).
 - Tests: test-engine 68, linking-service 7, study-assistant 14 y `tests/test_ingest_service.py`. Probado también de extremo a extremo con linking-service real.
 
+## Orden y borrado de apuntes (rama `feature/notes-order-and-archive`)
+- **Orden**: `sort_by_topic` (study-assistant `domain/notes/service.py`) interpreta bloque, tema y subparte del tema oficial o, si no se puede, del id: «I.05_Estructura» y «Tema I.05 …» ocupan el mismo sitio, «I.06.I» va antes que «I.06.II» y «Tema 10» después de «Tema 9». Los temas de un perfil (`p01`, `p04`…) van seguidos y se colocan donde empieza su numeración. Los apuntes sin numeración van al final, en orden alfabético. Lo usan el catálogo, la navegación anterior/siguiente y la posición «N de M».
+- **Borrar** (sin archivado, decisión de Carmen): «🗑️ Borrar apunte» en el visor → página de confirmación (borrado definitivo, preguntas enlazadas, ids repetidos) → knowledge-service `POST /notes/delete` borra el `.md` (solo dentro de `knowledge/`) y regenera el índice → study-assistant recarga el índice y linking-service `DELETE /links/by-note/{id}` borra sus enlaces. Se identifica por id **y ruta**, porque hay un id repetido (`cm-ad-innovacion-y-transformacion-digital-tema-016`, ficheros `tema-016-…-ia.md` y `tema-016-…-ia-ampliado.md`); si queda otro apunte con el mismo id, sus enlaces no se tocan. Las imágenes no se borran (pueden ser compartidas).
+- Si knowledge-service no responde, no se borra nada; si no responde linking-service, se borra el apunte y se avisa de que sus enlaces quedan.
+- Tests: study-assistant 25, linking-service 8, `tests/test_ingest_service.py` 19. Probado también de extremo a extremo con knowledge-service y linking-service reales sobre una copia de `knowledge/`.
+- ⚠️ **`knowledge/processes/age/a2-gsi/apuntes/` (65 apuntes) no está en git**, igual que otras carpetas de apuntes: borrar uno de ellos no tiene vuelta atrás.
+- ⚠️ El `knowledge_index.json` actual (2026-10-19) incluye `Introducción.md` y `agenda 2030.md`, que ya no existen en disco. La próxima publicación o el próximo borrado regeneran el índice y desaparecen del catálogo (114 apuntes en vez de 116).
+
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
 - La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
