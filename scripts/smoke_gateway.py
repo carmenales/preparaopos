@@ -19,8 +19,16 @@ Comprueba a través del puerto público :8080:
      - Botón de práctica en la nota apuntando a /tests/practice/by-note/...
   8. Comprobación de página de error 50x cuando un upstream no responde.
 
+Antes de empezar espera (por defecto hasta 30 s) a que el gateway, Study Assistant y
+Test Engine respondan: justo después de un `docker compose up` los contenedores tardan
+unos segundos en aceptar peticiones y Nginx devuelve 502.
+
+Al terminar borra las sesiones que ha creado (simulacro y práctica por apunte), para no
+ensuciar el historial, las estadísticas ni el refuerzo de falladas. Con --keep-sessions
+se conservan (para depurar).
+
 Uso:
-  python scripts/smoke_gateway.py [--gateway-url http://localhost:8080]
+  python scripts/smoke_gateway.py [--gateway-url http://localhost:8080] [--wait 30] [--keep-sessions]
 """
 
 from __future__ import annotations
@@ -28,7 +36,46 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import time
 import httpx
+
+NOT_READY = {502, 503, 504}
+
+
+def wait_until_ready(client: httpx.Client, base_url: str, timeout: float) -> list[str]:
+    """Espera a que /healthz, / y /tests/ dejen de dar 502/503/504. Devuelve las que siguen sin responder."""
+    paths = ["/healthz", "/", "/tests/"]
+    deadline = time.monotonic() + timeout
+    while True:
+        pending = []
+        for path in paths:
+            try:
+                if client.get(f"{base_url}{path}").status_code in NOT_READY:
+                    pending.append(path)
+            except httpx.HTTPError:
+                pending.append(path)
+        if not pending or time.monotonic() >= deadline:
+            return pending
+        time.sleep(1)
+
+
+def delete_sessions(client: httpx.Client, base_url: str, session_ids: list[str]) -> list[str]:
+    """Borra las sesiones creadas por el smoke test con el borrado del historial y comprueba
+    que ya no aparecen en él. Devuelve los errores."""
+    errors = []
+    for sid in session_ids:
+        try:
+            r = client.post(f"{base_url}/tests/history/{sid}/delete")
+            if r.status_code != 303:
+                errors.append(f"No se pudo borrar la sesión de prueba {sid} (status {r.status_code})")
+        except Exception as e:
+            errors.append(f"No se pudo borrar la sesión de prueba {sid}: {e}")
+    try:
+        history = client.get(f"{base_url}/tests/history/").text
+        errors += [f"La sesión de prueba {sid} sigue en el historial" for sid in session_ids if sid in history]
+    except Exception as e:
+        errors.append(f"No se pudo comprobar el historial tras la limpieza: {e}")
+    return errors
 
 
 def log_step(name: str) -> None:
@@ -43,12 +90,18 @@ def log_err(msg: str) -> None:
     print(f"  [FAIL] {msg}")
 
 
-def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
+def run_smoke_tests(base_url: str = "http://localhost:8080", wait: float = 30.0, keep_sessions: bool = False) -> bool:
     base_url = base_url.rstrip("/")
     print(f"Iniciando verificación contra Gateway en {base_url}...")
     errors: list[str] = []
+    created_sessions: list[str] = []
 
     client = httpx.Client(timeout=10.0, follow_redirects=False)
+
+    if wait > 0:
+        pending = wait_until_ready(client, base_url, wait)
+        if pending:
+            print(f"  [AVISO] Tras {wait:.0f} s siguen sin responder: {', '.join(pending)}")
 
     # -------------------------------------------------------------------------
     # 1. Healthcheck del propio Gateway
@@ -154,6 +207,7 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
             loc = r_start.headers.get("location", "")
             if "/tests/sessions/" in loc and "/question/1" in loc:
                 session_id = loc.split("/sessions/")[1].split("/")[0]
+                created_sessions.append(session_id)
                 log_ok(f"Sesión creada correctamente ({session_id}) con salto 303 prefijado")
             else:
                 errors.append(f"Salto 303 sin prefijo correcto: {loc}")
@@ -202,6 +256,9 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
         # A) Study Assistant -> Test Engine (Práctica por apunte)
         client_follow = httpx.Client(timeout=10.0, follow_redirects=True)
         r_cross = client_follow.post(f"{base_url}/tests/sessions/practice/by-note/tema-i-01-derecho-constitucional")
+        match = re.search(r"/tests/sessions/([0-9a-f]{32})/", str(r_cross.url))
+        if match:
+            created_sessions.append(match.group(1))
         if r_cross.status_code == 200 and "/tests/sessions/" in str(r_cross.url) and "/question/1" in str(r_cross.url):
             log_ok("Navegación cruzada SA -> TE resolvió con éxito cadena 303 -> 200 en /tests/sessions/.../question/1")
         else:
@@ -226,6 +283,22 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
         log_err(errors[-1])
 
     # -------------------------------------------------------------------------
+    # 7. Limpieza: borrar las sesiones de prueba
+    # -------------------------------------------------------------------------
+    log_step("7. Limpieza de las sesiones de prueba")
+    if keep_sessions:
+        log_ok(f"Se conservan {len(created_sessions)} sesiones de prueba (--keep-sessions): {', '.join(created_sessions)}")
+    elif created_sessions:
+        cleanup_errors = delete_sessions(client, base_url, created_sessions)
+        for err in cleanup_errors:
+            errors.append(err)
+            log_err(err)
+        if not cleanup_errors:
+            log_ok(f"Borradas las {len(created_sessions)} sesiones creadas por el smoke test")
+    else:
+        log_ok("No se ha creado ninguna sesión")
+
+    # -------------------------------------------------------------------------
     # Resumen final
     # -------------------------------------------------------------------------
     print("\n" + "=" * 60)
@@ -242,7 +315,11 @@ def run_smoke_tests(base_url: str = "http://localhost:8080") -> bool:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Smoke test para el Gateway Nginx de PreparaOpos")
     parser.add_argument("--gateway-url", default="http://localhost:8080", help="URL base del gateway (por defecto http://localhost:8080)")
+    parser.add_argument("--wait", type=float, default=30.0,
+                        help="Segundos máximos de espera a que respondan los servicios (0 = no esperar)")
+    parser.add_argument("--keep-sessions", action="store_true",
+                        help="No borrar al final las sesiones creadas por el smoke test")
     args = parser.parse_args()
 
-    success = run_smoke_tests(args.gateway_url)
+    success = run_smoke_tests(args.gateway_url, wait=args.wait, keep_sessions=args.keep_sessions)
     sys.exit(0 if success else 1)
