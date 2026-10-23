@@ -109,12 +109,14 @@ from presentation.routes.notes import router as notes_router
 from presentation.routes.search import router as search_router
 from presentation.routes.assets import router as assets_router
 from presentation.routes.ingest import router as ingest_router
+from presentation.routes.note_delete import router as note_delete_router
 
 app.include_router(dashboard_router)
 app.include_router(notes_router)
 app.include_router(search_router)
 app.include_router(assets_router)
 app.include_router(ingest_router)
+app.include_router(note_delete_router)
 
 
 @app.get("/health")
