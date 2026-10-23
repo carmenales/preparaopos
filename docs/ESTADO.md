@@ -13,15 +13,16 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - `engine.py`: el fallo o la discrepancia de `journal_mode` se registra como WARNING con el modo pedido y el efectivo.
 - Enlaces entre servicios en la barra superior: ya no se escriben a mano (`/` y `/tests/`); salen de `STUDY_ASSISTANT_PUBLIC_URL` y `TEST_ENGINE_PUBLIC_URL`. Antes, test-engine ejecutándose solo en :8096 enviaba «Volver a Apuntes» a su propio catálogo.
 - `.gitattributes` (LF) y `*.sqlite-journal` en `.gitignore`.
-- `scripts/backup_test_engine.py` (API de backup, `integrity_check`, retención 14, en `backups/`, ignorada por git) y `scripts/purge_test_sessions.py` (simulación por defecto, `--before`, copia previa obligatoria).
+- `scripts/backup_test_engine.py` (API de backup, `integrity_check`, retención 14, en `backups/`, ignorada por git) y `scripts/purge_test_sessions.py` (simulación por defecto, solo sesiones del smoke test salvo `--all`, `--before`, copia previa obligatoria).
 
 ## Antes de mergear a `develop`
 1. ~~Smoke del gateway~~: OK al 100 % el 2026-10-19. Ojo: los pasos 5 y 6 crean sesiones reales en la BD.
-2. Purgar las sesiones creadas por tests y por el smoke: `docker compose stop test-engine` → `python scripts/purge_test_sessions.py --apply` → `docker compose start test-engine`. La purga hace antes una copia verificada en `backups/test-engine/`.
+2. Purgar las sesiones que dejaron smoke tests antiguos: `docker compose stop test-engine` → `python scripts/purge_test_sessions.py --apply` → `docker compose start test-engine`. Por defecto solo selecciona las del smoke test (no toca el historial importado ni el uso real) y hace antes una copia verificada en `backups/test-engine/`.
 
 ## Pendiente menor
 - `docker-compose.dev.yml` está vacío (0 bytes): rellenar u eliminar.
-- Smoke test: marcar sus sesiones (p. ej. `source_ref='smoke'`) o limpiarlas al terminar, para que no se mezclen con el uso real.
+- ✅ Smoke test: ya borra al terminar las sesiones que crea (rama `feature/smoke-cleanup`).
+- `GET /sessions/{id}/result` de una sesión que no existe devuelve 500 en vez de 404.
 - Ficheros sueltos: `ultimos_commits.txt`, `…/02_Metodologia_Proyecto copy.md`.
 - Untracked de `knowledge/` (a1-sti, a2-gsi/apuntes, mapping, majadahonda, p06): decidir qué se versiona (el repo es privado).
 
@@ -84,6 +85,13 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Tests: study-assistant 25, linking-service 8, `tests/test_ingest_service.py` 19. Probado también de extremo a extremo con knowledge-service y linking-service reales sobre una copia de `knowledge/`.
 - ⚠️ **`knowledge/processes/age/a2-gsi/apuntes/` (65 apuntes) no está en git**, igual que otras carpetas de apuntes: borrar uno de ellos no tiene vuelta atrás.
 - ⚠️ El `knowledge_index.json` actual (2026-10-19) incluye `Introducción.md` y `agenda 2030.md`, que ya no existen en disco. La próxima publicación o el próximo borrado regeneran el índice y desaparecen del catálogo (114 apuntes en vez de 116).
+
+## Limpieza del smoke test (rama `feature/smoke-cleanup`)
+- `scripts/smoke_gateway.py` espera hasta 30 s (`--wait`) a que `/healthz`, `/` y `/tests/` dejen de dar 502/503/504: justo tras un `docker compose up` test-engine tarda unos segundos en aceptar peticiones.
+- Al terminar borra sus dos sesiones (simulacro y práctica por apunte) con el borrado del historial (`POST /tests/history/{id}/delete`) y comprueba que ya no aparecen; `--keep-sessions` las conserva para depurar. Ya no alimenta el historial, las estadísticas ni el refuerzo de falladas.
+- `scripts/purge_test_sessions.py` borraba **todas** las sesiones (también las 11 importadas de preparadortai). Ahora por defecto solo selecciona las del smoke test: simulacro del examen 53 con como mucho una respuesta más la práctica sin respuestas de `tema-i-01-derecho-constitucional` en los 10 s siguientes. `--all` para todas. Fija los ids antes de borrar (si no, SQLite reevalúa el emparejamiento durante el `DELETE` y deja las prácticas).
+- En la BD actual selecciona 30 sesiones (15 pares, 15 respuestas) y deja las 11 de preparadortai (332 respuestas) y los 2 tests generados (comprobado sobre una copia).
+- Tests: `tests/test_purge_test_sessions.py` (unittest). Smoke probado contra los servicios reales detrás de un proxy local, arrancando test-engine 5 s más tarde.
 
 ## CI (fuera de alcance; anotado)
 - `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
