@@ -95,6 +95,10 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 5. ✅ **Gestión de preguntas**: alta, edición y anulación (sustituye a `gestionar`, `agregar`, `editar` y `categorias`).
 6. ✅ **Asistente de ingesta** en study-assistant (sustituye a `ingest.php`).
 7. ✅ **Historial de MariaDB**: 332 intentos reales de junio y julio (ver §1).
+8. **Pantalla de test al nivel de PreparaTIC V3 y preparadortai** (añadido el 2026-10-24 al probarla Carmen: no es estética, es funcionalidad que tenían las dos apps):
+   - ✅ `feature/test-screen`: todas las preguntas en una página; responder pulsando la opción y desmarcar volviendo a pulsarla (sin opción «en blanco»); «Ver respuesta» que no cuenta; marcador «dudosa» y filtro para repasarlas; «Corregir» en cualquier momento; corregir al responder o al final, cambiable a mitad; nota en vivo; retomar desde el historial.
+   - `feature/test-timer`: cronómetro pausable (empezar, pausar, ocultar, reiniciar) y aviso de fin de tiempo con «Un poquito más» / «Corregir».
+   - `feature/stats-parity`: estadísticas de preparadortai (progreso por examen con mejor nota, última y tendencia; preguntas problemáticas con prioridad) y gráficos de evolución.
 
 ## 4. Criterios para dar la migración por terminada
 - [ ] Todas las preguntas de §1 están en test-engine, con su origen, año y anuladas.
