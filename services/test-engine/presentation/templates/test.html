@@ -7,35 +7,80 @@
   <p class="alert alert--warning" role="status">Has pedido {{ requested }} preguntas, pero solo hay {{ total }} con esos filtros: este test tiene {{ total }} de {{ requested }} pedidas.</p>
   {% endif %}
 
-  {# ── Barra fija: modo, tiempo, marcador, corregir ─────────────────────── #}
+  {# ── Barra fija, como la de PreparaTIC: tiempo, Empezar/Pausar, Ocultar, Detener, Corregir, Filtrar ── #}
   <div class="test-bar">
     <div class="test-bar__row">
-      <strong class="test-bar__title">{{ mode_label }} · {{ total }} preguntas</strong>
-      {# Cronómetro pausable (como PreparaTIC). El estado vive en el servidor: sobrevive a recargar la página. #}
+      <strong class="test-bar__title">{{ mode_label }} · {{ shown }}{% if shown != total %} de {{ total }}{% endif %} preguntas</strong>
+      {# El estado del cronómetro vive en el servidor: sobrevive a recargar la página. No arranca solo. #}
       <div class="timer-box" id="timer" data-limit="{{ timer.limit }}" data-elapsed="{{ timer.elapsed }}"
            data-running="{{ 'true' if timer.running else 'false' }}" data-url="{{ url('/sessions/' ~ session.id ~ '/timer') }}"
            data-session="{{ session.id }}">
         <span class="timer" id="timer-display" title="Tiempo restante">--:--:--</span>
-        <button type="button" class="tool" id="timer-toggle">{{ "⏸ Pausar" if timer.running else "▶ Empezar" }}</button>
-        <button type="button" class="tool" id="timer-hide" title="Ocultar o mostrar el tiempo">🙈</button>
-        <button type="button" class="tool" id="timer-reset" title="Volver a poner el cronómetro a cero">↺</button>
       </div>
-      <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/feedback-mode') }}" class="test-bar__switch">
-        <label><input type="checkbox" name="instant" value="1" onchange="this.form.submit()" {% if session.feedback_now %}checked{% endif %}>
-          Corregir al responder</label>
-        <noscript><button type="submit" class="btn btn--ghost btn--small">Aplicar</button></noscript>
-      </form>
+    </div>
+    <div class="test-bar__buttons">
+      <button type="button" class="btn btn--small {{ 'btn--pause' if timer.running else 'btn--start' }}" id="timer-toggle">{{ "⏸ Pausar" if timer.running else "▶ Empezar" }}</button>
+      <button type="button" class="btn btn--small btn--ghost" id="timer-hide">Ocultar Tiempo</button>
+      <button type="button" class="btn btn--small btn--stop" id="timer-reset" title="Vuelve a poner el tiempo entero y lo para">⏹ Detener</button>
       <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/close') }}" class="test-bar__correct"
             onsubmit="const b = +document.getElementById('test-summary').dataset.blank; return b === 0 || confirm('Quedan ' + b + ' preguntas sin contestar: contarán como en blanco. ¿Corregir ya?');">
-        <button type="submit" class="btn btn--primary">Corregir</button>
+        <button type="submit" class="btn btn--small btn--primary">✔ Corregir</button>
+      </form>
+      <button type="button" class="btn btn--small {{ 'btn--filter-on' if session.has_filter else 'btn--ghost' }}" id="filter-open">⛃ Filtrar{% if session.has_filter %} (activo){% endif %}</button>
+    </div>
+    <div class="test-bar__switches">
+      <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/training') }}">
+        <label class="switch" title="Permite marcar varias opciones cuando dudas: cuenta como acierto si la correcta está entre ellas">
+          <input type="checkbox" name="on" value="1" onchange="this.form.submit()" {% if session.training %}checked{% endif %}>
+          <span class="switch__track"></span> Modo Entrenamiento</label>
+        <noscript><button type="submit" class="btn btn--ghost btn--small">Aplicar</button></noscript>
+      </form>
+      <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/feedback-mode') }}">
+        <label class="switch{% if session.training %} switch--disabled{% endif %}" title="{{ 'En modo entrenamiento se corrige al final' if session.training else 'Ver si aciertas al contestar cada pregunta' }}">
+          <input type="checkbox" name="instant" value="1" onchange="this.form.submit()" {% if session.feedback_now %}checked{% endif %} {% if session.training %}disabled{% endif %}>
+          <span class="switch__track"></span> Corregir al responder</label>
+        <noscript><button type="submit" class="btn btn--ghost btn--small">Aplicar</button></noscript>
       </form>
     </div>
     {% include "partials/test_summary.html" %}
   </div>
 
+  {# ── Filtrar (como PreparaTIC): cambia las preguntas que forman el test y cuentan para la nota ── #}
+  <dialog id="filter-dialog" class="filter-dialog">
+    <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/filter') }}">
+      <p class="filter-dialog__title">Filtros</p>
+      <fieldset class="filter-dialog__group">
+        <legend>Preguntas de exámenes:</legend>
+        <label><input type="radio" name="exam" value="" {% if not filter.exam %}checked{% endif %}> Todas</label>
+        <label><input type="radio" name="exam" value="none" {% if filter.exam == 'none' %}checked{% endif %}> Ocultar todas</label>
+        <label><input type="radio" name="exam" value="only" {% if filter.exam == 'only' %}checked{% endif %}> Mostrar exclusivamente</label>
+      </fieldset>
+      {% if years %}
+      <fieldset class="filter-dialog__group">
+        <legend>Mostrar sólo preguntas de los siguientes años:</legend>
+        <div class="filter-dialog__years">
+          {% for y in years %}<label><input type="checkbox" name="years" value="{{ y }}" {% if y in (filter.years or []) %}checked{% endif %}> {{ y }}</label>{% endfor %}
+        </div>
+      </fieldset>
+      {% endif %}
+      <label class="filter-dialog__group">Número de preguntas a mostrar:
+        <input type="number" name="count" min="1" max="{{ total }}" value="{{ filter.count or '' }}" placeholder="{{ total }} (todas)">
+      </label>
+      <p class="field__hint">Las preguntas que el filtro deja fuera no cuentan para la nota; lo ya contestado se conserva si las vuelves a mostrar.</p>
+      <div class="filter-dialog__actions">
+        <button type="submit" name="reset" value="1" class="btn btn--ghost">Restablecer</button>
+        <button type="button" class="btn btn--ghost" id="filter-cancel">Cancelar</button>
+        <button type="submit" class="btn btn--primary">Aceptar</button>
+      </div>
+    </form>
+  </dialog>
+
   <p class="test-page__hint">Pulsa una opción para responder y vuelve a pulsarla para dejarla en blanco. Cada respuesta se guarda al momento:
     puedes <a href="{{ url('/history/') }}">salir</a> y seguir otro día desde el Historial.</p>
 
+  {% if not cards %}
+  <p class="alert alert--warning" role="status">El filtro no deja ninguna pregunta en este test. Cámbialo o pulsa «Restablecer» en ⛃ Filtrar.</p>
+  {% endif %}
   <ol class="test-list">
     {% for card in cards %}{% include "partials/question_card.html" %}{% endfor %}
   </ol>
@@ -84,6 +129,8 @@
     display.classList.toggle("timer--expired", remaining < 0);
     display.classList.toggle("timer--paused", !state.running);
     toggle.textContent = state.running ? "⏸ Pausar" : "▶ Empezar";
+    toggle.classList.toggle("btn--pause", state.running);
+    toggle.classList.toggle("btn--start", !state.running);
     if (remaining <= 0 && state.running && !alerted) {
       alerted = true;
       if (dialog.showModal) dialog.showModal();
@@ -101,18 +148,19 @@
   }
 
   toggle.addEventListener("click", () => send(state.running ? "pause" : "start"));
-  document.getElementById("timer-reset").addEventListener("click", () => {
-    if (confirm("¿Volver a poner el cronómetro a cero?")) send("reset");
-  });
+  document.getElementById("timer-reset").addEventListener("click", () => send("reset"));  // como «Detener» de PreparaTIC
   const hideBtn = document.getElementById("timer-hide");
   function applyHidden(hidden) {
     display.classList.toggle("timer--hidden", hidden);
-    hideBtn.textContent = hidden ? "👁" : "🙈";
+    hideBtn.textContent = hidden ? "Mostrar Tiempo" : "Ocultar Tiempo";
     store.set("timer-hidden", hidden ? "1" : "0");
   }
   hideBtn.addEventListener("click", () => applyHidden(!display.classList.contains("timer--hidden")));
   applyHidden(store.get("timer-hidden") === "1");
   document.getElementById("timeout-more").addEventListener("click", () => dialog.close());
+  const filterDialog = document.getElementById("filter-dialog");
+  document.getElementById("filter-open").addEventListener("click", () => filterDialog.showModal());
+  document.getElementById("filter-cancel").addEventListener("click", () => filterDialog.close());
 
   // Al salir de la página se pausa (no corre el tiempo con la pestaña cerrada). Si solo se recarga
   // (p. ej. al cambiar «Corregir al responder»), se reanuda al volver en la misma pestaña.

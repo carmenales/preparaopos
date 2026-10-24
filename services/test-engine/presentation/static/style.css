@@ -352,3 +352,31 @@ a { color: inherit; }
 .timeout-dialog__actions { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
 .timeout-dialog__actions form { margin: 0; }
 
+/* ── Barra como la de PreparaTIC: botones, interruptores y filtro ─ */
+.test-bar__buttons { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.test-bar__buttons form { margin: 0; }
+.btn--start { background: #7c3aed; color: #fff; }
+.btn--pause { background: #16a34a; color: #fff; }
+.btn--stop { background: #dc2626; color: #fff; }
+.btn--filter-on { background: #16a34a; color: #fff; }
+.test-bar__switches { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; margin-top: .5rem; }
+.test-bar__switches form { margin: 0; }
+.switch { display: inline-flex; align-items: center; gap: .45rem; font-size: .9rem; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.switch__track { width: 2.4rem; height: 1.3rem; border-radius: 999px; background: #cbd5e1; position: relative; transition: background .2s; flex-shrink: 0; }
+.switch__track::after { content: ""; position: absolute; top: .15rem; left: .15rem; width: 1rem; height: 1rem; border-radius: 50%; background: #fff; transition: transform .2s; box-shadow: 0 1px 2px rgba(0,0,0,.2); }
+.switch input:checked + .switch__track { background: #65a30d; }
+.switch input:checked + .switch__track::after { transform: translateX(1.1rem); }
+.switch input:focus-visible + .switch__track { outline: 2px solid #2563eb; outline-offset: 2px; }
+.switch--disabled { opacity: .5; cursor: not-allowed; }
+.tag--doubtful { background: #fef3c7; color: #854d0e; }
+.scoreboard__rate { margin: .3rem 0 .6rem; }
+.filter-dialog { margin: auto; max-width: 30rem; width: calc(100% - 2rem); border: none; border-radius: 12px; padding: 1.3rem; box-shadow: 0 10px 40px rgba(0,0,0,.25); }
+.filter-dialog::backdrop { background: rgba(15, 23, 42, .55); }
+.filter-dialog__title { font-size: 1.25rem; font-weight: 800; margin-bottom: .6rem; }
+.filter-dialog__group { border: none; display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
+.filter-dialog__group legend { font-weight: 600; margin-bottom: .3rem; }
+.filter-dialog__group input[type=number] { margin-top: .3rem; padding: .35rem .5rem; border: 1px solid #cbd5e1; border-radius: 6px; max-width: 10rem; }
+.filter-dialog__years { display: grid; grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr)); gap: .2rem .6rem; max-height: 10rem; overflow-y: auto; }
+.filter-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; margin-top: .8rem; }
+
