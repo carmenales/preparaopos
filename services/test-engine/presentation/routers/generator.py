@@ -26,7 +26,7 @@ def _split_scope(scope: str | None) -> tuple[str | None, str | None]:
     return block or None, topic or None
 
 
-def _build_filters(syllabus_id, scope, year, official, failed, count, weighted=None) -> GeneratorFilters:
+def _build_filters(syllabus_id, scope, year, official, failed, count, weighted=None, doubtful=None) -> GeneratorFilters:
     block, topic = _split_scope(scope)
     return GeneratorFilters(
         syllabus_id=syllabus_id or "",
@@ -35,6 +35,7 @@ def _build_filters(syllabus_id, scope, year, official, failed, count, weighted=N
         year=int(year) if year else None,
         official_only=bool(official),
         failed_only=bool(failed),
+        doubtful_only=bool(doubtful),
         weighted=bool(weighted),
         count=int(count) if count else DEFAULT_COUNT,
     )
@@ -55,19 +56,20 @@ def _available_html(n: int, requested: int | None) -> str:
     return text
 
 
-def _fields_context(repo, syllabus_id, scope, year, official, failed, weighted, count) -> dict:
+def _fields_context(repo, syllabus_id, scope, year, official, failed, weighted, count, doubtful=None) -> dict:
     """Campos del formulario con los números de cada opción calculados con los demás filtros elegidos."""
     try:
-        filters = _build_filters(syllabus_id, scope, year, official, failed, count, weighted)
+        filters = _build_filters(syllabus_id, scope, year, official, failed, count, weighted, doubtful)
     except ValueError:
         filters = GeneratorFilters(syllabus_id)
-        scope = year = official = failed = weighted = None
+        scope = year = official = failed = weighted = doubtful = None
     requested = filters.count
     n = repo.count_for_generator(filters)
     return {
         "facets": repo.generator_facets(syllabus_id, filters),
         "v": {"scope": scope or "", "year": str(filters.year or ""), "official": filters.official_only,
-              "failed": filters.failed_only, "weighted": filters.weighted, "count": requested},
+              "failed": filters.failed_only, "doubtful": filters.doubtful_only, "weighted": filters.weighted,
+              "count": requested},
         "count_choices": sorted(set(COUNT_CHOICES) | {requested}),
         "available_html": _available_html(n, requested),
     }
@@ -85,6 +87,7 @@ def generator_form(
     failed: str | None = None,
     weighted: str | None = None,
     count: str | None = None,
+    doubtful: str | None = None,
 ):
     syllabi = repo.list_syllabi_with_counts()
     ids = {s["id"] for s in syllabi}
@@ -92,7 +95,7 @@ def generator_form(
     context = {"syllabi": syllabi, "selected": selected, "error": error}
     if selected:
         context |= _fields_context(repo, selected, scope, year, official == "1", failed == "1", weighted == "1",
-                                   count if count and count.isdigit() else None)
+                                   count if count and count.isdigit() else None, doubtful == "1")
     return templates.TemplateResponse(request, "generator.html", context, headers={"Cache-Control": "no-store"})
 
 
@@ -107,10 +110,11 @@ def generator_fields(
     failed: Annotated[str | None, Query()] = None,
     weighted: Annotated[str | None, Query()] = None,
     count: Annotated[str | None, Query()] = None,
+    doubtful: Annotated[str | None, Query()] = None,
 ):
     """Fragmento htmx: los campos del formulario, recalculados al cambiar cualquier filtro."""
     context = _fields_context(repo, syllabus_id, scope, year, official, failed, weighted,
-                              count if count and count.isdigit() else None)
+                              count if count and count.isdigit() else None, doubtful)
     return templates.TemplateResponse(request, "partials/generator_fields.html", context,
                                       headers={"Cache-Control": "no-store"})
 
@@ -146,18 +150,19 @@ def generate(
     failed: Annotated[str | None, Form()] = None,
     count: Annotated[str | None, Form()] = None,
     weighted: Annotated[str | None, Form()] = None,
+    doubtful: Annotated[str | None, Form()] = None,
 ):
     if mode not in ("practice", "exam"):
         return _back_to_form(syllabus_id, "Modo no válido.")
     try:
-        filters = _build_filters(syllabus_id, scope, year, official, failed, count, weighted)
+        filters = _build_filters(syllabus_id, scope, year, official, failed, count, weighted, doubtful)
     except ValueError as exc:
         return _back_to_form(syllabus_id, str(exc))
     try:
         session = svc.start_session(mode=mode, source="generated", source_ref=filters.to_source_ref())  # type: ignore[arg-type]
     except NoQuestionsForFilters:
         return _back_to_form(syllabus_id, "Ninguna pregunta cumple esos filtros. Prueba a ampliarlos.")
-    url = f"/sessions/{session.id}/question/1"
+    url = f"/sessions/{session.id}"
     if len(session.question_ids) < filters.count:
         url += f"?requested={filters.count}"
     return RedirectResponse(url=prefix_url(url), status_code=303)
