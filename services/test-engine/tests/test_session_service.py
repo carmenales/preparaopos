@@ -88,32 +88,20 @@ def test_start_session_exam_respects_question_order(session_service: TestSession
     assert session.question_ids == ordered_ordinary
 
 
-def test_submit_answer_rejected_after_expiry(session_service: TestSessionService):
-    """3. La respuesta es rechazada si se envía después de que haya expirado el tiempo oficial."""
-    session = session_service.start_session(
-        mode="exam",
-        source="exam",
-        source_ref="53",
-    )
+def test_time_running_out_does_not_close_the_test(session_service: TestSessionService):
+    """3. Con el cronómetro pausable, acabarse el tiempo no cierra el test: decide el usuario
+    («Un poquito más» o «Corregir»). Solo se rechazan respuestas cuando ya está corregido."""
+    session = session_service.start_session(mode="exam", source="exam", source_ref="53")
     qid = session.question_ids[0]
+    opt = session_service._questions.get_by_id(qid).options[0].id
+    after_limit = session.started_at + timedelta(seconds=session.duration_seconds + 10)
 
-    # Simular tiempo después de expirar (6001 segundos después)
-    start_time = session.started_at
-    if start_time.tzinfo is None:
-        start_time = start_time.replace(tzinfo=timezone.utc)
-    after_expiry = start_time + timedelta(seconds=session.duration_seconds + 10)
-
-    ans = session_service.submit_answer(
-        session_id=session.id,
-        question_id=qid,
-        selected_option_id=1,
-        now=after_expiry,
-    )
-    # Debe ser rechazado (None) y la sesión debe quedar cerrada
-    assert ans is None
-    closed = session_service._sessions.get_by_id(session.id)
-    assert closed.closed_at is not None
-    assert closed.status == "closed"
+    ans = session_service.submit_answer(session_id=session.id, question_id=qid, selected_option_id=opt,
+                                        now=after_limit)
+    assert ans is not None
+    assert session_service.get_session(session.id, now=after_limit).closed_at is None
+    session_service.close_session(session.id)
+    assert session_service.submit_answer(session_id=session.id, question_id=qid, selected_option_id=opt) is None
 
 
 def test_submit_answer_upsert_changes_previous_selection(session_service: TestSessionService, db_session: Session):
@@ -302,33 +290,36 @@ def test_close_session_counts_unattempted_questions_as_blank(session_service: Te
         assert b.is_correct is None
 
 
-def test_abandoned_expired_session_is_lazily_closed(session_service: TestSessionService):
-    """10. Sesión abandonada tras expirar: al consultarse (get_session o get_result) se cierra de forma perezosa."""
-    session = session_service.start_session(
-        mode="exam",
-        source="exam",
-        source_ref="53",
-    )
-    # Sesión abierta inicialmente
-    assert session.closed_at is None
-    assert session.status == "open"
+def test_pausable_timer_counts_only_running_time(session_service: TestSessionService):
+    """10. El cronómetro acumula solo el tiempo en marcha; al corregir se congela el tiempo empleado."""
+    session = session_service.start_session(mode="exam", source="exam", source_ref="53")
+    t0 = datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc)
+    state = session_service.timer_state(session)
+    assert state == {"limit": 6000, "elapsed": 0, "running": False, "started": False}
 
-    # Simular que el usuario cierra la pestaña y 2 horas después (7200s > 6000s) consulta su sesión
-    start_time = session.started_at
-    if start_time.tzinfo is None:
-        start_time = start_time.replace(tzinfo=timezone.utc)
-    future_time = start_time + timedelta(seconds=7200)
+    session_service.timer_action(session.id, "start", now=t0)
+    session_service.timer_action(session.id, "pause", now=t0 + timedelta(seconds=600))
+    paused = session_service.get_session(session.id)
+    # Dos horas de pausa no cuentan
+    assert session_service.elapsed_seconds(paused, now=t0 + timedelta(hours=2)) == 600
+    assert session_service.remaining_seconds(paused, now=t0 + timedelta(hours=2)) == 5400
 
-    # get_session debe detectar la expiración y cerrarla automáticamente
-    lazy_closed = session_service.get_session(session.id, now=future_time)
-    assert lazy_closed is not None
-    assert lazy_closed.closed_at is not None
-    assert lazy_closed.status == "closed"
-    # El closed_at queda fijado a la expiración exacta (started + 6000s)
-    expected_expiry = start_time + timedelta(seconds=6000)
-    assert lazy_closed.closed_at == expected_expiry
-    # Al no responder ninguna pregunta, las 96 son blancos -> nota 0.00
-    assert lazy_closed.final_score == Decimal("0.00")
+    session_service.timer_action(session.id, "start", now=t0 + timedelta(hours=2))
+    running = session_service.get_session(session.id)
+    assert session_service.elapsed_seconds(running, now=t0 + timedelta(hours=2, seconds=30)) == 630
+    session_service.timer_action(session.id, "start", now=t0 + timedelta(hours=3))  # ya en marcha: no cambia
+    assert session_service.get_session(session.id).timer_running_since == running.timer_running_since
+
+    closed = session_service.close_session(session.id, now=t0 + timedelta(hours=2, seconds=90))
+    assert closed.timer_running_since is None and closed.timer_elapsed_seconds == 690
+    assert closed.final_score == Decimal("0.00")
+    session_service.timer_action(session.id, "reset")  # con el test corregido no cambia nada
+    assert session_service.get_session(session.id).timer_elapsed_seconds == 690
+
+    other = session_service.start_session(mode="practice", source="exam", source_ref="53")
+    session_service.timer_action(other.id, "start", now=t0)
+    reset = session_service.timer_action(other.id, "reset", now=t0 + timedelta(seconds=50))
+    assert (reset.timer_elapsed_seconds, reset.timer_running_since) == (0, None)
 
 
 def test_session_without_scoring_rule_is_scored_out_of_ten(session_service: TestSessionService, db_session: Session):
@@ -401,3 +392,87 @@ def test_live_summary_scores_as_if_the_rest_were_blank(session_service):
     assert live.blank == len(s.question_ids) - 4 - live.annulled
     closed = session_service.close_session(s.id)
     assert live.estimated_score == closed.final_score
+
+
+# --- Modo Entrenamiento y Filtrar (como PreparaTIC) --------------------------------
+
+def _options(session_service, qid):
+    q = session_service._questions.get_by_id(qid)
+    return next(o.id for o in q.options if o.is_correct), [o.id for o in q.options if not o.is_correct]
+
+
+def test_training_allows_several_marks_and_counts_a_hit_if_the_right_one_is_marked(session_service):
+    s = _exam_session(session_service)
+    session_service.set_training(s.id, True)
+    q1, q2 = s.question_ids[:2]
+    right1, wrong1 = _options(session_service, q1)
+    _, wrong2 = _options(session_service, q2)
+    session_service.answer_or_clear(session_id=s.id, question_id=q1, option_id=wrong1[0])
+    session_service.answer_or_clear(session_id=s.id, question_id=q1, option_id=right1)
+    session_service.answer_or_clear(session_id=s.id, question_id=q2, option_id=wrong2[0])
+    session_service.answer_or_clear(session_id=s.id, question_id=q2, option_id=wrong2[1])
+    att = {a.question_id: a for a in session_service.get_session(s.id).attempts}
+    assert sorted(att[q1].marks) == sorted([wrong1[0], right1]) and att[q1].is_correct is True
+    assert att[q2].is_correct is False
+    live = session_service.live_summary(session_service.get_session(s.id))
+    assert (live.correct, live.wrong, live.doubtful, live.doubtful_right) == (1, 1, 2, 1)
+    # Volver a pulsar una marcada la quita
+    session_service.answer_or_clear(session_id=s.id, question_id=q1, option_id=wrong1[0])
+    assert {a.question_id: a for a in session_service.get_session(s.id).attempts}[q1].marks == [right1]
+
+
+def test_turning_training_off_leaves_multi_marked_questions_unanswered(session_service):
+    s = _exam_session(session_service)
+    session_service.set_training(s.id, True)
+    qid = s.question_ids[0]
+    right, wrong = _options(session_service, qid)
+    for opt in (right, wrong[0]):
+        session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=opt)
+    session_service.set_training(s.id, False)
+    att = session_service.get_session(s.id).attempts[0]
+    assert att.selected_option_id is None and att.is_correct is None and len(att.marks) == 2
+    assert session_service.live_summary(session_service.get_session(s.id)).answered == 0
+    # Sin entrenamiento, pulsar una opción la deja como única marcada
+    session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=right)
+    att = session_service.get_session(s.id).attempts[0]
+    assert att.marks == [right] and att.is_correct is True
+    session_service.set_training(s.id, True)
+    assert session_service.get_session(s.id).feedback_now is False      # entrenamiento corrige al final
+    session_service.set_feedback_mode(s.id, True)
+    assert session_service.get_session(s.id).feedback_now is False
+
+
+def test_filter_defines_the_questions_that_count(session_service, db_session):
+    s = session_service.start_session(mode="practice", source="generated",
+                                      source_ref="syllabus=preparatic-a1&n=60")
+    qmap = session_service._questions.get_by_ids(s.question_ids)
+    session_service.set_question_filter(s.id, exam="only")
+    only = session_service.effective_question_ids(session_service.get_session(s.id))
+    assert only and all(qmap[q].is_official_exam for q in only)
+    session_service.set_question_filter(s.id, exam="none")
+    none = session_service.effective_question_ids(session_service.get_session(s.id))
+    assert set(only).isdisjoint(none) and len(only) + len(none) == 60
+    year = qmap[s.question_ids[0]].year
+    session_service.set_question_filter(s.id, years=[year], count=2)
+    filtered = session_service.get_session(s.id)
+    ids = session_service.effective_question_ids(filtered)
+    assert len(ids) <= 2 and all(qmap[q].year == year for q in ids)
+    assert session_service.time_limit(filtered) == len(ids) * 60
+    # Lo contestado fuera del filtro no cuenta para la nota
+    hidden = next(q for q in s.question_ids if q not in ids)
+    right, _ = _options(session_service, hidden)
+    session_service.answer_or_clear(session_id=s.id, question_id=hidden, option_id=right)
+    result = session_service.get_result(s.id)
+    assert result.total_evaluable == len(ids) and result.correct_count == 0
+    session_service.set_question_filter(s.id)  # tras corregir no cambia nada
+    assert session_service.get_session(s.id).question_filter is not None
+
+
+def test_filter_count_picks_a_random_but_stable_subset(session_service):
+    s = session_service.start_session(mode="practice", source="generated",
+                                      source_ref="syllabus=preparatic-a1&n=60")
+    session_service.set_question_filter(s.id, count=10)
+    first = session_service.effective_question_ids(session_service.get_session(s.id))
+    assert len(first) == 10 and first != s.question_ids[:10]               # al azar, como PreparaTIC
+    assert session_service.effective_question_ids(session_service.get_session(s.id)) == first   # pero estable
+    assert first == [q for q in s.question_ids if q in set(first)]          # en el orden del test

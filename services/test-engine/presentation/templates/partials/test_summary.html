@@ -9,6 +9,7 @@
   <span class="test-summary__item" title="Nota si corriges ahora y el resto queda en blanco">Nota ahora: <strong>{{ "%.2f"|format(s.estimated_score|float) }}</strong>/10</span>
   {% endif %}
   {% endif %}
+  {% if session.training and s.doubtful %}<span class="test-summary__item tag tag--doubtful">🤔 {{ s.doubtful }} con varias marcadas</span>{% endif %}
   {% if doubtful_count %}<span class="test-summary__item">🔖 {{ doubtful_count }} dudosa{{ "s" if doubtful_count != 1 else "" }}</span>{% endif %}
   <details class="test-index">
     <summary>Índice</summary>

@@ -34,3 +34,5 @@ class Question:
     is_annulled: bool = False
     annulment_reason: str | None = None
     pending_classification: bool = False
+    year: int | None = None
+    is_official_exam: bool = False

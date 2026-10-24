@@ -61,7 +61,7 @@ def test_create_session_opens_the_whole_test_in_one_page(client):
     assert "Dejar en blanco" not in page.text                  # no es una opción más
     assert 'id="test-summary"' in page.text and "Corregir" in page.text
     assert 'name="instant" value="1"' in page.text and "checked" in page.text   # práctica: corrige al responder
-    assert 'id="timer"' not in page.text                        # práctica sin tiempo
+    assert 'data-running="false"' in page.text                  # práctica: cronómetro parado hasta «Empezar»
 
 
 def test_old_question_links_go_to_the_question_inside_the_page(client):
@@ -157,10 +157,36 @@ def test_feedback_mode_can_change_mid_test(client):
     assert not re.search(r'name="instant" value="1"[^>]*checked', client.get(f"/sessions/{sid}").text)
 
 
-def test_exam_mode_keeps_the_timer(client):
+def test_timer_never_starts_by_itself(client):
+    """Como PreparaTIC: el cronómetro lo arranca el usuario con «Empezar», también en simulacro."""
     _, sid = _start(client, mode="exam")
     page = client.get(f"/sessions/{sid}").text
-    assert 'id="timer"' in page and "data-seconds=" in page
+    assert 'id="timer"' in page and 'data-limit="6000"' in page and 'data-running="false"' in page
+    assert "▶ Empezar" in page and "Ocultar Tiempo" in page and "Detener" not in page
+    assert "✔ Corregir" in page and "⛃ Filtrar" in page and "Modo Entrenamiento" in page
+    assert 'id="timeout-dialog"' in page and "Un poquito más" in page
+
+    _, practice = _start(client)
+    page = client.get(f"/sessions/{practice}").text
+    assert 'data-running="false"' in page and "▶ Empezar" in page
+    assert re.search(r'data-limit="(\d+)"', page).group(1) == str(60 * len(re.findall(r'id="q-\d+"', page)))
+
+
+def test_timer_endpoint_pauses_resumes_and_resets(client):
+    _, sid = _start(client)
+    started = client.post(f"/sessions/{sid}/timer", data={"action": "start"}).json()
+    assert started["running"] is True and started["started"] is True
+    paused = client.post(f"/sessions/{sid}/timer", data={"action": "pause"}).json()
+    assert paused["running"] is False and paused["elapsed"] >= 0
+    assert 'data-running="false"' in client.get(f"/sessions/{sid}").text    # no se reanuda solo
+    reset = client.post(f"/sessions/{sid}/timer", data={"action": "reset"}).json()
+    assert reset == {"limit": started["limit"], "elapsed": 0, "running": False, "started": True}
+    assert client.post(f"/sessions/{sid}/timer", data={"action": "explode"}).status_code == 400
+    assert client.post("/sessions/no-existe/timer", data={"action": "start"}).status_code == 404
+
+    client.post(f"/sessions/{sid}/timer", data={"action": "start"})
+    client.post(f"/sessions/{sid}/close")
+    assert "⏱ 00:00:0" in client.get(f"/sessions/{sid}/result").text
 
 
 def test_correct_any_time_and_result_shows_every_answer(client):
@@ -382,7 +408,7 @@ def test_root_path_prefix_guardian(monkeypatch):
         assert_no_unprefixed_urls(res_q.text, "Pantalla del test")
         assert f'hx-post="/tests/sessions/{session_id}/answer"' in res_q.text
         assert f'action="/tests/sessions/{session_id}/close"' in res_q.text
-        assert f'window.location.href = "/tests/sessions/{session_id}/result"' in res_q.text
+        assert f'data-url="/tests/sessions/{session_id}/timer"' in res_q.text
 
         # 4. Enviar respuesta por htmx (POST /sessions/{id}/answer)
         qid, options = _first_question(res_q.text)
@@ -412,3 +438,30 @@ def test_root_path_prefix_guardian(monkeypatch):
         app.dependency_overrides.pop(get_linking_client, None)
 
 
+
+
+def test_training_mode_and_filter_from_the_test_screen(client):
+    _, sid = _start(client, mode="exam")
+    qid, options = _first_question(client.get(f"/sessions/{sid}").text)
+    assert client.post(f"/sessions/{sid}/training", data={"on": "1"}).status_code == 303
+    page = client.get(f"/sessions/{sid}").text
+    assert re.search(r'name="on" value="1"[^>]*checked', page)
+    assert re.search(r'name="instant" value="1"[^>]*disabled', page)     # entrenamiento: corrige al final
+    client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": options[0]})
+    two = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": options[1]})
+    assert two.text.count("opt--selected") == 2 and "🤔 Dudosa: 2 opciones marcadas" in two.text
+    assert "🔖 Dudosa" in two.text                                       # queda marcada para repasarla
+
+    # En el examen 53 ninguna pregunta está marcada como de examen oficial (ver docs/ESTADO.md)
+    client.post(f"/sessions/{sid}/filter", data={"exam": "only"})
+    assert "El filtro no deja ninguna pregunta" in client.get(f"/sessions/{sid}").text
+    assert client.post(f"/sessions/{sid}/filter", data={"exam": "none", "count": "3"}).status_code == 303
+    page = client.get(f"/sessions/{sid}").text
+    assert len(re.findall(r'id="q-\d+"', page)) == 3 and "(activo)" in page and "3 de " in page
+    assert 'id="filter-exam" value="none"' in page and 'seg__btn seg__btn--on" data-exam="none"' in page
+    client.post(f"/sessions/{sid}/filter", data={"reset": "1"})
+    assert "(activo)" not in client.get(f"/sessions/{sid}").text
+
+    client.post(f"/sessions/{sid}/close")
+    sheet = client.get(f"/sessions/{sid}/result").text
+    assert "Has tenido un acierto del" in sheet and "dudosas" in sheet

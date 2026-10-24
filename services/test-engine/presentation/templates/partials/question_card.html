@@ -2,7 +2,7 @@
    study_assistant_url. Pulsar una opción la marca; volver a pulsarla la desmarca (queda en blanco). #}
 {% set q = card.q %}
 {% set base = '/sessions/' ~ session.id %}
-<li class="tq{% if card.graded %} tq--{{ 'correct' if card.is_correct else 'wrong' }}{% elif card.answered %} tq--answered{% endif %}{% if card.doubtful %} tq--doubtful{% endif %}"
+<li class="tq{% if card.graded %} tq--{{ 'correct' if card.is_correct else 'wrong' }}{% elif card.marked %} tq--answered{% endif %}{% if card.doubtful %} tq--doubtful{% endif %}"
     id="q-{{ card.n }}">
   <div class="tq__head">
     <span class="tq__num">{{ card.n }}</span>
@@ -13,7 +13,7 @@
   {% if q.is_annulled %}<p class="tq__annulled">🚫 Pregunta anulada: no cuenta para la nota.</p>{% endif %}
   <div class="tq__options" role="group" aria-label="Opciones de la pregunta {{ card.n }}">
     {% for opt in q.options %}
-    {% set is_selected = card.selected == opt.id %}
+    {% set is_selected = opt.id in card.marks %}
     {% set is_right = card.show_correction and opt.is_correct %}
     {% set is_bad = card.show_correction and is_selected and not opt.is_correct and (card.graded or card.reveal) %}
     <button type="button"
@@ -36,7 +36,9 @@
   {% if card.show_correction %}
   <div class="tq__feedback">
     {% if card.graded %}
-      <p class="tq__verdict">{{ "✅ Correcta" if card.is_correct else "❌ Incorrecta" }}</p>
+      <p class="tq__verdict">{{ "✅ Correcta" if card.is_correct else "❌ Incorrecta" }}{% if card.multi %} · dudosa: marcaste {{ card.marks|length }} opciones{% endif %}</p>
+    {% elif session.closed_at and card.multi %}
+      <p class="tq__verdict">⬜ Sin contestar: varias opciones marcadas sin el modo entrenamiento</p>
     {% elif card.reveal %}
       <p class="tq__verdict tq__verdict--peek">👁 Respuesta correcta: {{ "ABCDEFGH"[q.options.index(card.correct_option)] if card.correct_option else "?" }} · no cuenta para la nota; puedes contestar igualmente.</p>
     {% elif session.closed_at %}
@@ -60,7 +62,8 @@
             hx-get="{{ url(base ~ '/questions/' ~ q.id ~ '/card') }}{% if not card.reveal %}?reveal=1{% endif %}"
             hx-target="#q-{{ card.n }}" hx-swap="outerHTML">👁 {{ "Ocultar respuesta" if card.reveal else "Ver respuesta" }}</button>
     {% endif %}
-    {% if card.answered and not card.locked %}
+    {% if card.multi and not session.closed_at %}<span class="tool tool--note">🤔 Dudosa: {{ card.marks|length }} opciones marcadas</span>{% endif %}
+    {% if card.marked and not card.locked %}
     <button type="button" class="tool"
             hx-post="{{ url(base ~ '/answer') }}" hx-vals='{"question_id": "{{ q.id }}", "selected_option_id": ""}'
             hx-target="#q-{{ card.n }}" hx-swap="outerHTML">↺ Borrar respuesta</button>

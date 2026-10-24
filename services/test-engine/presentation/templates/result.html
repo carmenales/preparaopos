@@ -15,15 +15,21 @@
     </div>
     {% endif %}
 
+    {% set pct = (result.correct_count * 100 / result.total_evaluable) if result.total_evaluable else 0 %}
+    <p class="scoreboard__rate">Has tenido un acierto del <strong>{{ "%.2f"|format(pct) }}%</strong></p>
     <div class="scoreboard__breakdown">
-      <span class="tag tag--correct">✅ {{ result.correct_count }} correctas</span>
-      <span class="tag tag--wrong">❌ {{ result.wrong_count }} erróneas</span>
-      <span class="tag tag--blank">⬜ {{ result.blank_count }} en blanco</span>
+      <span class="tag tag--correct">✅ {{ result.correct_count }} / {{ result.total_evaluable }} correctas</span>
+      <span class="tag tag--wrong">❌ {{ result.wrong_count }} / {{ result.total_evaluable }} fallidas</span>
+      {% if session.training %}<span class="tag tag--doubtful" title="Varias opciones marcadas en modo entrenamiento">🤔 {{ result.doubtful_count }} dudosas{% if result.doubtful_count %} ({{ result.doubtful_right }} con la correcta marcada){% endif %}</span>{% endif %}
+      <span class="tag tag--blank">⬜ {{ result.blank_count }} / {{ result.total_evaluable }} no contestadas</span>
       {% if result.annulled_count > 0 %}
       <span class="tag tag--annulled">🚫 {{ result.annulled_count }} anuladas</span>
       {% endif %}
     </div>
-    <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas</p>
+    <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas
+      {% if timer.started %}{% set e, l = timer.elapsed, timer.limit %}
+      · ⏱ {{ '%02d:%02d:%02d'|format(e // 3600, e % 3600 // 60, e % 60) }} de {{ '%02d:%02d:%02d'|format(l // 3600, l % 3600 // 60, l % 60) }}{% if e > l %} (te pasaste del tiempo){% endif %}
+      {% endif %}</p>
   </div>
 
   <div class="result-actions">

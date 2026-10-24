@@ -42,6 +42,10 @@ class SessionRepository:
                 exam_id=test_session.exam_id,
                 status=test_session.status,
                 instant_feedback=test_session.instant_feedback,
+                timer_elapsed_seconds=test_session.timer_elapsed_seconds,
+                timer_running_since=test_session.timer_running_since,
+                training=test_session.training,
+                question_filter=json.dumps(test_session.question_filter) if test_session.question_filter else None,
             )
             self._session.add(row)
         else:
@@ -58,6 +62,10 @@ class SessionRepository:
             row.exam_id = test_session.exam_id
             row.status = test_session.status
             row.instant_feedback = test_session.instant_feedback
+            row.timer_elapsed_seconds = test_session.timer_elapsed_seconds
+            row.timer_running_since = test_session.timer_running_since
+            row.training = test_session.training
+            row.question_filter = json.dumps(test_session.question_filter) if test_session.question_filter else None
         self._session.commit()
 
     def get_by_id(self, session_id: str) -> TestSession | None:
@@ -87,10 +95,12 @@ class SessionRepository:
                 orm.TestAttempt.question_id == attempt.question_id,
             )
         )
+        marked = json.dumps(attempt.marked_option_ids) if len(attempt.marked_option_ids) > 1 else None
         if existing is not None:
             existing.selected_option_id = attempt.selected_option_id
             existing.is_correct = attempt.is_correct
             existing.answered_at = attempt.answered_at
+            existing.marked_option_ids = marked
         else:
             new_att = orm.TestAttempt(
                 test_session_id=attempt.session_id,
@@ -98,6 +108,7 @@ class SessionRepository:
                 selected_option_id=attempt.selected_option_id,
                 is_correct=attempt.is_correct,
                 answered_at=attempt.answered_at,
+                marked_option_ids=marked,
             )
             self._session.add(new_att)
         self._session.commit()
@@ -132,6 +143,10 @@ class SessionRepository:
             exam_id=row.exam_id,
             status=row.status,
             instant_feedback=row.instant_feedback,
+            timer_elapsed_seconds=row.timer_elapsed_seconds,
+            timer_running_since=_ensure_utc(row.timer_running_since),
+            training=row.training,
+            question_filter=json.loads(row.question_filter) if row.question_filter else None,
             attempts=[
                 TestAttempt(
                     id=att.id,
@@ -140,6 +155,7 @@ class SessionRepository:
                     selected_option_id=att.selected_option_id,
                     is_correct=att.is_correct,
                     answered_at=_ensure_utc(att.answered_at) or datetime.now(timezone.utc),
+                    marked_option_ids=json.loads(att.marked_option_ids) if att.marked_option_ids else [],
                 )
                 for att in row.attempts
             ],
