@@ -93,9 +93,18 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - En la BD actual selecciona 30 sesiones (15 pares, 15 respuestas) y deja las 11 de preparadortai (332 respuestas) y los 2 tests generados (comprobado sobre una copia).
 - Tests: `tests/test_purge_test_sessions.py` (unittest). Smoke probado contra los servicios reales detrás de un proxy local, arrancando test-engine 5 s más tarde.
 
-## CI (fuera de alcance; anotado)
-- `ci.yml` hace `curl localhost:8080/assets/css/style.css` esperando preparadortai, pero ahora el 8080 es el gateway Nginx (preparadortai está en el 8082).
-- La CI solo ejecuta `unittest discover -s tests`; los tests de `services/*` (pytest) no corren en CI.
+## CI (rama `feature/ci-fixes`)
+- Antes: el job de Docker comprobaba preparadortai en el 8080 (ahora es el gateway; preparadortai está en el 8082 y necesita el volcado de MariaDB, que no está en git) y los tests de `services/*` no se ejecutaban.
+- Jobs de `.github/workflows/ci.yml`:
+  - `php-syntax`: sin cambios, hasta retirar las apps PHP.
+  - `python-tests`: `unittest discover -s tests` y generación del índice. Ya no instala `services/embeddings/requirements.txt` (arrastraba torch y ningún test lo usa); `numpy` y `requests`, que importan los scripts, pasan a `scripts/requirements.txt`.
+  - `service-tests`: pytest de study-assistant, test-engine y linking-service (matriz, Python 3.11 como sus Dockerfile).
+  - `gateway`: levanta gateway, study-assistant, test-engine y linking-service con la BD vacía y el índice de los apuntes versionados, y comprueba las rutas por el 8080 (con reintentos mientras arrancan).
+- **Datos que no están en git** (BD de test-engine, `imports/`, apuntes sin revisar, índice): los tests que los necesitan se saltan en CI y lo dicen (`-rs`); en local se ejecutan todos.
+  - test-engine: `tests/conftest.py` salta los tests que usan la BD (fixtures `client`, `db`, `db_session`, `session_service`, `svc` o marca `real_db`) si no existe `data/test_engine.sqlite`. En CI corren 15 de 68: **la lógica que depende de los datos (generador, sesiones, gestión) no se comprueba en CI**. Para cubrirla haría falta una BD de prueba sintética y reescribir los tests que cuentan preguntas reales (96, 269…).
+  - study-assistant: `tests/conftest.py` crea un índice y unos apuntes de prueba en un directorio temporal; los 25 tests ya no dependen de los apuntes reales y corren igual en CI y en local.
+  - `tests/test_import_local_exams.py`: se saltan las 6 pruebas que leen `imports/`.
+- Comprobado en un clon limpio (`git archive`) con un entorno nuevo: raíz 145 tests (6 saltados), study-assistant 25, test-engine 15 (53 saltados), linking-service 8, y las rutas del job `gateway` contra los servicios reales con la BD vacía. En local, con los datos, todo sigue igual (test-engine 68, study-assistant 25).
 
 ## Después
 La migración no está completa: ver `docs/MIGRACION.md` (datos sin importar, funcionalidades de las apps PHP sin equivalente y criterios para etiquetar la versión).
