@@ -291,3 +291,53 @@ def test_weighted_option_only_where_there_is_history(client):
     assert res.status_code == 303
     history = client.get("/history/").text
     assert "ponderado por frecuencia" in history
+
+
+# --- Números de las opciones condicionados a los demás filtros -----------------------
+
+def _options(html: str, name: str) -> dict[str, int]:
+    select = re.search(rf'<select id="{name}" name="{name}">(.*?)</select>', html, re.S).group(1)
+    return {m.group(1): int(m.group(2))
+            for m in re.finditer(r'<option value="([^"]+)"[^>]*>[^<]*\((\d+)\)</option>', select)}
+
+
+def test_option_counts_match_what_you_get_when_choosing_them(client, db):
+    """Con un tema elegido, cada año dice cuántas preguntas de ese tema hay ese año, y al revés."""
+    repo = QuestionRepository(db)
+    html = client.get("/generator/fields", params={"syllabus_id": "preparatic-a1", "scope": "B3|107"}).text
+    years = _options(html, "year")
+    assert years and all(n > 0 for n in years.values())            # los años sin preguntas no se ofrecen
+    for year, n in years.items():
+        assert n == repo.count_for_generator(GeneratorFilters("preparatic-a1", block="B3", topic="107",
+                                                              year=int(year)))
+    assert sum(years.values()) <= repo.count_for_generator(GeneratorFilters("preparatic-a1", block="B3", topic="107"))
+    official = int(re.search(r"Solo preguntas de examen oficial \((\d+)\)", html).group(1))
+    assert official == repo.count_for_generator(GeneratorFilters("preparatic-a1", block="B3", topic="107",
+                                                                 official_only=True))
+
+    html = client.get("/generator/fields", params={"syllabus_id": "preparatic-a1", "year": "2004"}).text
+    scopes = _options(html, "scope")
+    assert scopes["B3|107"] == 0 if "B3|107" in scopes else True   # no se ofrece un tema sin preguntas en 2004
+    some = next(k for k in scopes if "|" in k)
+    block, topic = some.split("|")
+    assert scopes[some] == repo.count_for_generator(GeneratorFilters("preparatic-a1", block=block, topic=topic,
+                                                                     year=2004))
+    assert "<strong>" in html and 'id="generator-fields"' in html
+
+
+def test_fields_keep_the_selection_even_when_it_leaves_no_questions(client):
+    html = client.get("/generator/fields", params={"syllabus_id": "preparatic-a1", "scope": "B3|107",
+                                                   "year": "2001", "official": "1", "weighted": "1",
+                                                   "count": "50"}).text
+    assert re.search(r'<option value="B3\|107" selected', html)
+    assert re.search(r'<option value="2001" selected', html)
+    assert re.search(r'name="official" value="1" checked', html)
+    assert re.search(r'name="weighted" value="1" checked', html)
+    assert re.search(r'<option value="50" selected', html)
+    assert "ninguna cumple" in html
+
+
+def test_generator_page_reacts_to_changes_with_htmx(client):
+    html = client.get("/generator/?syllabus_id=preparatic-a1&scope=B3&failed=1").text
+    assert 'hx-get="/generator/fields"' in html and 'hx-target="#generator-fields"' in html
+    assert re.search(r'<option value="B3" selected', html)
