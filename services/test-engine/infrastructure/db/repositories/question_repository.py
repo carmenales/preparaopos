@@ -98,6 +98,29 @@ class QuestionRepository:
         )
         return [row[0] for row in rows]
 
+    def list_tagged_for_generator(self, filters) -> list[tuple[int, str | None, str | None]]:
+        """(id, bloque, tema) de las preguntas que cumplen los filtros, con su etiqueta en el temario."""
+        where, params = self._generator_where(filters)
+        rows = self._session.execute(
+            text(
+                "SELECT DISTINCT q.id, t.block, t.topic FROM questions q "
+                "JOIN question_syllabus_tags t ON t.question_id = q.id "
+                f"WHERE {where} ORDER BY q.id"
+            ),
+            params,
+        )
+        return [(r[0], r[1], r[2]) for r in rows]
+
+    def topic_frequencies(self, syllabus_id: str) -> dict[tuple[str | None, str | None], int]:
+        """Preguntas de examen oficial (no anuladas) por (bloque, tema) del temario: frecuencia histórica."""
+        rows = self._session.execute(text(
+            "SELECT t.block, t.topic, COUNT(DISTINCT q.id) FROM questions q "
+            "JOIN question_syllabus_tags t ON t.question_id = q.id "
+            "WHERE t.syllabus_id = :s AND q.is_annulled = 0 AND q.is_official_exam = 1 "
+            "AND t.topic IS NOT NULL AND t.topic != '' GROUP BY t.block, t.topic"
+        ), {"s": syllabus_id})
+        return {(r[0], r[1]): int(r[2]) for r in rows}
+
     def count_for_generator(self, filters) -> int:
         where, params = self._generator_where(filters)
         return int(self._session.execute(
@@ -141,6 +164,10 @@ class QuestionRepository:
         failed = self._session.execute(text(
             f"SELECT COUNT(DISTINCT q.id) {base} AND q.id IN ({self._FAILED_SQL})"
         ), params).scalar() or 0
+        weighted = self._session.execute(text(
+            f"SELECT COUNT(DISTINCT q.id), COUNT(DISTINCT t.block || '|' || t.topic), MIN(q.year), MAX(q.year) "
+            f"{base} AND q.is_official_exam = 1 AND t.topic IS NOT NULL AND t.topic != ''"
+        ), params).first()
 
         def _num(value):
             return (0, int(value), "") if value and str(value).isdigit() else (1, 0, str(value or ""))
@@ -158,6 +185,9 @@ class QuestionRepository:
             "years": [{"year": r.year, "count": r.n} for r in year_rows],
             "official": int(official),
             "failed": int(failed),
+            # Base del test ponderado: preguntas oficiales con tema. None si el temario no tiene.
+            "weighted": ({"questions": int(weighted[0]), "topics": int(weighted[1]),
+                          "year_from": weighted[2], "year_to": weighted[3]} if weighted and weighted[0] else None),
         }
 
     def get_by_id(self, question_id: int) -> QuestionDTO | None:
