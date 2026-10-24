@@ -253,6 +253,8 @@ class QuestionRepository:
             is_annulled=row.is_annulled,
             annulment_reason=row.annulment_reason,
             pending_classification=row.pending_classification,
+            year=row.year,
+            is_official_exam=bool(row.is_official_exam),
             options=[
                 Option(
                     id=opt.id,
