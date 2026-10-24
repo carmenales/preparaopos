@@ -42,6 +42,8 @@ class SessionRepository:
                 exam_id=test_session.exam_id,
                 status=test_session.status,
                 instant_feedback=test_session.instant_feedback,
+                timer_elapsed_seconds=test_session.timer_elapsed_seconds,
+                timer_running_since=test_session.timer_running_since,
             )
             self._session.add(row)
         else:
@@ -58,6 +60,8 @@ class SessionRepository:
             row.exam_id = test_session.exam_id
             row.status = test_session.status
             row.instant_feedback = test_session.instant_feedback
+            row.timer_elapsed_seconds = test_session.timer_elapsed_seconds
+            row.timer_running_since = test_session.timer_running_since
         self._session.commit()
 
     def get_by_id(self, session_id: str) -> TestSession | None:
@@ -132,6 +136,8 @@ class SessionRepository:
             exam_id=row.exam_id,
             status=row.status,
             instant_feedback=row.instant_feedback,
+            timer_elapsed_seconds=row.timer_elapsed_seconds,
+            timer_running_since=_ensure_utc(row.timer_running_since),
             attempts=[
                 TestAttempt(
                     id=att.id,

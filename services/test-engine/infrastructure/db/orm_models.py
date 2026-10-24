@@ -187,6 +187,9 @@ class TestSession(Base):
     exam_id: Mapped[int | None] = mapped_column(ForeignKey("exams.id"), nullable=True)
     # Corregir al responder (True) o al final (False). None = lo que toca por el modo (práctica/examen).
     instant_feedback: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    # Cronómetro pausable: segundos acumulados (NULL = nunca arrancado) y desde cuándo corre (NULL = parado).
+    timer_elapsed_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    timer_running_since: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     attempts: Mapped[list[TestAttempt]] = relationship(
         back_populates="session",

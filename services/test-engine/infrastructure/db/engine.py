@@ -94,6 +94,8 @@ ADDITIVE_COLUMNS: dict[str, list[tuple[str, str]]] = {
     ],
     "test_sessions": [
         ("instant_feedback", "BOOLEAN"),
+        ("timer_elapsed_seconds", "INTEGER"),
+        ("timer_running_since", "DATETIME"),
     ],
 }
 
