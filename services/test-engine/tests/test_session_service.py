@@ -15,7 +15,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 import pytest
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session
 
 from config import SQLITE_PATH
@@ -343,3 +343,61 @@ def test_session_without_scoring_rule_is_scored_out_of_ten(session_service: Test
     session_service.submit_answer(session_id=session.id, question_id=qid, selected_option_id=correct_option)
     closed = session_service.close_session(session.id)
     assert closed.final_score == Decimal("10.00")
+
+
+# --- Pantalla del test: desmarcar, corregir al responder o al final, marcador en vivo ---
+
+def _exam_session(session_service, mode="exam"):
+    return session_service.start_session(mode=mode, source="exam", source_ref="53")
+
+
+def test_clicking_the_selected_option_again_leaves_it_blank_without_a_row(session_service, db_session):
+    s = _exam_session(session_service)
+    qid = s.question_ids[0]
+    opt = session_service._questions.get_by_id(qid).options[0].id
+    session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=opt)
+    assert db_session.execute(text("SELECT COUNT(*) FROM test_attempts WHERE test_session_id = :s"),
+                              {"s": s.id}).scalar() == 1
+    session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=opt)
+    db_session.expire_all()
+    assert db_session.execute(text("SELECT COUNT(*) FROM test_attempts WHERE test_session_id = :s"),
+                              {"s": s.id}).scalar() == 0
+    assert session_service.get_result(s.id).blank_count == len(s.question_ids)
+
+
+def test_instant_feedback_locks_answered_questions(session_service):
+    s = _exam_session(session_service, mode="practice")
+    qid = s.question_ids[0]
+    options = session_service._questions.get_by_id(qid).options
+    first = session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=options[0].id)
+    assert first.correct_option_id is not None
+    again = session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=options[1].id)
+    assert again.is_saved is False and again.selected_option_id == options[0].id
+    cleared = session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=None)
+    assert cleared.is_saved is False
+
+
+def test_feedback_mode_switch_mid_test(session_service):
+    s = _exam_session(session_service)
+    assert s.feedback_now is False
+    qid = s.question_ids[0]
+    opt = session_service._questions.get_by_id(qid).options[0].id
+    assert session_service.submit_answer(session_id=s.id, question_id=qid, selected_option_id=opt).correct_option_id is None
+    session_service.set_feedback_mode(s.id, True)
+    assert session_service.get_session(s.id).feedback_now is True
+    assert session_service.submit_answer(session_id=s.id, question_id=qid, selected_option_id=opt).correct_option_id is not None
+
+
+def test_live_summary_scores_as_if_the_rest_were_blank(session_service):
+    s = _exam_session(session_service, mode="practice")
+    for qid in s.question_ids[:3]:
+        q = session_service._questions.get_by_id(qid)
+        session_service.answer_or_clear(session_id=s.id, question_id=qid, option_id=next(o.id for o in q.options if o.is_correct))
+    q = session_service._questions.get_by_id(s.question_ids[3])
+    session_service.answer_or_clear(session_id=s.id, question_id=s.question_ids[3],
+                                    option_id=next(o.id for o in q.options if not o.is_correct))
+    live = session_service.live_summary(session_service.get_session(s.id))
+    assert (live.answered, live.correct, live.wrong) == (4, 3, 1)
+    assert live.blank == len(s.question_ids) - 4 - live.annulled
+    closed = session_service.close_session(s.id)
+    assert live.estimated_score == closed.final_score
