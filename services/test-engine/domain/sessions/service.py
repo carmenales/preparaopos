@@ -455,7 +455,13 @@ class TestSessionService:
             if years and q.year not in years:
                 continue
             ids.append(qid)
-        return ids[: f["count"]] if f.get("count") else ids
+        if f.get("count") and f["count"] < len(ids):
+            # Como PreparaTIC: N al azar entre las filtradas. Aquí con semilla fija (test + filtro)
+            # para que no cambien cada vez que se recarga la página; se mantiene el orden del test.
+            seed = f"{session.id}|{f.get('exam')}|{sorted(years)}|{f['count']}"
+            chosen = set(random.Random(seed).sample(ids, f["count"]))
+            ids = [qid for qid in ids if qid in chosen]
+        return ids
 
     def available_years(self, session: TestSession, questions_map: dict | None = None) -> list[int]:
         questions_map = questions_map if questions_map is not None else self._questions.get_by_ids(session.question_ids)

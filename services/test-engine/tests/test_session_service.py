@@ -466,3 +466,13 @@ def test_filter_defines_the_questions_that_count(session_service, db_session):
     assert result.total_evaluable == len(ids) and result.correct_count == 0
     session_service.set_question_filter(s.id)  # tras corregir no cambia nada
     assert session_service.get_session(s.id).question_filter is not None
+
+
+def test_filter_count_picks_a_random_but_stable_subset(session_service):
+    s = session_service.start_session(mode="practice", source="generated",
+                                      source_ref="syllabus=preparatic-a1&n=60")
+    session_service.set_question_filter(s.id, count=10)
+    first = session_service.effective_question_ids(session_service.get_session(s.id))
+    assert len(first) == 10 and first != s.question_ids[:10]               # al azar, como PreparaTIC
+    assert session_service.effective_question_ids(session_service.get_session(s.id)) == first   # pero estable
+    assert first == [q for q in s.question_ids if q in set(first)]          # en el orden del test
