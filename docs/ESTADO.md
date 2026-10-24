@@ -93,6 +93,14 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - En la BD actual selecciona 30 sesiones (15 pares, 15 respuestas) y deja las 11 de preparadortai (332 respuestas) y los 2 tests generados (comprobado sobre una copia).
 - Tests: `tests/test_purge_test_sessions.py` (unittest). Smoke probado contra los servicios reales detrás de un proxy local, arrancando test-engine 5 s más tarde.
 
+## Generador ponderado por frecuencia histórica (rama `feature/weighted-generator`)
+- Opción «Ponderar por frecuencia en exámenes oficiales» en `/generator/`, combinable con el resto de filtros. Se guarda en `source_ref` (`weighted=1`) y el historial la muestra («ponderado por frecuencia»).
+- Peso de un tema: sus preguntas de examen oficial (no anuladas) en el temario. Peso de una pregunta: el de su tema entre las preguntas disponibles de ese tema (como `PreguntaTest.getPeso()` del generador Java de PreparaTIC, que usaba pesos puestos a mano en una hoja de cálculo; aquí salen de los datos). Muestreo sin repetición proporcional al peso (Efraimidis-Spirakis); si no bastan las de peso positivo, se completa al azar.
+- Solo hay base para **PreparaTIC A1** (8.152 preguntas oficiales en 133 temas, 2002-2026; de 3 a 294 por tema). En los demás temarios la opción sale desactivada.
+- Efecto medido con la BD real en el 10 % de temas que más caen: 27,4 % de las preguntas oficiales históricas, ≈26 % en tests ponderados y 22,8 % en aleatorios. La diferencia es moderada porque la mitad del banco de PreparaTIC ya son preguntas oficiales: lo que corrige sobre todo es el peso de los temas con muchas preguntas no oficiales.
+- ⚠️ Datos: las 101 preguntas de AGE GSI 2024 (`age-gsi-official`) tienen `is_official_exam = 0` aunque son del examen oficial, así que tampoco salen con «Solo preguntas de examen oficial». Con un único examen no darían una frecuencia útil, pero el filtro sí debería incluirlas.
+- Tests: test-engine 74 en local (6 nuevos); en un clon sin datos corren 18 y se saltan 56.
+
 ## CI (rama `feature/ci-fixes`)
 - Antes: el job de Docker comprobaba preparadortai en el 8080 (ahora es el gateway; preparadortai está en el 8082 y necesita el volcado de MariaDB, que no está en git) y los tests de `services/*` no se ejecutaban.
 - Jobs de `.github/workflows/ci.yml`:
