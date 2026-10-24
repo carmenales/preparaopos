@@ -99,7 +99,8 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Solo hay base para **PreparaTIC A1** (8.152 preguntas oficiales en 133 temas, 2002-2026; de 3 a 294 por tema). En los demás temarios la opción sale desactivada.
 - Efecto medido con la BD real en el 10 % de temas que más caen: 27,4 % de las preguntas oficiales históricas, ≈26 % en tests ponderados y 22,8 % en aleatorios. La diferencia es moderada porque la mitad del banco de PreparaTIC ya son preguntas oficiales: lo que corrige sobre todo es el peso de los temas con muchas preguntas no oficiales.
 - ⚠️ Datos: las 101 preguntas de AGE GSI 2024 (`age-gsi-official`) tienen `is_official_exam = 0` aunque son del examen oficial, así que tampoco salen con «Solo preguntas de examen oficial». Con un único examen no darían una frecuencia útil, pero el filtro sí debería incluirlas.
-- Tests: test-engine 74 en local (6 nuevos); en un clon sin datos corren 18 y se saltan 56.
+- **Números del formulario condicionados** (detectado por Carmen al probar): los números de cada opción se calculaban sobre todo el temario, así que con «B3 · Tema 107» elegido los años seguían mostrando las preguntas de todos los temas (p. ej. 2004 (323)) y «Solo oficiales» 8.152, mientras el recuento daba 0. Ahora cada número cuenta con los demás filtros elegidos (no el suyo), el formulario se recalcula entero con htmx al cambiar cualquier campo (`GET /generator/fields`), las opciones en 0 se ocultan y lo elegido se mantiene aunque se quede en 0. Ejemplo real: B3 · 107 tiene 34 preguntas (2026: 9, 2024: 2, 2023: 23), 8 oficiales.
+- Tests: test-engine 77 en local (9 nuevos); en un clon sin datos se saltan los que usan la BD.
 
 ## CI (rama `feature/ci-fixes`)
 - Antes: el job de Docker comprobaba preparadortai en el 8080 (ahora es el gateway; preparadortai está en el 8082 y necesita el volcado de MariaDB, que no está en git) y los tests de `services/*` no se ejecutaban.
