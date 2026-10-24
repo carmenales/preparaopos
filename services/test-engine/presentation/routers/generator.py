@@ -26,7 +26,7 @@ def _split_scope(scope: str | None) -> tuple[str | None, str | None]:
     return block or None, topic or None
 
 
-def _build_filters(syllabus_id, scope, year, official, failed, count) -> GeneratorFilters:
+def _build_filters(syllabus_id, scope, year, official, failed, count, weighted=None) -> GeneratorFilters:
     block, topic = _split_scope(scope)
     return GeneratorFilters(
         syllabus_id=syllabus_id or "",
@@ -35,6 +35,7 @@ def _build_filters(syllabus_id, scope, year, official, failed, count) -> Generat
         year=int(year) if year else None,
         official_only=bool(official),
         failed_only=bool(failed),
+        weighted=bool(weighted),
         count=int(count) if count else DEFAULT_COUNT,
     )
 
@@ -110,11 +111,12 @@ def generate(
     official: Annotated[str | None, Form()] = None,
     failed: Annotated[str | None, Form()] = None,
     count: Annotated[str | None, Form()] = None,
+    weighted: Annotated[str | None, Form()] = None,
 ):
     if mode not in ("practice", "exam"):
         return _back_to_form(syllabus_id, "Modo no válido.")
     try:
-        filters = _build_filters(syllabus_id, scope, year, official, failed, count)
+        filters = _build_filters(syllabus_id, scope, year, official, failed, count, weighted)
     except ValueError as exc:
         return _back_to_form(syllabus_id, str(exc))
     try:

@@ -4,7 +4,7 @@
 {% block content %}
 <section class="generator">
   <h1>Generar test</h1>
-  <p class="generator__intro">Elige el temario y, si quieres, acota por bloque o tema, año de convocatoria, solo preguntas de examen oficial o solo las que fallaste la última vez.</p>
+  <p class="generator__intro">Elige el temario y, si quieres, acota por bloque o tema, año de convocatoria, solo preguntas de examen oficial o solo las que fallaste la última vez, y pondera por lo que más cae en los exámenes.</p>
 
   {% if error %}<p class="alert alert--error" role="alert">{{ error }}</p>{% endif %}
 
@@ -52,6 +52,14 @@
         Solo preguntas de examen oficial ({{ facets.official }})</label>
       <label><input type="checkbox" name="failed" value="1" {% if not facets.failed %}disabled{% elif preset_failed %}checked{% endif %}>
         Solo las que fallé la última vez ({{ facets.failed }})</label>
+      <label><input type="checkbox" name="weighted" value="1" {% if not facets.weighted %}disabled{% endif %}>
+        Ponderar por frecuencia en exámenes oficiales</label>
+      {% if facets.weighted %}
+      <small class="field__hint">Los temas que más han caído salen más: según {{ "{:,}".format(facets.weighted.questions).replace(",", ".") }} preguntas
+        oficiales de {{ facets.weighted.topics }} temas{% if facets.weighted.year_from %} ({{ facets.weighted.year_from }}–{{ facets.weighted.year_to }}){% endif %}.</small>
+      {% else %}
+      <small class="field__hint">No disponible en este temario: no tiene preguntas de examen oficial clasificadas por tema.</small>
+      {% endif %}
     </div>
 
     <div class="field">
