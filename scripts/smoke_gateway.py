@@ -10,9 +10,9 @@ Comprueba a través del puerto público :8080:
      - /static/style.css (CSS de study-assistant con selectores distintivos)
   6. Simulacro completo en test-engine a través del gateway:
      - Inicio de examen (POST /tests/sessions/)
-     - Carga de pregunta 1 con temporizador y htmx prefijados
-     - Respuesta (POST /tests/sessions/{id}/answer)
-     - Cierre y visualización de resultados (GET /tests/sessions/{id}/result)
+     - Pantalla del test (todas las preguntas) con temporizador y htmx prefijados
+     - Respuesta (POST /tests/sessions/{id}/answer) que repinta la tarjeta y el marcador
+     - «Corregir» (POST /tests/sessions/{id}/close) y resultados (GET /tests/sessions/{id}/result)
   7. Navegación cruzada bidireccional:
      - Study Assistant -> Test Engine (POST /tests/practice/by-note/{note_id})
      - Test Engine -> Study Assistant (GET /notes/{note_id})
@@ -205,8 +205,9 @@ def run_smoke_tests(base_url: str = "http://localhost:8080", wait: float = 30.0,
         )
         if r_start.status_code == 303:
             loc = r_start.headers.get("location", "")
-            if "/tests/sessions/" in loc and "/question/1" in loc:
-                session_id = loc.split("/sessions/")[1].split("/")[0]
+            match = re.fullmatch(r"/tests/sessions/([0-9a-f]{32})", loc)
+            if match:
+                session_id = match.group(1)
                 created_sessions.append(session_id)
                 log_ok(f"Sesión creada correctamente ({session_id}) con salto 303 prefijado")
             else:
@@ -217,26 +218,33 @@ def run_smoke_tests(base_url: str = "http://localhost:8080", wait: float = 30.0,
             log_err(errors[-1])
 
         if session_id:
-            # Pregunta 1
-            r_q1 = client.get(f"{base_url}/tests/sessions/{session_id}/question/1")
-            if r_q1.status_code == 200 and 'hx-post="/tests/sessions/' in r_q1.text and "timer" in r_q1.text:
-                log_ok("Pregunta 1 renderizada con timer y hx-post prefijados bajo /tests/")
+            # Pantalla del test: todas las preguntas en una página
+            r_page = client.get(f"{base_url}/tests/sessions/{session_id}")
+            first = re.search(r'"question_id": "(\d+)", "selected_option_id": "(\d+)"', r_page.text)
+            if (r_page.status_code == 200 and f'hx-post="/tests/sessions/{session_id}/answer"' in r_page.text
+                    and 'id="timer"' in r_page.text and first):
+                log_ok("Pantalla del test renderizada con timer y hx-post prefijados bajo /tests/")
             else:
-                errors.append("Pregunta 1 no contiene los atributos o prefijos esperados")
+                errors.append("La pantalla del test no contiene los atributos o prefijos esperados")
                 log_err(errors[-1])
 
-            # Responder por htmx
-            r_ans = client.post(
-                f"{base_url}/tests/sessions/{session_id}/answer",
-                data={"question_id": 18012, "selected_option_id": 1, "n": 1},
-            )
-            if r_ans.status_code == 200 and ("Respuesta guardada" in r_ans.text or "feedback" in r_ans.text):
-                log_ok("Respuesta htmx procesada correctamente")
-            else:
-                errors.append(f"Respuesta htmx falló con status {r_ans.status_code}")
-                log_err(errors[-1])
+            # Responder por htmx: devuelve la tarjeta y el marcador (fuera de banda)
+            if first:
+                r_ans = client.post(
+                    f"{base_url}/tests/sessions/{session_id}/answer",
+                    data={"question_id": first.group(1), "selected_option_id": first.group(2)},
+                )
+                if r_ans.status_code == 200 and 'id="q-1"' in r_ans.text and 'hx-swap-oob="true"' in r_ans.text:
+                    log_ok("Respuesta htmx procesada correctamente (tarjeta y marcador)")
+                else:
+                    errors.append(f"Respuesta htmx falló con status {r_ans.status_code}")
+                    log_err(errors[-1])
 
-            # Resultados
+            # «Corregir» y resultados
+            r_close = client.post(f"{base_url}/tests/sessions/{session_id}/close")
+            if r_close.status_code != 303 or r_close.headers.get("location") != f"/tests/sessions/{session_id}/result":
+                errors.append(f"«Corregir» devolvió {r_close.status_code} ({r_close.headers.get('location')})")
+                log_err(errors[-1])
             r_res = client.get(f"{base_url}/tests/sessions/{session_id}/result")
             if r_res.status_code == 200 and "Resultado" in r_res.text and 'href="/tests/"' in r_res.text:
                 log_ok("Hoja de resultados renderizada con enlace de retorno prefijado a /tests/")
@@ -256,11 +264,11 @@ def run_smoke_tests(base_url: str = "http://localhost:8080", wait: float = 30.0,
         # A) Study Assistant -> Test Engine (Práctica por apunte)
         client_follow = httpx.Client(timeout=10.0, follow_redirects=True)
         r_cross = client_follow.post(f"{base_url}/tests/sessions/practice/by-note/tema-i-01-derecho-constitucional")
-        match = re.search(r"/tests/sessions/([0-9a-f]{32})/", str(r_cross.url))
+        match = re.search(r"/tests/sessions/([0-9a-f]{32})(?:[/?#]|$)", str(r_cross.url))
         if match:
             created_sessions.append(match.group(1))
-        if r_cross.status_code == 200 and "/tests/sessions/" in str(r_cross.url) and "/question/1" in str(r_cross.url):
-            log_ok("Navegación cruzada SA -> TE resolvió con éxito cadena 303 -> 200 en /tests/sessions/.../question/1")
+        if r_cross.status_code == 200 and re.search(r"/tests/sessions/[0-9a-f]{32}$", str(r_cross.url)):
+            log_ok("Navegación cruzada SA -> TE resolvió con éxito cadena 303 -> 200 en /tests/sessions/{id}")
         else:
             errors.append(f"Práctica por apunte no finalizó en la pregunta esperada: {r_cross.status_code} ({r_cross.url})")
             log_err(errors[-1])
