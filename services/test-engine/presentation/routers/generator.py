@@ -45,6 +45,34 @@ def _back_to_form(syllabus_id: str | None, error: str) -> RedirectResponse:
     return RedirectResponse(url=prefix_url(f"/generator/?{query}"), status_code=303)
 
 
+def _available_html(n: int, requested: int | None) -> str:
+    text = f'<strong>{n}</strong> pregunta{"s" if n != 1 else ""} disponible{"s" if n != 1 else ""}'
+    if n == 0:
+        text += ' <span class="generator__warning">· ninguna cumple los filtros: amplíalos</span>'
+    elif requested and n < requested:
+        text += (f' <span class="generator__warning">· has pedido {requested}, pero solo hay {n}: '
+                 f'el test tendrá {n} pregunta{"s" if n != 1 else ""}</span>')
+    return text
+
+
+def _fields_context(repo, syllabus_id, scope, year, official, failed, weighted, count) -> dict:
+    """Campos del formulario con los números de cada opción calculados con los demás filtros elegidos."""
+    try:
+        filters = _build_filters(syllabus_id, scope, year, official, failed, count, weighted)
+    except ValueError:
+        filters = GeneratorFilters(syllabus_id)
+        scope = year = official = failed = weighted = None
+    requested = filters.count
+    n = repo.count_for_generator(filters)
+    return {
+        "facets": repo.generator_facets(syllabus_id, filters),
+        "v": {"scope": scope or "", "year": str(filters.year or ""), "official": filters.official_only,
+              "failed": filters.failed_only, "weighted": filters.weighted, "count": requested},
+        "count_choices": sorted(set(COUNT_CHOICES) | {requested}),
+        "available_html": _available_html(n, requested),
+    }
+
+
 @router.get("/", response_class=HTMLResponse)
 def generator_form(
     request: Request,
@@ -52,27 +80,39 @@ def generator_form(
     syllabus_id: str | None = None,
     error: str | None = None,
     scope: str | None = None,
+    year: str | None = None,
+    official: str | None = None,
     failed: str | None = None,
+    weighted: str | None = None,
+    count: str | None = None,
 ):
     syllabi = repo.list_syllabi_with_counts()
     ids = {s["id"] for s in syllabi}
     selected = syllabus_id if syllabus_id in ids else (syllabi[0]["id"] if syllabi else None)
-    facets = repo.generator_facets(selected) if selected else None
-    return templates.TemplateResponse(
-        request,
-        "generator.html",
-        {
-            "syllabi": syllabi,
-            "selected": selected,
-            "facets": facets,
-            "count_choices": COUNT_CHOICES,
-            "default_count": DEFAULT_COUNT,
-            "error": error,
-            "preset_scope": scope or "",
-            "preset_failed": failed == "1",
-        },
-        headers={"Cache-Control": "no-store"},
-    )
+    context = {"syllabi": syllabi, "selected": selected, "error": error}
+    if selected:
+        context |= _fields_context(repo, selected, scope, year, official == "1", failed == "1", weighted == "1",
+                                   count if count and count.isdigit() else None)
+    return templates.TemplateResponse(request, "generator.html", context, headers={"Cache-Control": "no-store"})
+
+
+@router.get("/fields", response_class=HTMLResponse)
+def generator_fields(
+    request: Request,
+    repo: QuestionRepoDep,
+    syllabus_id: Annotated[str, Query()],
+    scope: Annotated[str | None, Query()] = None,
+    year: Annotated[str | None, Query()] = None,
+    official: Annotated[str | None, Query()] = None,
+    failed: Annotated[str | None, Query()] = None,
+    weighted: Annotated[str | None, Query()] = None,
+    count: Annotated[str | None, Query()] = None,
+):
+    """Fragmento htmx: los campos del formulario, recalculados al cambiar cualquier filtro."""
+    context = _fields_context(repo, syllabus_id, scope, year, official, failed, weighted,
+                              count if count and count.isdigit() else None)
+    return templates.TemplateResponse(request, "partials/generator_fields.html", context,
+                                      headers={"Cache-Control": "no-store"})
 
 
 @router.get("/count", response_class=HTMLResponse)
@@ -91,14 +131,8 @@ def available_count(
         n = repo.count_for_generator(_build_filters(syllabus_id, scope, year, official, failed, None))
     except ValueError:
         n = 0
-    text = f'<strong>{n}</strong> pregunta{"s" if n != 1 else ""} disponible{"s" if n != 1 else ""}'
     requested = int(count) if count and count.isdigit() else None
-    if n == 0:
-        text += ' <span class="generator__warning">· ninguna cumple los filtros: amplíalos</span>'
-    elif requested and n < requested:
-        text += (f' <span class="generator__warning">· has pedido {requested}, pero solo hay {n}: '
-                 f'el test tendrá {n} pregunta{"s" if n != 1 else ""}</span>')
-    return HTMLResponse(text, headers={"Cache-Control": "no-store"})
+    return HTMLResponse(_available_html(n, requested), headers={"Cache-Control": "no-store"})
 
 
 @router.post("/", response_class=HTMLResponse)

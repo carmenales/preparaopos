@@ -22,54 +22,10 @@
   </form>
 
   <form method="post" action="{{ url('/generator/') }}" class="generator__form"
-        hx-get="{{ url('/generator/count') }}" hx-trigger="change, load" hx-target="#available" hx-swap="innerHTML">
+        hx-get="{{ url('/generator/fields') }}" hx-trigger="change" hx-target="#generator-fields" hx-swap="outerHTML">
     <input type="hidden" name="syllabus_id" value="{{ selected }}">
 
-    <div class="field">
-      <label for="scope">Bloque o tema</label>
-      <select id="scope" name="scope">
-        <option value="">Todo el temario</option>
-        {% for b in facets.blocks %}
-        <option value="{{ b.block }}" {% if preset_scope == b.block %}selected{% endif %}>Bloque {{ b.block }} ({{ b.count }})</option>
-        {% for t in b.topics %}
-        <option value="{{ b.block }}|{{ t.topic }}" {% if preset_scope == b.block ~ '|' ~ t.topic %}selected{% endif %}>&nbsp;&nbsp;&nbsp;Bloque {{ b.block }} · Tema {{ t.topic }} ({{ t.count }})</option>
-        {% endfor %}
-        {% endfor %}
-      </select>
-      {% if not facets.blocks %}<small class="field__hint">Este temario aún no tiene preguntas clasificadas por bloque.</small>{% endif %}
-    </div>
-
-    <div class="field">
-      <label for="year">Año de convocatoria</label>
-      <select id="year" name="year">
-        <option value="">Todos</option>
-        {% for y in facets.years %}<option value="{{ y.year }}">{{ y.year }} ({{ y.count }})</option>{% endfor %}
-      </select>
-    </div>
-
-    <div class="field field--checks">
-      <label><input type="checkbox" name="official" value="1" {% if not facets.official %}disabled{% endif %}>
-        Solo preguntas de examen oficial ({{ facets.official }})</label>
-      <label><input type="checkbox" name="failed" value="1" {% if not facets.failed %}disabled{% elif preset_failed %}checked{% endif %}>
-        Solo las que fallé la última vez ({{ facets.failed }})</label>
-      <label><input type="checkbox" name="weighted" value="1" {% if not facets.weighted %}disabled{% endif %}>
-        Ponderar por frecuencia en exámenes oficiales</label>
-      {% if facets.weighted %}
-      <small class="field__hint">Los temas que más han caído salen más: según {{ "{:,}".format(facets.weighted.questions).replace(",", ".") }} preguntas
-        oficiales de {{ facets.weighted.topics }} temas{% if facets.weighted.year_from %} ({{ facets.weighted.year_from }}–{{ facets.weighted.year_to }}){% endif %}.</small>
-      {% else %}
-      <small class="field__hint">No disponible en este temario: no tiene preguntas de examen oficial clasificadas por tema.</small>
-      {% endif %}
-    </div>
-
-    <div class="field">
-      <label for="count">Número de preguntas</label>
-      <select id="count" name="count">
-        {% for n in count_choices %}<option value="{{ n }}" {% if n == default_count %}selected{% endif %}>{{ n }}</option>{% endfor %}
-      </select>
-    </div>
-
-    <p id="available" class="generator__available" aria-live="polite"></p>
+    {% include "partials/generator_fields.html" %}
 
     <div class="generator__actions">
       <button type="submit" name="mode" value="practice" class="btn btn--primary">📖 Práctica con corrección</button>
