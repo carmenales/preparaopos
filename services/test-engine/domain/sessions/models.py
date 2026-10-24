@@ -16,6 +16,13 @@ class TestAttempt:
     answered_at: datetime
     id: int | None = None
     is_correct: bool | None = None
+    marked_option_ids: list[int] = field(default_factory=list)  # todas las marcadas (modo entrenamiento)
+
+    @property
+    def marks(self) -> list[int]:
+        if self.marked_option_ids:
+            return list(self.marked_option_ids)
+        return [self.selected_option_id] if self.selected_option_id is not None else []
 
 
 @dataclass
@@ -37,6 +44,13 @@ class TestSession:
     instant_feedback: bool | None = None  # None = según el modo
     timer_elapsed_seconds: int | None = None  # None = el cronómetro no se ha arrancado nunca
     timer_running_since: datetime | None = None  # None = parado
+    training: bool | None = None  # modo entrenamiento de PreparaTIC
+    question_filter: dict | None = None  # {"exam": "only"|"none"|None, "years": [...], "count": n|None}
+
+    @property
+    def has_filter(self) -> bool:
+        f = self.question_filter or {}
+        return bool(f.get("exam") or f.get("years") or f.get("count"))
 
     @property
     def feedback_now(self) -> bool:
@@ -67,6 +81,8 @@ class LiveSummary:
     blank: int
     annulled: int
     estimated_score: Decimal | None  # nota si se corrigiera ahora, con el resto en blanco
+    doubtful: int = 0  # modo entrenamiento: preguntas con varias opciones marcadas
+    doubtful_right: int = 0  # …de ellas, con la correcta entre las marcadas
 
 
 @dataclass
@@ -90,3 +106,5 @@ class SessionResult:
     annulled_count: int
     total_evaluable: int
     questions: list[QuestionResult]
+    doubtful_count: int = 0
+    doubtful_right: int = 0

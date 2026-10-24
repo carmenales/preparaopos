@@ -206,10 +206,13 @@ class TestSessionService:
     # «Corregir»).
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def time_limit(session: TestSession) -> int:
-        """Tiempo del test: el del examen o, si no tiene, 1 minuto por pregunta."""
-        return session.duration_seconds or len(session.question_ids) * SECONDS_PER_QUESTION
+    def time_limit(self, session: TestSession) -> int:
+        """Tiempo del test: el del examen o, si no tiene, 1 minuto por pregunta. Con filtro,
+        proporcional a las preguntas que quedan (como PreparaTIC, que lo calcula por número)."""
+        base = session.duration_seconds or len(session.question_ids) * SECONDS_PER_QUESTION
+        if not session.has_filter or not session.question_ids:
+            return base
+        return round(base * len(self.effective_question_ids(session)) / len(session.question_ids))
 
     @staticmethod
     def elapsed_seconds(session: TestSession, now: datetime | None = None) -> int:
@@ -265,9 +268,11 @@ class TestSessionService:
         question_id: int,
         selected_option_id: int | None,
         now: datetime | None = None,
+        marked_option_ids: list[int] | None = None,
     ) -> AnswerResult | None:
         """Registra o actualiza una respuesta (upsert). ``selected_option_id=None`` la borra:
         la pregunta vuelve a estar sin contestar (cuenta como blanco al corregir).
+        ``marked_option_ids``: todas las opciones marcadas (modo entrenamiento); ver ``_grade``.
 
         Si la sesión expiró o está cerrada, rechaza la respuesta.
         Si el test corrige al responder (``feedback_now``), devuelve la corrección; si no, la oculta.
@@ -300,10 +305,11 @@ class TestSessionService:
                     if not explanation and opt.justification:
                         explanation = opt.justification
 
-            if selected_option_id is not None:
-                is_correct = (selected_option_id == correct_option_id)
+        marks = (list(dict.fromkeys(marked_option_ids)) if marked_option_ids is not None
+                 else ([selected_option_id] if selected_option_id is not None else []))
+        selected_option_id, is_correct = self._grade(marks, correct_option_id, bool(session.training))
 
-        if selected_option_id is None:
+        if not marks:
             # Sin respuesta no se guarda fila: así no cuenta como respondida en ninguna estadística.
             self._sessions.delete_attempt(session_id, question_id)
         else:
@@ -313,6 +319,7 @@ class TestSessionService:
                 selected_option_id=selected_option_id,
                 answered_at=clock,
                 is_correct=is_correct,
+                marked_option_ids=marks,
             ))
 
         # 4. Corrección al responder o al final
@@ -337,12 +344,30 @@ class TestSessionService:
                 explanation=None,
             )
 
+    @staticmethod
+    def _grade(marks: list[int], correct_option_id: int | None, training: bool) -> tuple[int | None, bool | None]:
+        """Opción que cuenta y si es acierto, con las reglas de PreparaTIC.
+
+        Una marcada: esa. Varias (solo en modo entrenamiento): acierto si la correcta está entre
+        ellas. Varias sin modo entrenamiento (porque se ha desactivado después): sin contestar.
+        """
+        if not marks:
+            return None, None
+        if len(marks) == 1:
+            return marks[0], marks[0] == correct_option_id
+        if training:
+            hit = correct_option_id in marks
+            return (correct_option_id if hit else marks[0]), hit
+        return None, None
+
     def answer_or_clear(self, *, session_id: str, question_id: int, option_id: int | None,
                         now: datetime | None = None) -> AnswerResult | None:
-        """Pulsar una opción en la pantalla del test: la marca o, si ya era la marcada, la desmarca.
+        """Pulsar una opción en la pantalla del test.
 
-        Con corrección al responder, una pregunta ya contestada queda fijada (ya se ha visto si
-        estaba bien): no se cambia ni se borra. Devuelve None si la sesión está cerrada o expiró.
+        Normal: la marca (sustituye a la anterior) o, si ya era la marcada, la desmarca.
+        Modo entrenamiento: añade o quita esa opción de las marcadas (se pueden marcar varias).
+        ``option_id=None`` borra la respuesta. Con corrección al responder, una pregunta ya
+        contestada queda fijada (ya se ha visto si estaba bien). Devuelve None si está cerrada.
         """
         session = self._sessions.get_by_id(session_id)
         if session is None:
@@ -352,19 +377,89 @@ class TestSessionService:
             return AnswerResult(session_id=session_id, question_id=question_id,
                                 selected_option_id=current.selected_option_id, is_saved=False,
                                 is_correct=current.is_correct)
-        if current is not None and option_id is not None and current.selected_option_id == option_id:
-            option_id = None
+        marks = current.marks if current is not None else []
+        if option_id is None:
+            marks = []
+        elif session.training:
+            marks = [m for m in marks if m != option_id] if option_id in marks else marks + [option_id]
+        else:
+            marks = [] if marks == [option_id] else [option_id]
         return self.submit_answer(session_id=session_id, question_id=question_id,
-                                  selected_option_id=option_id, now=now)
+                                  selected_option_id=marks[0] if marks else None,
+                                  marked_option_ids=marks, now=now)
 
     def set_feedback_mode(self, session_id: str, instant: bool) -> TestSession:
-        """Cambia entre corregir al responder y corregir al final, también a mitad del test."""
+        """Cambia entre corregir al responder y corregir al final, también a mitad del test.
+        En modo entrenamiento solo se corrige al final (hay que poder marcar varias)."""
         session = self._sessions.get_by_id(session_id)
         if session is None:
             raise ValueError(f"Sesión {session_id} no encontrada")
-        session.instant_feedback = instant
+        session.instant_feedback = instant and not session.training
         self._sessions.save_session(session)
         return session
+
+    def set_training(self, session_id: str, on: bool) -> TestSession:
+        """Modo entrenamiento de PreparaTIC. Al cambiarlo se recalifican las respuestas con varias marcas."""
+        session = self._sessions.get_by_id(session_id)
+        if session is None:
+            raise ValueError(f"Sesión {session_id} no encontrada")
+        if session.closed_at is not None:
+            return session
+        session.training = on
+        if on:
+            session.instant_feedback = False
+        self._sessions.save_session(session)
+        questions = self._questions.get_by_ids([a.question_id for a in session.attempts])
+        for att in session.attempts:
+            q = questions.get(att.question_id)
+            correct = next((o.id for o in q.options if o.is_correct), None) if q else None
+            att.selected_option_id, att.is_correct = self._grade(att.marks, correct, on)
+            att.marked_option_ids = att.marks
+            self._sessions.save_attempt(att)
+        return self._sessions.get_by_id(session_id)
+
+    # ------------------------------------------------------------------
+    # Filtro de PreparaTIC: las preguntas que forman el test (y cuentan para la nota)
+    # ------------------------------------------------------------------
+
+    def set_question_filter(self, session_id: str, *, exam: str | None = None, years: list[int] | None = None,
+                            count: int | None = None) -> TestSession:
+        """exam: 'only' (solo de examen oficial), 'none' (ocultarlas) o None. Sin argumentos, lo quita."""
+        session = self._sessions.get_by_id(session_id)
+        if session is None:
+            raise ValueError(f"Sesión {session_id} no encontrada")
+        if session.closed_at is not None:
+            return session
+        f = {"exam": exam if exam in ("only", "none") else None, "years": sorted(set(years or [])),
+             "count": count if count and count > 0 else None}
+        session.question_filter = f if (f["exam"] or f["years"] or f["count"]) else None
+        self._sessions.save_session(session)
+        return session
+
+    def effective_question_ids(self, session: TestSession, questions_map: dict | None = None) -> list[int]:
+        """Preguntas del test tras el filtro, en su orden."""
+        f = session.question_filter or {}
+        if not (f.get("exam") or f.get("years") or f.get("count")):
+            return list(session.question_ids)
+        questions_map = questions_map if questions_map is not None else self._questions.get_by_ids(session.question_ids)
+        years = set(f.get("years") or [])
+        ids = []
+        for qid in session.question_ids:
+            q = questions_map.get(qid)
+            if q is None:
+                continue
+            if f.get("exam") == "only" and not q.is_official_exam:
+                continue
+            if f.get("exam") == "none" and q.is_official_exam:
+                continue
+            if years and q.year not in years:
+                continue
+            ids.append(qid)
+        return ids[: f["count"]] if f.get("count") else ids
+
+    def available_years(self, session: TestSession, questions_map: dict | None = None) -> list[int]:
+        questions_map = questions_map if questions_map is not None else self._questions.get_by_ids(session.question_ids)
+        return sorted({q.year for q in questions_map.values() if q and q.year}, reverse=True)
 
     def _rule_for(self, session: TestSession) -> ScoringRule:
         rule = None
@@ -376,8 +471,10 @@ class TestSessionService:
         """Contestadas, aciertos, fallos y la nota si se corrigiera ahora (el resto, en blanco)."""
         questions_map = questions_map if questions_map is not None else self._questions.get_by_ids(session.question_ids)
         attempts = {a.question_id: a for a in session.attempts if a.selected_option_id is not None}
+        effective = self.effective_question_ids(session, questions_map)
+        doubtful = [a for a in session.attempts if a.question_id in set(effective) and len(a.marks) > 1 and session.training]
         correct = wrong = blank = annulled = 0
-        for qid in session.question_ids:
+        for qid in effective:
             q = questions_map.get(qid)
             if q and q.is_annulled:
                 annulled += 1
@@ -388,9 +485,10 @@ class TestSessionService:
             else:
                 wrong += 1
         score = self._scoring.score_scaled(correct=correct, wrong=wrong, blank=blank, annulled=annulled,
-                                           total_questions=len(session.question_ids), rule=self._rule_for(session))
-        return LiveSummary(total=len(session.question_ids), answered=correct + wrong, correct=correct,
-                           wrong=wrong, blank=blank, annulled=annulled, estimated_score=score)
+                                           total_questions=len(effective), rule=self._rule_for(session))
+        return LiveSummary(total=len(effective), answered=correct + wrong, correct=correct,
+                           wrong=wrong, blank=blank, annulled=annulled, estimated_score=score,
+                           doubtful=len(doubtful), doubtful_right=sum(1 for a in doubtful if a.is_correct))
 
     def get_session(self, session_id: str, now: datetime | None = None) -> TestSession | None:
         return self._sessions.get_by_id(session_id)
@@ -418,13 +516,14 @@ class TestSessionService:
 
         questions_map = self._questions.get_by_ids(session.question_ids)
         attempts_map = {att.question_id: att for att in session.attempts}
+        effective = self.effective_question_ids(session, questions_map)
 
         correct_count = 0
         wrong_count = 0
         blank_count = 0
         annulled_count = 0
 
-        for qid in session.question_ids:
+        for qid in effective:
             q = questions_map.get(qid)
             # NOTE: Para el examen 53 (AGE GSI 2024), ninguna pregunta tiene is_annulled=True:
             # las 4 anuladas del tribunal (posiciones 17, 27, 86, 90) NO se importaron como filas
@@ -450,7 +549,7 @@ class TestSessionService:
             wrong=wrong_count,
             blank=blank_count,
             annulled=annulled_count,
-            total_questions=len(session.question_ids),
+            total_questions=len(effective),
             rule=rule,
         )
 
@@ -473,6 +572,7 @@ class TestSessionService:
 
         questions_map = self._questions.get_by_ids(session.question_ids)
         attempts_map = {att.question_id: att for att in session.attempts}
+        effective = self.effective_question_ids(session, questions_map)
 
         correct_count = 0
         wrong_count = 0
@@ -480,7 +580,7 @@ class TestSessionService:
         annulled_count = 0
         q_results: list[QuestionResult] = []
 
-        for qid in session.question_ids:
+        for qid in effective:
             q = questions_map.get(qid)
             correct_opt_id: int | None = None
             explanation: str | None = None
@@ -544,7 +644,9 @@ class TestSessionService:
                     )
                 )
 
-        evaluable = len(session.question_ids) - annulled_count
+        evaluable = len(effective) - annulled_count
+        doubtful = [a for a in session.attempts if a.question_id in set(effective) and len(a.marks) > 1
+                    and session.training]
 
         return SessionResult(
             session_id=session.id,
@@ -556,4 +658,6 @@ class TestSessionService:
             annulled_count=annulled_count,
             total_evaluable=evaluable,
             questions=q_results,
+            doubtful_count=len(doubtful),
+            doubtful_right=sum(1 for a in doubtful if a.is_correct),
         )
