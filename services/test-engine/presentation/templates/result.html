@@ -23,7 +23,10 @@
       <span class="tag tag--annulled">🚫 {{ result.annulled_count }} anuladas</span>
       {% endif %}
     </div>
-    <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas</p>
+    <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas
+      {% if timer.started %}{% set e, l = timer.elapsed, timer.limit %}
+      · ⏱ {{ '%02d:%02d:%02d'|format(e // 3600, e % 3600 // 60, e % 60) }} de {{ '%02d:%02d:%02d'|format(l // 3600, l % 3600 // 60, l % 60) }}{% if e > l %} (te pasaste del tiempo){% endif %}
+      {% endif %}</p>
   </div>
 
   <div class="result-actions">
