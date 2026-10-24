@@ -35,6 +35,8 @@ class TestSession:
     status: str = "open"
     attempts: list[TestAttempt] = field(default_factory=list)
     instant_feedback: bool | None = None  # None = según el modo
+    timer_elapsed_seconds: int | None = None  # None = el cronómetro no se ha arrancado nunca
+    timer_running_since: datetime | None = None  # None = parado
 
     @property
     def feedback_now(self) -> bool:

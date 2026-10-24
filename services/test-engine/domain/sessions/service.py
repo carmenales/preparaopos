@@ -199,31 +199,64 @@ class TestSessionService:
         self._sessions.save_session(session)
         return session
 
+    # ------------------------------------------------------------------
+    # Cronómetro pausable (como PreparaTIC): el tiempo es el que ha corrido
+    # el cronómetro, no el transcurrido desde que se creó el test. Al llegar
+    # al límite no se cierra nada: decide el usuario («Un poquito más» o
+    # «Corregir»).
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def time_limit(session: TestSession) -> int:
+        """Tiempo del test: el del examen o, si no tiene, 1 minuto por pregunta."""
+        return session.duration_seconds or len(session.question_ids) * SECONDS_PER_QUESTION
+
+    @staticmethod
+    def elapsed_seconds(session: TestSession, now: datetime | None = None) -> int:
+        elapsed = session.timer_elapsed_seconds or 0
+        if session.timer_running_since is not None:
+            clock = now or datetime.now(timezone.utc)
+            since = session.timer_running_since
+            if since.tzinfo is None:
+                since = since.replace(tzinfo=timezone.utc)
+            elapsed += max(0, int((clock - since).total_seconds()))
+        return elapsed
+
+    def timer_state(self, session: TestSession, now: datetime | None = None) -> dict:
+        return {"limit": self.time_limit(session), "elapsed": self.elapsed_seconds(session, now),
+                "running": session.timer_running_since is not None,
+                "started": session.timer_elapsed_seconds is not None}
+
     def remaining_seconds(self, session_or_id: TestSession | str, now: datetime | None = None) -> int | None:
-        """Autoridad de tiempo en servidor. None = sin límite de tiempo (práctica)."""
-        session = (
-            session_or_id
-            if isinstance(session_or_id, TestSession)
-            else self._sessions.get_by_id(session_or_id)
-        )
-        if session is None or session.duration_seconds is None:
+        """Lo que le queda al cronómetro (0 si se ha pasado del límite)."""
+        session = (session_or_id if isinstance(session_or_id, TestSession)
+                   else self._sessions.get_by_id(session_or_id))
+        if session is None:
             return None
+        return max(0, self.time_limit(session) - self.elapsed_seconds(session, now))
 
+    def timer_action(self, session_id: str, action: str, now: datetime | None = None) -> TestSession:
+        """start | pause | reset. Con el test cerrado no cambia nada."""
+        session = self._sessions.get_by_id(session_id)
+        if session is None:
+            raise ValueError(f"Sesión {session_id} no encontrada")
+        if session.closed_at is not None:
+            return session
         clock = now or datetime.now(timezone.utc)
-        started = session.started_at
-        if started.tzinfo is None:
-            started = started.replace(tzinfo=timezone.utc)
-        if clock.tzinfo is None:
-            clock = clock.replace(tzinfo=timezone.utc)
-
-        elapsed = (clock - started).total_seconds()
-        remaining = int(session.duration_seconds - elapsed)
-        return max(0, remaining)
-
-    def is_expired(self, session_or_id: TestSession | str, now: datetime | None = None) -> bool:
-        """Determina si la sesión ha agotado el tiempo oficial asignado."""
-        remaining = self.remaining_seconds(session_or_id, now)
-        return remaining is not None and remaining <= 0
+        if action == "start":
+            if session.timer_running_since is None:
+                session.timer_elapsed_seconds = session.timer_elapsed_seconds or 0
+                session.timer_running_since = clock
+        elif action == "pause":
+            session.timer_elapsed_seconds = self.elapsed_seconds(session, clock)
+            session.timer_running_since = None
+        elif action == "reset":
+            session.timer_elapsed_seconds = 0
+            session.timer_running_since = None
+        else:
+            raise ValueError(f"Acción de cronómetro desconocida: {action}")
+        self._sessions.save_session(session)
+        return session
 
     def submit_answer(
         self,
@@ -245,12 +278,8 @@ class TestSessionService:
 
         clock = now or datetime.now(timezone.utc)
 
-        # 1. Comprobación de expiración de tiempo
-        if self.is_expired(session, clock):
-            self.close_session(session_id, now=clock)
-            return None
-
-        # 2. Comprobación de sesión ya cerrada
+        # Con el test ya corregido no se admiten respuestas. El tiempo no cierra el test:
+        # al acabarse, el usuario decide si sigue («Un poquito más») o corrige.
         if session.closed_at is not None or session.status == "closed":
             return None
 
@@ -364,27 +393,10 @@ class TestSessionService:
                            wrong=wrong, blank=blank, annulled=annulled, estimated_score=score)
 
     def get_session(self, session_id: str, now: datetime | None = None) -> TestSession | None:
-        """Obtiene una sesión. Si ha expirado y sigue abierta, la cierra perezosamente."""
-        session = self._sessions.get_by_id(session_id)
-        if session is None:
-            return None
-
-        clock = now or datetime.now(timezone.utc)
-        if session.closed_at is None and self.is_expired(session, clock):
-            session = self.close_session(session_id, now=clock)
-
-        return session
+        return self._sessions.get_by_id(session_id)
 
     def list_sessions(self, limit: int = 50, now: datetime | None = None) -> list[TestSession]:
-        """Lista sesiones recientes, cerrando perezosamente las que hayan expirado."""
-        clock = now or datetime.now(timezone.utc)
-        sessions = self._sessions.list_all(limit=limit)
-        results: list[TestSession] = []
-        for s in sessions:
-            if s.closed_at is None and self.is_expired(s, clock):
-                s = self.close_session(s.id, now=clock)
-            results.append(s)
-        return results
+        return self._sessions.list_all(limit=limit)
 
     def close_session(self, session_id: str, now: datetime | None = None) -> TestSession:
         """Cierra la sesión y calcula la calificación con ScoringService (idempotente)."""
@@ -399,14 +411,10 @@ class TestSessionService:
         if clock.tzinfo is None:
             clock = clock.replace(tzinfo=timezone.utc)
 
-        # Si expiró, la fecha de cierre oficial queda fijada a la hora de expiración exacta
-        if session.duration_seconds is not None and self.is_expired(session, clock):
-            started = session.started_at
-            if started.tzinfo is None:
-                started = started.replace(tzinfo=timezone.utc)
-            expiry_time = started + timedelta(seconds=session.duration_seconds)
-            if clock > expiry_time:
-                clock = expiry_time
+        # Se para el cronómetro: queda el tiempo empleado.
+        if session.timer_running_since is not None:
+            session.timer_elapsed_seconds = self.elapsed_seconds(session, clock)
+            session.timer_running_since = None
 
         questions_map = self._questions.get_by_ids(session.question_ids)
         attempts_map = {att.question_id: att for att in session.attempts}
