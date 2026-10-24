@@ -83,6 +83,8 @@ class QuestionRepository:
             clauses.append("q.is_official_exam = 1")
         if filters.failed_only:
             clauses.append(f"q.id IN ({self._FAILED_SQL})")
+        if getattr(filters, "doubtful_only", False):
+            clauses.append("q.id IN (SELECT question_id FROM question_marks WHERE doubtful = 1)")
         return " AND ".join(clauses), params
 
     def list_ids_for_generator(self, filters) -> list[int]:
@@ -168,6 +170,7 @@ class QuestionRepository:
                          "GROUP BY q.year ORDER BY q.year DESC").fetchall()
         official = rows("COUNT(DISTINCT q.id)", replace(f, official_only=True)).scalar() or 0
         failed = rows("COUNT(DISTINCT q.id)", replace(f, failed_only=True)).scalar() or 0
+        doubtful = rows("COUNT(DISTINCT q.id)", replace(f, doubtful_only=True)).scalar() or 0
         # La base del ponderado es la historia de todo el temario, no la de los filtros elegidos.
         weighted = self._session.execute(text(
             f"SELECT COUNT(DISTINCT q.id), COUNT(DISTINCT t.block || '|' || t.topic), MIN(q.year), MAX(q.year) "
@@ -201,6 +204,7 @@ class QuestionRepository:
             "years": years,
             "official": int(official),
             "failed": int(failed),
+            "doubtful": int(doubtful),
             # Base del test ponderado: preguntas oficiales con tema. None si el temario no tiene.
             "weighted": ({"questions": int(weighted[0]), "topics": int(weighted[1]),
                           "year_from": weighted[2], "year_to": weighted[3]} if weighted and weighted[0] else None),

@@ -89,6 +89,8 @@ class StatsRepository:
                 parts.append("solo examen oficial")
             if f.failed_only:
                 parts.append("refuerzo")
+            if f.doubtful_only:
+                parts.append("dudosas")
             if f.weighted:
                 parts.append("ponderado por frecuencia")
             return "Generado: " + " · ".join(parts)
