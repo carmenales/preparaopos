@@ -211,3 +211,83 @@ def test_short_test_shows_n_of_requested_on_first_question(client):
     assert "pedidas" in page and "de 200 pedidas" in page
     full = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "count": "10", "mode": "practice"})
     assert "requested" not in full.headers["location"]
+
+
+# --- Test ponderado por frecuencia histórica ------------------------------------
+
+def test_weighted_flag_roundtrips_and_is_omitted_when_off():
+    f = GeneratorFilters("preparatic-a1", weighted=True, count=20)
+    assert "weighted=1" in f.to_source_ref()
+    assert GeneratorFilters.from_source_ref(f.to_source_ref()) == f
+    assert "weighted" not in GeneratorFilters("preparatic-a1").to_source_ref()
+
+
+def test_question_weight_is_topic_frequency_over_available_questions():
+    from domain.sessions.generator import question_weights
+
+    tagged = [(1, "A", "1"), (2, "A", "1"), (3, "A", "1"), (4, "B", "2"), (5, "C", "3")]
+    weights = question_weights(tagged, {("A", "1"): 30, ("B", "2"): 10})
+    assert weights == {1: 10.0, 2: 10.0, 3: 10.0, 4: 10.0, 5: 0.0}  # cada tema suma su frecuencia
+
+
+def test_weighted_sample_follows_weights_without_repeats():
+    import random
+
+    from domain.sessions.generator import weighted_sample
+
+    rng = random.Random(1234)
+    weights = {1: 9.0, 2: 1.0, 3: 0.0}
+    firsts = [weighted_sample(weights, 1, rng)[0] for _ in range(4000)]
+    assert 0.87 < firsts.count(1) / 4000 < 0.93
+    assert 3 not in firsts  # peso 0: solo para completar
+    full = weighted_sample(weights, 3, rng)
+    assert sorted(full) == [1, 2, 3] and full[-1] == 3
+    assert weighted_sample(weights, 10, rng).__len__() == 3
+
+
+def test_weighted_test_favours_frequent_topics(svc, db):
+    """PreparaTIC A1: los temas que más han caído salen más que en un test aleatorio."""
+    import random
+
+    repo = QuestionRepository(db)
+    freq = repo.topic_frequencies("preparatic-a1")
+    assert len(freq) == 133
+    top = {k for k, _ in sorted(freq.items(), key=lambda kv: kv[1], reverse=True)[:13]}  # el 10 % de temas
+    topic_of = {qid: (b, t) for qid, b, t in repo.list_tagged_for_generator(GeneratorFilters("preparatic-a1"))}
+    share = sum(freq[k] for k in top) / sum(freq.values())
+
+    random.seed(42)
+    picked = []
+    for _ in range(5):
+        s = svc.start_session(mode="practice", source="generated",
+                              source_ref=GeneratorFilters("preparatic-a1", weighted=True, count=200).to_source_ref())
+        assert len(s.question_ids) == len(set(s.question_ids)) == 200
+        assert "weighted=1" in s.source_ref
+        picked += s.question_ids
+    weighted_share = sum(topic_of[q] in top for q in picked) / len(picked)
+    uniform_share = sum(topic_of[q] in top for q in topic_of) / len(topic_of)
+    # Con la BD real: histórico 27,4 %, ponderado ≈26 %, aleatorio 22,8 % para el 10 % de temas que más caen.
+    assert abs(weighted_share - share) < 0.03
+    assert abs(weighted_share - share) < abs(uniform_share - share)
+
+
+def test_weighted_combines_with_other_filters(svc):
+    s = svc.start_session(mode="practice", source="generated", source_ref=GeneratorFilters(
+        "preparatic-a1", block="B4", weighted=True, count=30).to_source_ref())
+    assert len(s.question_ids) == 30
+    with pytest.raises(NoQuestionsForFilters):
+        svc.start_session(mode="practice", source="generated", source_ref=GeneratorFilters(
+            "preparatic-a1", year=1999, weighted=True).to_source_ref())
+
+
+def test_weighted_option_only_where_there_is_history(client):
+    page = client.get("/generator/?syllabus_id=preparatic-a1").text
+    assert re.search(r'name="weighted" value="1"\s*>', page)
+    assert "preguntas\n        oficiales de 133 temas" in page or "oficiales de 133 temas" in page
+    other = client.get("/generator/?syllabus_id=tai-legacy").text
+    assert re.search(r'name="weighted" value="1" disabled', other)
+    res = client.post("/generator/", data={"syllabus_id": "preparatic-a1", "weighted": "1", "count": "10",
+                                           "mode": "practice"})
+    assert res.status_code == 303
+    history = client.get("/history/").text
+    assert "ponderado por frecuencia" in history
