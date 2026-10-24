@@ -115,6 +115,16 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Tests: test-engine 87 en local (10 nuevos y los de presentación reescritos); en un clon sin datos corren 18 y se saltan 69. `tests/conftest.py` aplica el esquema (tablas y columnas nuevas) a la copia de la BD también cuando el test no importa la app. Comprobado en Chromium (escritorio y móvil, sin errores de JavaScript) y con el smoke test contra los servicios reales.
 - Quedan sin uso `templates/question.html`, `templates/partials/answer_feedback.html` y sus estilos (`.question-card`, `.option`, `.feedback…`): se borran las plantillas en esta rama; los estilos, en el rediseño visual.
 
+## Cronómetro pausable (rama `feature/test-timer`)
+- Decisión de Carmen: el cronómetro se puede pausar siempre, también en simulacro, como en PreparaTIC. Por eso **el servidor ya no cierra el test cuando pasa el tiempo** desde que se creó (antes cerraba al expirar, de forma perezosa, y rechazaba respuestas). El tiempo es el que ha corrido el cronómetro.
+- Estado en el servidor (`test_sessions.timer_elapsed_seconds`, NULL = nunca arrancado, y `timer_running_since`, NULL = parado; columnas aditivas): pausar, recargar o cambiar de dispositivo no pierde el tiempo. `POST /sessions/{id}/timer` con `action=start|pause|reset` devuelve el estado en JSON.
+- Límite: el del examen o, si no tiene, 1 minuto por pregunta. El simulacro arranca el cronómetro la primera vez que se abre; la práctica espera a «Empezar».
+- Barra: tiempo restante (aviso en los 5 últimos minutos), Empezar/Pausar, ocultar el tiempo (se recuerda en el navegador) y reiniciar a cero con confirmación.
+- Al llegar a cero: aviso «¡¡Tiempo!!» con «Un poquito más…» (sigue contando el tiempo extra, +mm:ss en rojo, y no vuelve a avisar) o «Corregir».
+- Al salir de la página se pausa; si solo se recarga (p. ej. al cambiar «Corregir al responder»), se reanuda en la misma pestaña.
+- Al corregir se congela el tiempo empleado y el resultado lo muestra («⏱ 01:12:30 de 01:40:00», y si te pasaste).
+- Tests: test-engine 88 en local (los dos de expiración automática se sustituyen por los del cronómetro). Comprobado en Chromium (empezar, pausar, recargar en marcha, ocultar, reiniciar, aviso y tiempo extra) y con el smoke test.
+
 ## CI (rama `feature/ci-fixes`)
 - Antes: el job de Docker comprobaba preparadortai en el 8080 (ahora es el gateway; preparadortai está en el 8082 y necesita el volcado de MariaDB, que no está en git) y los tests de `services/*` no se ejecutaban.
 - Jobs de `.github/workflows/ci.yml`:
