@@ -88,32 +88,20 @@ def test_start_session_exam_respects_question_order(session_service: TestSession
     assert session.question_ids == ordered_ordinary
 
 
-def test_submit_answer_rejected_after_expiry(session_service: TestSessionService):
-    """3. La respuesta es rechazada si se envía después de que haya expirado el tiempo oficial."""
-    session = session_service.start_session(
-        mode="exam",
-        source="exam",
-        source_ref="53",
-    )
+def test_time_running_out_does_not_close_the_test(session_service: TestSessionService):
+    """3. Con el cronómetro pausable, acabarse el tiempo no cierra el test: decide el usuario
+    («Un poquito más» o «Corregir»). Solo se rechazan respuestas cuando ya está corregido."""
+    session = session_service.start_session(mode="exam", source="exam", source_ref="53")
     qid = session.question_ids[0]
+    opt = session_service._questions.get_by_id(qid).options[0].id
+    after_limit = session.started_at + timedelta(seconds=session.duration_seconds + 10)
 
-    # Simular tiempo después de expirar (6001 segundos después)
-    start_time = session.started_at
-    if start_time.tzinfo is None:
-        start_time = start_time.replace(tzinfo=timezone.utc)
-    after_expiry = start_time + timedelta(seconds=session.duration_seconds + 10)
-
-    ans = session_service.submit_answer(
-        session_id=session.id,
-        question_id=qid,
-        selected_option_id=1,
-        now=after_expiry,
-    )
-    # Debe ser rechazado (None) y la sesión debe quedar cerrada
-    assert ans is None
-    closed = session_service._sessions.get_by_id(session.id)
-    assert closed.closed_at is not None
-    assert closed.status == "closed"
+    ans = session_service.submit_answer(session_id=session.id, question_id=qid, selected_option_id=opt,
+                                        now=after_limit)
+    assert ans is not None
+    assert session_service.get_session(session.id, now=after_limit).closed_at is None
+    session_service.close_session(session.id)
+    assert session_service.submit_answer(session_id=session.id, question_id=qid, selected_option_id=opt) is None
 
 
 def test_submit_answer_upsert_changes_previous_selection(session_service: TestSessionService, db_session: Session):
@@ -302,33 +290,36 @@ def test_close_session_counts_unattempted_questions_as_blank(session_service: Te
         assert b.is_correct is None
 
 
-def test_abandoned_expired_session_is_lazily_closed(session_service: TestSessionService):
-    """10. Sesión abandonada tras expirar: al consultarse (get_session o get_result) se cierra de forma perezosa."""
-    session = session_service.start_session(
-        mode="exam",
-        source="exam",
-        source_ref="53",
-    )
-    # Sesión abierta inicialmente
-    assert session.closed_at is None
-    assert session.status == "open"
+def test_pausable_timer_counts_only_running_time(session_service: TestSessionService):
+    """10. El cronómetro acumula solo el tiempo en marcha; al corregir se congela el tiempo empleado."""
+    session = session_service.start_session(mode="exam", source="exam", source_ref="53")
+    t0 = datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc)
+    state = session_service.timer_state(session)
+    assert state == {"limit": 6000, "elapsed": 0, "running": False, "started": False}
 
-    # Simular que el usuario cierra la pestaña y 2 horas después (7200s > 6000s) consulta su sesión
-    start_time = session.started_at
-    if start_time.tzinfo is None:
-        start_time = start_time.replace(tzinfo=timezone.utc)
-    future_time = start_time + timedelta(seconds=7200)
+    session_service.timer_action(session.id, "start", now=t0)
+    session_service.timer_action(session.id, "pause", now=t0 + timedelta(seconds=600))
+    paused = session_service.get_session(session.id)
+    # Dos horas de pausa no cuentan
+    assert session_service.elapsed_seconds(paused, now=t0 + timedelta(hours=2)) == 600
+    assert session_service.remaining_seconds(paused, now=t0 + timedelta(hours=2)) == 5400
 
-    # get_session debe detectar la expiración y cerrarla automáticamente
-    lazy_closed = session_service.get_session(session.id, now=future_time)
-    assert lazy_closed is not None
-    assert lazy_closed.closed_at is not None
-    assert lazy_closed.status == "closed"
-    # El closed_at queda fijado a la expiración exacta (started + 6000s)
-    expected_expiry = start_time + timedelta(seconds=6000)
-    assert lazy_closed.closed_at == expected_expiry
-    # Al no responder ninguna pregunta, las 96 son blancos -> nota 0.00
-    assert lazy_closed.final_score == Decimal("0.00")
+    session_service.timer_action(session.id, "start", now=t0 + timedelta(hours=2))
+    running = session_service.get_session(session.id)
+    assert session_service.elapsed_seconds(running, now=t0 + timedelta(hours=2, seconds=30)) == 630
+    session_service.timer_action(session.id, "start", now=t0 + timedelta(hours=3))  # ya en marcha: no cambia
+    assert session_service.get_session(session.id).timer_running_since == running.timer_running_since
+
+    closed = session_service.close_session(session.id, now=t0 + timedelta(hours=2, seconds=90))
+    assert closed.timer_running_since is None and closed.timer_elapsed_seconds == 690
+    assert closed.final_score == Decimal("0.00")
+    session_service.timer_action(session.id, "reset")  # con el test corregido no cambia nada
+    assert session_service.get_session(session.id).timer_elapsed_seconds == 690
+
+    other = session_service.start_session(mode="practice", source="exam", source_ref="53")
+    session_service.timer_action(other.id, "start", now=t0)
+    reset = session_service.timer_action(other.id, "reset", now=t0 + timedelta(seconds=50))
+    assert (reset.timer_elapsed_seconds, reset.timer_running_since) == (0, None)
 
 
 def test_session_without_scoring_rule_is_scored_out_of_ten(session_service: TestSessionService, db_session: Session):
