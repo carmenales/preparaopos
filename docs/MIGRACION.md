@@ -69,7 +69,7 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 | Modo | En test-engine |
 |---|---|
 | Aleatorio | ✅ Generador (todo el temario) |
-| Ponderado por frecuencia histórica | ❌ Pendiente: no estaba en el paso 3; ya hay datos (`year`, `is_official_exam`) para hacerlo |
+| Ponderado por frecuencia histórica | ✅ Generador: «Ponderar por frecuencia en exámenes oficiales» (rama `feature/weighted-generator`); solo en temarios con preguntas oficiales clasificadas por tema (hoy, PreparaTIC A1) |
 | Por bloque / por tema | ✅ Generador |
 | Por año de convocatoria | ✅ Generador (+ «solo examen oficial») |
 | Examen oficial íntegro | ➖ No reconstruible (§1) |

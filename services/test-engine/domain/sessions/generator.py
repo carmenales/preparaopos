@@ -1,13 +1,16 @@
 """Filtros del generador de tests (origen de sesión ``generated``).
 
 Sustituye a los modos de práctica de preparadortai (temas, práctica temática,
-refuerzo) y a los de PreparaTIC V3 (aleatorio, por bloque, por tema, por año).
+refuerzo) y a los de PreparaTIC V3 (aleatorio, ponderado, por bloque, por tema, por año).
 Los filtros se serializan en ``test_sessions.source_ref`` para que cada sesión
 quede autodescrita.
 """
 
 from __future__ import annotations
 
+import math
+import random
+from collections import Counter
 from dataclasses import dataclass
 from urllib.parse import parse_qsl, urlencode
 
@@ -25,6 +28,7 @@ class GeneratorFilters:
     year: int | None = None
     official_only: bool = False
     failed_only: bool = False
+    weighted: bool = False
     count: int = DEFAULT_COUNT
 
     def __post_init__(self) -> None:
@@ -47,6 +51,8 @@ class GeneratorFilters:
             params["official"] = "1"
         if self.failed_only:
             params["failed"] = "1"
+        if self.weighted:
+            params["weighted"] = "1"
         return urlencode(params)
 
     @classmethod
@@ -59,8 +65,53 @@ class GeneratorFilters:
             year=int(p["year"]) if p.get("year") else None,
             official_only=p.get("official") == "1",
             failed_only=p.get("failed") == "1",
+            weighted=p.get("weighted") == "1",
             count=int(p.get("n", DEFAULT_COUNT)),
         )
+
+
+# ---------------------------------------------------------------------------
+# Test ponderado por frecuencia histórica (modo «ponderado» de PreparaTIC V3)
+# ---------------------------------------------------------------------------
+#
+# Cada tema pesa lo que ha caído en exámenes oficiales: el número de preguntas de examen
+# oficial de ese tema en el temario. Como en el generador de PreparaTIC, el peso de una
+# pregunta es el de su tema dividido entre las preguntas disponibles de ese tema, para que
+# un tema con muchas preguntas en el banco no salga más solo por tener más.
+
+TopicKey = tuple[str | None, str | None]
+
+
+def question_weights(tagged: list[tuple[int, str | None, str | None]],
+                     frequencies: dict[TopicKey, int]) -> dict[int, float]:
+    """Peso de cada pregunta del conjunto disponible.
+
+    ``tagged``: (id, bloque, tema) de las preguntas que cumplen los filtros (una fila por etiqueta).
+    ``frequencies``: preguntas de examen oficial por (bloque, tema) en el temario.
+    Las preguntas de temas que nunca han caído pesan 0.
+    """
+    available = Counter((block, topic) for _, block, topic in tagged)
+    weights: dict[int, float] = {}
+    for qid, block, topic in tagged:
+        key = (block, topic)
+        weights[qid] = weights.get(qid, 0.0) + frequencies.get(key, 0) / available[key]
+    return weights
+
+
+def weighted_sample(weights: dict[int, float], k: int, rng: random.Random | None = None) -> list[int]:
+    """k ids sin repetición, cada uno con probabilidad proporcional a su peso (Efraimidis-Spirakis).
+
+    Si no hay bastantes con peso positivo, se completa al azar con los de peso 0: el test
+    tiene siempre todas las preguntas que se puedan dar.
+    """
+    rng = rng or random
+    keyed = []
+    for qid, w in weights.items():
+        u = 1.0 - rng.random()  # en (0, 1]
+        key = math.log(u) / w if w > 0 else -math.inf
+        keyed.append((key, rng.random(), qid))
+    keyed.sort(reverse=True)
+    return [qid for _, _, qid in keyed[:k]]
 
 
 class NoQuestionsForFilters(ValueError):

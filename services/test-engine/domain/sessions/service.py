@@ -9,7 +9,13 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import Literal
 
 from domain.scoring.models import ScoringRule
-from domain.sessions.generator import SECONDS_PER_QUESTION, GeneratorFilters, NoQuestionsForFilters
+from domain.sessions.generator import (
+    SECONDS_PER_QUESTION,
+    GeneratorFilters,
+    NoQuestionsForFilters,
+    question_weights,
+    weighted_sample,
+)
 from domain.sessions.models import AnswerResult, QuestionResult, SessionResult, TestAttempt, TestSession
 
 
@@ -116,11 +122,18 @@ class TestSessionService:
 
         elif source == "generated":
             filters = GeneratorFilters.from_source_ref(source_ref or "")
-            q_ids = self._questions.list_ids_for_generator(filters)
-            if not q_ids:
-                raise NoQuestionsForFilters("Ninguna pregunta cumple los filtros elegidos")
-            random.shuffle(q_ids)
-            question_ids = q_ids[: filters.count]
+            if filters.weighted:
+                tagged = self._questions.list_tagged_for_generator(filters)
+                if not tagged:
+                    raise NoQuestionsForFilters("Ninguna pregunta cumple los filtros elegidos")
+                weights = question_weights(tagged, self._questions.topic_frequencies(filters.syllabus_id))
+                question_ids = weighted_sample(weights, filters.count)
+            else:
+                q_ids = self._questions.list_ids_for_generator(filters)
+                if not q_ids:
+                    raise NoQuestionsForFilters("Ninguna pregunta cumple los filtros elegidos")
+                random.shuffle(q_ids)
+                question_ids = q_ids[: filters.count]
             source_ref = filters.to_source_ref()
             if self._exams is not None:
                 scoring_rule_id = self._exams.single_scoring_rule_for_syllabus(filters.syllabus_id)

@@ -98,6 +98,29 @@ class QuestionRepository:
         )
         return [row[0] for row in rows]
 
+    def list_tagged_for_generator(self, filters) -> list[tuple[int, str | None, str | None]]:
+        """(id, bloque, tema) de las preguntas que cumplen los filtros, con su etiqueta en el temario."""
+        where, params = self._generator_where(filters)
+        rows = self._session.execute(
+            text(
+                "SELECT DISTINCT q.id, t.block, t.topic FROM questions q "
+                "JOIN question_syllabus_tags t ON t.question_id = q.id "
+                f"WHERE {where} ORDER BY q.id"
+            ),
+            params,
+        )
+        return [(r[0], r[1], r[2]) for r in rows]
+
+    def topic_frequencies(self, syllabus_id: str) -> dict[tuple[str | None, str | None], int]:
+        """Preguntas de examen oficial (no anuladas) por (bloque, tema) del temario: frecuencia histórica."""
+        rows = self._session.execute(text(
+            "SELECT t.block, t.topic, COUNT(DISTINCT q.id) FROM questions q "
+            "JOIN question_syllabus_tags t ON t.question_id = q.id "
+            "WHERE t.syllabus_id = :s AND q.is_annulled = 0 AND q.is_official_exam = 1 "
+            "AND t.topic IS NOT NULL AND t.topic != '' GROUP BY t.block, t.topic"
+        ), {"s": syllabus_id})
+        return {(r[0], r[1]): int(r[2]) for r in rows}
+
     def count_for_generator(self, filters) -> int:
         where, params = self._generator_where(filters)
         return int(self._session.execute(
@@ -118,29 +141,39 @@ class QuestionRepository:
         ))
         return [{"id": r.id, "name": r.name, "organism": r.organism, "count": r.n} for r in rows]
 
-    def generator_facets(self, syllabus_id: str) -> dict:
-        """Bloques, temas y años disponibles en un temario, con su número de preguntas."""
-        base = (
-            "FROM questions q JOIN question_syllabus_tags t ON t.question_id = q.id "
-            "WHERE t.syllabus_id = :s AND q.is_annulled = 0"
-        )
-        params = {"s": syllabus_id}
-        topic_rows = self._session.execute(text(
-            f"SELECT t.block, t.topic, COUNT(DISTINCT q.id) AS n {base} AND t.block IS NOT NULL "
-            "GROUP BY t.block, t.topic"
-        ), params).fetchall()
-        block_rows = self._session.execute(text(
-            f"SELECT t.block, COUNT(DISTINCT q.id) AS n {base} AND t.block IS NOT NULL GROUP BY t.block"
-        ), params).fetchall()
-        year_rows = self._session.execute(text(
-            f"SELECT q.year, COUNT(DISTINCT q.id) AS n {base} AND q.year IS NOT NULL GROUP BY q.year ORDER BY q.year DESC"
-        ), params).fetchall()
-        official = self._session.execute(text(
-            f"SELECT COUNT(DISTINCT q.id) {base} AND q.is_official_exam = 1"
-        ), params).scalar() or 0
-        failed = self._session.execute(text(
-            f"SELECT COUNT(DISTINCT q.id) {base} AND q.id IN ({self._FAILED_SQL})"
-        ), params).scalar() or 0
+    def generator_facets(self, syllabus_id: str, filters=None) -> dict:
+        """Bloques, temas, años, oficiales y falladas de un temario, con su número de preguntas.
+
+        Cada número tiene en cuenta los demás filtros elegidos en ``filters`` (pero no el suyo):
+        con el bloque B3 · tema 107 elegido, cada año muestra las preguntas de ese tema en ese año,
+        y «solo oficiales», las oficiales de ese tema y ese año. Así cuadran con el recuento final.
+        """
+        from dataclasses import replace
+
+        from domain.sessions.generator import GeneratorFilters
+
+        f = filters if filters is not None and filters.syllabus_id == syllabus_id else GeneratorFilters(syllabus_id)
+        join = "FROM questions q JOIN question_syllabus_tags t ON t.question_id = q.id"
+
+        def rows(sql_select: str, facet_filters, extra: str = "", tail: str = ""):
+            where, params = self._generator_where(facet_filters)
+            return self._session.execute(text(f"SELECT {sql_select} {join} WHERE {where}{extra} {tail}"), params)
+
+        no_scope = replace(f, block=None, topic=None)
+        topic_rows = rows("t.block, t.topic, COUNT(DISTINCT q.id) AS n", no_scope, " AND t.block IS NOT NULL",
+                          "GROUP BY t.block, t.topic").fetchall()
+        block_rows = rows("t.block, COUNT(DISTINCT q.id) AS n", no_scope, " AND t.block IS NOT NULL",
+                          "GROUP BY t.block").fetchall()
+        year_rows = rows("q.year, COUNT(DISTINCT q.id) AS n", replace(f, year=None), " AND q.year IS NOT NULL",
+                         "GROUP BY q.year ORDER BY q.year DESC").fetchall()
+        official = rows("COUNT(DISTINCT q.id)", replace(f, official_only=True)).scalar() or 0
+        failed = rows("COUNT(DISTINCT q.id)", replace(f, failed_only=True)).scalar() or 0
+        # La base del ponderado es la historia de todo el temario, no la de los filtros elegidos.
+        weighted = self._session.execute(text(
+            f"SELECT COUNT(DISTINCT q.id), COUNT(DISTINCT t.block || '|' || t.topic), MIN(q.year), MAX(q.year) "
+            f"{join} WHERE t.syllabus_id = :s AND q.is_annulled = 0 "
+            "AND q.is_official_exam = 1 AND t.topic IS NOT NULL AND t.topic != ''"
+        ), {"s": syllabus_id}).first()
 
         def _num(value):
             return (0, int(value), "") if value and str(value).isdigit() else (1, 0, str(value or ""))
@@ -149,15 +182,28 @@ class QuestionRepository:
         for r in topic_rows:
             if r.topic is not None:
                 topics_by_block.setdefault(r.block, []).append({"topic": r.topic, "count": r.n})
+        block_counts = {r.block: r.n for r in block_rows}
+        years = [{"year": r.year, "count": r.n} for r in year_rows]
+        # Lo elegido aparece aunque con los demás filtros se quede en 0 (la consulta no lo devuelve):
+        # si no, desaparecería del desplegable y se perdería la selección.
+        if f.block:
+            block_counts.setdefault(f.block, 0)
+            if f.topic and not any(t["topic"] == f.topic for t in topics_by_block.get(f.block, [])):
+                topics_by_block.setdefault(f.block, []).append({"topic": f.topic, "count": 0})
+        if f.year is not None and not any(y["year"] == f.year for y in years):
+            years = sorted(years + [{"year": f.year, "count": 0}], key=lambda y: y["year"], reverse=True)
         blocks = []
-        for r in sorted(block_rows, key=lambda r: _num(r.block)):
-            topics = sorted(topics_by_block.get(r.block, []), key=lambda t: _num(t["topic"]))
-            blocks.append({"block": r.block, "count": r.n, "topics": topics})
+        for block in sorted(block_counts, key=_num):
+            topics = sorted(topics_by_block.get(block, []), key=lambda t: _num(t["topic"]))
+            blocks.append({"block": block, "count": block_counts[block], "topics": topics})
         return {
             "blocks": blocks,
-            "years": [{"year": r.year, "count": r.n} for r in year_rows],
+            "years": years,
             "official": int(official),
             "failed": int(failed),
+            # Base del test ponderado: preguntas oficiales con tema. None si el temario no tiene.
+            "weighted": ({"questions": int(weighted[0]), "topics": int(weighted[1]),
+                          "year_from": weighted[2], "year_to": weighted[3]} if weighted and weighted[0] else None),
         }
 
     def get_by_id(self, question_id: int) -> QuestionDTO | None:
