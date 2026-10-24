@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ mode_label }} — {{ total }} preguntas{% endblock %}
+
+{% block content %}
+<section class="test-page">
+  {% if requested %}
+  <p class="alert alert--warning" role="status">Has pedido {{ requested }} preguntas, pero solo hay {{ total }} con esos filtros: este test tiene {{ total }} de {{ requested }} pedidas.</p>
+  {% endif %}
+
+  {# ── Barra fija: modo, tiempo, marcador, corregir ─────────────────────── #}
+  <div class="test-bar">
+    <div class="test-bar__row">
+      <strong class="test-bar__title">{{ mode_label }} · {{ total }} preguntas</strong>
+      {% if remaining_seconds is not none %}
+      <div class="timer" id="timer" data-seconds="{{ remaining_seconds }}"><span id="timer-display">--:--</span></div>
+      {% endif %}
+      <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/feedback-mode') }}" class="test-bar__switch">
+        <label><input type="checkbox" name="instant" value="1" onchange="this.form.submit()" {% if session.feedback_now %}checked{% endif %}>
+          Corregir al responder</label>
+        <noscript><button type="submit" class="btn btn--ghost btn--small">Aplicar</button></noscript>
+      </form>
+      <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/close') }}" class="test-bar__correct"
+            onsubmit="const b = +document.getElementById('test-summary').dataset.blank; return b === 0 || confirm('Quedan ' + b + ' preguntas sin contestar: contarán como en blanco. ¿Corregir ya?');">
+        <button type="submit" class="btn btn--primary">Corregir</button>
+      </form>
+    </div>
+    {% include "partials/test_summary.html" %}
+  </div>
+
+  <p class="test-page__hint">Pulsa una opción para responder y vuelve a pulsarla para dejarla en blanco. Cada respuesta se guarda al momento:
+    puedes <a href="{{ url('/history/') }}">salir</a> y seguir otro día desde el Historial.</p>
+
+  <ol class="test-list">
+    {% for card in cards %}{% include "partials/question_card.html" %}{% endfor %}
+  </ol>
+
+  <div class="test-page__end">
+    <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/close') }}"
+          onsubmit="const b = +document.getElementById('test-summary').dataset.blank; return b === 0 || confirm('Quedan ' + b + ' preguntas sin contestar: contarán como en blanco. ¿Corregir ya?');">
+      <button type="submit" class="btn btn--primary">Corregir el test</button>
+    </form>
+    <a href="{{ url('/history/') }}" class="btn btn--ghost">Salir y seguir luego</a>
+  </div>
+</section>
+
+{% if remaining_seconds is not none %}
+<script>
+(function () {
+  // Solo visual: la autoridad del tiempo está en el servidor (submit_answer + close_session).
+  const display = document.getElementById("timer-display");
+  const container = document.getElementById("timer");
+  let remaining = parseInt(container.dataset.seconds, 10);
+  const fmt = s => [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map(x => String(x).padStart(2, "0")).join(":");
+  function tick() {
+    if (remaining <= 0) {
+      display.textContent = "00:00:00";
+      container.classList.add("timer--expired");
+      window.location.href = "{{ url('/sessions/' ~ session.id ~ '/result') }}";
+      return;
+    }
+    display.textContent = fmt(remaining);
+    if (remaining <= 300) container.classList.add("timer--warning");
+    remaining--;
+    setTimeout(tick, 1000);
+  }
+  tick();
+})();
+</script>
+{% endif %}
+{% endblock %}

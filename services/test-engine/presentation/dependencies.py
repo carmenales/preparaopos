@@ -13,6 +13,7 @@ from infrastructure.clients.linking_client import LinkingClient
 from infrastructure.clients.notes_catalog_client import NotesCatalogClient
 from infrastructure.db.engine import create_sqlite_engine
 from infrastructure.db.repositories.exam_repository import ExamRepository
+from infrastructure.db.repositories.mark_repository import MarkRepository
 from infrastructure.db.repositories.question_repository import QuestionRepository
 from infrastructure.db.repositories.scoring_rule_repository import ScoringRuleRepository
 from infrastructure.db.repositories.session_repository import SessionRepository
@@ -54,6 +55,13 @@ def get_stats_repo(db: DbDep) -> StatsRepository:
 
 
 StatsRepoDep = Annotated[StatsRepository, Depends(get_stats_repo)]
+
+
+def get_mark_repo(db: DbDep) -> MarkRepository:
+    return MarkRepository(db)
+
+
+MarkRepoDep = Annotated[MarkRepository, Depends(get_mark_repo)]
 
 
 def get_session_service(db: DbDep) -> TestSessionService:
