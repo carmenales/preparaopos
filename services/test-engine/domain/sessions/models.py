@@ -34,6 +34,12 @@ class TestSession:
     exam_id: int | None = None
     status: str = "open"
     attempts: list[TestAttempt] = field(default_factory=list)
+    instant_feedback: bool | None = None  # None = según el modo
+
+    @property
+    def feedback_now(self) -> bool:
+        """Corregir al responder: lo elegido en la pantalla del test o, si no, lo propio del modo."""
+        return self.instant_feedback if self.instant_feedback is not None else self.mode == "practice"
 
 
 @dataclass
@@ -46,6 +52,19 @@ class AnswerResult:
     is_correct: bool | None = None
     correct_option_id: int | None = None
     explanation: str | None = None
+
+
+@dataclass
+class LiveSummary:
+    """Marcador del test en curso (barra de la pantalla del test)."""
+
+    total: int
+    answered: int
+    correct: int
+    wrong: int
+    blank: int
+    annulled: int
+    estimated_score: Decimal | None  # nota si se corrigiera ahora, con el resto en blanco
 
 
 @dataclass
