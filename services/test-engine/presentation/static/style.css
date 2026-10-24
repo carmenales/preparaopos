@@ -357,7 +357,6 @@ a { color: inherit; }
 .test-bar__buttons form { margin: 0; }
 .btn--start { background: #7c3aed; color: #fff; }
 .btn--pause { background: #16a34a; color: #fff; }
-.btn--stop { background: #dc2626; color: #fff; }
 .btn--filter-on { background: #16a34a; color: #fff; }
 .test-bar__switches { display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; margin-top: .5rem; }
 .test-bar__switches form { margin: 0; }
@@ -377,6 +376,9 @@ a { color: inherit; }
 .filter-dialog__group { border: none; display: flex; flex-direction: column; gap: .3rem; margin-bottom: .9rem; }
 .filter-dialog__group legend { font-weight: 600; margin-bottom: .3rem; }
 .filter-dialog__group input[type=number] { margin-top: .3rem; padding: .35rem .5rem; border: 1px solid #cbd5e1; border-radius: 6px; max-width: 10rem; }
+.seg { display: flex; gap: .4rem; }
+.seg__btn { flex: 1; font: inherit; font-size: .9rem; padding: .45rem .6rem; border-radius: 6px; border: 1px solid #cbd5e1; background: #1f2937; color: #fff; cursor: pointer; }
+.seg__btn--on { background: #16a34a; border-color: #16a34a; }
 .filter-dialog__years { display: grid; grid-template-columns: repeat(auto-fill, minmax(5rem, 1fr)); gap: .2rem .6rem; max-height: 10rem; overflow-y: auto; }
 .filter-dialog__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .5rem; margin-top: .8rem; }
 

@@ -162,7 +162,7 @@ def test_timer_never_starts_by_itself(client):
     _, sid = _start(client, mode="exam")
     page = client.get(f"/sessions/{sid}").text
     assert 'id="timer"' in page and 'data-limit="6000"' in page and 'data-running="false"' in page
-    assert "▶ Empezar" in page and "Ocultar Tiempo" in page and "⏹ Detener" in page
+    assert "▶ Empezar" in page and "Ocultar Tiempo" in page and "Detener" not in page
     assert "✔ Corregir" in page and "⛃ Filtrar" in page and "Modo Entrenamiento" in page
     assert 'id="timeout-dialog"' in page and "Un poquito más" in page
 
@@ -458,7 +458,7 @@ def test_training_mode_and_filter_from_the_test_screen(client):
     assert client.post(f"/sessions/{sid}/filter", data={"exam": "none", "count": "3"}).status_code == 303
     page = client.get(f"/sessions/{sid}").text
     assert len(re.findall(r'id="q-\d+"', page)) == 3 and "(activo)" in page and "3 de " in page
-    assert re.search(r'name="exam" value="none" checked', page)
+    assert 'id="filter-exam" value="none"' in page and 'seg__btn seg__btn--on" data-exam="none"' in page
     client.post(f"/sessions/{sid}/filter", data={"reset": "1"})
     assert "(activo)" not in client.get(f"/sessions/{sid}").text
 

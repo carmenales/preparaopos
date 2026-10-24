@@ -7,7 +7,7 @@
   <p class="alert alert--warning" role="status">Has pedido {{ requested }} preguntas, pero solo hay {{ total }} con esos filtros: este test tiene {{ total }} de {{ requested }} pedidas.</p>
   {% endif %}
 
-  {# ── Barra fija, como la de PreparaTIC: tiempo, Empezar/Pausar, Ocultar, Detener, Corregir, Filtrar ── #}
+  {# ── Barra fija: tiempo, Empezar/Pausar, Ocultar Tiempo, Corregir, Filtrar y Modo Entrenamiento ── #}
   <div class="test-bar">
     <div class="test-bar__row">
       <strong class="test-bar__title">{{ mode_label }} · {{ shown }}{% if shown != total %} de {{ total }}{% endif %} preguntas</strong>
@@ -21,7 +21,6 @@
     <div class="test-bar__buttons">
       <button type="button" class="btn btn--small {{ 'btn--pause' if timer.running else 'btn--start' }}" id="timer-toggle">{{ "⏸ Pausar" if timer.running else "▶ Empezar" }}</button>
       <button type="button" class="btn btn--small btn--ghost" id="timer-hide">Ocultar Tiempo</button>
-      <button type="button" class="btn btn--small btn--stop" id="timer-reset" title="Vuelve a poner el tiempo entero y lo para">⏹ Detener</button>
       <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/close') }}" class="test-bar__correct"
             onsubmit="const b = +document.getElementById('test-summary').dataset.blank; return b === 0 || confirm('Quedan ' + b + ' preguntas sin contestar: contarán como en blanco. ¿Corregir ya?');">
         <button type="submit" class="btn btn--small btn--primary">✔ Corregir</button>
@@ -51,9 +50,12 @@
       <p class="filter-dialog__title">Filtros</p>
       <fieldset class="filter-dialog__group">
         <legend>Preguntas de exámenes:</legend>
-        <label><input type="radio" name="exam" value="" {% if not filter.exam %}checked{% endif %}> Todas</label>
-        <label><input type="radio" name="exam" value="none" {% if filter.exam == 'none' %}checked{% endif %}> Ocultar todas</label>
-        <label><input type="radio" name="exam" value="only" {% if filter.exam == 'only' %}checked{% endif %}> Mostrar exclusivamente</label>
+        {# Como PreparaTIC: dos botones que se activan y desactivan (ninguno activo = todas) #}
+        <input type="hidden" name="exam" id="filter-exam" value="{{ filter.exam or '' }}">
+        <div class="seg">
+          <button type="button" class="seg__btn{% if filter.exam == 'none' %} seg__btn--on{% endif %}" data-exam="none">Ocultar todas</button>
+          <button type="button" class="seg__btn{% if filter.exam == 'only' %} seg__btn--on{% endif %}" data-exam="only">Mostrar exclusivamente</button>
+        </div>
       </fieldset>
       {% if years %}
       <fieldset class="filter-dialog__group">
@@ -148,7 +150,6 @@
   }
 
   toggle.addEventListener("click", () => send(state.running ? "pause" : "start"));
-  document.getElementById("timer-reset").addEventListener("click", () => send("reset"));  // como «Detener» de PreparaTIC
   const hideBtn = document.getElementById("timer-hide");
   function applyHidden(hidden) {
     display.classList.toggle("timer--hidden", hidden);
@@ -161,6 +162,11 @@
   const filterDialog = document.getElementById("filter-dialog");
   document.getElementById("filter-open").addEventListener("click", () => filterDialog.showModal());
   document.getElementById("filter-cancel").addEventListener("click", () => filterDialog.close());
+  const examInput = document.getElementById("filter-exam");
+  filterDialog.querySelectorAll(".seg__btn").forEach(btn => btn.addEventListener("click", () => {
+    examInput.value = examInput.value === btn.dataset.exam ? "" : btn.dataset.exam;
+    filterDialog.querySelectorAll(".seg__btn").forEach(b => b.classList.toggle("seg__btn--on", b.dataset.exam === examInput.value));
+  }));
 
   // Al salir de la página se pausa (no corre el tiempo con la pestaña cerrada). Si solo se recarga
   // (p. ej. al cambiar «Corregir al responder»), se reanuda al volver en la misma pestaña.
