@@ -11,9 +11,15 @@
   <div class="test-bar">
     <div class="test-bar__row">
       <strong class="test-bar__title">{{ mode_label }} · {{ total }} preguntas</strong>
-      {% if remaining_seconds is not none %}
-      <div class="timer" id="timer" data-seconds="{{ remaining_seconds }}"><span id="timer-display">--:--</span></div>
-      {% endif %}
+      {# Cronómetro pausable (como PreparaTIC). El estado vive en el servidor: sobrevive a recargar la página. #}
+      <div class="timer-box" id="timer" data-limit="{{ timer.limit }}" data-elapsed="{{ timer.elapsed }}"
+           data-running="{{ 'true' if timer.running else 'false' }}" data-url="{{ url('/sessions/' ~ session.id ~ '/timer') }}"
+           data-session="{{ session.id }}">
+        <span class="timer" id="timer-display" title="Tiempo restante">--:--:--</span>
+        <button type="button" class="tool" id="timer-toggle">{{ "⏸ Pausar" if timer.running else "▶ Empezar" }}</button>
+        <button type="button" class="tool" id="timer-hide" title="Ocultar o mostrar el tiempo">🙈</button>
+        <button type="button" class="tool" id="timer-reset" title="Volver a poner el cronómetro a cero">↺</button>
+      </div>
       <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/feedback-mode') }}" class="test-bar__switch">
         <label><input type="checkbox" name="instant" value="1" onchange="this.form.submit()" {% if session.feedback_now %}checked{% endif %}>
           Corregir al responder</label>
@@ -43,28 +49,84 @@
   </div>
 </section>
 
-{% if remaining_seconds is not none %}
+<dialog id="timeout-dialog" class="timeout-dialog">
+  <p class="timeout-dialog__title">⏰ ¡¡Tiempo!!</p>
+  <p>Se ha acabado el tiempo del test. Puedes seguir (el cronómetro contará el tiempo extra) o corregirlo ya.</p>
+  <div class="timeout-dialog__actions">
+    <button type="button" class="btn btn--ghost" id="timeout-more">Un poquito más…</button>
+    <form method="post" action="{{ url('/sessions/' ~ session.id ~ '/close') }}"><button type="submit" class="btn btn--primary">Corregir</button></form>
+  </div>
+</dialog>
+
 <script>
 (function () {
-  // Solo visual: la autoridad del tiempo está en el servidor (submit_answer + close_session).
+  const box = document.getElementById("timer");
+  if (!box) return;
   const display = document.getElementById("timer-display");
-  const container = document.getElementById("timer");
-  let remaining = parseInt(container.dataset.seconds, 10);
+  const toggle = document.getElementById("timer-toggle");
+  const dialog = document.getElementById("timeout-dialog");
+  const resumeKey = "timer-resume-" + box.dataset.session;
+  let state = {limit: +box.dataset.limit, elapsed: +box.dataset.elapsed, running: box.dataset.running === "true"};
+  let base = performance.now();
+  let alerted = state.elapsed >= state.limit;  // si ya se había pasado al abrir, no se vuelve a avisar
+
+  const store = {
+    get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} },
+  };
   const fmt = s => [Math.floor(s / 3600), Math.floor(s % 3600 / 60), s % 60].map(x => String(x).padStart(2, "0")).join(":");
-  function tick() {
-    if (remaining <= 0) {
-      display.textContent = "00:00:00";
-      container.classList.add("timer--expired");
-      window.location.href = "{{ url('/sessions/' ~ session.id ~ '/result') }}";
-      return;
+  const elapsedNow = () => state.elapsed + (state.running ? Math.floor((performance.now() - base) / 1000) : 0);
+
+  function render() {
+    const remaining = state.limit - elapsedNow();
+    display.textContent = remaining >= 0 ? fmt(remaining) : "+" + fmt(-remaining);
+    display.classList.toggle("timer--warning", remaining >= 0 && remaining <= 300);
+    display.classList.toggle("timer--expired", remaining < 0);
+    display.classList.toggle("timer--paused", !state.running);
+    toggle.textContent = state.running ? "⏸ Pausar" : "▶ Empezar";
+    if (remaining <= 0 && state.running && !alerted) {
+      alerted = true;
+      if (dialog.showModal) dialog.showModal();
     }
-    display.textContent = fmt(remaining);
-    if (remaining <= 300) container.classList.add("timer--warning");
-    remaining--;
-    setTimeout(tick, 1000);
   }
-  tick();
+
+  async function send(action) {
+    const body = new URLSearchParams({action});
+    const res = await fetch(box.dataset.url, {method: "POST", body});
+    if (!res.ok) return;
+    state = await res.json();
+    base = performance.now();
+    if (state.elapsed < state.limit) alerted = false;
+    render();
+  }
+
+  toggle.addEventListener("click", () => send(state.running ? "pause" : "start"));
+  document.getElementById("timer-reset").addEventListener("click", () => {
+    if (confirm("¿Volver a poner el cronómetro a cero?")) send("reset");
+  });
+  const hideBtn = document.getElementById("timer-hide");
+  function applyHidden(hidden) {
+    display.classList.toggle("timer--hidden", hidden);
+    hideBtn.textContent = hidden ? "👁" : "🙈";
+    store.set("timer-hidden", hidden ? "1" : "0");
+  }
+  hideBtn.addEventListener("click", () => applyHidden(!display.classList.contains("timer--hidden")));
+  applyHidden(store.get("timer-hidden") === "1");
+  document.getElementById("timeout-more").addEventListener("click", () => dialog.close());
+
+  // Al salir de la página se pausa (no corre el tiempo con la pestaña cerrada). Si solo se recarga
+  // (p. ej. al cambiar «Corregir al responder»), se reanuda al volver en la misma pestaña.
+  window.addEventListener("pagehide", () => {
+    if (!state.running) return;
+    try { sessionStorage.setItem(resumeKey, "1"); } catch (e) {}
+    navigator.sendBeacon(box.dataset.url, new URLSearchParams({action: "pause"}));
+  });
+  let resume = false;
+  try { resume = sessionStorage.getItem(resumeKey) === "1"; sessionStorage.removeItem(resumeKey); } catch (e) {}
+  if (resume && !state.running) send("start");
+
+  render();
+  setInterval(render, 1000);
 })();
 </script>
-{% endif %}
 {% endblock %}

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from config import STUDY_ASSISTANT_URL, TEMPLATES_DIR, prefix_url
@@ -165,6 +165,9 @@ def show_test(
         raise HTTPException(status_code=404, detail="Test no encontrado")
     if session.closed_at is not None:
         return RedirectResponse(url=prefix_url(f"/sessions/{session_id}/result"), status_code=303)
+    # El simulacro arranca el cronómetro la primera vez que se abre; la práctica espera a «Empezar».
+    if session.mode == "exam" and session.timer_elapsed_seconds is None:
+        session = svc.timer_action(session_id, "start")
 
     questions_map = q_repo.get_by_ids(session.question_ids)
     doubtful_ids = marks.doubtful_ids(session.question_ids)
@@ -181,7 +184,7 @@ def show_test(
         request, "test.html",
         _base_context(session) | _summary_context(session, svc, questions_map, doubtful_ids) | {
             "cards": cards,
-            "remaining_seconds": svc.remaining_seconds(session),
+            "timer": svc.timer_state(session),
             # Test generado con menos preguntas de las pedidas (ver routers/generator.py)
             "requested": requested if (requested and requested > total) else None,
             "total": total,
@@ -249,6 +252,16 @@ def question_card(request: Request, session_id: str, question_id: int, svc: Sess
                           reveal=reveal == "1")
 
 
+@router.post("/{session_id}/timer")
+def timer(session_id: str, svc: SessionServiceDep, action: Annotated[str, Form()]):
+    """Cronómetro: start | pause | reset. Devuelve el estado para que la página lo pinte."""
+    if action not in ("start", "pause", "reset"):
+        raise HTTPException(status_code=400, detail="Acción no válida")
+    if svc.get_session(session_id) is None:
+        raise HTTPException(status_code=404, detail="Test no encontrado")
+    return JSONResponse(svc.timer_state(svc.timer_action(session_id, action)), headers=NO_CACHE)
+
+
 @router.post("/{session_id}/feedback-mode", response_class=HTMLResponse)
 def set_feedback_mode(session_id: str, svc: SessionServiceDep, instant: Annotated[str | None, Form()] = None):
     """Interruptor «Corregir al responder»: se puede cambiar a mitad del test."""
@@ -310,6 +323,7 @@ def show_result(
             "result": result,
             "cards": cards,
             "doubtful_count": len(doubtful_ids),
+            "timer": svc.timer_state(session),
             # Temario para «Repasar dudosas»: el de la primera pregunta con etiqueta.
             "review_syllabus": next((q.tags[0].syllabus_id for q in questions_map.values() if q and q.tags), ""),
         },
