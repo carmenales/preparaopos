@@ -96,6 +96,11 @@ ADDITIVE_COLUMNS: dict[str, list[tuple[str, str]]] = {
         ("instant_feedback", "BOOLEAN"),
         ("timer_elapsed_seconds", "INTEGER"),
         ("timer_running_since", "DATETIME"),
+        ("training", "BOOLEAN"),
+        ("question_filter", "TEXT"),
+    ],
+    "test_attempts": [
+        ("marked_option_ids", "TEXT"),
     ],
 }
 

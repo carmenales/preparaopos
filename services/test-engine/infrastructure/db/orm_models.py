@@ -190,6 +190,9 @@ class TestSession(Base):
     # Cronómetro pausable: segundos acumulados (NULL = nunca arrancado) y desde cuándo corre (NULL = parado).
     timer_elapsed_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
     timer_running_since: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Como PreparaTIC: modo entrenamiento (varias opciones por pregunta) y filtro de preguntas (JSON).
+    training: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    question_filter: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     attempts: Mapped[list[TestAttempt]] = relationship(
         back_populates="session",
@@ -219,6 +222,8 @@ class TestAttempt(Base):
     )
     is_correct: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     answered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Modo entrenamiento: todas las opciones marcadas (JSON). NULL = solo selected_option_id.
+    marked_option_ids: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     session: Mapped[TestSession] = relationship(back_populates="attempts")
 
