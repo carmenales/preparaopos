@@ -168,7 +168,7 @@ def test_post_creates_session_and_redirects(client):
     res = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "scope": "I", "count": "10",
                                            "mode": "practice"})
     assert res.status_code == 303
-    assert re.search(r"/sessions/[0-9a-f]+/question/1$", res.headers["location"])
+    assert re.search(r"/sessions/[0-9a-f]+$", res.headers["location"])
     assert client.get(res.headers["location"]).status_code == 200
 
 
@@ -206,7 +206,7 @@ def test_count_fragment_warns_when_fewer_than_requested(client):
 def test_short_test_shows_n_of_requested_on_first_question(client):
     res = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "scope": "I|9", "count": "200",
                                            "mode": "practice"})
-    assert res.headers["location"].endswith("/question/1?requested=200")
+    assert res.headers["location"].endswith("?requested=200")
     page = client.get(res.headers["location"]).text
     assert "pedidas" in page and "de 200 pedidas" in page
     full = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "count": "10", "mode": "practice"})
@@ -341,3 +341,23 @@ def test_generator_page_reacts_to_changes_with_htmx(client):
     html = client.get("/generator/?syllabus_id=preparatic-a1&scope=B3&failed=1").text
     assert 'hx-get="/generator/fields"' in html and 'hx-target="#generator-fields"' in html
     assert re.search(r'<option value="B3" selected', html)
+
+
+# --- Repasar las dudosas --------------------------------------------------------
+
+def test_doubtful_filter_uses_the_marks(svc, db, client):
+    from infrastructure.db.repositories.mark_repository import MarkRepository
+
+    marks = MarkRepository(db)
+    ids = QuestionRepository(db).list_ids_for_generator(GeneratorFilters("age-gsi-official"))[:3]
+    for qid in ids:
+        marks.set_doubtful(qid, True)
+    marks.set_doubtful(ids[2], False)
+    f = GeneratorFilters("age-gsi-official", doubtful_only=True)
+    assert GeneratorFilters.from_source_ref(f.to_source_ref()) == f
+    assert QuestionRepository(db).list_ids_for_generator(f) == ids[:2]
+    html = client.get("/generator/fields", params={"syllabus_id": "age-gsi-official"}).text
+    assert "Solo las que marqué como dudosas (2)" in html
+    s = svc.start_session(mode="practice", source="generated", source_ref=f.to_source_ref())
+    assert sorted(s.question_ids) == ids[:2]
+    assert "dudosas" in client.get("/history/").text
