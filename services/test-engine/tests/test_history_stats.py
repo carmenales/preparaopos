@@ -30,7 +30,7 @@ def client():
 
 def _new_practice_session(client) -> str:
     res = client.post("/generator/", data={"syllabus_id": "age-gsi-official", "count": "10", "mode": "practice"})
-    return re.search(r"/sessions/([0-9a-f]+)/", res.headers["location"]).group(1)
+    return re.search(r"/sessions/([0-9a-f]+)", res.headers["location"]).group(1)
 
 
 def test_history_lists_sessions_with_labels(client):
@@ -40,7 +40,7 @@ def test_history_lists_sessions_with_labels(client):
     assert res.headers.get("cache-control") == "no-store"
     assert "Generado: AGE A2 GSI" in res.text
     # sesión abierta: se continúa, no se abre el resultado (eso la cerraría)
-    assert f"/sessions/{sid}/question/1" in res.text
+    assert f'href="/sessions/{sid}"' in res.text  # «Continuar» abre la pantalla del test
     assert f"/sessions/{sid}/result" not in res.text
 
 

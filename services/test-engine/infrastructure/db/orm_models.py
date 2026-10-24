@@ -185,6 +185,8 @@ class TestSession(Base):
         nullable=True,
     )
     exam_id: Mapped[int | None] = mapped_column(ForeignKey("exams.id"), nullable=True)
+    # Corregir al responder (True) o al final (False). None = lo que toca por el modo (práctica/examen).
+    instant_feedback: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
 
     attempts: Mapped[list[TestAttempt]] = relationship(
         back_populates="session",
@@ -216,3 +218,14 @@ class TestAttempt(Base):
     answered_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     session: Mapped[TestSession] = relationship(back_populates="attempts")
+
+
+class QuestionMark(Base):
+    """Marcas del usuario sobre una pregunta, válidas en todos sus tests (hoy, «dudosa»)."""
+
+    __tablename__ = "question_marks"
+
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), primary_key=True)
+    doubtful: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    marked_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+

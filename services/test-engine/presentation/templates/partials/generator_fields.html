@@ -40,6 +40,8 @@
         Solo preguntas de examen oficial ({{ facets.official }})</label>
       <label><input type="checkbox" name="failed" value="1" {% if v.failed %}checked{% elif not facets.failed %}disabled{% endif %}>
         Solo las que fallé la última vez ({{ facets.failed }})</label>
+      <label><input type="checkbox" name="doubtful" value="1" {% if v.doubtful %}checked{% elif not facets.doubtful %}disabled{% endif %}>
+        Solo las que marqué como dudosas ({{ facets.doubtful }})</label>
       <label><input type="checkbox" name="weighted" value="1" {% if v.weighted %}checked{% elif not facets.weighted %}disabled{% endif %}>
         Ponderar por frecuencia en exámenes oficiales</label>
       {% if facets.weighted %}

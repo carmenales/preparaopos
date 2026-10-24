@@ -24,154 +24,165 @@ def test_catalog_lists_available_exams(client):
     assert "Práctica con corrección" in response.text
 
 
-def test_create_practice_session_and_show_first_question(client):
-    # 1. Crear sesión de práctica
-    res = client.post(
-        "/sessions/",
-        data={"mode": "practice", "source": "exam", "source_ref": "53"},
-    )
+def _start(client, mode="practice", ref="53"):
+    res = client.post("/sessions/", data={"mode": mode, "source": "exam", "source_ref": ref})
     assert res.status_code == 303
-    location = res.headers["location"]
-    assert location.endswith("/question/1")
-
-    # 2. Cargar pregunta 1
-    q_res = client.get(location)
-    assert q_res.status_code == 200
-    assert q_res.headers.get("cache-control") == "no-store"
-    assert "question-card" in q_res.text
-    # En modo práctica NO debe aparecer el temporizador visual
-    assert 'id="timer"' not in q_res.text
+    return res, res.headers["location"].rstrip("/").split("/sessions/")[1]
 
 
-def test_question_bounds_checking(client):
-    # Crear sesión
-    res = client.post(
-        "/sessions/",
-        data={"mode": "practice", "source": "exam", "source_ref": "53"},
-    )
-    location = res.headers["location"]
-    session_id = location.split("/sessions/")[1].split("/")[0]
-
-    # Bounds check: n < 1 -> /question/1
-    res_under = client.get(f"/sessions/{session_id}/question/0")
-    assert res_under.status_code == 303
-    assert res_under.headers["location"] == f"/sessions/{session_id}/question/1"
-
-    # Bounds check: n > total -> /result
-    res_over = client.get(f"/sessions/{session_id}/question/9999")
-    assert res_over.status_code == 303
-    assert res_over.headers["location"] == f"/sessions/{session_id}/result"
+def _card_html(html, n):
+    """La etiqueta de apertura y el contenido de la tarjeta n (sin las vecinas)."""
+    return re.search(rf'<li class="tq[^"]*"\s+id="q-{n}">.*?</li>', html, re.S).group(0)
 
 
-def test_practice_mode_htmx_submit_returns_inline_feedback(client):
-    # Crear sesión práctica
-    res = client.post(
-        "/sessions/",
-        data={"mode": "practice", "source": "exam", "source_ref": "53"},
-    )
-    location = res.headers["location"]
-    session_id = location.split("/sessions/")[1].split("/")[0]
-
-    q_res = client.get(location)
-    opts = re.findall(r'name="selected_option_id" value="(\d+)"', q_res.text)
-    qid_match = re.search(r'name="question_id" value="(\d+)"', q_res.text)
-    assert opts and qid_match
-
-    qid = int(qid_match.group(1))
-    opt_id = int(opts[0])
-
-    # Enviar respuesta vía htmx
-    ans_res = client.post(
-        f"/sessions/{session_id}/answer",
-        data={"question_id": qid, "selected_option_id": opt_id, "n": 1},
-        headers={"HX-Request": "true"},
-    )
-    assert ans_res.status_code == 200
-    assert ans_res.headers.get("cache-control") == "no-store"
-    # En modo práctica se revela feedback inmediato
-    assert "feedback--correct" in ans_res.text or "feedback--wrong" in ans_res.text
-    assert "Siguiente →" in ans_res.text
+def _first_question(html):
+    """(id de la pregunta, ids de sus opciones) de la primera tarjeta de la página."""
+    card = re.search(r'<li class="tq[^"]*"\s+id="q-1">(.*?)</li>', html, re.S).group(1)
+    pairs = re.findall(r'"question_id": "(\d+)", "selected_option_id": "(\d+)"', card)
+    return int(pairs[0][0]), [int(o) for _, o in pairs]
 
 
-def test_exam_mode_timer_and_no_inline_correction(client):
-    # 1. Crear sesión de examen
-    res = client.post(
-        "/sessions/",
-        data={"mode": "exam", "source": "exam", "source_ref": "53"},
-    )
-    assert res.status_code == 303
-    location = res.headers["location"]
-    session_id = location.split("/sessions/")[1].split("/")[0]
-
-    # 2. Verificar que en modo examen SÍ tiene timer y datos de tiempo
-    q_res = client.get(location)
-    assert q_res.status_code == 200
-    assert 'id="timer"' in q_res.text
-    assert "data-seconds=" in q_res.text
-
-    opts = re.findall(r'name="selected_option_id" value="(\d+)"', q_res.text)
-    qid_match = re.search(r'name="question_id" value="(\d+)"', q_res.text)
-    assert opts and qid_match
-
-    qid = int(qid_match.group(1))
-
-    # Obtenemos la pregunta de BD para conocer la opción correcta real
+def _question(qid):
+    from config import SQLITE_PATH
     from infrastructure.db.engine import create_sqlite_engine, session_scope
     from infrastructure.db.repositories.question_repository import QuestionRepository
-    from config import SQLITE_PATH
-    engine = create_sqlite_engine(SQLITE_PATH)
-    with session_scope(engine) as db:
-        q_repo = QuestionRepository(db)
-        question = q_repo.get_by_id(qid)
 
-    correct_opt = next(o for o in question.options if o.is_correct)
-    # Elegimos deliberadamente una opción incorrecta distinta de la correcta
-    wrong_opt = next(o for o in question.options if not o.is_correct)
+    with session_scope(create_sqlite_engine(SQLITE_PATH)) as db:
+        return QuestionRepository(db).get_by_id(qid)
 
-    # 3. Enviar respuesta errónea vía htmx
-    ans_res = client.post(
-        f"/sessions/{session_id}/answer",
-        data={"question_id": qid, "selected_option_id": wrong_opt.id, "n": 1},
-        headers={"HX-Request": "true"},
-    )
-    assert ans_res.status_code == 200
-    assert ans_res.headers.get("cache-control") == "no-store"
 
-    # En modo examen solo se confirma guardado, NUNCA se muestra corrección ni texto de la opción correcta
-    assert "feedback--saved" in ans_res.text or "Respuesta guardada" in ans_res.text
-    assert "feedback--correct" not in ans_res.text
-    assert "feedback--wrong" not in ans_res.text
-    assert "Respuesta correcta:" not in ans_res.text
-    assert "Respuesta incorrecta" not in ans_res.text
+def test_create_session_opens_the_whole_test_in_one_page(client):
+    res, sid = _start(client)
+    assert res.headers["location"] == f"/sessions/{sid}"
+    page = client.get(res.headers["location"])
+    assert page.status_code == 200
+    assert page.headers.get("cache-control") == "no-store"
+    assert page.text.count('class="tq__statement"') == len(re.findall(r'id="q-\d+"', page.text)) > 1
+    assert "Dejar en blanco" not in page.text                  # no es una opción más
+    assert 'id="test-summary"' in page.text and "Corregir" in page.text
+    assert 'name="instant" value="1"' in page.text and "checked" in page.text   # práctica: corrige al responder
+    assert 'id="timer"' not in page.text                        # práctica sin tiempo
 
-    # Anti-leak estricto: el texto de la opción correcta NO debe aparecer en el HTML devuelto
-    assert correct_opt.text not in ans_res.text
+
+def test_old_question_links_go_to_the_question_inside_the_page(client):
+    _, sid = _start(client)
+    res = client.get(f"/sessions/{sid}/question/7")
+    assert res.status_code == 303 and res.headers["location"] == f"/sessions/{sid}#q-7"
+    assert client.get(f"/sessions/{sid}/question/1?requested=200").headers["location"] == f"/sessions/{sid}?requested=200#q-1"
+
+
+def test_click_answers_and_click_again_leaves_it_blank_when_correcting_at_the_end(client):
+    _, sid = _start(client, mode="exam")
+    qid, options = _first_question(client.get(f"/sessions/{sid}").text)
+    question = _question(qid)
+    wrong = next(o for o in question.options if not o.is_correct)
+
+    res = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
+    assert res.status_code == 200 and res.headers.get("cache-control") == "no-store"
+    assert 'id="q-1"' in res.text and 'hx-swap-oob="true"' in res.text
+    assert re.search(r"<strong>1</strong>/\d+ contestadas", res.text)
+    # Corrección al final: ni veredicto, ni la correcta, ni la explicación (sin filtraciones)
+    assert "Correcta" not in res.text and "Incorrecta" not in res.text and "opt--right" not in res.text
     if question.justification:
-        assert question.justification not in ans_res.text
+        assert question.justification not in res.text
+    assert "↺ Borrar respuesta" in res.text
+
+    again = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
+    assert re.search(r"<strong>0</strong>/\d+ contestadas", again.text)
+    assert "opt--selected" not in again.text
+
+    client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
+    cleared = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": ""})
+    assert re.search(r"<strong>0</strong>/\d+ contestadas", cleared.text)
 
 
+def test_practice_corrects_on_answer_and_locks_the_question(client):
+    _, sid = _start(client)
+    qid, _ = _first_question(client.get(f"/sessions/{sid}").text)
+    question = _question(qid)
+    correct = next(o for o in question.options if o.is_correct)
+    wrong = next(o for o in question.options if not o.is_correct)
 
-def test_result_sheet_and_subsequent_question_access_redirects(client):
-    # Crear sesión examen
-    res = client.post(
-        "/sessions/",
-        data={"mode": "exam", "source": "exam", "source_ref": "53"},
-    )
-    location = res.headers["location"]
-    session_id = location.split("/sessions/")[1].split("/")[0]
+    res = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
+    assert "❌ Incorrecta" in res.text and "opt--right" in res.text and "opt--bad" in res.text
+    assert "Nota ahora:" in res.text
+    assert "no se puede cambiar" in res.text and "↺ Borrar respuesta" not in res.text
+    # Ya corregida: pulsar otra opción no cambia la respuesta
+    locked = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": correct.id})
+    assert "❌ Incorrecta" in locked.text
 
-    # Ver resultados (cierra la sesión perezosamente)
-    result_res = client.get(f"/sessions/{session_id}/result")
-    assert result_res.status_code == 200
-    assert result_res.headers.get("cache-control") == "no-store"
-    assert "scoreboard" in result_res.text
-    assert "Desglose" in result_res.text
-    assert "Total evaluable:" in result_res.text
 
-    # Al haber cerrado la sesión, cualquier intento de ir a una pregunta redirige a resultados
-    q_after_close = client.get(f"/sessions/{session_id}/question/1")
-    assert q_after_close.status_code == 303
-    assert q_after_close.headers["location"] == f"/sessions/{session_id}/result"
+def test_option_must_belong_to_the_question(client):
+    _, sid = _start(client)
+    qid, _ = _first_question(client.get(f"/sessions/{sid}").text)
+    assert client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": 1}).status_code == 400
+    assert client.post(f"/sessions/{sid}/answer", data={"question_id": 1, "selected_option_id": ""}).status_code == 404
+
+
+def test_reveal_shows_the_answer_without_counting(client):
+    _, sid = _start(client, mode="exam")
+    qid, _ = _first_question(client.get(f"/sessions/{sid}").text)
+    res = client.get(f"/sessions/{sid}/questions/{qid}/card", params={"reveal": "1"})
+    assert "👁 Respuesta correcta:" in res.text and "no cuenta para la nota" in res.text and "opt--right" in res.text
+    assert re.search(r"<strong>0</strong>/\d+ contestadas", res.text)
+    assert "Ocultar respuesta" in res.text and "hx-post" in res.text        # se puede contestar igualmente
+    hidden = client.get(f"/sessions/{sid}/questions/{qid}/card")
+    assert "opt--right" not in hidden.text
+
+
+def test_doubtful_mark_is_kept_across_tests(client):
+    from config import SQLITE_PATH
+    from infrastructure.db.engine import create_sqlite_engine, session_scope
+    from infrastructure.db.repositories.mark_repository import MarkRepository
+
+    _, sid = _start(client)
+    qid, _ = _first_question(client.get(f"/sessions/{sid}").text)
+    with session_scope(create_sqlite_engine(SQLITE_PATH)) as db:  # otros tests pueden haberla marcado
+        MarkRepository(db).set_doubtful(qid, False)
+    res = client.post(f"/sessions/{sid}/questions/{qid}/doubtful")
+    assert "🔖 Dudosa" in res.text and "tq--doubtful" in res.text and re.search(r"🔖 \d+ dudosas?<", res.text)
+    _, other = _start(client)
+    assert "tq--doubtful" in _card_html(client.get(f"/sessions/{other}").text, 1)
+    client.post(f"/sessions/{other}/questions/{qid}/doubtful")
+    assert "tq--doubtful" not in _card_html(client.get(f"/sessions/{sid}").text, 1)
+
+
+def test_feedback_mode_can_change_mid_test(client):
+    _, sid = _start(client, mode="exam")
+    assert not re.search(r'name="instant" value="1"[^>]*checked', client.get(f"/sessions/{sid}").text)
+    res = client.post(f"/sessions/{sid}/feedback-mode", data={"instant": "1"})
+    assert res.status_code == 303 and res.headers["location"] == f"/sessions/{sid}"
+    assert re.search(r'name="instant" value="1"[^>]*checked', client.get(f"/sessions/{sid}").text)
+    client.post(f"/sessions/{sid}/feedback-mode", data={})
+    assert not re.search(r'name="instant" value="1"[^>]*checked', client.get(f"/sessions/{sid}").text)
+
+
+def test_exam_mode_keeps_the_timer(client):
+    _, sid = _start(client, mode="exam")
+    page = client.get(f"/sessions/{sid}").text
+    assert 'id="timer"' in page and "data-seconds=" in page
+
+
+def test_correct_any_time_and_result_shows_every_answer(client):
+    _, sid = _start(client, mode="exam")
+    qid, _ = _first_question(client.get(f"/sessions/{sid}").text)
+    wrong = next(o for o in _question(qid).options if not o.is_correct)
+    client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
+
+    res = client.post(f"/sessions/{sid}/close")
+    assert res.status_code == 303 and res.headers["location"] == f"/sessions/{sid}/result"
+    sheet = client.get(res.headers["location"])
+    assert sheet.status_code == 200 and sheet.headers.get("cache-control") == "no-store"
+    assert "scoreboard" in sheet.text and "Desglose" in sheet.text and "Resultado del simulacro" in sheet.text
+    assert "❌ Incorrecta" in sheet.text and "⬜ Sin contestar" in sheet.text
+    # También las preguntas en blanco muestran la correcta
+    assert "opt--right" in _card_html(sheet.text, 2)
+    assert "hx-post" not in _card_html(sheet.text, 1).split('class="tq__tools"')[0]   # ya no se responde
+    # Cerrada: la pantalla del test y los enlaces antiguos llevan a resultados
+    assert client.get(f"/sessions/{sid}").headers["location"] == f"/sessions/{sid}/result"
+    late = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
+    assert late.headers.get("HX-Redirect") == f"/sessions/{sid}/result"
+    assert client.get("/sessions/no-existe/result").status_code == 404
 
 
 def test_cross_navigation_ui_components(client):
@@ -223,44 +234,39 @@ def test_cross_navigation_ui_components(client):
         res = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
         session_id = res.headers["location"].split("/sessions/")[1].split("/")[0]
 
-        # 2. Responder pregunta 18012 (enlace único -> note-pill)
-        ans_single = client.post(
-            f"/sessions/{session_id}/answer",
-            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
-        )
-        assert ans_single.status_code == 200
-        assert "note-pill" in ans_single.text
-        assert "tema-i-01-derecho-constitucional" in ans_single.text
-        assert "note-dropdown" not in ans_single.text
+        option_of = {qid: _question(qid).options[0].id for qid in (18012, 18044)}
 
-        # 3. Responder pregunta 18044 (enlace múltiple -> note-dropdown)
-        ans_multi = client.post(
-            f"/sessions/{session_id}/answer",
-            data={"question_id": 18044, "selected_option_id": 1, "n": 2},
-        )
-        assert ans_multi.status_code == 200
-        assert "note-dropdown" in ans_multi.text
-        assert "Ver apuntes relacionados (2)" in ans_multi.text
-        assert "tema-i-09-admin-digital" in ans_multi.text
-        assert "tema-i-09-ens-eni" in ans_multi.text
+        # 2. Responder pregunta 18012 (un apunte enlazado)
+        ans_single = client.post(f"/sessions/{session_id}/answer",
+                                 data={"question_id": 18012, "selected_option_id": option_of[18012]})
+        assert ans_single.status_code == 200
+        notes = re.search(r'<p class="tq__notes">(.*?)</p>', ans_single.text, re.S).group(1)
+        assert "/notes/tema-i-01-derecho-constitucional" in notes and notes.count("<a ") == 1
+
+        # 3. Responder pregunta 18044 (dos apuntes enlazados)
+        ans_multi = client.post(f"/sessions/{session_id}/answer",
+                                data={"question_id": 18044, "selected_option_id": option_of[18044]})
+        notes = re.search(r'<p class="tq__notes">(.*?)</p>', ans_multi.text, re.S).group(1)
+        assert notes.count("<a ") == 2
+        assert "tema-i-09-admin-digital" in notes and "tema-i-09-ens-eni" in notes
 
         # 4. Ver hoja de resultados y comprobar que incluye los enlaces
         res_sheet = client.get(f"/sessions/{session_id}/result")
         assert res_sheet.status_code == 200
-        assert "note-pill" in res_sheet.text
-        assert "note-dropdown" in res_sheet.text
+        assert "/notes/tema-i-01-derecho-constitucional" in res_sheet.text
+        assert "/notes/tema-i-09-ens-eni" in res_sheet.text
 
         # 5. Práctica por apunte: POST /sessions/practice/by-note/tema-i-01-derecho-constitucional
-        # 5a. Sin seguir redirecciones: verifica el 303 que redirige a la pregunta 1
+        # 5a. Sin seguir redirecciones: verifica el 303 que lleva a la pantalla del test
         res_by_note = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional")
         assert res_by_note.status_code == 303
-        assert re.search(r"/sessions/[^/]+/question/1$", res_by_note.headers["location"])
+        assert re.search(r"/sessions/[0-9a-f]+$", res_by_note.headers["location"])
 
-        # 5b. Cadena completa (POST 303 -> GET 200 a /sessions/{id}/question/1)
+        # 5b. Cadena completa (POST 303 -> GET 200 a /sessions/{id})
         res_full_chain = client.post("/sessions/practice/by-note/tema-i-01-derecho-constitucional", follow_redirects=True)
         assert res_full_chain.status_code == 200
-        assert re.search(r"/sessions/[^/]+/question/1$", str(res_full_chain.url))
-        assert "Pregunta" in res_full_chain.text
+        assert re.search(r"/sessions/[0-9a-f]+$", str(res_full_chain.url))
+        assert "tq__statement" in res_full_chain.text
 
         # 6. Práctica por apunte sin preguntas vinculadas -> redirige a / con 303
         res_empty = client.post("/sessions/practice/by-note/no-existe", follow_redirects=True)
@@ -291,20 +297,16 @@ def test_cross_navigation_graceful_degradation_when_linking_offline(client):
         res_session = client.post("/sessions/", data={"mode": "practice", "source": "exam", "source_ref": "53"})
         session_id = res_session.headers["location"].split("/sessions/")[1].split("/")[0]
 
-        # Al responder, responde 200 sin lanzar 500 y sin pintar píldoras de apuntes
-        ans_res = client.post(
-            f"/sessions/{session_id}/answer",
-            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
-        )
+        # Al responder, responde 200 sin lanzar 500 y sin enlaces a apuntes
+        ans_res = client.post(f"/sessions/{session_id}/answer",
+                              data={"question_id": 18012, "selected_option_id": _question(18012).options[0].id})
         assert ans_res.status_code == 200
-        assert "note-pill" not in ans_res.text
-        assert "note-dropdown" not in ans_res.text
+        assert "tq__notes" not in ans_res.text
 
-        # 3. Al ver resultados, responde 200 sin lanzar 500 y sin píldoras
+        # 3. Al ver resultados, responde 200 sin lanzar 500 y sin enlaces
         res_sheet = client.get(f"/sessions/{session_id}/result")
         assert res_sheet.status_code == 200
-        assert "note-pill" not in res_sheet.text
-        assert "note-dropdown" not in res_sheet.text
+        assert "tq__notes" not in res_sheet.text
 
     finally:
         app.dependency_overrides.pop(get_linking_client, None)
@@ -372,33 +374,28 @@ def test_root_path_prefix_guardian(monkeypatch):
         assert res_create.status_code == 303
         loc_create = res_create.headers["location"]
         assert loc_create.startswith("/tests/sessions/"), f"Location sin prefijo: {loc_create}"
-        assert loc_create.endswith("/question/1")
-        session_id = loc_create.split("/sessions/")[1].split("/")[0]
+        session_id = loc_create.rstrip("/").split("/sessions/")[1]
 
-        # 3. Pregunta 1 en modo examen con cronómetro
-        res_q = t_client.get(f"/sessions/{session_id}/question/1")
+        # 3. Pantalla del test en modo examen con cronómetro
+        res_q = t_client.get(f"/sessions/{session_id}")
         assert res_q.status_code == 200
-        assert_no_unprefixed_urls(res_q.text, "Pregunta examen")
+        assert_no_unprefixed_urls(res_q.text, "Pantalla del test")
         assert f'hx-post="/tests/sessions/{session_id}/answer"' in res_q.text
+        assert f'action="/tests/sessions/{session_id}/close"' in res_q.text
         assert f'window.location.href = "/tests/sessions/{session_id}/result"' in res_q.text
 
         # 4. Enviar respuesta por htmx (POST /sessions/{id}/answer)
-        res_ans = t_client.post(
-            f"/sessions/{session_id}/answer",
-            data={"question_id": 18012, "selected_option_id": 1, "n": 1},
-        )
+        qid, options = _first_question(res_q.text)
+        res_ans = t_client.post(f"/sessions/{session_id}/answer",
+                                data={"question_id": qid, "selected_option_id": options[0]})
         assert res_ans.status_code == 200
-        assert_no_unprefixed_urls(res_ans.text, "Feedback respuesta")
-        assert f'href="/tests/sessions/{session_id}/question/2"' in res_ans.text
+        assert_no_unprefixed_urls(res_ans.text, "Tarjeta tras responder")
+        assert f'hx-post="/tests/sessions/{session_id}/questions/{qid}/doubtful"' in res_ans.text
 
-        # 5. Redirecciones bounds checking
-        res_under = t_client.get(f"/sessions/{session_id}/question/0")
-        assert res_under.status_code == 303
-        assert res_under.headers["location"] == f"/tests/sessions/{session_id}/question/1"
-
-        res_over = t_client.get(f"/sessions/{session_id}/question/9999")
-        assert res_over.status_code == 303
-        assert res_over.headers["location"] == f"/tests/sessions/{session_id}/result"
+        # 5. Enlaces antiguos a una pregunta
+        res_old = t_client.get(f"/sessions/{session_id}/question/3")
+        assert res_old.status_code == 303
+        assert res_old.headers["location"] == f"/tests/sessions/{session_id}#q-3"
 
         # 6. Hoja de resultados (/sessions/{id}/result)
         res_res = t_client.get(f"/sessions/{session_id}/result")
@@ -409,8 +406,7 @@ def test_root_path_prefix_guardian(monkeypatch):
         # 7. Práctica por apunte - resolución canónica y prefijada
         res_by_note_proc = t_client.post("/sessions/practice/by-note/tema-i-01")
         assert res_by_note_proc.status_code == 303
-        assert res_by_note_proc.headers["location"].startswith("/tests/sessions/")
-        assert res_by_note_proc.headers["location"].endswith("/question/1")
+        assert re.fullmatch(r"/tests/sessions/[0-9a-f]+", res_by_note_proc.headers["location"])
 
     finally:
         app.dependency_overrides.pop(get_linking_client, None)

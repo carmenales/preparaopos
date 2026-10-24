@@ -92,6 +92,9 @@ ADDITIVE_COLUMNS: dict[str, list[tuple[str, str]]] = {
         ("year", "INTEGER"),
         ("is_official_exam", "BOOLEAN NOT NULL DEFAULT 0"),
     ],
+    "test_sessions": [
+        ("instant_feedback", "BOOLEAN"),
+    ],
 }
 
 

@@ -1,0 +1,21 @@
+{# Marcador de la barra del test. Se repinta fuera de banda (hx-swap-oob) con cada respuesta. #}
+{% set s = summary %}
+<div id="test-summary" class="test-summary" data-blank="{{ s.blank }}"{% if oob %} hx-swap-oob="true"{% endif %}>
+  <span class="test-summary__item"><strong>{{ s.answered }}</strong>/{{ s.total - s.annulled }} contestadas</span>
+  {% if session.feedback_now %}
+  <span class="test-summary__item tag tag--correct">✅ {{ s.correct }}</span>
+  <span class="test-summary__item tag tag--wrong">❌ {{ s.wrong }}</span>
+  {% if s.estimated_score is not none %}
+  <span class="test-summary__item" title="Nota si corriges ahora y el resto queda en blanco">Nota ahora: <strong>{{ "%.2f"|format(s.estimated_score|float) }}</strong>/10</span>
+  {% endif %}
+  {% endif %}
+  {% if doubtful_count %}<span class="test-summary__item">🔖 {{ doubtful_count }} dudosa{{ "s" if doubtful_count != 1 else "" }}</span>{% endif %}
+  <details class="test-index">
+    <summary>Índice</summary>
+    <ol class="test-index__grid">
+      {% for i in index %}
+      <li><a href="#q-{{ i.n }}" class="test-index__cell test-index__cell--{{ i.state }}{% if i.doubtful %} test-index__cell--doubtful{% endif %}">{{ i.n }}</a></li>
+      {% endfor %}
+    </ol>
+  </details>
+</div>

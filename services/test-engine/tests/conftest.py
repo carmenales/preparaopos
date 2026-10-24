@@ -45,6 +45,10 @@ def _guard_real_database():
     assert config.SQLITE_PATH.resolve() != REAL_DB.resolve(), (
         "Los tests apuntan a la BD real del servicio."
     )
+    # Como al arrancar la app: tablas y columnas nuevas en la copia, aunque el test no importe la app.
+    from infrastructure.db.engine import create_sqlite_engine, init_schema
+
+    init_schema(create_sqlite_engine(config.SQLITE_PATH))
     yield
 
 

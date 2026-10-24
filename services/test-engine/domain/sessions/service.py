@@ -16,7 +16,14 @@ from domain.sessions.generator import (
     question_weights,
     weighted_sample,
 )
-from domain.sessions.models import AnswerResult, QuestionResult, SessionResult, TestAttempt, TestSession
+from domain.sessions.models import (
+    AnswerResult,
+    LiveSummary,
+    QuestionResult,
+    SessionResult,
+    TestAttempt,
+    TestSession,
+)
 
 
 # Regla oficial AGE por defecto si no se indica otra en BD
@@ -226,10 +233,11 @@ class TestSessionService:
         selected_option_id: int | None,
         now: datetime | None = None,
     ) -> AnswerResult | None:
-        """Registra o actualiza una respuesta (upsert).
-        
+        """Registra o actualiza una respuesta (upsert). ``selected_option_id=None`` la borra:
+        la pregunta vuelve a estar sin contestar (cuenta como blanco al corregir).
+
         Si la sesión expiró o está cerrada, rechaza la respuesta.
-        En modo 'practice', devuelve corrección inline. En 'exam', oculta el resultado.
+        Si el test corrige al responder (``feedback_now``), devuelve la corrección; si no, la oculta.
         """
         session = self._sessions.get_by_id(session_id)
         if session is None:
@@ -266,17 +274,20 @@ class TestSessionService:
             if selected_option_id is not None:
                 is_correct = (selected_option_id == correct_option_id)
 
-        attempt = TestAttempt(
-            session_id=session_id,
-            question_id=question_id,
-            selected_option_id=selected_option_id,
-            answered_at=clock,
-            is_correct=is_correct,
-        )
-        self._sessions.save_attempt(attempt)
+        if selected_option_id is None:
+            # Sin respuesta no se guarda fila: así no cuenta como respondida en ninguna estadística.
+            self._sessions.delete_attempt(session_id, question_id)
+        else:
+            self._sessions.save_attempt(TestAttempt(
+                session_id=session_id,
+                question_id=question_id,
+                selected_option_id=selected_option_id,
+                answered_at=clock,
+                is_correct=is_correct,
+            ))
 
-        # 4. Modo práctica vs examen
-        if session.mode == "practice":
+        # 4. Corrección al responder o al final
+        if session.feedback_now:
             return AnswerResult(
                 session_id=session_id,
                 question_id=question_id,
@@ -296,6 +307,61 @@ class TestSessionService:
                 correct_option_id=None,
                 explanation=None,
             )
+
+    def answer_or_clear(self, *, session_id: str, question_id: int, option_id: int | None,
+                        now: datetime | None = None) -> AnswerResult | None:
+        """Pulsar una opción en la pantalla del test: la marca o, si ya era la marcada, la desmarca.
+
+        Con corrección al responder, una pregunta ya contestada queda fijada (ya se ha visto si
+        estaba bien): no se cambia ni se borra. Devuelve None si la sesión está cerrada o expiró.
+        """
+        session = self._sessions.get_by_id(session_id)
+        if session is None:
+            raise ValueError(f"Sesión {session_id} no encontrada")
+        current = next((a for a in session.attempts if a.question_id == question_id), None)
+        if session.feedback_now and current is not None and current.selected_option_id is not None:
+            return AnswerResult(session_id=session_id, question_id=question_id,
+                                selected_option_id=current.selected_option_id, is_saved=False,
+                                is_correct=current.is_correct)
+        if current is not None and option_id is not None and current.selected_option_id == option_id:
+            option_id = None
+        return self.submit_answer(session_id=session_id, question_id=question_id,
+                                  selected_option_id=option_id, now=now)
+
+    def set_feedback_mode(self, session_id: str, instant: bool) -> TestSession:
+        """Cambia entre corregir al responder y corregir al final, también a mitad del test."""
+        session = self._sessions.get_by_id(session_id)
+        if session is None:
+            raise ValueError(f"Sesión {session_id} no encontrada")
+        session.instant_feedback = instant
+        self._sessions.save_session(session)
+        return session
+
+    def _rule_for(self, session: TestSession) -> ScoringRule:
+        rule = None
+        if session.scoring_rule_id and self._scoring_rules:
+            rule = self._scoring_rules.get_by_id(session.scoring_rule_id)
+        return rule or DEFAULT_AGE_SCORING_RULE
+
+    def live_summary(self, session: TestSession, questions_map: dict | None = None) -> LiveSummary:
+        """Contestadas, aciertos, fallos y la nota si se corrigiera ahora (el resto, en blanco)."""
+        questions_map = questions_map if questions_map is not None else self._questions.get_by_ids(session.question_ids)
+        attempts = {a.question_id: a for a in session.attempts if a.selected_option_id is not None}
+        correct = wrong = blank = annulled = 0
+        for qid in session.question_ids:
+            q = questions_map.get(qid)
+            if q and q.is_annulled:
+                annulled += 1
+            elif qid not in attempts:
+                blank += 1
+            elif attempts[qid].is_correct:
+                correct += 1
+            else:
+                wrong += 1
+        score = self._scoring.score_scaled(correct=correct, wrong=wrong, blank=blank, annulled=annulled,
+                                           total_questions=len(session.question_ids), rule=self._rule_for(session))
+        return LiveSummary(total=len(session.question_ids), answered=correct + wrong, correct=correct,
+                           wrong=wrong, blank=blank, annulled=annulled, estimated_score=score)
 
     def get_session(self, session_id: str, now: datetime | None = None) -> TestSession | None:
         """Obtiene una sesión. Si ha expirado y sigue abierta, la cierra perezosamente."""
@@ -369,11 +435,7 @@ class TestSessionService:
             else:
                 wrong_count += 1
 
-        rule = None
-        if session.scoring_rule_id and self._scoring_rules:
-            rule = self._scoring_rules.get_by_id(session.scoring_rule_id)
-        if rule is None:
-            rule = DEFAULT_AGE_SCORING_RULE
+        rule = self._rule_for(session)
 
         final_score = self._scoring.score_scaled(
             correct=correct_count,

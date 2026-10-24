@@ -106,7 +106,7 @@ def test_edit_keeps_option_ids_and_changes_correct(client, db):
 def test_option_chosen_in_an_attempt_cannot_be_removed_nor_question_deleted(client, db):
     qid = _create(client)
     s = client.post("/sessions/", data={"mode": "practice", "source": "questions", "source_ref": str(qid)})
-    sid = re.search(r"/sessions/([0-9a-f]+)/", s.headers["location"]).group(1)
+    sid = re.search(r"/sessions/([0-9a-f]+)", s.headers["location"]).group(1)
     chosen = _scalar(db, "SELECT id FROM question_options WHERE question_id = :q AND option_text = '80'", q=qid)
     client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": chosen, "n": 1},
                 headers={"HX-Request": "true"})

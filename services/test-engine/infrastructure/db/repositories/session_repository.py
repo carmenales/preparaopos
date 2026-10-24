@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session, selectinload
 
 from domain.sessions.models import TestAttempt, TestSession
@@ -41,6 +41,7 @@ class SessionRepository:
                 scoring_rule_id=test_session.scoring_rule_id,
                 exam_id=test_session.exam_id,
                 status=test_session.status,
+                instant_feedback=test_session.instant_feedback,
             )
             self._session.add(row)
         else:
@@ -56,6 +57,7 @@ class SessionRepository:
             row.scoring_rule_id = test_session.scoring_rule_id
             row.exam_id = test_session.exam_id
             row.status = test_session.status
+            row.instant_feedback = test_session.instant_feedback
         self._session.commit()
 
     def get_by_id(self, session_id: str) -> TestSession | None:
@@ -100,6 +102,13 @@ class SessionRepository:
             self._session.add(new_att)
         self._session.commit()
 
+    def delete_attempt(self, session_id: str, question_id: int) -> bool:
+        """Quita la respuesta de una pregunta (vuelve a estar sin contestar). Devuelve si había."""
+        result = self._session.execute(delete(orm.TestAttempt).where(
+            orm.TestAttempt.test_session_id == session_id, orm.TestAttempt.question_id == question_id))
+        self._session.commit()
+        return result.rowcount > 0
+
     @staticmethod
     def _to_domain(row: orm.TestSession) -> TestSession:
         q_ids = []
@@ -122,6 +131,7 @@ class SessionRepository:
             scoring_rule_id=row.scoring_rule_id,
             exam_id=row.exam_id,
             status=row.status,
+            instant_feedback=row.instant_feedback,
             attempts=[
                 TestAttempt(
                     id=att.id,

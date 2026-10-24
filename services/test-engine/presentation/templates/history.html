@@ -33,7 +33,7 @@
           {% if s.is_closed %}
           <a href="{{ url('/sessions/' ~ s.id ~ '/result') }}" class="btn btn--ghost btn--small">Ver</a>
           {% else %}
-          <a href="{{ url('/sessions/' ~ s.id ~ '/question/1') }}" class="btn btn--ghost btn--small">Continuar</a>
+          <a href="{{ url('/sessions/' ~ s.id) }}" class="btn btn--ghost btn--small">Continuar</a>
           {% endif %}
           <form method="post" action="{{ url('/history/' ~ s.id ~ '/delete') }}"
                 onsubmit="return confirm('¿Borrar esta sesión y sus respuestas? No se puede deshacer.');">

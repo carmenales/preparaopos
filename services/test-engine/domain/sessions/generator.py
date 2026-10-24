@@ -28,6 +28,7 @@ class GeneratorFilters:
     year: int | None = None
     official_only: bool = False
     failed_only: bool = False
+    doubtful_only: bool = False
     weighted: bool = False
     count: int = DEFAULT_COUNT
 
@@ -51,6 +52,8 @@ class GeneratorFilters:
             params["official"] = "1"
         if self.failed_only:
             params["failed"] = "1"
+        if self.doubtful_only:
+            params["doubtful"] = "1"
         if self.weighted:
             params["weighted"] = "1"
         return urlencode(params)
@@ -65,6 +68,7 @@ class GeneratorFilters:
             year=int(p["year"]) if p.get("year") else None,
             official_only=p.get("official") == "1",
             failed_only=p.get("failed") == "1",
+            doubtful_only=p.get("doubtful") == "1",
             weighted=p.get("weighted") == "1",
             count=int(p.get("n", DEFAULT_COUNT)),
         )
