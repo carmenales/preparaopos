@@ -128,8 +128,20 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - **Filtrar** (lógica de PreparaTIC): preguntas de examen (todas, ocultarlas o solo ellas), años y número de preguntas. Define las preguntas del test: el marcador, la nota y el tiempo se calculan solo sobre ellas; lo contestado fuera del filtro se conserva por si se vuelve a mostrar. «Restablecer» lo quita. Se guarda en `test_sessions.question_filter` (JSON, aditiva). Tras corregir no cambia.
 - El resultado dice «Has tenido un acierto del X %» y muestra correctas, fallidas, dudosas (en entrenamiento) y no contestadas sobre el total, como PreparaTIC.
 - ⚠️ En el examen 53 (GSI 2024) «Mostrar exclusivamente» las de examen deja el test vacío: esas 101 preguntas tienen `is_official_exam = 0` (ver arriba). La página lo explica en vez de quedarse en blanco.
-- Pendiente para el rediseño: en móvil la barra de navegación superior no cabe y se sale por la derecha.
+- Pendiente para el rediseño: en móvil la barra de navegación superior no cabe y se sale por la derecha (resuelto en `feature/ui-redesign`).
 - Tests: test-engine 93 en local. Comprobado en Chromium (escritorio y móvil: cronómetro parado al abrir, empezar, pausar, detener, ocultar, aviso de tiempo, entrenamiento con dos marcas y filtro) y con el smoke test.
+
+## Rediseño de test-engine al estilo de PreparaTIC (rama `feature/ui-redesign`)
+- Petición de Carmen: la interfaz anterior no se parecía a ninguna de las apps existentes. Se rehace test-engine copiando el diseño de PreparaTIC V3 (colores, medidas y tipografía sacados de su CSS con el navegador).
+- Estructura: barra lateral con iconos (Exámenes, Generar test, Mi Progreso → Tests realizados y Estadísticas, Gestión → Preguntas y Cuestionarios, Apuntes) con la barra azul #001489 en lo activo (amarilla #fedd00 en oscuro); cabecera con el título en azul y el botón de modo claro/oscuro (se recuerda en el navegador; si no, el del sistema). En móvil, hamburguesa y menú deslizante. Se arregla así el desbordamiento de la barra superior en móvil.
+- `presentation/icons.py`: iconos SVG (Heroicons, MIT) como global de Jinja `icon()`; `nav_active()` marca la opción activa. Sin emojis en la interfaz.
+- `static/style.css` nuevo desde cero, con variables para claro y oscuro: grises de PreparaTIC (#e5e7eb/#f3f4f6 y #111827/#1f2937), botones Empezar morado, Ocultar Tiempo y Corregir azules, Filtrar oscuro, interruptor lima.
+- Test: cabecera con el nombre del test, el cronómetro grande y los botones debajo; al bajar aparece la banda oscura fija con el tiempo, Empezar/Pausar, Corregir y las contestadas. Tarjetas como las de PreparaTIC: letra en un cuadrado de 32 px (azul al elegirla, amarilla en oscuro), sin bordes, y los iconos arriba a la derecha (dudosa, borrar respuesta, ver respuesta, editar) con su texto al pasar el ratón.
+- Resultados: tarjeta «Resultados» sobre la cabecera, con «Has tenido un acierto del X % obteniendo una puntuación de N», la tabla de puntos de colores (correctas, fallidas, dudosas, no contestadas) y «Mi Progreso →».
+- Exámenes: cuatro fichas (exámenes, preguntas, tests realizados y dudosas para repasar) y tabla con el estado «Hacer» o la nota del último intento. Historial, estadísticas, generador y gestión en tarjetas y tablas con el mismo estilo.
+- El título del test y del resultado es el nombre real (`StatsRepository.session_label`, el mismo del historial) en vez de «Simulacro»/«Práctica».
+- Tests: test-engine 93 en local (se actualizan las aserciones que buscaban los emojis). Comprobado en Chromium (escritorio y móvil, claro y oscuro, sin scroll horizontal ni errores de consola) y con el smoke test.
+- Pendiente: las gráficas de estadísticas como las de preparadortai (ECharts) van en `feature/stats-parity`; study-assistant se rediseña después.
 
 ## CI (rama `feature/ci-fixes`)
 - Antes: el job de Docker comprobaba preparadortai en el 8080 (ahora es el gateway; preparadortai está en el 8082 y necesita el volcado de MariaDB, que no está en git) y los tests de `services/*` no se ejecutaban.
