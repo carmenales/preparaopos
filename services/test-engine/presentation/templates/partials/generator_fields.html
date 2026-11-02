@@ -2,6 +2,7 @@
    opciones que se quedan en 0 se ocultan, salvo la seleccionada. Se recarga entero (htmx) al
    cambiar cualquier campo. #}
 <div id="generator-fields">
+  <div class="field-grid field-grid--generator">
     <div class="field">
       <label for="scope">Bloque o tema</label>
       <select id="scope" name="scope">
@@ -35,6 +36,14 @@
       </select>
     </div>
 
+    <div class="field">
+      <label for="count">Número de preguntas</label>
+      <select id="count" name="count">
+        {% for n in count_choices %}<option value="{{ n }}" {% if n == v.count %}selected{% endif %}>{{ n }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+
     <div class="field field--checks">
       <label><input type="checkbox" name="official" value="1" {% if v.official %}checked{% elif not facets.official %}disabled{% endif %}>
         Solo preguntas de examen oficial ({{ facets.official }})</label>
@@ -50,13 +59,6 @@
       {% else %}
       <small class="field__hint">No disponible en este temario: no tiene preguntas de examen oficial clasificadas por tema.</small>
       {% endif %}
-    </div>
-
-    <div class="field">
-      <label for="count">Número de preguntas</label>
-      <select id="count" name="count">
-        {% for n in count_choices %}<option value="{{ n }}" {% if n == v.count %}selected{% endif %}>{{ n }}</option>{% endfor %}
-      </select>
     </div>
 
     <p id="available" class="generator__available" aria-live="polite">{{ available_html | safe }}</p>
