@@ -66,6 +66,17 @@ class StatsRepository:
             })
         return sessions
 
+    def session_label(self, session_id: str) -> str | None:
+        """Nombre legible de un test (el mismo que en el historial): examen, generado, apunte..."""
+        row = self._session.execute(text(
+            "SELECT s.source, s.source_ref, e.name AS exam_name FROM test_sessions s "
+            "LEFT JOIN exams e ON e.id = s.exam_id WHERE s.id = :id"
+        ), {"id": session_id}).fetchone()
+        if row is None:
+            return None
+        syllabus_names = dict(self._session.execute(text("SELECT id, name FROM syllabi")).fetchall())
+        return self._label(row, syllabus_names)
+
     @staticmethod
     def _label(row, syllabus_names: dict[str, str]) -> str:
         ref = row.source_ref or ""
