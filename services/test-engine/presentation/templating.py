@@ -6,6 +6,7 @@ import os
 from fastapi.templating import Jinja2Templates
 
 from config import ROOT_PATH, TEMPLATES_DIR, prefix_url
+from presentation.icons import icon
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
@@ -23,3 +24,16 @@ def study_assistant_home() -> str:
 
 
 templates.env.globals["study_assistant_home"] = study_assistant_home
+templates.env.globals["icon"] = icon
+
+
+def nav_active(request, *prefixes: str) -> bool:
+    """¿La página actual pertenece a esta sección del menú? (rutas sin ROOT_PATH)."""
+    path = request.url.path if request is not None else ""
+    root = os.getenv("ROOT_PATH", ROOT_PATH).rstrip("/")
+    if root and path.startswith(root + "/"):
+        path = path[len(root):]
+    return any(path == p if p == "/" else path.startswith(p) for p in prefixes)
+
+
+templates.env.globals["nav_active"] = nav_active
