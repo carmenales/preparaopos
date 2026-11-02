@@ -3,48 +3,51 @@
 
 {% block content %}
 <section class="result-page">
-  <h1>Resultado {{ 'del simulacro' if session.mode == 'exam' else 'de la práctica' }}</h1>
-
-  {# ── Marcador global ─────────────────────────────────────────── #}
-  <div class="scoreboard">
-    {% if result.final_score is not none %}
-    <div class="scoreboard__score
-      {% if result.final_score|float >= 5 %}scoreboard__score--pass{% else %}scoreboard__score--fail{% endif %}">
-      {{ "%.2f"|format(result.final_score|float) }}
-      <span class="scoreboard__scale">/ 10</span>
-    </div>
+  {# ── Cabecera del test y tarjeta «Resultados», como en PreparaTIC ── #}
+  <div class="test-hero result-hero">
+    <span class="test-hero__badge pill pill--blue">{{ mode_label }}</span>
+    <p class="test-bar__title">{{ test_name or mode_label }}</p>
+    <h1 class="test-hero__sub">Resultado {{ 'del simulacro' if session.mode == 'exam' else 'de la práctica' }}</h1>
+    {% if timer.started %}{% set e, l = timer.elapsed, timer.limit %}
+    <p class="timer result-hero__time" title="Tiempo empleado">{{ '%02d:%02d:%02d'|format(e // 3600, e % 3600 // 60, e % 60) }}</p>
+    <p class="test-hero__sub">de {{ '%02d:%02d:%02d'|format(l // 3600, l % 3600 // 60, l % 60) }}{% if e > l %} · te pasaste del tiempo{% endif %}</p>
     {% endif %}
-
-    {% set pct = (result.correct_count * 100 / result.total_evaluable) if result.total_evaluable else 0 %}
-    <p class="scoreboard__rate">Has tenido un acierto del <strong>{{ "%.2f"|format(pct) }}%</strong></p>
-    <div class="scoreboard__breakdown">
-      <span class="tag tag--correct">✅ {{ result.correct_count }} / {{ result.total_evaluable }} correctas</span>
-      <span class="tag tag--wrong">❌ {{ result.wrong_count }} / {{ result.total_evaluable }} fallidas</span>
-      {% if session.training %}<span class="tag tag--doubtful" title="Varias opciones marcadas en modo entrenamiento">🤔 {{ result.doubtful_count }} dudosas{% if result.doubtful_count %} ({{ result.doubtful_right }} con la correcta marcada){% endif %}</span>{% endif %}
-      <span class="tag tag--blank">⬜ {{ result.blank_count }} / {{ result.total_evaluable }} no contestadas</span>
-      {% if result.annulled_count > 0 %}
-      <span class="tag tag--annulled">🚫 {{ result.annulled_count }} anuladas</span>
-      {% endif %}
-    </div>
-    <p class="scoreboard__total">Total evaluable: {{ result.total_evaluable }} preguntas
-      {% if timer.started %}{% set e, l = timer.elapsed, timer.limit %}
-      · ⏱ {{ '%02d:%02d:%02d'|format(e // 3600, e % 3600 // 60, e % 60) }} de {{ '%02d:%02d:%02d'|format(l // 3600, l % 3600 // 60, l % 60) }}{% if e > l %} (te pasaste del tiempo){% endif %}
-      {% endif %}</p>
   </div>
 
-  <div class="result-actions">
-    <a href="{{ url('/') }}" class="btn btn--secondary">← Volver al catálogo</a>
-    <a href="{{ url('/history/') }}" class="btn btn--ghost">Historial</a>
-    {% if doubtful_count %}
-    <a href="{{ url('/generator/?doubtful=1&syllabus_id=' ~ review_syllabus) }}" class="btn btn--ghost">🔖 Repasar dudosas ({{ doubtful_count }} de este test)</a>
-    {% endif %}
+  {% set total = result.total_evaluable %}
+  {% set pct = (result.correct_count * 100 / total) if total else 0 %}
+  <div class="result-card">
+    <h2>Resultados</h2>
+    <p class="result-card__line">Has tenido un acierto del <span class="result-card__big">{{ "%.2f"|format(pct) }}%</span>
+      {% if result.final_score is not none %}obteniendo una puntuación de
+      <span class="result-card__big result-card__score--{{ 'pass' if result.final_score|float >= 5 else 'fail' }}">{{ "%.2f"|format(result.final_score|float) }}</span>{% endif %}</p>
+    <table class="result-table">
+      <tbody>
+        <tr><th><span class="dot dot--green"></span>Correctas</th><td>{{ result.correct_count }} / {{ total }}</td></tr>
+        <tr><th><span class="dot dot--red"></span>Fallidas</th><td>{{ result.wrong_count }} / {{ total }}</td></tr>
+        {% if session.training %}
+        <tr title="Varias opciones marcadas en modo entrenamiento"><th><span class="dot dot--yellow"></span>Dudosas</th>
+          <td>{{ result.doubtful_count }} / {{ total }}{% if result.doubtful_count %} ({{ result.doubtful_right }} con la correcta marcada){% endif %}</td></tr>
+        {% endif %}
+        <tr><th><span class="dot dot--gray"></span>No Contestadas</th><td>{{ result.blank_count }} / {{ total }}</td></tr>
+        {% if result.annulled_count > 0 %}
+        <tr><th><span class="dot dot--gray"></span>Anuladas (no cuentan)</th><td>{{ result.annulled_count }}</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <div class="result-actions">
+      {% if doubtful_count %}
+      <a href="{{ url('/generator/?doubtful=1&syllabus_id=' ~ review_syllabus) }}" class="btn btn--secondary">{{ icon('bookmark') }} Repasar dudosas ({{ doubtful_count }})</a>
+      {% endif %}
+      <a href="{{ url('/') }}" class="btn btn--secondary">Exámenes</a>
+      <a href="{{ url('/stats/') }}" class="btn btn--indigo">Mi Progreso {{ icon('arrow-right') }}</a>
+    </div>
   </div>
 
   {# ── Desglose pregunta a pregunta: las tarjetas del test, ya corregidas ── #}
-  <h2>Desglose</h2>
+  <h2 class="section-title">Desglose</h2>
   <ol class="test-list">
     {% for card in cards %}{% include "partials/question_card.html" %}{% endfor %}
   </ol>
 </section>
 {% endblock %}
-
