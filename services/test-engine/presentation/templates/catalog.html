@@ -1,39 +1,69 @@
 {% extends "base.html" %}
-{% block title %}Catálogo de exámenes{% endblock %}
+{% block title %}Exámenes{% endblock %}
 
 {% block content %}
 <section class="catalog">
-  <h1>Exámenes disponibles</h1>
-  <p class="catalog__generator"><a href="{{ url('/generator/') }}" class="btn btn--ghost">🧪 Generar test por temario, bloque, tema, año o falladas</a></p>
+  <div class="page-head">
+    <h1>Exámenes disponibles</h1>
+    <div class="page-head__actions">
+      <a href="{{ url('/generator/') }}" class="btn btn--purple">{{ icon('sparkles') }} Generar test</a>
+    </div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile">
+      <span class="tile__icon tile__icon--orange">{{ icon('doc') }}</span>
+      <div><p class="tile__label">Exámenes</p><p class="tile__value">{{ totals.exams }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--teal">{{ icon('stack') }}</span>
+      <div><p class="tile__label">Preguntas</p><p class="tile__value">{{ totals.questions }}</p></div>
+    </div>
+    <a class="tile tile--link" href="{{ url('/history/') }}">
+      <span class="tile__icon tile__icon--blue">{{ icon('ok') }}</span>
+      <div><p class="tile__label">Tests realizados</p><p class="tile__value">{{ totals.done }}</p></div>
+    </a>
+    <a class="tile tile--link" href="{{ url('/generator/?doubtful=1') }}">
+      <span class="tile__icon tile__icon--green">{{ icon('bookmark') }}</span>
+      <div><p class="tile__label">Dudosas para repasar</p><p class="tile__value">{{ totals.doubtful }}</p></div>
+    </a>
+  </div>
 
   {% if exams %}
-  <ul class="exam-list">
-    {% for exam in exams %}
-    <li class="exam-card">
-      <div class="exam-card__info">
-        <strong>{{ exam.name }}</strong>
-        {% if exam.year %}<span class="tag">{{ exam.year }}</span>{% endif %}
-        {% if exam.convocatoria %}<span class="tag">{{ exam.convocatoria }}</span>{% endif %}
-        {% if exam.duration_min %}<span class="tag">⏱ {{ exam.duration_min }} min</span>{% endif %}
-      </div>
-      <div class="exam-card__actions">
-        <form method="post" action="{{ url('/sessions/') }}">
-          <input type="hidden" name="source" value="exam">
-          <input type="hidden" name="source_ref" value="{{ exam.id }}">
-          <button type="submit" name="mode" value="exam" class="btn btn--primary">
-            🎯 Simulacro oficial
-          </button>
-          <button type="submit" name="mode" value="practice" class="btn btn--secondary">
-            📖 Práctica con corrección
-          </button>
-        </form>
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr><th>Examen</th><th>Año</th><th class="num">Preguntas</th><th class="num">Tiempo</th><th>Estado</th><th class="actions"><span class="sr-only">Empezar</span></th></tr>
+      </thead>
+      <tbody>
+        {% for exam in exams %}
+        <tr>
+          <td><strong>{{ exam.name }}</strong>{% if exam.convocatoria %}<br><span class="hint">{{ exam.convocatoria }}</span>{% endif %}</td>
+          <td class="nowrap">{{ exam.year or "—" }}</td>
+          <td class="num">{{ exam.n_questions }}</td>
+          <td class="num nowrap">{{ exam.duration_min ~ " min" if exam.duration_min else "—" }}</td>
+          <td>
+            {% if exam.n_done %}
+            <span class="pill {{ 'pill--green' if exam.last_score is not none and exam.last_score >= 5 else 'pill--red' }}"
+                  title="Hecho {{ exam.n_done }} {{ 'vez' if exam.n_done == 1 else 'veces' }}; nota de la última">
+              {{ "%.2f"|format(exam.last_score) if exam.last_score is not none else "Hecho" }}</span>
+            {% else %}<span class="pill pill--blue">Hacer</span>{% endif %}
+          </td>
+          <td class="actions">
+            <form method="post" action="{{ url('/sessions/') }}">
+              <input type="hidden" name="source" value="exam">
+              <input type="hidden" name="source_ref" value="{{ exam.id }}">
+              <button type="submit" name="mode" value="exam" class="btn btn--small btn--purple" title="Se corrige al final, como el examen real">Simulacro oficial</button>
+              <button type="submit" name="mode" value="practice" class="btn btn--small btn--secondary" title="Ves si aciertas al contestar cada pregunta">Práctica con corrección</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
   {% else %}
-  <p class="empty-state">No hay exámenes importados aún.</p>
+  <div class="card empty-state">No hay exámenes importados aún.</div>
   {% endif %}
 </section>
 {% endblock %}
-
