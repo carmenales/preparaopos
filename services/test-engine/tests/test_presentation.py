@@ -85,7 +85,7 @@ def test_click_answers_and_click_again_leaves_it_blank_when_correcting_at_the_en
     assert "Correcta" not in res.text and "Incorrecta" not in res.text and "opt--right" not in res.text
     if question.justification:
         assert question.justification not in res.text
-    assert "↺ Borrar respuesta" in res.text
+    assert "Borrar respuesta" in res.text
 
     again = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
     assert re.search(r"<strong>0</strong>/\d+ contestadas", again.text)
@@ -104,12 +104,12 @@ def test_practice_corrects_on_answer_and_locks_the_question(client):
     wrong = next(o for o in question.options if not o.is_correct)
 
     res = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong.id})
-    assert "❌ Incorrecta" in res.text and "opt--right" in res.text and "opt--bad" in res.text
+    assert "Incorrecta" in res.text and "opt--right" in res.text and "opt--bad" in res.text
     assert "Nota ahora:" in res.text
-    assert "no se puede cambiar" in res.text and "↺ Borrar respuesta" not in res.text
+    assert "no se puede cambiar" in res.text and "Borrar respuesta" not in res.text
     # Ya corregida: pulsar otra opción no cambia la respuesta
     locked = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": correct.id})
-    assert "❌ Incorrecta" in locked.text
+    assert "Incorrecta" in locked.text
 
 
 def test_option_must_belong_to_the_question(client):
@@ -123,7 +123,7 @@ def test_reveal_shows_the_answer_without_counting(client):
     _, sid = _start(client, mode="exam")
     qid, _ = _first_question(client.get(f"/sessions/{sid}").text)
     res = client.get(f"/sessions/{sid}/questions/{qid}/card", params={"reveal": "1"})
-    assert "👁 Respuesta correcta:" in res.text and "no cuenta para la nota" in res.text and "opt--right" in res.text
+    assert "Respuesta correcta:" in res.text and "no cuenta para la nota" in res.text and "opt--right" in res.text
     assert re.search(r"<strong>0</strong>/\d+ contestadas", res.text)
     assert "Ocultar respuesta" in res.text and "hx-post" in res.text        # se puede contestar igualmente
     hidden = client.get(f"/sessions/{sid}/questions/{qid}/card")
@@ -140,7 +140,7 @@ def test_doubtful_mark_is_kept_across_tests(client):
     with session_scope(create_sqlite_engine(SQLITE_PATH)) as db:  # otros tests pueden haberla marcado
         MarkRepository(db).set_doubtful(qid, False)
     res = client.post(f"/sessions/{sid}/questions/{qid}/doubtful")
-    assert "🔖 Dudosa" in res.text and "tq--doubtful" in res.text and re.search(r"🔖 \d+ dudosas?<", res.text)
+    assert "tool--on" in res.text and "tq--doubtful" in res.text and re.search(r"</svg> \d+ dudosas?<", res.text)
     _, other = _start(client)
     assert "tq--doubtful" in _card_html(client.get(f"/sessions/{other}").text, 1)
     client.post(f"/sessions/{other}/questions/{qid}/doubtful")
@@ -162,13 +162,13 @@ def test_timer_never_starts_by_itself(client):
     _, sid = _start(client, mode="exam")
     page = client.get(f"/sessions/{sid}").text
     assert 'id="timer"' in page and 'data-limit="6000"' in page and 'data-running="false"' in page
-    assert "▶ Empezar" in page and "Ocultar Tiempo" in page and "Detener" not in page
-    assert "✔ Corregir" in page and "⛃ Filtrar" in page and "Modo Entrenamiento" in page
+    assert ">Empezar<" in page and "Ocultar Tiempo" in page and "Detener" not in page
+    assert ">Corregir<" in page and " Filtrar" in page and "Modo Entrenamiento" in page
     assert 'id="timeout-dialog"' in page and "Un poquito más" in page
 
     _, practice = _start(client)
     page = client.get(f"/sessions/{practice}").text
-    assert 'data-running="false"' in page and "▶ Empezar" in page
+    assert 'data-running="false"' in page and ">Empezar<" in page
     assert re.search(r'data-limit="(\d+)"', page).group(1) == str(60 * len(re.findall(r'id="q-\d+"', page)))
 
 
@@ -186,7 +186,7 @@ def test_timer_endpoint_pauses_resumes_and_resets(client):
 
     client.post(f"/sessions/{sid}/timer", data={"action": "start"})
     client.post(f"/sessions/{sid}/close")
-    assert "⏱ 00:00:0" in client.get(f"/sessions/{sid}/result").text
+    assert "result-hero__time" in (r := client.get(f"/sessions/{sid}/result").text) and ">00:00:0" in r
 
 
 def test_correct_any_time_and_result_shows_every_answer(client):
@@ -199,8 +199,8 @@ def test_correct_any_time_and_result_shows_every_answer(client):
     assert res.status_code == 303 and res.headers["location"] == f"/sessions/{sid}/result"
     sheet = client.get(res.headers["location"])
     assert sheet.status_code == 200 and sheet.headers.get("cache-control") == "no-store"
-    assert "scoreboard" in sheet.text and "Desglose" in sheet.text and "Resultado del simulacro" in sheet.text
-    assert "❌ Incorrecta" in sheet.text and "⬜ Sin contestar" in sheet.text
+    assert "result-card" in sheet.text and "Desglose" in sheet.text and "Resultado del simulacro" in sheet.text
+    assert "Incorrecta" in sheet.text and ">Sin contestar<" in sheet.text
     # También las preguntas en blanco muestran la correcta
     assert "opt--right" in _card_html(sheet.text, 2)
     assert "hx-post" not in _card_html(sheet.text, 1).split('class="tq__tools"')[0]   # ya no se responde
@@ -388,7 +388,7 @@ def test_root_path_prefix_guardian(monkeypatch):
         assert res_cat.status_code == 200
         assert 'href="http://study-assistant.example/"' in res_cat.text
         assert_no_unprefixed_urls(res_cat.text, "Catálogo (/)")
-        assert 'href="/tests/static/style.css"' in res_cat.text
+        assert 'href="/tests/static/style.css?v=' in res_cat.text
         assert 'href="/tests/"' in res_cat.text
         assert 'action="/tests/sessions/"' in res_cat.text
 
@@ -449,8 +449,8 @@ def test_training_mode_and_filter_from_the_test_screen(client):
     assert re.search(r'name="instant" value="1"[^>]*disabled', page)     # entrenamiento: corrige al final
     client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": options[0]})
     two = client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": options[1]})
-    assert two.text.count("opt--selected") == 2 and "🤔 Dudosa: 2 opciones marcadas" in two.text
-    assert "🔖 Dudosa" in two.text                                       # queda marcada para repasarla
+    assert two.text.count("opt--selected") == 2 and "Dudosa: 2 opciones marcadas" in two.text
+    assert "tool--on" in two.text                                       # queda marcada para repasarla
 
     # En el examen 53 ninguna pregunta está marcada como de examen oficial (ver docs/ESTADO.md)
     client.post(f"/sessions/{sid}/filter", data={"exam": "only"})

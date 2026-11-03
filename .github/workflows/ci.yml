@@ -123,11 +123,11 @@ jobs:
           }
           check /healthz "OK"
           check / "Dashboard"
-          check /tests/ "Test Engine"
-          check /tests/static/style.css "scoreboard"
+          check /tests/ "Exámenes disponibles"
+          check /tests/static/style.css "test-band"
           check /static/css/styles.css "nested-toc"
           check /tests/generator/ "Generar"
-          check /tests/history/ "Historial"
+          check /tests/history/ "Tests realizados"
           check /ingest/ "pdf_file"
           code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/tests)
           [ "$code" = "301" ] || { echo "/tests devolvió $code, se esperaba 301"; exit 1; }

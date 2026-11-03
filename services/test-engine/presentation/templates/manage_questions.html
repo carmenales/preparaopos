@@ -3,16 +3,16 @@
 
 {% block content %}
 <section class="manage">
-  <div class="manage__head">
+  <div class="page-head">
     <h1>Preguntas</h1>
-    <div class="manage__links">
-      <a href="{{ url('/manage/exams/') }}" class="btn btn--ghost">Cuestionarios</a>
-      <a href="{{ url('/manage/questions/new') }}" class="btn btn--primary">＋ Nueva pregunta</a>
+    <div class="page-head__actions">
+      <a href="{{ url('/manage/exams/') }}" class="btn btn--secondary">Cuestionarios</a>
+      <a href="{{ url('/manage/questions/new') }}" class="btn btn--primary">{{ icon('plus') }} Nueva pregunta</a>
     </div>
   </div>
   {% if msg %}<p class="alert alert--ok" role="status">{{ msg }}</p>{% endif %}
 
-  <form method="get" action="{{ url('/manage/questions/') }}" class="manage__filters">
+  <form method="get" action="{{ url('/manage/questions/') }}" class="manage__filters toolbar">
     <input type="search" name="q" value="{{ filters.q }}" placeholder="Buscar en el enunciado…" aria-label="Buscar en el enunciado">
     <select name="syllabus_id" aria-label="Temario">
       <option value="">Todos los temarios</option>
@@ -22,7 +22,7 @@
       <option value="">Todos los cuestionarios</option>
       {% for e in exams %}<option value="{{ e.id }}" {% if e.id|string == filters.exam_id %}selected{% endif %}>{{ e.name }}</option>{% endfor %}
     </select>
-    <button type="submit" class="btn btn--secondary">Filtrar</button>
+    <button type="submit" class="btn btn--dark">{{ icon('filter') }} Filtrar</button>
   </form>
 
   <p class="field__hint">{{ total }} preguntas · página {{ page }} de {{ pages }}</p>
@@ -38,7 +38,7 @@
         <td>{{ r.tags or "—" }}</td>
         <td>{{ r.source }}{% if r.year %} · {{ r.year }}{% endif %}</td>
         <td class="num">{{ r.n_attempts }}</td>
-        <td class="actions"><a href="{{ url('/manage/questions/' ~ r.id ~ '/edit') }}" class="btn btn--ghost btn--small">Editar</a></td>
+        <td class="actions"><a href="{{ url('/manage/questions/' ~ r.id ~ '/edit') }}" class="btn btn--secondary btn--small">Editar</a></td>
       </tr>
       {% else %}
       <tr><td colspan="6" class="empty-state">Ninguna pregunta cumple los filtros.</td></tr>
@@ -49,8 +49,8 @@
 
   {% if pages > 1 %}
   <nav class="pager" aria-label="Paginación">
-    {% if page > 1 %}<a class="btn btn--ghost btn--small" href="{{ url('/manage/questions/') }}?{{ query }}{{ '&' if query }}page={{ page - 1 }}">← Anterior</a>{% endif %}
-    {% if page < pages %}<a class="btn btn--ghost btn--small" href="{{ url('/manage/questions/') }}?{{ query }}{{ '&' if query }}page={{ page + 1 }}">Siguiente →</a>{% endif %}
+    {% if page > 1 %}<a class="btn btn--secondary btn--small" href="{{ url('/manage/questions/') }}?{{ query }}{{ '&' if query }}page={{ page - 1 }}">← Anterior</a>{% endif %}
+    {% if page < pages %}<a class="btn btn--secondary btn--small" href="{{ url('/manage/questions/') }}?{{ query }}{{ '&' if query }}page={{ page + 1 }}">Siguiente →</a>{% endif %}
   </nav>
   {% endif %}
 </section>

@@ -3,7 +3,7 @@
 
 {% block content %}
 <section class="manage">
-  <p><a href="{{ url('/manage/questions/') }}">← Preguntas</a></p>
+  <a class="back-link" href="{{ url('/manage/questions/') }}">{{ icon('arrow-left') }} Preguntas</a>
   <h1>{{ "Editar pregunta " ~ question.id if question else "Nueva pregunta" }}</h1>
   {% if msg %}<p class="alert {% if 'No se puede' in msg or 'No se ha podido' in msg or 'anúlala' in msg %}alert--error{% else %}alert--ok{% endif %}" role="status">{{ msg }}</p>{% endif %}
   {% if errors %}
@@ -14,7 +14,7 @@
     {% if question.exams %} · en {% for e in question.exams %}«{{ e.name }}» (nº {{ e.position }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</p>
   {% endif %}
 
-  <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/edit') if question else url('/manage/questions/new') }}" class="manage__form">
+  <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/edit') if question else url('/manage/questions/new') }}" class="manage__form card">
     <div class="field">
       <label for="statement">Enunciado</label>
       <textarea id="statement" name="statement" rows="4" required>{{ v.statement }}</textarea>
@@ -73,7 +73,7 @@
   </form>
 
   {% if question and lp %}
-  <section class="manage__links-panel" id="enlaces" aria-labelledby="enlaces-titulo">
+  <section class="manage__links-panel card" id="enlaces" aria-labelledby="enlaces-titulo">
     <h2 id="enlaces-titulo">Apuntes enlazados</h2>
     <p class="field__hint">Son los apuntes que se ofrecen al corregir esta pregunta. Los automáticos pueden estar mal:
       quita los que no tengan sentido y añade los que falten. Lo que quites no vuelve a aparecer aunque se recalculen los enlaces.
@@ -92,7 +92,7 @@
           </span>
           <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/links/remove') }}">
             <input type="hidden" name="note_id" value="{{ l.note_id }}">
-            <button type="submit" class="btn btn--small">Quitar</button>
+            <button type="submit" class="btn btn--secondary btn--small">Quitar</button>
           </form>
         </li>
         {% endfor %}
@@ -122,7 +122,7 @@
   {% endif %}
 
   {% if question %}
-  <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/delete') }}" class="manage__danger"
+  <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/delete') }}" class="manage__danger danger-zone"
         onsubmit="return confirm('¿Borrar esta pregunta? No se puede deshacer.');">
     <button type="submit" class="btn btn--danger btn--small" {% if question.n_attempts %}disabled title="Tiene respuestas: anúlala en vez de borrarla"{% endif %}>Borrar pregunta</button>
   </form>

@@ -9,7 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from config import STUDY_ASSISTANT_URL, TEMPLATES_DIR, prefix_url
-from presentation.dependencies import LinkingClientDep, MarkRepoDep, QuestionRepoDep, SessionServiceDep
+from presentation.dependencies import LinkingClientDep, MarkRepoDep, QuestionRepoDep, SessionServiceDep, StatsRepoDep
 from presentation.templating import templates
 
 router = APIRouter(prefix="/sessions")
@@ -162,6 +162,7 @@ def show_test(
     q_repo: QuestionRepoDep,
     marks: MarkRepoDep,
     linking_client: LinkingClientDep,
+    stats_repo: StatsRepoDep,
     requested: int | None = None,
 ):
     session = svc.get_session(session_id)
@@ -194,6 +195,7 @@ def show_test(
             # Test generado con menos preguntas de las pedidas (ver routers/generator.py)
             "requested": requested if (requested and requested > total) else None,
             "total": total,
+            "test_name": stats_repo.session_label(session.id),
         },
         headers=NO_CACHE,
     )
@@ -334,6 +336,7 @@ def show_result(
     q_repo: QuestionRepoDep,
     marks: MarkRepoDep,
     linking_client: LinkingClientDep,
+    stats_repo: StatsRepoDep,
 ):
     """Hoja de resultados. Cierra la sesión si aún estaba abierta (lazy close).
 
@@ -364,6 +367,7 @@ def show_result(
             "cards": cards,
             "doubtful_count": len(doubtful_ids),
             "timer": svc.timer_state(session),
+            "test_name": stats_repo.session_label(session.id),
             # Temario para «Repasar dudosas»: el de la primera pregunta con etiqueta.
             "review_syllabus": next((q.tags[0].syllabus_id for q in questions_map.values() if q and q.tags), ""),
         },

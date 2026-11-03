@@ -83,7 +83,7 @@ def test_stats_are_consistent_with_generator(client, db):
 
     page = client.get("/stats/?syllabus_id=age-gsi-official")
     assert page.status_code == 200
-    assert "falladas pendientes" in page.text
+    assert "falladas pendientes" in page.text.lower()
     assert "failed=1" in page.text
 
 

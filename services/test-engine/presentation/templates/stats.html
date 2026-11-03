@@ -3,40 +3,70 @@
 
 {% block content %}
 <section class="stats">
-  <h1>Estadísticas</h1>
-
-  {% if not syllabi %}
-  <p class="empty-state">Aún no hay respuestas registradas.</p>
-  {% else %}
-  <form method="get" action="{{ url('/stats/') }}" class="generator__syllabus">
-    <label for="syllabus_id">Temario</label>
-    <select id="syllabus_id" name="syllabus_id" onchange="this.form.submit()">
-      {% for s in syllabi %}
-      <option value="{{ s.id }}" {% if s.id == selected %}selected{% endif %}>{{ s.organism }} · {{ s.name }} ({{ s.answered }} respuestas)</option>
-      {% endfor %}
-    </select>
-    <noscript><button type="submit" class="btn btn--ghost">Ver</button></noscript>
-  </form>
-
-  <div class="kpis">
-    <div class="kpi"><span class="kpi__value">{{ stats.accuracy if stats.accuracy is not none else "—" }}%</span><span class="kpi__label">acierto</span></div>
-    <div class="kpi"><span class="kpi__value">{{ stats.answered }}</span><span class="kpi__label">respuestas en {{ stats.sessions }} sesiones</span></div>
-    <div class="kpi"><span class="kpi__value">{{ stats.questions_seen }} / {{ stats.pool }}</span><span class="kpi__label">preguntas vistas ({{ stats.coverage }}%)</span></div>
-    <div class="kpi"><span class="kpi__value">{{ stats.pending }}</span><span class="kpi__label">falladas pendientes
-      {% if stats.pending %}· <a href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&failed=1') }}">repasar</a>{% endif %}</span></div>
+  <div class="page-head">
+    <h1>Estadísticas</h1>
+    {% if syllabi %}
+    <form method="get" action="{{ url('/stats/') }}" class="page-head__actions">
+      <label for="syllabus_id" class="sr-only">Temario</label>
+      <select id="syllabus_id" name="syllabus_id" onchange="this.form.submit()">
+        {% for s in syllabi %}
+        <option value="{{ s.id }}" {% if s.id == selected %}selected{% endif %}>{{ s.organism }} · {{ s.name }} ({{ s.answered }} respuestas)</option>
+        {% endfor %}
+      </select>
+      <noscript><button type="submit" class="btn btn--dark">Ver</button></noscript>
+    </form>
+    {% endif %}
   </div>
 
-  <h2>Por bloque y tema <small>(los más flojos primero)</small></h2>
+  {% if not syllabi %}
+  <div class="card empty-state">Aún no hay respuestas registradas.</div>
+  {% else %}
+  <div class="tiles">
+    <div class="tile">
+      <span class="tile__icon tile__icon--green">{{ icon('trend') }}</span>
+      <div><p class="tile__label">Acierto</p><p class="tile__value">{{ stats.accuracy if stats.accuracy is not none else "—" }}%</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--blue">{{ icon('ok') }}</span>
+      <div><p class="tile__label">Respuestas en {{ stats.sessions }} sesiones</p><p class="tile__value">{{ stats.answered }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--teal">{{ icon('stack') }}</span>
+      <div><p class="tile__label">Preguntas vistas ({{ stats.coverage }}%)</p><p class="tile__value">{{ stats.questions_seen }} / {{ stats.pool }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--orange">{{ icon('x') }}</span>
+      <div><p class="tile__label">Falladas pendientes</p>
+        <p class="tile__value">{{ stats.pending }}{% if stats.pending %} <a href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&failed=1') }}">repasar</a>{% endif %}</p></div>
+    </div>
+  </div>
+
+  {% if stats.evolution %}
+  <div class="card">
+    <h2 class="card__title">Evolución de la nota</h2>
+    <ol class="evolution">
+      {% for p in stats.evolution %}
+      <li class="evolution__item" title="{{ p.date }}: {{ '%.2f'|format(p.score) }}">
+        <span class="evolution__bar {% if p.score < 5 %}bar__fill--low{% endif %}" style="height: {{ (p.score / scale_max * 100)|round(1) }}%"></span>
+        <span class="evolution__date">{{ p.date[5:] }}</span>
+      </li>
+      {% endfor %}
+    </ol>
+    <p class="field__hint">Cada barra es una sesión terminada (nota sobre 10).</p>
+  </div>
+  {% endif %}
+
+  <h2 class="section-title">Por bloque y tema <small>(los más flojos primero)</small></h2>
   <div class="table-wrap">
   <table class="data-table">
-    <thead><tr><th>Bloque</th><th>Tema</th><th class="num">Respuestas</th><th>Acierto</th><th class="num">Falladas</th><th></th></tr></thead>
+    <thead><tr><th>Bloque</th><th>Tema</th><th class="num">Respuestas</th><th>Acierto</th><th class="num">Falladas</th><th class="actions"><span class="sr-only">Repasar</span></th></tr></thead>
     <tbody>
       {% for t in stats.topics %}
       <tr>
         <td>{{ t.block or "Sin clasificar" }}</td>
         <td>{{ t.topic or "—" }}</td>
         <td class="num">{{ t.answered }}</td>
-        <td>
+        <td class="nowrap">
           <div class="bar" title="{{ t.correct }} de {{ t.answered }}">
             <span class="bar__fill {% if t.accuracy < 50 %}bar__fill--low{% elif t.accuracy < 70 %}bar__fill--mid{% endif %}" style="width: {{ t.accuracy }}%"></span>
           </div>
@@ -44,26 +74,13 @@
         </td>
         <td class="num">{{ t.pending }}</td>
         <td class="actions">
-          {% if t.pending %}<a class="btn btn--ghost btn--small" href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&scope=' ~ (t.scope|urlencode) ~ '&failed=1') }}">Repasar</a>{% endif %}
+          {% if t.pending %}<a class="btn btn--secondary btn--small" href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&scope=' ~ (t.scope|urlencode) ~ '&failed=1') }}">Repasar</a>{% endif %}
         </td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
   </div>
-
-  {% if stats.evolution %}
-  <h2>Evolución de la nota</h2>
-  <ol class="evolution">
-    {% for p in stats.evolution %}
-    <li class="evolution__item" title="{{ p.date }}: {{ '%.2f'|format(p.score) }}">
-      <span class="evolution__bar {% if p.score < 5 %}bar__fill--low{% endif %}" style="height: {{ (p.score / scale_max * 100)|round(1) }}%"></span>
-      <span class="evolution__date">{{ p.date[5:] }}</span>
-    </li>
-    {% endfor %}
-  </ol>
-  <p class="field__hint">Cada barra es una sesión terminada (nota sobre 10).</p>
-  {% endif %}
   {% endif %}
 </section>
 {% endblock %}

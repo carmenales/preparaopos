@@ -3,22 +3,23 @@
 
 {% block content %}
 <section class="generator">
-  <h1>Generar test</h1>
-  <p class="generator__intro">Elige el temario y, si quieres, acota por bloque o tema, año de convocatoria, solo preguntas de examen oficial, solo las que fallaste la última vez o las que marcaste como dudosas, y pondera por lo que más cae en los exámenes.</p>
+  <div class="page-head"><h1>Generar test</h1></div>
+  <p class="generator__intro hint">Elige el temario y, si quieres, acota por bloque o tema, año de convocatoria, solo preguntas de examen oficial, solo las que fallaste la última vez o las que marcaste como dudosas, y pondera por lo que más cae en los exámenes.</p>
 
   {% if error %}<p class="alert alert--error" role="alert">{{ error }}</p>{% endif %}
 
   {% if not syllabi %}
-  <p class="empty-state">No hay preguntas importadas aún.</p>
+  <div class="card empty-state">No hay preguntas importadas aún.</div>
   {% else %}
-  <form method="get" action="{{ url('/generator/') }}" class="generator__syllabus">
+  <div class="card">
+  <form method="get" action="{{ url('/generator/') }}" class="generator__syllabus field">
     <label for="syllabus_id">Temario</label>
     <select id="syllabus_id" name="syllabus_id" onchange="this.form.submit()">
       {% for s in syllabi %}
       <option value="{{ s.id }}" {% if s.id == selected %}selected{% endif %}>{{ s.organism }} · {{ s.name }} ({{ s.count }})</option>
       {% endfor %}
     </select>
-    <noscript><button type="submit" class="btn btn--ghost">Cambiar</button></noscript>
+    <noscript><button type="submit" class="btn btn--dark">Cambiar</button></noscript>
   </form>
 
   <form method="post" action="{{ url('/generator/') }}" class="generator__form"
@@ -28,10 +29,11 @@
     {% include "partials/generator_fields.html" %}
 
     <div class="generator__actions">
-      <button type="submit" name="mode" value="practice" class="btn btn--primary">📖 Práctica con corrección</button>
-      <button type="submit" name="mode" value="exam" class="btn btn--secondary">🎯 Modo examen (1 min por pregunta)</button>
+      <button type="submit" name="mode" value="practice" class="btn btn--purple btn--lg">{{ icon('play') }} Práctica con corrección</button>
+      <button type="submit" name="mode" value="exam" class="btn btn--secondary btn--lg">{{ icon('clock') }} Modo examen (1 min por pregunta)</button>
     </div>
   </form>
+  </div>
   {% endif %}
 </section>
 {% endblock %}
