@@ -141,6 +141,8 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Exámenes: cuatro fichas (exámenes, preguntas, tests realizados y dudosas para repasar) y tabla con el estado «Hacer» o la nota del último intento. Historial, estadísticas, generador y gestión en tarjetas y tablas con el mismo estilo.
 - El título del test y del resultado es el nombre real (`StatsRepository.session_label`, el mismo del historial) en vez de «Simulacro»/«Práctica».
 - Tests: test-engine 93 en local (se actualizan las aserciones que buscaban los emojis). Comprobado en Chromium (escritorio y móvil, claro y oscuro, sin scroll horizontal ni errores de consola) y con el smoke test.
+- Firefox (visto por Carmen): seguía usando el `style.css` antiguo de su caché y, sin estilos, los iconos SVG ocupaban todo el ancho. Ahora la hoja se enlaza con su huella (`static_url('style.css')` → `style.css?v=<sha256>`), así cada cambio cambia la URL, y los iconos llevan `width`/`height` de 20 px por si alguna vez falta el CSS.
+- CI: el job `gateway` buscaba «Test Engine», «Historial» y `scoreboard`, que ya no existen; ahora comprueba «Exámenes disponibles», «Tests realizados» y `test-band`.
 - Pendiente: las gráficas de estadísticas como las de preparadortai (ECharts) van en `feature/stats-parity`; study-assistant se rediseña después.
 
 ## CI (rama `feature/ci-fixes`)
