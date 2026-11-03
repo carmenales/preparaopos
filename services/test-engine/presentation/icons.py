@@ -44,7 +44,7 @@ ICON_PATHS: dict[str, str] = {
 def icon(name: str, cls: str = "") -> Markup:
     path = ICON_PATHS[name]
     return Markup(
-        f'<svg class="icon {cls}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" '
+        f'<svg class="icon {cls}" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" '
         f'stroke-width="1.5" stroke="currentColor" aria-hidden="true" focusable="false">'
         f'<path stroke-linecap="round" stroke-linejoin="round" d="{path}"/></svg>'
     )

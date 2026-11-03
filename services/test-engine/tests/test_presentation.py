@@ -388,7 +388,7 @@ def test_root_path_prefix_guardian(monkeypatch):
         assert res_cat.status_code == 200
         assert 'href="http://study-assistant.example/"' in res_cat.text
         assert_no_unprefixed_urls(res_cat.text, "Catálogo (/)")
-        assert 'href="/tests/static/style.css"' in res_cat.text
+        assert 'href="/tests/static/style.css?v=' in res_cat.text
         assert 'href="/tests/"' in res_cat.text
         assert 'action="/tests/sessions/"' in res_cat.text
 
