@@ -452,13 +452,13 @@ def test_training_mode_and_filter_from_the_test_screen(client):
     assert two.text.count("opt--selected") == 2 and "Dudosa: 2 opciones marcadas" in two.text
     assert "tool--on" in two.text                                       # queda marcada para repasarla
 
-    # En el examen 53 ninguna pregunta está marcada como de examen oficial (ver docs/ESTADO.md)
-    client.post(f"/sessions/{sid}/filter", data={"exam": "only"})
+    # Todas las preguntas del examen 53 (GSI 2024) son de examen oficial (scripts/etl/fix_gsi_official_flag.py)
+    client.post(f"/sessions/{sid}/filter", data={"exam": "none"})
     assert "El filtro no deja ninguna pregunta" in client.get(f"/sessions/{sid}").text
-    assert client.post(f"/sessions/{sid}/filter", data={"exam": "none", "count": "3"}).status_code == 303
+    assert client.post(f"/sessions/{sid}/filter", data={"exam": "only", "count": "3"}).status_code == 303
     page = client.get(f"/sessions/{sid}").text
     assert len(re.findall(r'id="q-\d+"', page)) == 3 and "(activo)" in page and "3 de " in page
-    assert 'id="filter-exam" value="none"' in page and 'seg__btn seg__btn--on" data-exam="none"' in page
+    assert 'id="filter-exam" value="only"' in page and 'seg__btn seg__btn--on" data-exam="only"' in page
     client.post(f"/sessions/{sid}/filter", data={"reset": "1"})
     assert "(activo)" not in client.get(f"/sessions/{sid}").text
 

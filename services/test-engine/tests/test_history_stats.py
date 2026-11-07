@@ -78,8 +78,8 @@ def test_stats_are_consistent_with_generator(client, db):
     assert stats["pending"] == failed
     assert stats["pending"] >= 3
     assert stats["answered"] >= 3
-    accuracies = [t["accuracy"] for t in stats["topics"] if t["accuracy"] is not None]
-    assert accuracies == sorted(accuracies)
+    priorities = [t["priority_score"] for t in stats["topics"]]
+    assert priorities == sorted(priorities, reverse=True)        # áreas débiles: lo más urgente primero
 
     page = client.get("/stats/?syllabus_id=age-gsi-official")
     assert page.status_code == 200
@@ -101,3 +101,39 @@ def test_history_and_stats_urls_are_prefixed_behind_gateway(client, monkeypatch)
     for path in ("/history/", "/stats/"):
         html = client.get(path).text
         assert pattern.findall(html) == [], path
+
+
+def _exam_session_failing_first_question(client, db, exam_id: int = 53) -> tuple[str, int]:
+    res = client.post("/sessions/", data={"source": "exam", "source_ref": str(exam_id), "mode": "exam"})
+    sid = re.search(r"/sessions/([0-9a-f]+)", res.headers["location"]).group(1)
+    ids = db.execute(text("SELECT question_ids FROM test_sessions WHERE id = :i"), {"i": sid}).scalar()
+    qid = int(re.search(r"\d+", ids).group())
+    wrong = db.execute(text("SELECT id FROM question_options WHERE question_id = :q AND is_correct = 0 LIMIT 1"),
+                       {"q": qid}).scalar()
+    client.post(f"/sessions/{sid}/answer", data={"question_id": qid, "selected_option_id": wrong})
+    client.post(f"/sessions/{sid}/close")
+    return sid, qid
+
+
+def test_stats_show_exam_progress_recurrent_mistakes_and_charts(client, db):
+    _, qid = _exam_session_failing_first_question(client, db)
+    _exam_session_failing_first_question(client, db)
+    db.expire_all()
+
+    stats = StatsRepository(db).syllabus_stats("age-gsi-official")
+    exam = next(e for e in stats["exams"] if e["id"] == 53)
+    assert exam["attempts"] >= 2 and exam["last"] == 0 and exam["best"] >= exam["last"]
+    assert exam["direction"] in ("up", "down", "same")
+    recurrent = next(q for q in stats["recurrent"] if q["id"] == qid)
+    assert recurrent["wrong"] >= 2 and recurrent["last_correct"] is False and recurrent["error"] > 0
+    d = stats["distribution"]
+    assert d["wrong"] >= 2 and d["blank"] >= 2 * 90                  # el resto de cada examen, en blanco
+    assert stats["trend"]["latest"] is not None
+    assert {b["block"] for b in stats["blocks"]} and all(b["answered"] for b in stats["blocks"])
+
+    page = client.get("/stats/?syllabus_id=age-gsi-official").text
+    for section in ("Diagnóstico rápido", "Área prioritaria", "Examen a repetir", "Tendencia reciente",
+                    "Progreso por examen", "Preguntas con fallos recurrentes", "Áreas débiles",
+                    'id="chart-evolution"', 'id="stats-data"', "AGE A2 GSI LIBRE 2024"):
+        assert section in page, section
+    assert f'href="/manage/questions/{qid}/edit"' in page
