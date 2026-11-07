@@ -13,6 +13,7 @@ from domain.sessions.generator import (
     SECONDS_PER_QUESTION,
     GeneratorFilters,
     NoQuestionsForFilters,
+    fixed_part,
     question_weights,
     weighted_sample,
 )
@@ -134,13 +135,19 @@ class TestSessionService:
                 if not tagged:
                     raise NoQuestionsForFilters("Ninguna pregunta cumple los filtros elegidos")
                 weights = question_weights(tagged, self._questions.topic_frequencies(filters.syllabus_id))
-                question_ids = weighted_sample(weights, filters.count)
+                # Test fijo de la colección «Relevancia»: misma muestra cada vez que se hace ese test.
+                rng = random.Random(filters.to_source_ref()) if filters.part else None
+                question_ids = weighted_sample(weights, filters.count, rng)
             else:
                 q_ids = self._questions.list_ids_for_generator(filters)
+                if filters.part:
+                    q_ids = fixed_part(q_ids, filters)
+                else:
+                    random.shuffle(q_ids)
+                    q_ids = q_ids[: filters.count]
                 if not q_ids:
                     raise NoQuestionsForFilters("Ninguna pregunta cumple los filtros elegidos")
-                random.shuffle(q_ids)
-                question_ids = q_ids[: filters.count]
+                question_ids = q_ids
             source_ref = filters.to_source_ref()
             if self._exams is not None:
                 scoring_rule_id = self._exams.single_scoring_rule_for_syllabus(filters.syllabus_id)

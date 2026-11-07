@@ -68,8 +68,9 @@
     {% endif %}
     {% if card.explanation %}<p class="tq__explanation">{{ card.explanation }}</p>{% endif %}
     {% if card.notes %}
-    <p class="tq__notes">{{ icon('book') }}
-      {% for note in card.notes %}<a href="{{ study_assistant_url }}/notes/{{ note.note_id }}" target="_blank" rel="noopener">{{ note.official_topic or note.title }} ↗</a>{% if not loop.last %} · {% endif %}{% endfor %}
+    <p class="tq__notes">
+      {% for note in card.notes %}<a class="note-link" href="{{ study_assistant_url }}/notes/{{ note.note_id }}" target="_blank" rel="noopener"
+         title="Abrir el apunte en otra pestaña">{{ icon('book') }} Apunte: {{ note.official_topic or note.title }}</a>{% endfor %}
     </p>
     {% endif %}
   </div>

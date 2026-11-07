@@ -8,10 +8,11 @@ quede autodescrita.
 
 from __future__ import annotations
 
+import hashlib
 import math
 import random
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from urllib.parse import parse_qsl, urlencode
 
 DEFAULT_COUNT = 30
@@ -31,6 +32,9 @@ class GeneratorFilters:
     doubtful_only: bool = False
     weighted: bool = False
     count: int = DEFAULT_COUNT
+    # Tests fijos (como los «Test Bloque A1 #3» de PreparaTIC): número de test dentro de la colección.
+    # Con ``part`` las preguntas no salen al azar en cada sesión: siempre son las mismas (ver ``fixed_part``).
+    part: int | None = None
 
     def __post_init__(self) -> None:
         if not self.syllabus_id:
@@ -39,6 +43,8 @@ class GeneratorFilters:
             raise ValueError("Para filtrar por tema hay que indicar también el bloque")
         if not 1 <= self.count <= MAX_COUNT:
             raise ValueError(f"El número de preguntas debe estar entre 1 y {MAX_COUNT}")
+        if self.part is not None and self.part < 1:
+            raise ValueError("El número de test empieza en 1")
 
     def to_source_ref(self) -> str:
         params: dict[str, str] = {"syllabus": self.syllabus_id, "n": str(self.count)}
@@ -56,6 +62,8 @@ class GeneratorFilters:
             params["doubtful"] = "1"
         if self.weighted:
             params["weighted"] = "1"
+        if self.part is not None:
+            params["part"] = str(self.part)
         return urlencode(params)
 
     @classmethod
@@ -71,7 +79,30 @@ class GeneratorFilters:
             doubtful_only=p.get("doubtful") == "1",
             weighted=p.get("weighted") == "1",
             count=int(p.get("n", DEFAULT_COUNT)),
+            part=int(p["part"]) if p.get("part") else None,
         )
+
+    @property
+    def collection_seed(self) -> str:
+        """Semilla común a todos los tests de la misma colección (los mismos filtros sin ``part``)."""
+        return replace(self, part=None).to_source_ref()
+
+
+def stable_order(ids: list[int], seed: str) -> list[int]:
+    """Orden «barajado» pero fijo: cada id va donde le toca por el hash de (semilla, id).
+
+    Al añadir preguntas al banco, las que ya estaban conservan su orden relativo: los tests fijos
+    cambian lo mínimo (en vez de rebarajarse enteros, como pasaría con ``random.Random(seed).shuffle``).
+    """
+    return sorted(ids, key=lambda qid: hashlib.sha256(f"{seed}|{qid}".encode()).digest())
+
+
+def fixed_part(ids: list[int], filters: GeneratorFilters) -> list[int]:
+    """Preguntas del test nº ``filters.part``: el trozo correspondiente del orden fijo de la colección."""
+    if filters.part is None:
+        raise ValueError("fixed_part necesita filtros con part")
+    start = (filters.part - 1) * filters.count
+    return stable_order(ids, filters.collection_seed)[start:start + filters.count]
 
 
 # ---------------------------------------------------------------------------

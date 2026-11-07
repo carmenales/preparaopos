@@ -19,7 +19,7 @@
 <body>
   <header class="topbar">
     <button type="button" class="icon-btn topbar__menu" id="nav-toggle" aria-label="Menú" aria-controls="sidebar" aria-expanded="false">{{ icon("menu") }}</button>
-    <a href="{{ url('/') }}" class="brand" aria-label="Inicio de Tests">
+    <a href="{{ url('/home') }}" class="brand" aria-label="Inicio">
       <span class="brand__mark" aria-hidden="true">P</span><span class="brand__name">PreparaOpos</span>
     </a>
     <p class="topbar__title">Tests de oposiciones TIC</p>
@@ -30,11 +30,19 @@
 
   <aside class="sidebar" id="sidebar" aria-label="Navegación">
     <nav class="nav">
-      <a class="nav__item{% if nav_active(request, '/') %} is-active{% endif %}" href="{{ url('/') }}">{{ icon("list") }}<span>Exámenes</span></a>
-      <a class="nav__item{% if nav_active(request, '/generator') %} is-active{% endif %}" href="{{ url('/generator/') }}">{{ icon("sparkles") }}<span>Generar test</span></a>
       {% set on_result = request is not none and request.url.path.endswith('/result') %}
-      {% set in_test = nav_active(request, '/sessions') and not on_result %}
-      {% if in_test %}<span class="nav__item is-active nav__item--static">{{ icon("clock") }}<span>Test en curso</span></span>{% endif %}
+      <a class="nav__item{% if nav_active(request, '/home') %} is-active{% endif %}" href="{{ url('/home') }}">{{ icon("home") }}<span>Inicio</span></a>
+
+      <p class="nav__group">{{ icon("clipboard") }}<span>Tests</span></p>
+      <div class="nav__sub">
+        <a class="nav__subitem{% if nav_active(request, '/collections/random') %} is-active{% endif %}" href="{{ url('/collections/random') }}">Aleatorios</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/relevance') %} is-active{% endif %}" href="{{ url('/collections/relevance') }}">Relevancia</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/blocks') %} is-active{% endif %}" href="{{ url('/collections/blocks') }}">Bloques</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/topics') %} is-active{% endif %}" href="{{ url('/collections/topics') }}">Temas</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/years') %} is-active{% endif %}" href="{{ url('/collections/years') }}">Años</a>
+        <a class="nav__subitem{% if nav_active(request, '/') %} is-active{% endif %}" href="{{ url('/') }}">Exámenes</a>
+        <a class="nav__subitem{% if nav_active(request, '/generator') %} is-active{% endif %}" href="{{ url('/generator/') }}">Generar test</a>
+      </div>
 
       <p class="nav__group">{{ icon("trend") }}<span>Mi Progreso</span></p>
       <div class="nav__sub">
@@ -42,13 +50,16 @@
         <a class="nav__subitem{% if nav_active(request, '/stats') %} is-active{% endif %}" href="{{ url('/stats/') }}">Estadísticas</a>
       </div>
 
-      <p class="nav__group">{{ icon("manage") }}<span>Gestión</span></p>
+      <p class="nav__group">{{ icon("book") }}<span>Estudio</span></p>
+      <div class="nav__sub">
+        <a class="nav__subitem" href="{{ study_assistant_home() }}">Apuntes</a>
+      </div>
+
+      <p class="nav__group">{{ icon("archive") }}<span>Banco de preguntas</span></p>
       <div class="nav__sub">
         <a class="nav__subitem{% if nav_active(request, '/manage/questions') %} is-active{% endif %}" href="{{ url('/manage/questions/') }}">Preguntas</a>
         <a class="nav__subitem{% if nav_active(request, '/manage/exams') %} is-active{% endif %}" href="{{ url('/manage/exams/') }}">Cuestionarios</a>
       </div>
-
-      <a class="nav__item nav__item--out" href="{{ study_assistant_home() }}">{{ icon("book") }}<span>Apuntes</span></a>
     </nav>
   </aside>
   <div class="scrim" id="scrim" hidden></div>
