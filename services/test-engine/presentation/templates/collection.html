@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}{{ kind.title }}{% endblock %}
+
+{% block content %}
+<section class="collection">
+  <div class="page-head">
+    <h1>{{ kind.title }}</h1>
+    {% if syllabi %}
+    <form method="get" action="{{ url('/collections/' ~ kind.slug) }}" class="page-head__actions">
+      <label for="syllabus_id" class="sr-only">Temario</label>
+      <select id="syllabus_id" name="syllabus_id" onchange="this.form.submit()">
+        {% for s in syllabi %}
+        <option value="{{ s.id }}" {% if s.id == selected %}selected{% endif %}>{{ s.organism }} · {{ s.name }} ({{ s.count }})</option>
+        {% endfor %}
+      </select>
+      <noscript><button type="submit" class="btn btn--dark">Ver</button></noscript>
+    </form>
+    {% endif %}
+  </div>
+  <p class="hint generator__intro">{{ kind.intro }} Al terminar uno, aquí verás su nota; si lo dejas a medias, «Continuar» lo retoma.</p>
+
+  {% if rows %}
+  <div class="tiles">
+    <div class="tile">
+      <span class="tile__icon tile__icon--orange">{{ icon('clipboard') }}</span>
+      <div><p class="tile__label">Tests</p><p class="tile__value">{{ rows|length }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--green">{{ icon('ok') }}</span>
+      <div><p class="tile__label">Hechos</p><p class="tile__value">{{ done }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--teal">{{ icon('stack') }}</span>
+      <div><p class="tile__label">Preguntas del temario</p><p class="tile__value">{{ total }}</p></div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Título</th>
+          {% if kind.slug in ('blocks', 'topics') %}<th>Bloque</th>{% endif %}
+          {% if kind.slug == 'blocks' %}<th>Descripción</th>{% endif %}
+          {% if kind.slug == 'topics' %}<th>Tema</th>{% endif %}
+          <th class="num">Preguntas</th><th>Estado</th><th class="actions"><span class="sr-only">Hacer</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}{% set t, st = r.test, r.status %}
+        <tr>
+          <td class="nowrap"><strong>{{ t.title }}</strong></td>
+          {% if kind.slug in ('blocks', 'topics') %}<td>{{ t.block }}</td>{% endif %}
+          {% if kind.slug == 'blocks' %}<td>{{ r.block_title }}</td>{% endif %}
+          {% if kind.slug == 'topics' %}<td>{{ r.topic_name }}</td>{% endif %}
+          <td class="num">{{ t.questions }}</td>
+          <td>
+            {% if st.open_id %}<span class="pill pill--blue">En curso</span>
+            {% elif st.done %}
+            <span class="pill {{ 'pill--green' if st.last_score is not none and st.last_score >= 5 else 'pill--red' }}"
+                  title="Hecho {{ st.done }} {{ 'vez' if st.done == 1 else 'veces' }}; nota de la última">{{ "%.2f"|format(st.last_score) if st.last_score is not none else "Hecho" }}</span>
+            {% else %}<span class="pill pill--gray">Sin hacer</span>{% endif %}
+          </td>
+          <td class="actions">
+            <form method="post" action="{{ url('/collections/start') }}">
+              <input type="hidden" name="ref" value="{{ t.source_ref }}">
+              {% if st.open_id %}<button type="submit" class="btn btn--small btn--blue">Continuar</button>
+              {% elif st.done %}<button type="submit" class="btn btn--small btn--secondary">Repetir</button>
+              {% else %}<button type="submit" class="btn btn--small btn--purple">Hacer</button>{% endif %}
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% elif kind.slug == 'relevance' %}
+  <div class="card empty-state">Este temario no tiene preguntas de examen oficial clasificadas por tema: no se puede saber qué es lo más relevante.</div>
+  {% elif kind.slug in ('blocks', 'topics') %}
+  <div class="card empty-state">Las preguntas de este temario no están clasificadas por bloque y tema.</div>
+  {% elif kind.slug == 'years' %}
+  <div class="card empty-state">Las preguntas de este temario no tienen año.</div>
+  {% else %}
+  <div class="card empty-state">No hay preguntas importadas aún.</div>
+  {% endif %}
+</section>
+{% endblock %}
