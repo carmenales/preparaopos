@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from domain.sessions.collections import fixed_test_title
 from domain.sessions.generator import GeneratorFilters
+from domain.stats.insights import direction, priority_label, priority_score, trend
 
 # Pregunta fallada pendiente = su último intento respondido fue incorrecto
 # (misma definición que el refuerzo del generador).
@@ -131,6 +132,65 @@ class StatsRepository:
                 s["last_score"] = float(r.final_score) if r.final_score is not None else None
         return status
 
+    def _exam_progress(self, syllabus_id: str) -> list[dict]:
+        """Progreso por examen del temario (el «Ranking de exámenes oficiales» de preparadortai)."""
+        rows = self._session.execute(text(
+            "SELECT e.id, e.name, e.year, s.final_score, s.closed_at FROM test_sessions s "
+            "JOIN exams e ON e.id = s.exam_id "
+            "WHERE e.syllabus_id = :s AND s.closed_at IS NOT NULL AND s.final_score IS NOT NULL "
+            "ORDER BY s.closed_at"
+        ), {"s": syllabus_id}).fetchall()
+        exams: dict[int, dict] = {}
+        for r in rows:
+            e = exams.setdefault(r.id, {"id": r.id, "name": r.name, "year": r.year, "scores": [], "last_date": None})
+            e["scores"].append(float(r.final_score))
+            e["last_date"] = str(r.closed_at)[:10]
+        result = []
+        for e in exams.values():
+            scores = e.pop("scores")
+            delta = scores[-1] - scores[-2] if len(scores) > 1 else None
+            result.append({**e, "attempts": len(scores), "best": max(scores), "last": scores[-1],
+                           "delta": delta, "direction": direction(delta)})
+        # Primero los que peor llevas: la última nota más baja.
+        result.sort(key=lambda e: (e["last"], -e["attempts"]))
+        return result
+
+    def _recurrent_mistakes(self, attempts_sql: str, params: dict, limit: int = 15) -> list[dict]:
+        """Preguntas falladas al menos dos veces (las «preguntas con fallos recurrentes» de preparadortai)."""
+        rows = self._session.execute(text(
+            "SELECT x.question_id, COUNT(*) AS attempts, SUM(1 - COALESCE(x.is_correct, 0)) AS wrong, "
+            "MAX(x.answered_at) AS last_at FROM ("
+            "  SELECT DISTINCT a.id, a.question_id, a.is_correct, a.answered_at FROM test_attempts a "
+            "  JOIN question_syllabus_tags t ON t.question_id = a.question_id "
+            "  WHERE t.syllabus_id = :s AND a.selected_option_id IS NOT NULL) x "
+            "GROUP BY x.question_id HAVING wrong >= 2 "
+            "ORDER BY wrong DESC, wrong * 1.0 / attempts DESC, last_at DESC LIMIT :limit"
+        ), {**params, "limit": limit}).fetchall()
+        if not rows:
+            return []
+        ids = [r.question_id for r in rows]
+        marks = ",".join(str(i) for i in ids)
+        info = {
+            r.id: r for r in self._session.execute(text(
+                f"SELECT q.id, q.statement, MIN(t.block) AS block, MIN(t.topic) AS topic FROM questions q "
+                f"LEFT JOIN question_syllabus_tags t ON t.question_id = q.id AND t.syllabus_id = :s "
+                f"WHERE q.id IN ({marks}) GROUP BY q.id"
+            ), params)
+        }
+        last = {
+            r.question_id: r.is_correct for r in self._session.execute(text(
+                f"SELECT l.question_id, l.is_correct FROM ({_LAST_ANSWER_SQL}) l WHERE l.question_id IN ({marks})"
+            ))
+        }
+        return [
+            {"id": r.question_id, "statement": info[r.question_id].statement if r.question_id in info else "",
+             "block": info[r.question_id].block if r.question_id in info else None,
+             "topic": info[r.question_id].topic if r.question_id in info else None,
+             "attempts": r.attempts, "wrong": int(r.wrong), "error": _pct(int(r.wrong), r.attempts),
+             "last_correct": bool(last.get(r.question_id)), "last_date": str(r.last_at)[:10] if r.last_at else ""}
+            for r in rows
+        ]
+
     def delete_session(self, session_id: str) -> bool:
         """Borra la sesión y sus intentos (ON DELETE CASCADE). Devuelve si existía."""
         self._session.execute(text("DELETE FROM test_attempts WHERE test_session_id = :id"), {"id": session_id})
@@ -195,23 +255,54 @@ class StatsRepository:
                 "correct": r.correct,
                 "questions": r.questions,
                 "accuracy": _pct(r.correct, r.answered),
+                "wrong": r.answered - r.correct,
                 "pending": pending_by_topic.get((r.block, r.topic), 0),
+                "priority": priority_label(r.answered, r.correct),
+                "priority_score": priority_score(r.answered, r.correct),
             }
             for r in topic_rows
         ]
-        # Los más flojos primero; a igualdad, los que tienen más respuestas.
-        topics.sort(key=lambda t: (t["accuracy"] if t["accuracy"] is not None else 101, -t["answered"]))
+        # Como el «Diagnóstico de áreas débiles» de preparadortai: primero lo que más conviene repasar
+        # (fallos × lo que falta para el 100 %); a igualdad, lo que tiene más respuestas.
+        topics.sort(key=lambda t: (-t["priority_score"], -t["answered"]))
 
-        evolution = [
-            {"date": str(r.started_at)[:10], "score": float(r.final_score), "label": r.id}
-            for r in self._session.execute(text(
-                "SELECT DISTINCT s.id, s.started_at, s.final_score FROM test_sessions s "
-                "JOIN test_attempts a ON a.test_session_id = s.id "
-                "JOIN question_syllabus_tags t ON t.question_id = a.question_id AND t.syllabus_id = :s "
-                "WHERE s.final_score IS NOT NULL AND s.closed_at IS NOT NULL ORDER BY s.started_at"
-            ), params)
-        ]
+        blocks: dict[str | None, dict] = {}
+        for t in topics:
+            b = blocks.setdefault(t["block"], {"block": t["block"], "answered": 0, "correct": 0})
+            b["answered"] += t["answered"]
+            b["correct"] += t["correct"]
+        block_list = sorted(blocks.values(), key=lambda b: (b["block"] is None, str(b["block"] or "")))
+        for b in block_list:
+            b["accuracy"] = _pct(b["correct"], b["answered"])
+
+        closed = self._session.execute(text(
+            "SELECT DISTINCT s.id, s.started_at, s.final_score, s.question_ids FROM test_sessions s "
+            "JOIN test_attempts a ON a.test_session_id = s.id "
+            "JOIN question_syllabus_tags t ON t.question_id = a.question_id AND t.syllabus_id = :s "
+            "WHERE s.final_score IS NOT NULL AND s.closed_at IS NOT NULL ORDER BY s.started_at"
+        ), params).fetchall()
+        evolution = [{"date": str(r.started_at)[:10], "score": float(r.final_score), "label": r.id} for r in closed]
+
+        # Resultados de los tests terminados: lo contestado bien o mal y lo que quedó en blanco.
+        answered_by_session = {
+            r.test_session_id: (r.answered, r.correct) for r in self._session.execute(text(
+                "SELECT test_session_id, COUNT(*) AS answered, COALESCE(SUM(is_correct), 0) AS correct "
+                "FROM test_attempts WHERE selected_option_id IS NOT NULL GROUP BY test_session_id"
+            ))
+        }
+        distribution = {"correct": 0, "wrong": 0, "blank": 0}
+        for r in closed:
+            answered, correct = answered_by_session.get(r.id, (0, 0))
+            distribution["correct"] += correct
+            distribution["wrong"] += answered - correct
+            distribution["blank"] += max(len(json.loads(r.question_ids or "[]")) - answered, 0)
+
         return {
+            "blocks": block_list,
+            "distribution": distribution,
+            "trend": trend([p["score"] for p in evolution], 5),
+            "exams": self._exam_progress(syllabus_id),
+            "recurrent": self._recurrent_mistakes(attempts_sql, params),
             "answered": totals.answered,
             "correct": totals.correct,
             "accuracy": _pct(totals.correct, totals.answered),

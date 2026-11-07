@@ -9,6 +9,7 @@ from functools import lru_cache
 from fastapi.templating import Jinja2Templates
 
 from config import ROOT_PATH, STATIC_DIR, TEMPLATES_DIR, prefix_url
+from infrastructure.syllabus_names import block_title, topic_name
 from presentation.icons import icon
 
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -28,6 +29,8 @@ def study_assistant_home() -> str:
 
 templates.env.globals["study_assistant_home"] = study_assistant_home
 templates.env.globals["icon"] = icon
+templates.env.globals["block_title"] = block_title
+templates.env.globals["topic_name"] = topic_name
 
 
 def nav_active(request, *prefixes: str) -> bool:

@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 
 from config import prefix_url
 from presentation.dependencies import StatsRepoDep
+from infrastructure.syllabus_names import block_title
 from presentation.templating import templates
 
 router = APIRouter()
@@ -38,10 +39,16 @@ def stats(request: Request, repo: StatsRepoDep, syllabus_id: str | None = None):
     ids = {s["id"] for s in syllabi}
     selected = syllabus_id if syllabus_id in ids else (syllabi[0]["id"] if syllabi else None)
     data = repo.syllabus_stats(selected) if selected else None
-    max_score = max((p["score"] for p in data["evolution"]), default=10) if data else 10
+    # Datos de los gráficos (ECharts, como las estadísticas de PreparaTIC)
+    chart = {
+        "evolution": [{"date": p["date"], "score": round(p["score"], 2)} for p in data["evolution"]],
+        "distribution": data["distribution"],
+        "blocks": [{"block": b["block"] or "Sin bloque", "title": block_title(selected, b["block"]),
+                    "accuracy": b["accuracy"], "answered": b["answered"]} for b in data["blocks"]],
+    } if data else None
     return templates.TemplateResponse(
         request,
         "stats.html",
-        {"syllabi": syllabi, "selected": selected, "stats": data, "scale_max": max(10.0, max_score)},
+        {"syllabi": syllabi, "selected": selected, "stats": data, "chart": chart},
         headers=NO_CACHE,
     )
