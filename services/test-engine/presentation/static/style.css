@@ -471,3 +471,25 @@ dialog::backdrop { background: rgba(17, 24, 39, .6); }
 .result-card__score--pass { color: var(--ok); }
 .result-card__score--fail { color: var(--bad); }
 .result-actions .icon { width: 1rem; height: 1rem; }
+
+/* ── Inicio ──────────────────────────────────────────────────────────── */
+.home-hero { padding: 2.5rem 1.25rem 2rem; }
+.home-hero__lead { max-width: 40rem; margin: .75rem auto 1.25rem; color: var(--text); font-size: 1.05rem; }
+.steps { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+.step { margin: 0; }
+.step h3 { font-size: 1rem; font-weight: 600; margin: .5rem 0 .35rem; color: var(--text-strong); }
+.step p { font-size: .9rem; }
+.step__num { display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 700; }
+:root[data-theme="dark"] .step__num { background: var(--brand); color: #1f2937; }
+.glossary { display: grid; grid-template-columns: max-content 1fr; gap: .6rem 1.25rem; font-size: .92rem; }
+.glossary dt { font-weight: 600; display: flex; align-items: center; gap: .35rem; white-space: nowrap; }
+.glossary dt .icon { width: 1.1rem; height: 1.1rem; }
+@media (max-width: 640px) { .glossary { grid-template-columns: 1fr; gap: .15rem; } .glossary dd { margin-bottom: .5rem; } }
+
+/* ── Enlace al apunte en la tarjeta corregida ────────────────────────── */
+.tq__notes { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+.tq__notes .note-link { display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .7rem; border-radius: var(--radius);
+  background: var(--primary); color: #fff; font-size: .85rem; font-weight: 600; text-decoration: none; }
+.tq__notes .note-link:hover { filter: brightness(1.08); }
+.note-link .icon { width: 1rem; height: 1rem; }
+:root[data-theme="dark"] .tq__notes .note-link { background: var(--brand); color: #1f2937; }
