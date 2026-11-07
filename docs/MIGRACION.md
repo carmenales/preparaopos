@@ -8,7 +8,7 @@ _Inventario del 2026-10-19 sobre `develop` (`9afaab23`). La migración se da por
 |---|---:|---:|---|
 | PreparaTIC (bundle V3) | 16.680 | 16.680 | ✅ Con `year` e `is_official_exam` (8.152 de examen oficial) desde el paso 1 (`scripts/etl/backfill_preparatic_metadata.py`). |
 | TAI (MariaDB `ptype`) | 1.331 | 1.331 | ✅ 52 cuestionarios. 1.267 pendientes de clasificar por tema. |
-| AGE A2 GSI 2024 | 101 | 101 | ✅ Clasificado y enlazado con apuntes. |
+| AGE A2 GSI 2024 | 101 | 101 | ✅ Clasificado y enlazado con apuntes. Año 2024 y examen oficial desde `feature/stats-parity` (`scripts/etl/fix_gsi_official_flag.py`; antes no salían en «solo examen oficial»). |
 | Ayto. Madrid Aux. TIC 2021/2024 (`imports/ayto_madrid_aux_tic`) | 294 | 294 | ✅ Paso 2. 6 cuestionarios, 3 opciones, A−F/3. |
 | Ayto. Majadahonda Técnico Informático (`imports/ayto_majadahonda`) | 44 | 44 | ✅ Paso 2. ⚠️ Baremo no consta: sin regla (test-engine aplica A−F/3 por defecto). |
 | Comunidad de Madrid P01/P02 IA (`imports/cm_madrid_digital`) | 100 | 100 | ✅ Paso 2. A−F/3. |
@@ -56,24 +56,24 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 |---|---|---|
 | `examenes.php` | Catálogo de exámenes y simulacro | ✅ Catálogo, simulacro y práctica |
 | `temas.php`, `practica_tematica.php` | Test por tema o bloque | ✅ Generador (`/generator`) |
-| `practica.php` | Ejercicios por categoría | ⚠️ Cubierto por los cuestionarios del catálogo |
+| `practica.php` | Ejercicios por categoría | ✅ Cubierto por los cuestionarios de Exámenes (decidido el 2026-11-07) |
 | `refuerzo.php` | Test con preguntas falladas | ✅ Generador: «solo las que fallé la última vez» |
 | `historial_sesiones.php`, `detalle_sesion.php`, `delete_test_session.php` | Historial de tests | ✅ `/history/` (ver, continuar y borrar sesiones) |
-| `estadisticas.php`, `progreso_cuestionarios.php` | Estadísticas y progreso | ✅ `/stats/` (acierto, cobertura, falladas pendientes, bloque/tema y evolución) |
+| `estadisticas.php`, `progreso_cuestionarios.php`, `sesiones_cuestionario.php` | Estadísticas y progreso | ✅ `/stats/` (`feature/stats-parity`): diagnóstico rápido, gráficos de evolución, resultados y acierto por bloque, progreso por examen con mejor/última/tendencia, preguntas con fallos recurrentes y áreas débiles con prioridad. ➖ No se migran las «temáticas de búsqueda» (dependían de la práctica por búsqueda de texto, que no existe aquí). |
 | `gestionar.php`, `agregar.php`, `editar.php` | Alta y edición de preguntas | ✅ `/manage/questions/` (buscar, alta, edición, anular, borrar si no tiene respuestas) |
 | `categorias.php`, `nueva_categoria.php`, `editar_cuestionario.php` | Gestión de cuestionarios | ✅ `/manage/exams/` (alta, edición, quitar preguntas, borrar si no tiene sesiones) |
-| `relacionar.php` | Repaso pregunta↔tema | ⚠️ El enlace con apuntes lo da linking-service |
+| `relacionar.php` | Repaso pregunta↔tema | ✅ Enlaces de linking-service, editables desde la ficha de la pregunta (decidido el 2026-11-07) |
 | `changelog.php` | Novedades | ➖ No se migra |
 
 ### PreparaTIC V3 (Vue) → test-engine
 | Modo | En test-engine |
 |---|---|
-| Aleatorio | ✅ Generador (todo el temario) |
-| Ponderado por frecuencia histórica | ✅ Generador: «Ponderar por frecuencia en exámenes oficiales» (rama `feature/weighted-generator`); solo en temarios con preguntas oficiales clasificadas por tema (hoy, PreparaTIC A1) |
-| Por bloque / por tema | ✅ Generador |
-| Por año de convocatoria | ✅ Generador (+ «solo examen oficial») |
-| Examen oficial íntegro | ➖ No reconstruible (§1) |
-| Historial y estadísticas con gráficos | ✅ `/history/` y `/stats/` (barras simples; sin gráficos interactivos) |
+| Aleatorios | ✅ Tests → Aleatorios: tests fijos de 100 con nota y estado (`feature/app-navigation`); y el generador |
+| Relevancia (ponderado por frecuencia histórica) | ✅ Tests → Relevancia (50 tests fijos) y el generador; solo en temarios con preguntas oficiales clasificadas por tema (hoy, PreparaTIC A1) |
+| Bloques / Temas | ✅ Tests → Bloques y Temas, con los nombres de PreparaTIC; y el generador |
+| Años | ✅ Tests → Años; y el generador (+ «solo examen oficial») |
+| Exámenes | ✅ Tests → Exámenes (los importados); el examen íntegro de PreparaTIC ➖ no es reconstruible (§1) |
+| Historial y estadísticas con gráficos | ✅ `/history/` y `/stats/` con gráficos ECharts (`feature/stats-parity`) |
 
 ### studyassistant (PHP) → study-assistant
 | Página antigua | En study-assistant |
@@ -98,11 +98,12 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 8. **Pantalla de test al nivel de PreparaTIC V3 y preparadortai** (añadido el 2026-10-24 al probarla Carmen: no es estética, es funcionalidad que tenían las dos apps):
    - ✅ `feature/test-screen`: todas las preguntas en una página; responder pulsando la opción y desmarcar volviendo a pulsarla (sin opción «en blanco»); «Ver respuesta» que no cuenta; marcador «dudosa» y filtro para repasarlas; «Corregir» en cualquier momento; corregir al responder o al final, cambiable a mitad; nota en vivo; retomar desde el historial.
    - ✅ `feature/test-timer`: cronómetro pausable (empezar, pausar, ocultar, reiniciar) y aviso de fin de tiempo con «Un poquito más» / «Corregir».
-   - `feature/stats-parity`: estadísticas de preparadortai (progreso por examen con mejor nota, última y tendencia; preguntas problemáticas con prioridad) y gráficos de evolución.
+   - ✅ `feature/stats-parity`: estadísticas de preparadortai (progreso por examen con mejor nota, última y tendencia; preguntas con fallos recurrentes; áreas débiles con prioridad) y gráficos de evolución.
+9. ✅ **Menú, Inicio y tests fijos de PreparaTIC** (`feature/app-navigation`).
 
 ## 4. Criterios para dar la migración por terminada
 - [ ] Todas las preguntas de §1 están en test-engine, con su origen, año y anuladas.
-- [ ] Cada página de §2 marcada ❌ tiene equivalente o se decide explícitamente no migrarla.
+- [x] Cada página de §2 marcada ❌ tiene equivalente o se decide explícitamente no migrarla (2026-11-07: ya no queda ninguna ⚠️ ni ❌).
 - [ ] Simulacro completo hecho a mano por :8080 sin incidencias.
 - [ ] Una semana de uso real sin volver a las apps PHP.
 - [ ] Solo cuando todo lo anterior esté validado (decisión de Carmen: no antes), se retiran de `docker-compose.yml` `preparadortai-web`, `studyassistant-web`, MariaDB y phpMyAdmin, con un volcado final de MariaDB guardado en `backups/`.

@@ -127,7 +127,7 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - **Modo Entrenamiento** (lógica de PreparaTIC): se pueden marcar varias opciones cuando dudas; cuenta como acierto si la correcta está entre las marcadas y como fallo si no. Al desactivarlo, las preguntas con varias marcas cuentan como no contestadas. Solo se corrige al final (desactiva «Corregir al responder»). Las marcas se guardan en `test_attempts.marked_option_ids` (columna aditiva); `selected_option_id` e `is_correct` guardan lo que cuenta, así las estadísticas no cambian. Una pregunta con varias marcas queda además marcada como 🔖 dudosa para repasarla. En PreparaTIC la fila «Dudosas» del resultado salía siempre a 0 (ninguna respuesta llegaba a tener ese estado); aquí cuenta las preguntas con varias marcas y cuántas tenían la correcta.
 - **Filtrar** (lógica de PreparaTIC): preguntas de examen (todas, ocultarlas o solo ellas), años y número de preguntas. Define las preguntas del test: el marcador, la nota y el tiempo se calculan solo sobre ellas; lo contestado fuera del filtro se conserva por si se vuelve a mostrar. «Restablecer» lo quita. Se guarda en `test_sessions.question_filter` (JSON, aditiva). Tras corregir no cambia.
 - El resultado dice «Has tenido un acierto del X %» y muestra correctas, fallidas, dudosas (en entrenamiento) y no contestadas sobre el total, como PreparaTIC.
-- ⚠️ En el examen 53 (GSI 2024) «Mostrar exclusivamente» las de examen deja el test vacío: esas 101 preguntas tienen `is_official_exam = 0` (ver arriba). La página lo explica en vez de quedarse en blanco.
+- ⚠️ En el examen 53 (GSI 2024) «Mostrar exclusivamente» las de examen deja el test vacío: esas 101 preguntas tienen `is_official_exam = 0` (ver arriba). La página lo explica en vez de quedarse en blanco. (Resuelto en `feature/stats-parity`.)
 - Pendiente para el rediseño: en móvil la barra de navegación superior no cabe y se sale por la derecha (resuelto en `feature/ui-redesign`).
 - Tests: test-engine 93 en local. Comprobado en Chromium (escritorio y móvil: cronómetro parado al abrir, empezar, pausar, detener, ocultar, aviso de tiempo, entrenamiento con dos marcas y filtro) y con el smoke test.
 
@@ -144,6 +144,19 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - Firefox (visto por Carmen): seguía usando el `style.css` antiguo de su caché y, sin estilos, los iconos SVG ocupaban todo el ancho. Ahora la hoja se enlaza con su huella (`static_url('style.css')` → `style.css?v=<sha256>`), así cada cambio cambia la URL, y los iconos llevan `width`/`height` de 20 px por si alguna vez falta el CSS.
 - CI: el job `gateway` buscaba «Test Engine», «Historial» y `scoreboard`, que ya no existen; ahora comprueba «Exámenes disponibles», «Tests realizados» y `test-band`.
 - Pendiente: las gráficas de estadísticas como las de preparadortai (ECharts) van en `feature/stats-parity`; study-assistant se rediseña después.
+
+## Estadísticas de preparadortai (rama `feature/stats-parity`)
+- **Datos de GSI 2024**: sus 101 preguntas se importaron con `is_official_exam = 0` y sin año, así que no salían en «solo examen oficial», en «Mostrar exclusivamente» de Filtrar ni en las estadísticas de oficiales. El importador ya las crea con año 2024 y como oficiales, y `scripts/etl/fix_gsi_official_flag.py` repara la BD (simulación por defecto; `--apply` con copia previa; idempotente). **Hay que ejecutarlo antes de los tests de test-engine**, que lo dan por hecho (`test_training_mode_and_filter_from_the_test_screen`).
+- `/stats/` con lo que tenía `estadisticas.php` de preparadortai (sus reglas en `domain/stats/insights.py`):
+  - **Diagnóstico rápido**: área prioritaria (con «Repasar»), examen a repetir (la última nota más baja) y tendencia de la nota (media de los 5 últimos tests frente a los 5 anteriores).
+  - **Gráficos** con ECharts (como PreparaTIC; desde jsDelivr, la página funciona igual sin él): evolución de la nota con la media de los 5 últimos y la raya del 5, resultados (correctas, fallidas y no contestadas de los tests terminados) y acierto por bloque. Se repintan al cambiar entre claro y oscuro.
+  - **Progreso por examen**: intentos, mejor nota, última, tendencia y «Repetir».
+  - **Preguntas con fallos recurrentes**: falladas dos veces o más, con % de error, si la última vez fue bien o mal y enlace a la ficha.
+  - **Áreas débiles**: la tabla por bloque y tema, ahora ordenada por prioridad (fallos × lo que falta para el 100 %) y con la etiqueta alta/media/baja de preparadortai. Con los nombres de los temas de PreparaTIC A1.
+  - No se migran las «temáticas de búsqueda» (dependían de la práctica por búsqueda de texto de preparadortai).
+- Arreglado de paso: en móvil varias páginas tenían scroll horizontal (el texto oculto de las cabeceras de las tablas y los desplegables largos de temario y filtros).
+- `docs/MIGRACION.md` al día: no queda ninguna página de las apps PHP sin equivalente o sin decisión.
+- Tests: test-engine 105 en local (4 nuevos); raíz, el del script. Comprobado en Chromium (claro, oscuro, cambio de tema y móvil) y con el smoke test.
 
 ## Menú, Inicio y tests fijos como PreparaTIC (rama `feature/app-navigation`)
 - Menú lateral reordenado por secciones (decisión de Carmen): **Inicio**; **Tests** (Aleatorios, Relevancia, Bloques, Temas, Años, Exámenes y Generar test); **Mi Progreso** (Tests realizados, Estadísticas); **Estudio** (Apuntes, que lleva a study-assistant); **Banco de preguntas** (Preguntas, Cuestionarios; antes «Gestión»). Se quita «Test en curso»: los tests a medias salen en Inicio. Las funciones de study-assistant (p. ej. subir PDF) no se enlazan desde aquí.
