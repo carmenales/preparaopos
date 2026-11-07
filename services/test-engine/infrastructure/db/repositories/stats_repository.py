@@ -8,6 +8,7 @@ from decimal import Decimal
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
+from domain.sessions.collections import fixed_test_title
 from domain.sessions.generator import GeneratorFilters
 
 # Pregunta fallada pendiente = su último intento respondido fue incorrecto
@@ -91,6 +92,8 @@ class StatsRepository:
                 f = GeneratorFilters.from_source_ref(ref)
             except ValueError:
                 return "Test generado"
+            if f.part:  # test fijo de una colección (Aleatorios, Bloques...)
+                return f"{syllabus_names.get(f.syllabus_id, f.syllabus_id)} · {fixed_test_title(f)}"
             parts = [syllabus_names.get(f.syllabus_id, f.syllabus_id)]
             if f.block:
                 parts.append(f"Bloque {f.block}" + (f" · Tema {f.topic}" if f.topic else ""))
@@ -108,6 +111,25 @@ class StatsRepository:
         if row.source == "questions":
             return "Preguntas sueltas"
         return f"{row.source}: {ref}" if ref else row.source
+
+    def fixed_test_status(self, source_refs: list[str]) -> dict[str, dict]:
+        """Estado de cada test fijo: sesión sin terminar (para continuarla), veces hecho y nota de la última."""
+        wanted = set(source_refs)
+        rows = self._session.execute(text(
+            "SELECT id, source_ref, closed_at, final_score FROM test_sessions "
+            "WHERE source = 'generated' AND source_ref LIKE '%part=%' ORDER BY started_at"
+        )).fetchall()
+        status: dict[str, dict] = {}
+        for r in rows:
+            if r.source_ref not in wanted:
+                continue
+            s = status.setdefault(r.source_ref, {"open_id": None, "done": 0, "last_score": None})
+            if r.closed_at is None:
+                s["open_id"] = r.id
+            else:
+                s["done"] += 1
+                s["last_score"] = float(r.final_score) if r.final_score is not None else None
+        return status
 
     def delete_session(self, session_id: str) -> bool:
         """Borra la sesión y sus intentos (ON DELETE CASCADE). Devuelve si existía."""
