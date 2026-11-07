@@ -145,6 +145,17 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
 - CI: el job `gateway` buscaba «Test Engine», «Historial» y `scoreboard`, que ya no existen; ahora comprueba «Exámenes disponibles», «Tests realizados» y `test-band`.
 - Pendiente: las gráficas de estadísticas como las de preparadortai (ECharts) van en `feature/stats-parity`; study-assistant se rediseña después.
 
+## Menú, Inicio y tests fijos como PreparaTIC (rama `feature/app-navigation`)
+- Menú lateral reordenado por secciones (decisión de Carmen): **Inicio**; **Tests** (Aleatorios, Relevancia, Bloques, Temas, Años, Exámenes y Generar test); **Mi Progreso** (Tests realizados, Estadísticas); **Estudio** (Apuntes, que lleva a study-assistant); **Banco de preguntas** (Preguntas, Cuestionarios; antes «Gestión»). Se quita «Test en curso»: los tests a medias salen en Inicio. Las funciones de study-assistant (p. ej. subir PDF) no se enlazan desde aquí.
+- **Inicio** (`/tests/home`, el logo lleva aquí): qué es la app, los tests sin terminar, totales, «Cómo funciona», qué hace cada botón del test y los temarios. `/tests/` sigue siendo la lista de exámenes para no romper enlaces ni el CI.
+- **Tests fijos** como los de PreparaTIC («Test Bloque A1 #3»): cada colección reparte las preguntas del temario en tests de 100 que tienen siempre las mismas preguntas, para ver cuáles has hecho, con qué nota, y continuar los que dejaste a medias (no se duplican). Aleatorios: todo el temario; Relevancia: 50 muestras ponderadas por lo que más cae en los oficiales; Bloques, Temas y Años: cada uno repartido. Se elige el temario (se recuerda en una cookie; por defecto, el de más preguntas). Se hacen como en PreparaTIC: se corrigen al final y el cronómetro lo arranca el usuario.
+  - Cada test es un filtro del generador con `part` (`GeneratorFilters.part`): su `source_ref` lo identifica y sus sesiones se buscan por él. Las preguntas salen de un orden fijo por hash de (colección, id): al añadir preguntas al banco, las que había conservan su orden y los tests cambian lo mínimo.
+  - Nombres de bloques y temas del A1 TIC en `services/test-engine/syllabi/preparatic-a1.json` (copiados de `scripts/etl/preparatic_catalog.json`); los temarios sin fichero muestran el código.
+- Enlace al apunte en la pregunta corregida: botón «Apunte: <tema>» en vez de un enlace pequeño. Solo lo tienen las 100 preguntas del GSI 2024 (únicas enlazadas en linking-service; comprobado por Carmen que el enlazado responde). Enlazar el A1 TIC con la tabla A1↔A2 queda para otra rama.
+- Si linking-service falla, test-engine lo deja en su log (`test-engine.linking`) en vez de ocultarlo.
+- Pendiente después de la migración: rediseño de la interfaz de los apuntes (study-assistant).
+- Tests: test-engine 101 en local (8 nuevos en `tests/test_collections.py`). Comprobado en Chromium (claro, oscuro y móvil) y con el smoke test.
+
 ## CI (rama `feature/ci-fixes`)
 - Antes: el job de Docker comprobaba preparadortai en el 8080 (ahora es el gateway; preparadortai está en el 8082 y necesita el volcado de MariaDB, que no está en git) y los tests de `services/*` no se ejecutaban.
 - Jobs de `.github/workflows/ci.yml`:
