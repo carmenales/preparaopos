@@ -42,6 +42,8 @@ logging.basicConfig(
 logger = logging.getLogger("import_age_gsi_2024")
 
 SOURCE_NAME = "age-gsi-2024"
+# Todas son del examen oficial de 2024: cuentan para «solo examen oficial», Filtrar y el ponderado.
+EXAM_YEAR = 2024
 SYLLABUS_ID = "age-gsi-official"
 SYLLABUS_CODE = "age/a2-gsi"
 SYLLABUS_NAME = "AGE A2 GSI"
@@ -262,10 +264,10 @@ def main() -> None:
                 """
                 INSERT INTO questions (
                     statement, justification, img_path, source, source_id,
-                    is_annulled, annulment_reason, pending_classification
-                ) VALUES (?, ?, NULL, ?, ?, 0, NULL, 1)
+                    is_annulled, annulment_reason, pending_classification, year, is_official_exam
+                ) VALUES (?, ?, NULL, ?, ?, 0, NULL, 1, ?, 1)
                 """,
-                (q["statement"], q["justification"], SOURCE_NAME, source_id),
+                (q["statement"], q["justification"], SOURCE_NAME, source_id, EXAM_YEAR),
             )
             db_question_id = cursor.lastrowid
             existing_q_map[source_id] = db_question_id
