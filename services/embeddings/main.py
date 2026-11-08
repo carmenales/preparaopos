@@ -32,7 +32,7 @@ DATA_DIR = Path(os.getenv("DATA_DIR", _LOCAL_DATA if _LOCAL_DATA.exists() else "
 CHUNKS_PATH = DATA_DIR / "semantic_chunks.json"
 EMBEDDINGS_PATH = DATA_DIR / "semantic_embeddings.npy"
 
-app = FastAPI(title="preparaopos-embeddings")
+app = FastAPI(title="preparaopos-embeddings", version="1.0.0")
 
 _model: SentenceTransformer | None = None
 _chunks: list[dict] = []
