@@ -1,30 +1,37 @@
 # Estado del proyecto
 
-_Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d76832`), 14 commits por delante de `develop`._
+_Última revisión: 2026-11-07 · `develop` tras `feature/stats-parity`. **Migración: funcionalidad terminada, en validación** (criterios en `docs/MIGRACION.md` §4)._
 
-## Hecho y verificado
+## Situación actual
+- Gateway Nginx en :8080: study-assistant en `/` (apuntes), test-engine en `/tests/`, más linking-service, knowledge-service y embeddings. Las apps PHP (preparadortai y studyassistant), MariaDB y phpMyAdmin siguen en `docker-compose.yml` hasta terminar la validación (decisión de Carmen).
+- test-engine: 18.820 preguntas y 65 exámenes (PreparaTIC A1 16.680, TAI 1.331, Ayto. Madrid 294, UC3M 270, Comunidad de Madrid 100, AGE GSI 2024 101, Majadahonda 44).
+- `develop` aún no está en GitHub (`origin/develop` se quedó en `6f754468`): el CI no se ha ejecutado nunca con la migración.
+
+## Próximos pasos: versión 1.0.0 (GitFlow)
+1. Subir `develop` a GitHub y corregir lo que falle en el CI (ramas `feature/*`).
+2. Crear `release/1.0.0` desde `develop`: versión 1.0.0 en los servicios y fecha en `CHANGELOG.md`. El CI se ejecuta también en `release/*`.
+3. Validar sobre `release/1.0.0` (simulacro completo por :8080 y una semana de uso real sin las apps PHP). Los arreglos van a esa rama y se llevan después a `develop`.
+4. Retirar las apps PHP, MariaDB y phpMyAdmin (con volcado final en `backups/`) en la misma `release/1.0.0`.
+5. Merge de `release/1.0.0` a `main` (`--no-ff`), etiqueta `v1.0.0`, merge de vuelta a `develop` y push de ramas y etiqueta.
+
+## Pendiente menor
+- `docker-compose.dev.yml` está vacío (0 bytes): lo borra Carmen (`git rm`) en `feature/cleanup`.
+- Sin versionar en `knowledge/`: `processes/age/a1-sti`, `processes/age/mapping` (tabla A1↔A2), Majadahonda y el perfil p06 de Comunidad de Madrid. Decidir qué se versiona. Los apuntes de `a2-gsi/apuntes/` quedan fuera a propósito hasta que Carmen los revise.
+- El índice de apuntes (`apps/studyassistant/data/knowledge_index.json`) es del 2026-10-19: regenerarlo con `python scripts/build_knowledge_index.py` tras revisar los apuntes.
+- ✅ `GET /sessions/{id}/result` de una sesión que no existe ya devuelve 404 (hay test).
+
+## Punto de partida (2026-10-19)
 - **test-engine**: 18.112 preguntas (PreparaTIC A1 16.680, TAI legacy, AGE GSI 2024 con 101). 1.268 pendientes de clasificar (1.267 TAI + la 18110 de reserva GSI). ScoringService (Decimal, A−F/3, 2 decimales ROUND_HALF_UP, anuladas fuera del denominador), sesiones práctica/simulacro con expiración en servidor, práctica por apunte (`source="note"`).
 - **linking-service**: enlaces apunte↔pregunta para el piloto GSI 2024 (confianza 1.0 un match / 0.8 varios). Degradación elegante si no responde.
 - **Navegación cruzada** study-assistant ↔ test-engine y **gateway Nginx** :8080.
 - Tests (2026-10-19): test-engine 26/26, linking-service 5/5, study-assistant 4/4. La BD real de test-engine no cambia al ejecutarlos (MD5 idéntico antes y después).
 
-## Corregido el 2026-10-19 (pendiente de commit)
+## Correcciones del 2026-10-19
 - `tests/conftest.py` de test-engine estaba vacío en git: los tests escribían en la BD real. Ahora copia la BD (con sus `-journal`/`-wal`/`-shm`) a un directorio temporal antes de importar `config`, y un fixture comprueba que no se usa la BD real.
 - `engine.py`: el fallo o la discrepancia de `journal_mode` se registra como WARNING con el modo pedido y el efectivo.
 - Enlaces entre servicios en la barra superior: ya no se escriben a mano (`/` y `/tests/`); salen de `STUDY_ASSISTANT_PUBLIC_URL` y `TEST_ENGINE_PUBLIC_URL`. Antes, test-engine ejecutándose solo en :8096 enviaba «Volver a Apuntes» a su propio catálogo.
 - `.gitattributes` (LF) y `*.sqlite-journal` en `.gitignore`.
 - `scripts/backup_test_engine.py` (API de backup, `integrity_check`, retención 14, en `backups/`, ignorada por git) y `scripts/purge_test_sessions.py` (simulación por defecto, solo sesiones del smoke test salvo `--all`, `--before`, copia previa obligatoria).
-
-## Antes de mergear a `develop`
-1. ~~Smoke del gateway~~: OK al 100 % el 2026-10-19. Ojo: los pasos 5 y 6 crean sesiones reales en la BD.
-2. Purgar las sesiones que dejaron smoke tests antiguos: `docker compose stop test-engine` → `python scripts/purge_test_sessions.py --apply` → `docker compose start test-engine`. Por defecto solo selecciona las del smoke test (no toca el historial importado ni el uso real) y hace antes una copia verificada en `backups/test-engine/`.
-
-## Pendiente menor
-- `docker-compose.dev.yml` está vacío (0 bytes): rellenar u eliminar.
-- ✅ Smoke test: ya borra al terminar las sesiones que crea (rama `feature/smoke-cleanup`).
-- `GET /sessions/{id}/result` de una sesión que no existe devuelve 500 en vez de 404.
-- Ficheros sueltos: `ultimos_commits.txt`, `…/02_Metodologia_Proyecto copy.md`.
-- Untracked de `knowledge/` (a1-sti, a2-gsi/apuntes, mapping, majadahonda, p06): decidir qué se versiona (el repo es privado).
 
 ## Paso 1 de la migración (rama `feature/preparatic-year-metadata`)
 - `questions.year` y `questions.is_official_exam`. `init_schema` añade las columnas que falten en BD existentes (`ensure_additive_columns`, solo aditivo).
@@ -182,8 +189,9 @@ _Última revisión: 2026-10-19 · rama `feature/cross-navigation-in-ui` (`c7d768
   - `tests/test_import_local_exams.py`: se saltan las 6 pruebas que leen `imports/`.
 - Comprobado en un clon limpio (`git archive`) con un entorno nuevo: raíz 145 tests (6 saltados), study-assistant 25, test-engine 15 (53 saltados), linking-service 8, y las rutas del job `gateway` contra los servicios reales con la BD vacía. En local, con los datos, todo sigue igual (test-engine 68, study-assistant 25).
 
-## Después
-La migración no está completa: ver `docs/MIGRACION.md` (datos sin importar, funcionalidades de las apps PHP sin equivalente y criterios para etiquetar la versión).
-
-1. Simulacro completo manual por :8080. Luego tag/release y usar el sistema unos días.
-2. Backlog: Alembic; catálogo histórico de exámenes y selector por bloque/tema; rediseño UI/UX; 1.267 preguntas TAI pendientes (necesitan apuntes `c1-tai`/`a1-sti`); linking para otros temarios; revisión de apuntes en borrador (#42); UX de enlaces 1-a-varios; `lifespan` en vez de `on_event`; proveedores de IA opcionales (Gemini/Obsidian/Notion).
+## Después de la 1.0.0
+- Rediseño de la interfaz de los apuntes (study-assistant) con el mismo estilo que test-engine.
+- Enlazar las preguntas del A1 TIC con los apuntes de GSI usando la tabla A1↔A2 (`knowledge/processes/age/mapping/`).
+- Clasificar por tema las 1.267 preguntas de TAI (necesitan apuntes `c1-tai`/`a1-sti`).
+- Imágenes del PDF en la ingesta; revisión de apuntes en borrador (#42).
+- Técnico: Alembic; `lifespan` en vez de `on_event`; una BD de prueba sintética para que el CI cubra la lógica que hoy se salta sin datos; proveedores de IA opcionales (Gemini/Obsidian/Notion).

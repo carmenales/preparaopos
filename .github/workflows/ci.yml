@@ -5,10 +5,13 @@ on:
     branches:
       - main
       - develop
+      - "release/**"
+      - "hotfix/**"
   pull_request:
     branches:
       - main
       - develop
+      - "release/**"
 
 # Los datos reales (BD de test-engine, apuntes sin revisar, índice de apuntes, imports/) no están
 # en git. CI comprueba el código con lo que sí está versionado: los tests que necesitan esos datos
@@ -124,6 +127,9 @@ jobs:
           check /healthz "OK"
           check / "Dashboard"
           check /tests/ "Exámenes disponibles"
+          check /tests/home "Cómo funciona"
+          check /tests/collections/random "Tests aleatorios"
+          check /tests/stats/ "Estadísticas"
           check /tests/static/style.css "test-band"
           check /static/css/styles.css "nested-toc"
           check /tests/generator/ "Generar"
