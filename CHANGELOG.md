@@ -3,7 +3,7 @@
 Cambios notables de PreparaOpos. Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
 y versionado [SemVer](https://semver.org/lang/es/). El detalle de cada rama está en `docs/ESTADO.md`.
 
-## [Sin publicar] — candidata a 1.0.0
+## [1.0.0] — en validación (la fecha se pone al publicarla)
 
 Primera versión del sistema nuevo: sustituye a preparadortai (PHP), studyassistant (PHP) y PreparaTIC V3
 (ver `docs/MIGRACION.md`).
@@ -27,6 +27,7 @@ Primera versión del sistema nuevo: sustituye a preparadortai (PHP), studyassist
   el apunte, ingesta de PDF con revisión y refinado con Ollama (knowledge-service) y borrado.
 - **Inicio** con la explicación de la app, interfaz de PreparaTIC en claro y oscuro, y móvil.
 - **CI** en GitHub Actions: tests de la raíz y de cada servicio y comprobación de rutas por el gateway.
+- **Créditos** de terceros en `NOTICE.md` y en Inicio (PreparaTIC, ECharts, htmx, Heroicons).
 
 ### Retirado (pendiente, al cerrar la validación)
 - preparadortai y studyassistant (PHP), MariaDB y phpMyAdmin.
