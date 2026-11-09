@@ -52,7 +52,7 @@ app = FastAPI(
         "generación de apuntes, extracción y normalización de PDFs, refinado con LLM "
         "y publicación directa."
     ),
-    version="0.2.0",
+    version="1.0.0",
 )
 
 _search_client = SearchClient()

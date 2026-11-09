@@ -1,4 +1,4 @@
-"""Iconos SVG en línea para las plantillas (trazos de Heroicons, los mismos que usa PreparaTIC).
+"""Iconos SVG en línea para las plantillas: trazos de Heroicons (MIT, Tailwind Labs), los mismos que usa PreparaTIC.
 
 Uso en Jinja: {{ icon("play") }}. Sin dependencias externas ni peticiones a CDN.
 """

@@ -13,7 +13,7 @@ from presentation.routers import api as api_router, catalog, collections as coll
 _engine = create_sqlite_engine(SQLITE_PATH)
 init_schema(_engine)
 
-app = FastAPI(title="Test Engine", docs_url=None, redoc_url=None)
+app = FastAPI(title="Test Engine", version="1.0.0", docs_url=None, redoc_url=None)
 
 # Archivos estáticos (CSS, JS mínimo)
 STATIC_DIR.mkdir(parents=True, exist_ok=True)

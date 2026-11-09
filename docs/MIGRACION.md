@@ -107,4 +107,4 @@ docker exec preparaopos-preparadortai-db mariadb -uroot -p -e "
 - [ ] Simulacro completo hecho a mano por :8080 sin incidencias.
 - [ ] Una semana de uso real sin volver a las apps PHP.
 - [ ] Solo cuando todo lo anterior esté validado (decisión de Carmen: no antes), se retiran de `docker-compose.yml` `preparadortai-web`, `studyassistant-web`, MariaDB y phpMyAdmin, con un volcado final de MariaDB guardado en `backups/`.
-- [ ] Etiqueta `v1.0.0`.
+- [x] Etiqueta `v1.0.0` (2026-11-09). La retirada de las apps PHP pasa a la 1.1.0.
