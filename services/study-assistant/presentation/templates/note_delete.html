@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Borrar apunte{% endblock %}
+
+{% block content %}
+<section class="ingest-container note-delete">
+  <header class="ingest-header">
+    <h1>¿Borrar este apunte?</h1>
+  </header>
+
+  {% if error %}<div class="alert alert-error" role="alert">No se ha borrado. {{ error }}</div>{% endif %}
+
+  <div class="ingest-card">
+    <dl>
+      <dt>Apunte</dt><dd><strong>{{ note.title }}</strong>{% if note.official_topic and note.official_topic != note.title %} · {{ note.official_topic }}{% endif %}</dd>
+      {% if note.processes %}<dt>Proceso</dt><dd>{% for p in note.processes %}{{ process_titles[p] }}{% if not loop.last %}, {% endif %}{% endfor %}</dd>{% endif %}
+      <dt>Fichero</dt><dd><code>{{ note.path }}</code></dd>
+    </dl>
+
+    <div class="alert alert-error" role="alert">
+      <p><strong>Se borra definitivamente</strong>: no hay papelera ni archivado. Si el fichero estaba commiteado,
+        se puede recuperar con git; si nunca se commiteó, se pierde.</p>
+      {% if linked_count is none %}
+      <p>No se sabe cuántas preguntas lo tienen enlazado (linking-service no responde): sus enlaces no se podrán borrar ahora.</p>
+      {% elif linked_count %}
+      <p>Tiene <strong>{{ linked_count }} {{ "pregunta enlazada" if linked_count == 1 else "preguntas enlazadas" }}</strong>:
+        dejarán de ofrecer este apunte al corregirlas (las preguntas no se borran).</p>
+      {% endif %}
+    </div>
+    {% if same_id %}
+    <p class="ingest-subtitle">Hay {{ same_id|length }} apunte{{ "s" if same_id|length > 1 else "" }} más con el mismo id
+      (<code>{{ same_id[0].path }}</code>). Solo se borra este fichero, y los enlaces con preguntas se conservan porque
+      también son del otro.</p>
+    {% endif %}
+
+    <form method="post" action="/notes/{{ note.id | urlencode }}/delete" class="ingest-actions">
+      <input type="hidden" name="path" value="{{ note.path }}">
+      <button type="submit" class="btn btn-danger">Sí, borrar definitivamente</button>
+      <a class="btn btn-secondary" href="/notes/{{ note.id | urlencode }}">Cancelar</a>
+    </form>
+  </div>
+</section>
+{% endblock %}

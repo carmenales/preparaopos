@@ -2,124 +2,39 @@
 require_once __DIR__ . '/includes/knowledge.php';
 require_once __DIR__ . '/../shared/helpers/url.php';
 
-$notes = sa_load_index();
+use StudyAssistant\Knowledge\NoteRepository;
+use StudyAssistant\Dashboard\DashboardMetrics;
+
+$repo = NoteRepository::getInstance();
+$notes = $repo->getAll();
 $query = isset($_GET['q']) ? trim($_GET['q']) : '';
 $tag = isset($_GET['tag']) ? trim($_GET['tag']) : '';
 $process = isset($_GET['process']) ? trim($_GET['process']) : '';
 $status = isset($_GET['status']) ? trim($_GET['status']) : '';
 $searchMode = isset($_GET['mode']) && $_GET['mode'] === 'semantic' ? 'semantic' : 'standard';
 
-$tags = sa_collect_unique($notes, 'tags');
-$processes = sa_collect_unique($notes, 'processes');
-$statuses = sa_collect_statuses($notes);
-$filteredNotes = sa_filter_notes($notes, $query, $tag, $process, $status);
+$tags = $repo->collectUnique('tags');
+$processes = $repo->collectUnique('processes');
+$statuses = $repo->collectStatuses();
+$filteredNotes = $repo->filter($query, $tag, $process, $status);
 
-// Métricas objetivas para el Dashboard
-$totalNotes = count($notes);
-$totalProcesses = count($processes);
-$totalTags = count($tags);
+// Métricas objetivas para el Dashboard y Process Hub
+$metrics = new DashboardMetrics($notes, $processes, $tags, $repo);
+$totalNotes = $metrics->getTotalNotes();
+$totalProcesses = $metrics->getTotalProcesses();
+$totalTags = $metrics->getTotalTags();
+$reviewedCount = $metrics->getReviewedCount();
+$draftCount = $metrics->getDraftCount();
+$processSummaries = $metrics->getProcessSummaries();
 
-$reviewedCount = 0;
-$draftCount = 0;
-foreach ($notes as $n) {
-    $st = strtolower((string)($n['status'] ?? ''));
-    if (in_array($st, ['revisado', 'publicado', 'completo', 'listo'], true)) {
-        $reviewedCount++;
-    } else {
-        $draftCount++;
-    }
-}
-
-// Resúmenes por proceso para el Process Hub
-$processSummaries = [];
-foreach ($processes as $procSlug) {
-    $procNotes = array_filter($notes, static function ($n) use ($procSlug) {
-        return in_array($procSlug, $n['processes'] ?? [], true);
-    });
-    $procTotal = count($procNotes);
-    if ($procTotal === 0) {
-        continue;
-    }
-    $procReviewed = 0;
-    $procDraft = 0;
-    $procTagCounts = [];
-    foreach ($procNotes as $pn) {
-        $st = strtolower((string)($pn['status'] ?? ''));
-        if (in_array($st, ['revisado', 'publicado', 'completo', 'listo'], true)) {
-            $procReviewed++;
-        } else {
-            $procDraft++;
-        }
-        foreach ($pn['tags'] ?? [] as $t) {
-            $procTagCounts[$t] = ($procTagCounts[$t] ?? 0) + 1;
-        }
-    }
-    arsort($procTagCounts);
-    $topTags = array_slice(array_keys($procTagCounts), 0, 3);
-
-    $processSummaries[$procSlug] = [
-        'slug' => $procSlug,
-        'title' => sa_format_process_title($procSlug),
-        'total' => $procTotal,
-        'reviewed' => $procReviewed,
-        'draft' => $procDraft,
-        'tags' => $topTags,
-    ];
-}
-
-$reviewedCountInProcess = 0;
-$draftCountInProcess = 0;
-if ($process !== '') {
-    foreach ($filteredNotes as $fn) {
-        $st = strtolower((string)($fn['status'] ?? ''));
-        if (in_array($st, ['revisado', 'publicado', 'completo', 'listo'], true)) {
-            $reviewedCountInProcess++;
-        } else {
-            $draftCountInProcess++;
-        }
-    }
-}
+$countsInProcess = $process !== '' ? $metrics->countReviewedAndDraft($filteredNotes) : ['reviewed' => 0, 'draft' => 0];
+$reviewedCountInProcess = $countsInProcess['reviewed'];
+$draftCountInProcess = $countsInProcess['draft'];
 
 // Filtros activos para generar chips
-$activeFilters = [];
-if ($query !== '') {
-    $params = $_GET;
-    unset($params['q']);
-    $activeFilters[] = [
-        'name' => 'Búsqueda',
-        'value' => $query,
-        'remove_url' => 'index.php?' . http_build_query($params),
-    ];
-}
-if ($process !== '') {
-    $params = $_GET;
-    unset($params['process']);
-    $activeFilters[] = [
-        'name' => 'Proceso',
-        'value' => sa_format_process_title($process),
-        'remove_url' => 'index.php?' . http_build_query($params),
-    ];
-}
-if ($tag !== '') {
-    $params = $_GET;
-    unset($params['tag']);
-    $activeFilters[] = [
-        'name' => 'Etiqueta',
-        'value' => $tag,
-        'remove_url' => 'index.php?' . http_build_query($params),
-    ];
-}
-if ($status !== '') {
-    $params = $_GET;
-    unset($params['status']);
-    $activeFilters[] = [
-        'name' => 'Estado',
-        'value' => ucfirst($status),
-        'remove_url' => 'index.php?' . http_build_query($params),
-    ];
-}
+$activeFilters = $metrics->buildActiveFilters($_GET, $query, $process, $tag, $status);
 
-$pageTitle = ($process !== '' ? sa_format_process_title($process) . ' · ' : '') . 'Dashboard de Apuntes · Study Assistant';
+$pageTitle = ($process !== '' ? $repo->formatProcessTitle($process) . ' · ' : '') . 'Dashboard de Apuntes · Study Assistant';
 require __DIR__ . '/includes/header.php';
 ?>
 

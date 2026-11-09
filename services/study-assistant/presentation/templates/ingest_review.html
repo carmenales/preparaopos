@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Revisar apunte{% endblock %}
+
+{% block content %}
+<section class="ingest-container">
+  <header class="ingest-header">
+    <h1>Revisar el apunte</h1>
+    <p class="ingest-subtitle">
+      {% if info.filename %}{{ info.filename }} · {{ info.page_count }} páginas · {{ info.headings }} encabezados detectados · {% endif %}
+      proceso <code>{{ v.process_slug }}</code>
+    </p>
+  </header>
+
+  {% if error %}<div class="alert alert-error" role="alert">{{ error }}</div>{% endif %}
+  {% for w in info.warnings or [] %}<div class="alert" role="status">{{ w }}</div>{% endfor %}
+
+  <form method="post" action="/ingest/publish" id="ingest-form"
+        onsubmit="this.querySelector('#publish-btn').disabled = true;">
+    <input type="hidden" name="process_slug" value="{{ v.process_slug }}">
+    <input type="hidden" name="source" value="{{ v.source }}">
+
+    <div class="metadata-form-grid">
+      <div class="form-group"><label for="title">Título</label>
+        <input type="text" id="title" name="title" value="{{ v.title }}" required></div>
+      <div class="form-group"><label for="official_topic">Tema oficial</label>
+        <input type="text" id="official_topic" name="official_topic" value="{{ v.official_topic }}" placeholder="p. ej. IV.13 La red Internet"></div>
+      <div class="form-group"><label for="tags">Etiquetas</label>
+        <input type="text" id="tags" name="tags" value="{{ v.tags }}" placeholder="separadas por comas"></div>
+      <div class="form-group"><label for="status">Estado</label>
+        <select id="status" name="status">{% for s in statuses %}<option value="{{ s }}" {% if s == v.status %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></div>
+    </div>
+
+    <div class="ingest-grid">
+      <div>
+        <div class="editor-toolbar">
+          <input type="text" name="instructions" placeholder="Instrucciones extra para el refinado (opcional)" aria-label="Instrucciones para el refinado">
+          <button type="button" class="btn btn-secondary btn-sm"
+                  hx-post="/ingest/refine" hx-include="#markdown, [name=instructions]" hx-target="#editor-slot"
+                  hx-swap="innerHTML" hx-indicator="#refine-busy" hx-disabled-elt="this">✨ Refinar con Ollama</button>
+          <span id="refine-busy" class="htmx-indicator form-hint">Refinando… en CPU puede tardar varios minutos.</span>
+        </div>
+        <div id="editor-slot">{% include "partials/ingest_editor.html" %}</div>
+      </div>
+      <div>
+        <div class="pane-header">Vista previa</div>
+        <div id="preview" class="note-body" aria-live="polite">{{ preview_html|safe }}</div>
+      </div>
+    </div>
+
+    <label class="checkbox-label"><input type="checkbox" name="needs_human_review" value="1" {% if v.needs_human_review %}checked{% endif %}>
+      Necesita revisión (lo marcaré como revisado cuando lo repase)</label>
+
+    <div class="ingest-actions">
+      <a href="/ingest/" class="btn btn-ghost">Empezar de nuevo</a>
+      <button type="submit" id="publish-btn" class="btn btn-primary">Publicar apunte</button>
+    </div>
+  </form>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+<script>
+  // Tras actualizar la vista previa, volver a pintar fórmulas y diagramas como en el visor.
+  document.addEventListener('htmx:afterSwap', function (e) {
+    var target = document.getElementById('preview');
+    if (window.MathJax && MathJax.typesetPromise) { MathJax.typesetPromise([target]).catch(function () {}); }
+    if (window.mermaid) { try { mermaid.run({ nodes: target.querySelectorAll('.mermaid'), suppressErrors: true }); } catch (err) {} }
+  });
+</script>
+{% endblock %}

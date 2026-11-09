@@ -1,0 +1,36 @@
+"""App FastAPI del Test Engine."""
+
+from __future__ import annotations
+
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from config import SQLITE_PATH, STATIC_DIR
+from infrastructure.db.engine import create_sqlite_engine, init_schema
+from presentation.routers import api as api_router, catalog, collections as collections_router, home as home_router, generator as generator_router, history as history_router, management as management_router, sessions as sessions_router
+
+# Inicializar esquema y datos semilla al arrancar
+_engine = create_sqlite_engine(SQLITE_PATH)
+init_schema(_engine)
+
+app = FastAPI(title="Test Engine", version="1.0.0", docs_url=None, redoc_url=None)
+
+# Archivos estáticos (CSS, JS mínimo)
+STATIC_DIR.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Routers
+app.include_router(catalog.router)
+app.include_router(home_router.router)
+app.include_router(collections_router.router)
+app.include_router(sessions_router.router)
+app.include_router(generator_router.router)
+app.include_router(history_router.router)
+app.include_router(management_router.router)
+app.include_router(api_router.router)
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "service": "test-engine"}
+

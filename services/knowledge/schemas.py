@@ -157,6 +157,8 @@ class PublishNoteRequest(BaseModel):
     status: str = Field(default="revisado")
     source: str = Field(default="cetic")
     custom_filename: str | None = Field(default=None)
+    ai_cleaned: bool = Field(default=False, description="True solo si el texto se ha refinado con IA (Ollama)")
+    needs_human_review: bool = Field(default=False, description="Lo marca el usuario al publicar")
 
 
 class PublishNoteResponse(BaseModel):
@@ -168,4 +170,19 @@ class PublishNoteResponse(BaseModel):
     file_path: str
     index_rebuilt: bool
     note_url: str
+    warnings: list[str] = Field(default_factory=list)
+
+
+class DeleteNoteRequest(BaseModel):
+    """Petición de POST /notes/delete: ruta del apunte tal como aparece en knowledge_index.json."""
+
+    path: str = Field(..., min_length=1, description="Ruta relativa al repo, p. ej. knowledge/processes/…/x.md")
+
+
+class DeleteNoteResponse(BaseModel):
+    """Respuesta de POST /notes/delete."""
+
+    success: bool
+    file_path: str
+    index_rebuilt: bool
     warnings: list[str] = Field(default_factory=list)

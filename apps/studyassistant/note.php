@@ -3,16 +3,20 @@ require_once __DIR__ . '/includes/knowledge.php';
 require_once __DIR__ . '/includes/markdown.php';
 require_once __DIR__ . '/../shared/helpers/url.php';
 
-$notes = sa_load_index();
+use StudyAssistant\Knowledge\NoteRepository;
+use StudyAssistant\Markdown\MarkdownRenderer;
+use StudyAssistant\Navigation\TableOfContents;
+
+$repo = NoteRepository::getInstance();
 $id = isset($_GET['id']) ? trim($_GET['id']) : '';
-$note = sa_find_note_by_id($notes, $id);
+$note = $repo->findById($id);
 $markdown = null;
 $error = null;
 
 if (!$note) {
     $error = 'No se ha encontrado el apunte solicitado.';
 } else {
-    $absolutePath = sa_note_absolute_path($note);
+    $absolutePath = $repo->getAbsolutePath($note);
 
     if ($absolutePath === null || !is_file($absolutePath)) {
         $error = 'No se ha podido abrir el fichero Markdown asociado.';
@@ -31,16 +35,17 @@ if (!empty($note['official_topic'])) {
     }
 }
 
+$renderer = new MarkdownRenderer($id);
 $renderedContent = '';
 if ($markdown !== null) {
-    $renderedContent = sa_render_markdown($markdown, $id);
-    $renderedContent = add_heading_anchors($renderedContent);
+    $renderedContent = $renderer->render($markdown);
+    $renderedContent = $renderer->addHeadingAnchors($renderedContent);
 }
 
 $headings = $note['headings'] ?? [];
 
 // Temas sugeridos para práctica (practice.topics, tags, official_topic)
-$practiceTopics = sa_normalize_practice_topics($note);
+$practiceTopics = $repo->normalizePracticeTopics($note);
 
 // Proceso actual para navegación contextual y secuencial
 $currentProcess = isset($_GET['process']) && trim($_GET['process']) !== '' ? trim($_GET['process']) : null;
@@ -50,12 +55,8 @@ if ($currentProcess === null && !empty($note['processes']) && is_array($note['pr
 
 $siblingNotes = [];
 if ($currentProcess !== null) {
-    foreach ($notes as $n) {
-        if (!empty($n['processes']) && in_array($currentProcess, $n['processes'], true)) {
-            $siblingNotes[] = $n;
-        }
-    }
-    sa_sort_notes_sequentially($siblingNotes);
+    $siblingNotes = $repo->getByProcess($currentProcess);
+    $repo->sortSequentially($siblingNotes);
 }
 
 $currentIndex = -1;
@@ -85,71 +86,9 @@ if ($totalSiblings > 0) {
     }
 }
 
-// --- LÓGICA DE TOC ANIDADO ---
-function build_nested_toc(array $headings) {
-    $tree = [];
-    $stack = [];
-
-    foreach ($headings as $h) {
-        if ($h['level'] < 2 || $h['level'] > 4) {
-            continue;
-        }
-
-        $node = ['heading' => $h, 'children' => []];
-
-        while (!empty($stack) && $stack[count($stack) - 1]['heading']['level'] >= $h['level']) {
-            array_pop($stack);
-        }
-
-        if (empty($stack)) {
-            $tree[] = &$node;
-        } else {
-            $stack[count($stack) - 1]['children'][] = &$node;
-        }
-
-        $stack[] = &$node;
-        unset($node);
-    }
-
-    return $tree;
-}
-
-function render_nested_toc(array $tree) {
-    if (empty($tree)) {
-        return '';
-    }
-
-    $html = '<ul class="nested-toc-list">';
-
-    foreach ($tree as $node) {
-        $h = $node['heading'];
-        $children = $node['children'];
-        $html .= '<li class="toc-item level-' . (int)$h['level'] . '">';
-
-        if (!empty($children)) {
-            $html .= '<details open class="toc-details">';
-            $html .= '<summary class="toc-summary">';
-            // El stopPropagation evita que al pulsar el enlace se cierre la carpeta
-            $html .= '<a href="#' . htmlspecialchars($h['anchor'], ENT_QUOTES, 'UTF-8') . '" onclick="event.stopPropagation()">' . sa_safe_text($h['text']) . '</a>';
-            $html .= '</summary>';
-            $html .= render_nested_toc($children);
-            $html .= '</details>';
-        } else {
-            $html .= '<div class="toc-link-wrapper">';
-            $html .= '<a href="#' . htmlspecialchars($h['anchor'], ENT_QUOTES, 'UTF-8') . '">' . sa_safe_text($h['text']) . '</a>';
-            $html .= '</div>';
-        }
-
-        $html .= '</li>';
-    }
-
-    $html .= '</ul>';
-
-    return $html;
-}
-
-$nestedTocTree = build_nested_toc($headings);
-$nestedTocHtml = render_nested_toc($nestedTocTree);
+$tocService = new TableOfContents();
+$nestedTocTree = $tocService->buildTree($headings);
+$nestedTocHtml = $tocService->renderTree($nestedTocTree);
 $pageTitle = $note['title'] ?? 'Apunte';
 require __DIR__ . '/includes/header.php';
 ?>

@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ note.official_topic if note.official_topic else note.title }} — {{ process_title if process_title else 'Apunte' }}
+{% endblock %}
+
+{% block content %}
+    {% if request.query_params.get('published') %}
+    <div class="alert alert-ok" role="status">Apunte publicado y añadido al índice.</div>
+    {% endif %}
+    <!-- Ruta de navegación (Breadcrumbs) -->
+    <nav class="note-breadcrumbs" aria-label="Ruta de navegación">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item">
+                <a href="/" class="breadcrumb-link" title="Ir al inicio de Study Assistant">
+                    <span>🏠 Inicio</span>
+                </a>
+            </li>
+            {% if process_title %}
+                <li class="breadcrumb-separator" aria-hidden="true">›</li>
+                <li class="breadcrumb-item">
+                    <a href="/?process={{ note.processes[0] | urlencode if note.processes else '' }}" class="breadcrumb-link" title="Ver temario completo de este proceso">
+                        {{ process_title }}
+                    </a>
+                </li>
+            {% endif %}
+            <li class="breadcrumb-separator" aria-hidden="true">›</li>
+            <li class="breadcrumb-item breadcrumb-current" aria-current="page" title="{{ note.title }}">
+                {{ note.official_topic if note.official_topic else note.title }}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Contenedor Grid estricto de 2 columnas -->
+    <div class="note-layout">
+        <aside class="note-sidebar">
+            {% if process_title %}
+                <a class="button-secondary button-back" href="/?process={{ note.processes[0] | urlencode if note.processes else '' }}" title="Volver al temario de {{ process_title }}">
+                    ← Volver al temario
+                </a>
+            {% else %}
+                <a class="button-secondary button-back" href="/">← Volver al listado</a>
+            {% endif %}
+
+            {% if practice_test_engine_url %}
+                <div class="note-actions" style="margin: 1.2rem 0;">
+                    <form method="post" action="{{ practice_test_engine_url }}" target="_blank">
+                        <button
+                            type="submit"
+                            class="button-primary"
+                            style="width: 100%; text-align: center; display: block; border: none; cursor: pointer;"
+                            title="Practicar las {{ linked_questions_count }} preguntas de examen oficial vinculadas a este apunte"
+                        > 📝 Practicar preguntas ({{ linked_questions_count }}) ↗
+                        </button>
+                    </form>
+                </div>
+            {% elif practice_url %}
+                <div class="note-actions" style="margin: 1.2rem 0;">
+                    <a
+                        class="button-primary"
+                        style="width: 88%; text-align: center; display: block;"
+                        href="{{ practice_url }}"
+                    > 📝 Ponerme a prueba
+                    </a>
+                </div>
+            {% endif %}
+            
+            <div class="note-actions" style="margin: 0.8rem 0;">
+                <button
+                    type="button"
+                    class="button-secondary"
+                    style="width: 100%; text-align: center; display: block;"
+                    onclick="window.print()"
+                >
+                    🖨️ Imprimir
+                </button>
+            </div>
+
+            {% if toc_html %}
+                <div class="note-toc-container desktop-only">
+                    <h3 style="margin-top: 0; margin-bottom: 12px;">Índice</h3>
+                    <nav class="note-toc">
+                        {{ toc_html | safe }}
+                    </nav>
+                </div>
+            {% endif %}
+
+            <div class="note-meta-container" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <h3 style="margin-top: 0;">Metadatos</h3>
+                <dl>
+                    <dt>ID</dt>
+                    <dd><code>{{ note.id }}</code></dd>
+
+                    {% if note.official_topic %}
+                        <dt>Tema oficial</dt>
+                        <dd>{{ note.official_topic }}</dd>
+                    {% endif %}
+
+                    {% if note.status %}
+                        <dt>Estado</dt>
+                        <dd>{{ note.status }}</dd>
+                    {% endif %}
+
+                    {% if note.processes %}
+                        <dt>Procesos</dt>
+                        <dd>
+                            {% for proc in note.processes %}
+                                <div style="margin-bottom: 6px;">
+                                    <a
+                                        href="/notes/{{ note.id }}?process={{ proc | urlencode }}"
+                                        class="{% if proc == current_process %}active-process-link{% endif %}"
+                                        title="{% if proc == current_process %}Proceso actualmente activo para navegación{% else %}Cambiar navegación a este proceso{% endif %}"
+                                    >
+                                        {{ proc }} <!-- Podríamos tener process_titles.get(proc, proc) pasado a la plantilla -->
+                                        {% if proc == current_process %}
+                                            <span class="active-process-badge">activo</span>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </dd>
+                    {% endif %}
+
+                    {% if note.tags %}
+                        <dt>Etiquetas</dt>
+                        <dd>
+                            <div class="tags">
+                                {% for tag in note.tags %}
+                                    <a class="tag" href="/?tag={{ tag | urlencode }}">
+                                        {{ tag }}
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        </dd>
+                    {% endif %}
+                </dl>
+                <p class="note-delete-link">
+                    <a href="/notes/{{ note.id | urlencode }}/delete?path={{ note.path | urlencode }}">🗑️ Borrar apunte</a>
+                </p>
+            </div>
+        </aside>
+
+        <article class="note-content">
+            {{ rendered_html | safe }}
+
+            {% if total_in_process > 1 %}
+                <section class="note-pagination-section" aria-label="Navegación secuencial de temas">
+                    <div class="note-pagination-header">
+                        <div class="pagination-progress-info">
+                            <span class="pagination-counter-badge">
+                                Tema <strong>{{ position }}</strong> de <strong>{{ total_in_process }}</strong>
+                            </span>
+                            <span class="pagination-process-name">
+                                en <strong>{{ process_title }}</strong>
+                            </span>
+                        </div>
+                        <div class="pagination-progress-bar-wrapper" title="{{ progress_percent }}% del temario">
+                            <div class="pagination-progress-bar" style="width: {{ progress_percent }}%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="note-pagination-grid">
+                        <div class="pagination-col prev">
+                            {% if prev_note %}
+                                <a rel="prev" href="/notes/{{ prev_note.id }}?process={{ current_process | urlencode }}" class="pagination-card prev-card">
+                                    <span class="pagination-direction">← Tema anterior</span>
+                                    {% if prev_note.official_topic %}
+                                        <span class="pagination-topic-meta">{{ prev_note.official_topic }}</span>
+                                    {% endif %}
+                                    <span class="pagination-title">{{ prev_note.title }}</span>
+                                </a>
+                            {% else %}
+                                <a href="/?process={{ current_process | urlencode }}" class="pagination-card overview-card prev-card">
+                                    <span class="pagination-direction">← Inicio del temario</span>
+                                    <span class="pagination-title">Estás en el primer tema · Ver temario</span>
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        <div class="pagination-col next">
+                            {% if next_note %}
+                                <a rel="next" href="/notes/{{ next_note.id }}?process={{ current_process | urlencode }}" class="pagination-card next-card">
+                                    <span class="pagination-direction">Tema siguiente →</span>
+                                    {% if next_note.official_topic %}
+                                        <span class="pagination-topic-meta">{{ next_note.official_topic }}</span>
+                                    {% endif %}
+                                    <span class="pagination-title">{{ next_note.title }}</span>
+                                </a>
+                            {% else %}
+                                <a href="/?process={{ current_process | urlencode }}" class="pagination-card overview-card next-card">
+                                    <span class="pagination-direction">🎉 Fin del temario</span>
+                                    <span class="pagination-title">¡Has completado el temario! · Ver lista</span>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+            {% endif %}
+        </article>
+    </div>
+{% endblock %}

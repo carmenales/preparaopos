@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}Estadísticas{% endblock %}
+
+{% macro pct(v) %}{{ v if v is not none else "—" }}%{% endmacro %}
+{% macro trend_pill(direction) %}
+  {% if direction == 'up' %}<span class="pill pill--green">Mejora</span>
+  {% elif direction == 'down' %}<span class="pill pill--red">Baja</span>
+  {% elif direction == 'same' %}<span class="pill pill--gray">Igual</span>
+  {% else %}<span class="pill pill--gray">Sin comparación</span>{% endif %}
+{% endmacro %}
+{% macro priority_pill(p) %}<span class="pill {{ {'alta': 'pill--red', 'media': 'pill--yellow'}.get(p, 'pill--gray') }}">{{ p|capitalize }}</span>{% endmacro %}
+
+{% block content %}
+<section class="stats">
+  <div class="page-head">
+    <h1>Estadísticas</h1>
+    {% if syllabi %}
+    <form method="get" action="{{ url('/stats/') }}" class="page-head__actions">
+      <label for="syllabus_id" class="sr-only">Temario</label>
+      <select id="syllabus_id" name="syllabus_id" onchange="this.form.submit()">
+        {% for s in syllabi %}
+        <option value="{{ s.id }}" {% if s.id == selected %}selected{% endif %}>{{ s.organism }} · {{ s.name }} ({{ s.answered }} respuestas)</option>
+        {% endfor %}
+      </select>
+      <noscript><button type="submit" class="btn btn--dark">Ver</button></noscript>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if not syllabi %}
+  <div class="card empty-state">Aún no hay respuestas registradas.</div>
+  {% else %}
+  <div class="tiles">
+    <div class="tile">
+      <span class="tile__icon tile__icon--green">{{ icon('trend') }}</span>
+      <div><p class="tile__label">Acierto</p><p class="tile__value">{{ pct(stats.accuracy) }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--blue">{{ icon('ok') }}</span>
+      <div><p class="tile__label">Respuestas en {{ stats.sessions }} sesiones</p><p class="tile__value">{{ stats.answered }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--teal">{{ icon('stack') }}</span>
+      <div><p class="tile__label">Preguntas vistas ({{ stats.coverage }}%)</p><p class="tile__value">{{ stats.questions_seen }} / {{ stats.pool }}</p></div>
+    </div>
+    <div class="tile">
+      <span class="tile__icon tile__icon--orange">{{ icon('x') }}</span>
+      <div><p class="tile__label">Falladas pendientes</p>
+        <p class="tile__value">{{ stats.pending }}{% if stats.pending %} <a href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&failed=1') }}">repasar</a>{% endif %}</p></div>
+    </div>
+  </div>
+
+  {# ── Diagnóstico rápido (como el de preparadortai) ── #}
+  <h2 class="section-title">Diagnóstico rápido</h2>
+  <div class="diag">
+    {% set weak = stats.topics[0] if stats.topics and stats.topics[0].priority_score > 0 else none %}
+    <div class="card diag__item">
+      <p class="diag__label">Área prioritaria</p>
+      {% if weak %}
+      <p class="diag__title">{{ block_title(selected, weak.block) or "Sin bloque" }}</p>
+      <p class="hint">{{ topic_name(selected, weak.topic) if weak.topic else "Sin tema" }}</p>
+      <dl class="diag__nums"><dt>Fallos</dt><dd class="text-bad">{{ weak.wrong }}</dd><dt>Acierto</dt><dd>{{ pct(weak.accuracy) }}</dd></dl>
+      <div class="diag__foot">{{ priority_pill(weak.priority) }}
+        {% if weak.pending %}<a class="btn btn--small btn--purple" href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&scope=' ~ (weak.scope|urlencode) ~ '&failed=1') }}">Repasar</a>{% endif %}</div>
+      {% else %}<p class="hint">Aún no hay fallos suficientes para sugerir un área.</p>{% endif %}
+    </div>
+    <div class="card diag__item">
+      <p class="diag__label">Examen a repetir</p>
+      {% set ex = stats.exams[0] if stats.exams else none %}
+      {% if ex %}
+      <p class="diag__title">{{ ex.name }}</p>
+      <dl class="diag__nums"><dt>Última nota</dt><dd>{{ "%.2f"|format(ex.last) }}</dd><dt>Mejor</dt><dd>{{ "%.2f"|format(ex.best) }}</dd></dl>
+      <div class="diag__foot">{{ trend_pill(ex.direction) }}
+        <form method="post" action="{{ url('/sessions/') }}">
+          <input type="hidden" name="source" value="exam"><input type="hidden" name="source_ref" value="{{ ex.id }}">
+          <button type="submit" name="mode" value="exam" class="btn btn--small btn--purple">Repetir</button>
+        </form></div>
+      {% else %}<p class="hint">Todavía no has terminado ningún examen de este temario.</p>{% endif %}
+    </div>
+    <div class="card diag__item">
+      <p class="diag__label">Tendencia reciente</p>
+      {% set tr = stats.trend %}
+      <dl class="diag__nums">
+        <dt>Nota media de los 5 últimos</dt><dd>{{ "%.2f"|format(tr.latest) if tr.latest is not none else "—" }}</dd>
+        <dt>Frente a los 5 anteriores</dt><dd>{{ "%+.2f"|format(tr.delta) if tr.delta is not none else "—" }}</dd>
+      </dl>
+      <div class="diag__foot">{{ trend_pill(tr.direction) }}</div>
+    </div>
+  </div>
+
+  {# ── Gráficos ── #}
+  {% if stats.evolution %}
+  <div class="chart-grid">
+    <div class="card chart-card chart-card--wide">
+      <h2 class="card__title">Evolución de la nota</h2>
+      <div class="chart" id="chart-evolution" role="img" aria-label="Nota de cada test terminado, del más antiguo al más reciente"></div>
+    </div>
+    <div class="card chart-card">
+      <h2 class="card__title">Resultados</h2>
+      <div class="chart" id="chart-distribution" role="img"
+           aria-label="Correctas {{ stats.distribution.correct }}, fallidas {{ stats.distribution.wrong }}, no contestadas {{ stats.distribution.blank }}"></div>
+    </div>
+  </div>
+  {% endif %}
+  {% if stats.blocks|length > 1 %}
+  <div class="card chart-card">
+    <h2 class="card__title">Acierto por bloque</h2>
+    <div class="chart" id="chart-blocks" role="img" aria-label="Porcentaje de acierto de cada bloque"></div>
+  </div>
+  {% endif %}
+
+  {# ── Progreso por examen ── #}
+  <h2 class="section-title">Progreso por examen</h2>
+  {% if stats.exams %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Examen</th><th class="num">Intentos</th><th class="num">Mejor</th><th class="num">Última</th><th>Tendencia</th><th>Última vez</th><th class="actions"><span class="sr-only">Repetir</span></th></tr></thead>
+      <tbody>
+        {% for e in stats.exams %}
+        <tr>
+          <td><strong>{{ e.name }}</strong></td>
+          <td class="num">{{ e.attempts }}</td>
+          <td class="num">{{ "%.2f"|format(e.best) }}</td>
+          <td class="num">{{ "%.2f"|format(e.last) }}</td>
+          <td>{{ trend_pill(e.direction) }}</td>
+          <td class="nowrap">{{ e.last_date }}</td>
+          <td class="actions">
+            <form method="post" action="{{ url('/sessions/') }}">
+              <input type="hidden" name="source" value="exam"><input type="hidden" name="source_ref" value="{{ e.id }}">
+              <button type="submit" name="mode" value="exam" class="btn btn--small btn--secondary">Repetir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card empty-state">Todavía no has terminado ningún examen de este temario. Están en <a href="{{ url('/') }}">Exámenes</a>.</div>
+  {% endif %}
+
+  {# ── Preguntas con fallos recurrentes ── #}
+  <h2 class="section-title">Preguntas con fallos recurrentes <small>(falladas dos veces o más)</small></h2>
+  {% if stats.recurrent %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Pregunta</th><th>Bloque / tema</th><th class="num">Intentos</th><th class="num">Fallos</th><th class="num">% error</th><th>Última vez</th><th class="actions"><span class="sr-only">Editar</span></th></tr></thead>
+      <tbody>
+        {% for q in stats.recurrent %}
+        <tr>
+          <td>{{ q.statement[:160] }}{% if q.statement|length > 160 %}…{% endif %}</td>
+          <td>{% if q.block %}{{ q.block }}{% if q.topic %} · {{ topic_name(selected, q.topic) }}{% endif %}{% else %}—{% endif %}</td>
+          <td class="num">{{ q.attempts }}</td>
+          <td class="num">{{ q.wrong }}</td>
+          <td class="num">{{ q.error }}%</td>
+          <td class="nowrap"><span class="pill {{ 'pill--green' if q.last_correct else 'pill--red' }}">{{ "Bien" if q.last_correct else "Mal" }}</span> {{ q.last_date }}</td>
+          <td class="actions"><a class="tool" href="{{ url('/manage/questions/' ~ q.id ~ '/edit') }}" aria-label="Ver o editar la pregunta">{{ icon('pencil') }}<span class="tip">Ver o editar</span></a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card empty-state">Ninguna pregunta de este temario se ha fallado dos veces.</div>
+  {% endif %}
+
+  {# ── Áreas débiles: bloques y temas por prioridad ── #}
+  <h2 class="section-title">Áreas débiles <small>(primero lo que más conviene repasar)</small></h2>
+  <div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Bloque</th><th>Tema</th><th class="num">Respuestas</th><th>Acierto</th><th class="num">Fallos</th><th class="num">Pendientes</th><th>Prioridad</th><th class="actions"><span class="sr-only">Repasar</span></th></tr></thead>
+    <tbody>
+      {% for t in stats.topics %}
+      <tr>
+        <td>{{ t.block or "Sin clasificar" }}</td>
+        <td>{% if t.topic %}{{ topic_name(selected, t.topic) }}{% else %}—{% endif %}</td>
+        <td class="num">{{ t.answered }}</td>
+        <td class="nowrap">
+          <div class="bar" title="{{ t.correct }} de {{ t.answered }}">
+            <span class="bar__fill {% if t.accuracy < 50 %}bar__fill--low{% elif t.accuracy < 70 %}bar__fill--mid{% endif %}" style="width: {{ t.accuracy }}%"></span>
+          </div>
+          <span class="bar__label">{{ t.accuracy }}%</span>
+        </td>
+        <td class="num">{{ t.wrong }}</td>
+        <td class="num">{{ t.pending }}</td>
+        <td>{{ priority_pill(t.priority) }}</td>
+        <td class="actions">
+          {% if t.pending %}<a class="btn btn--secondary btn--small" href="{{ url('/generator/?syllabus_id=' ~ selected ~ '&scope=' ~ (t.scope|urlencode) ~ '&failed=1') }}">Repasar</a>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <p class="field__hint">Prioridad como en preparadortai: alta con 10 fallos o más, o con menos del 60 % de acierto en 10 respuestas; media con 5 fallos, o con menos del 75 % en 5 respuestas. «Fallos» cuenta cada respuesta mal; «Pendientes», las preguntas cuya última respuesta fue mal.</p>
+  {% endif %}
+</section>
+{% endblock %}
+
+{% block scripts %}
+{% if chart and stats.evolution %}
+<script type="application/json" id="stats-data">{{ chart|tojson }}</script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js" defer></script>
+<script>
+window.addEventListener("load", function () {
+  if (!window.echarts) return;  // sin conexión al CDN: se queda el resto de la página
+  const data = JSON.parse(document.getElementById("stats-data").textContent);
+  const charts = [];
+  const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+  function draw() {
+    charts.forEach(c => c.dispose());
+    charts.length = 0;
+    const text = css("--text"), muted = css("--muted"), grid = css("--border"), primary = css("--primary");
+    const ok = css("--ok"), bad = css("--bad");
+    const axis = {axisLine: {lineStyle: {color: grid}}, axisLabel: {color: muted}, splitLine: {lineStyle: {color: grid}}};
+    const base = {textStyle: {fontFamily: "ui-sans-serif, system-ui, sans-serif", color: text}, animationDuration: 400};
+
+    const evo = document.getElementById("chart-evolution");
+    if (evo) {
+      const scores = data.evolution.map(p => p.score);
+      const avg = scores.map((_, i) => {
+        const w = scores.slice(Math.max(0, i - 4), i + 1);
+        return +(w.reduce((a, b) => a + b, 0) / w.length).toFixed(2);
+      });
+      const c = echarts.init(evo);
+      c.setOption({...base,
+        tooltip: {trigger: "axis"}, legend: {data: ["Nota", "Media de los 5 últimos"], textStyle: {color: muted}, top: 0},
+        grid: {left: 36, right: 16, top: 36, bottom: 28},
+        xAxis: {type: "category", data: data.evolution.map(p => p.date.slice(5)), ...axis, splitLine: {show: false}},
+        yAxis: {type: "value", min: 0, max: v => Math.max(10, Math.ceil(v.max)), ...axis},
+        series: [
+          {name: "Nota", type: "line", data: scores, symbolSize: 7, itemStyle: {color: primary}, lineStyle: {width: 2},
+           markLine: {silent: true, symbol: "none", data: [{yAxis: 5}], lineStyle: {color: bad, type: "dashed"}, label: {show: false}}},
+          {name: "Media de los 5 últimos", type: "line", data: avg, smooth: true, symbol: "none",
+           itemStyle: {color: "#a855f7"}, lineStyle: {width: 2, type: "dashed"}},
+        ]});
+      charts.push(c);
+    }
+    const dist = document.getElementById("chart-distribution");
+    if (dist) {
+      const d = data.distribution;
+      const c = echarts.init(dist);
+      c.setOption({...base,
+        tooltip: {trigger: "item", formatter: "{b}: {c} ({d}%)"},
+        legend: {bottom: 0, textStyle: {color: muted}},
+        series: [{type: "pie", radius: ["45%", "72%"], center: ["50%", "45%"], label: {show: false},
+          itemStyle: {borderColor: css("--surface"), borderWidth: 2},
+          data: [{name: "Correctas", value: d.correct, itemStyle: {color: ok}},
+                 {name: "Fallidas", value: d.wrong, itemStyle: {color: bad}},
+                 {name: "No contestadas", value: d.blank, itemStyle: {color: muted}}]}]});
+      charts.push(c);
+    }
+    const blocks = document.getElementById("chart-blocks");
+    if (blocks) {
+      const c = echarts.init(blocks);
+      c.setOption({...base,
+        tooltip: {trigger: "axis", formatter: p => `${data.blocks[p[0].dataIndex].title}<br>${p[0].value}% de acierto · ${data.blocks[p[0].dataIndex].answered} respuestas`},
+        grid: {left: 40, right: 16, top: 16, bottom: 28},
+        xAxis: {type: "category", data: data.blocks.map(b => b.block), ...axis, splitLine: {show: false}},
+        yAxis: {type: "value", min: 0, max: 100, ...axis, axisLabel: {color: muted, formatter: "{value}%"}},
+        series: [{type: "bar", barMaxWidth: 48, data: data.blocks.map(b => ({value: b.accuracy,
+          itemStyle: {color: b.accuracy < 50 ? bad : b.accuracy < 70 ? "#eab308" : ok, borderRadius: [4, 4, 0, 0]}}))}]});
+      charts.push(c);
+    }
+  }
+
+  draw();
+  window.addEventListener("resize", () => charts.forEach(c => c.resize()));
+  // Al cambiar entre claro y oscuro se repintan con los colores del tema
+  new MutationObserver(draw).observe(document.documentElement, {attributes: true, attributeFilter: ["data-theme"]});
+});
+</script>
+{% endif %}
+{% endblock %}

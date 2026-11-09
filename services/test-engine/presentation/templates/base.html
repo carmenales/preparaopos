@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Tests{% endblock %} · PreparaOpos</title>
+  {# Tema antes de pintar nada: lo elegido con el botón o, si no, el del sistema (sin parpadeo). #}
+  <script>
+    (function () {
+      var t = null;
+      try { t = localStorage.getItem("theme"); } catch (e) {}
+      if (t !== "dark" && t !== "light") t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", t);
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ static_url('style.css') }}">
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <button type="button" class="icon-btn topbar__menu" id="nav-toggle" aria-label="Menú" aria-controls="sidebar" aria-expanded="false">{{ icon("menu") }}</button>
+    <a href="{{ url('/home') }}" class="brand" aria-label="Inicio">
+      <span class="brand__mark" aria-hidden="true">P</span><span class="brand__name">PreparaOpos</span>
+    </a>
+    <p class="topbar__title">Tests de oposiciones TIC</p>
+    <button type="button" class="icon-btn topbar__theme" id="theme-toggle" aria-label="Cambiar entre modo claro y oscuro">
+      <span class="theme-icon theme-icon--dark">{{ icon("moon") }}</span><span class="theme-icon theme-icon--light">{{ icon("sun") }}</span>
+    </button>
+  </header>
+
+  <aside class="sidebar" id="sidebar" aria-label="Navegación">
+    <nav class="nav">
+      {% set on_result = request is not none and request.url.path.endswith('/result') %}
+      <a class="nav__item{% if nav_active(request, '/home') %} is-active{% endif %}" href="{{ url('/home') }}">{{ icon("home") }}<span>Inicio</span></a>
+
+      <p class="nav__group">{{ icon("clipboard") }}<span>Tests</span></p>
+      <div class="nav__sub">
+        <a class="nav__subitem{% if nav_active(request, '/collections/random') %} is-active{% endif %}" href="{{ url('/collections/random') }}">Aleatorios</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/relevance') %} is-active{% endif %}" href="{{ url('/collections/relevance') }}">Relevancia</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/blocks') %} is-active{% endif %}" href="{{ url('/collections/blocks') }}">Bloques</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/topics') %} is-active{% endif %}" href="{{ url('/collections/topics') }}">Temas</a>
+        <a class="nav__subitem{% if nav_active(request, '/collections/years') %} is-active{% endif %}" href="{{ url('/collections/years') }}">Años</a>
+        <a class="nav__subitem{% if nav_active(request, '/') %} is-active{% endif %}" href="{{ url('/') }}">Exámenes</a>
+        <a class="nav__subitem{% if nav_active(request, '/generator') %} is-active{% endif %}" href="{{ url('/generator/') }}">Generar test</a>
+      </div>
+
+      <p class="nav__group">{{ icon("trend") }}<span>Mi Progreso</span></p>
+      <div class="nav__sub">
+        <a class="nav__subitem{% if nav_active(request, '/history') or on_result %} is-active{% endif %}" href="{{ url('/history/') }}">Tests realizados</a>
+        <a class="nav__subitem{% if nav_active(request, '/stats') %} is-active{% endif %}" href="{{ url('/stats/') }}">Estadísticas</a>
+      </div>
+
+      <p class="nav__group">{{ icon("book") }}<span>Estudio</span></p>
+      <div class="nav__sub">
+        <a class="nav__subitem" href="{{ study_assistant_home() }}">Apuntes</a>
+      </div>
+
+      <p class="nav__group">{{ icon("archive") }}<span>Banco de preguntas</span></p>
+      <div class="nav__sub">
+        <a class="nav__subitem{% if nav_active(request, '/manage/questions') %} is-active{% endif %}" href="{{ url('/manage/questions/') }}">Preguntas</a>
+        <a class="nav__subitem{% if nav_active(request, '/manage/exams') %} is-active{% endif %}" href="{{ url('/manage/exams/') }}">Cuestionarios</a>
+      </div>
+    </nav>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <main class="content" id="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      document.getElementById("theme-toggle").addEventListener("click", function () {
+        var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("theme", next); } catch (e) {}
+      });
+      var sidebar = document.getElementById("sidebar"), scrim = document.getElementById("scrim"),
+          toggle = document.getElementById("nav-toggle");
+      function setNav(open) {
+        sidebar.classList.toggle("is-open", open); scrim.hidden = !open;
+        toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      toggle.addEventListener("click", function () { setNav(!sidebar.classList.contains("is-open")); });
+      scrim.addEventListener("click", function () { setNav(false); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape") setNav(false); });
+    })();
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

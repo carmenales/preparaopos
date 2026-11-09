@@ -32,6 +32,8 @@ from ingest_service import IngestService
 from note_generator import NoteGenerator, NoteGeneratorError
 from ollama_client import OllamaClient, OllamaClientError
 from schemas import (
+    DeleteNoteRequest,
+    DeleteNoteResponse,
     ExtractPdfResponse,
     GenerateNotePreview,
     GenerateNoteRequest,
@@ -50,7 +52,7 @@ app = FastAPI(
         "generación de apuntes, extracción y normalización de PDFs, refinado con LLM "
         "y publicación directa."
     ),
-    version="0.2.0",
+    version="1.0.0",
 )
 
 _search_client = SearchClient()
@@ -207,3 +209,14 @@ def publish_note(request: PublishNoteRequest) -> PublishNoteResponse:
         return _ingest_service.publish_note(request)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Error al publicar la nota: {exc}") from exc
+
+
+@app.post("/notes/delete", response_model=DeleteNoteResponse)
+def delete_note(request: DeleteNoteRequest) -> DeleteNoteResponse:
+    """Borra definitivamente un apunte de knowledge/ y regenera knowledge_index.json."""
+    try:
+        return _ingest_service.delete_note(request.path)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

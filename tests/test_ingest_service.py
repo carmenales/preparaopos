@@ -258,6 +258,71 @@ class TestIngestService(unittest.TestCase):
             self.assertIn('id: "tema-iv-17-nuevas-tecnologias-en-la-age"', content)
             self.assertIn('- "nuevas-tecnologias"', content)
             self.assertIn("## 1. Introducción", content)
+            # Sin refinado con IA ni marca de revisión, la cabecera no debe afirmar lo contrario
+            self.assertIn("ai_cleaned: false", content)
+            self.assertIn("needs_human_review: false", content)
+
+    def test_publish_note_records_ai_cleaning_and_review_flag(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_root = Path(tmpdir).resolve()
+            object.__setattr__(settings, "knowledge_dir", tmp_root / "knowledge")
+            object.__setattr__(settings, "index_output_path", tmp_root / "index.json")
+            resp = IngestService().publish_note(PublishNoteRequest(
+                process_slug="age/a2-gsi", title="Tema I.09 Refinado", markdown_body="Texto refinado.",
+                status="borrador", ai_cleaned=True, needs_human_review=True,
+            ))
+            content = ((tmp_root / "knowledge").parent / resp.file_path).resolve().read_text(encoding="utf-8")
+            self.assertIn("ai_cleaned: true", content)
+            self.assertIn("needs_human_review: true", content)
+
+    def _with_tmp_knowledge(self, tmpdir):
+        tmp_root = Path(tmpdir).resolve()
+        previous = (settings.knowledge_dir, settings.index_output_path)
+        self.addCleanup(lambda: (object.__setattr__(settings, "knowledge_dir", previous[0]),
+                                 object.__setattr__(settings, "index_output_path", previous[1])))
+        object.__setattr__(settings, "knowledge_dir", tmp_root / "knowledge")
+        object.__setattr__(settings, "index_output_path", tmp_root / "index.json")
+        return tmp_root
+
+    def test_delete_note_removes_file_and_rebuilds_index(self):
+        import json
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_root = self._with_tmp_knowledge(tmpdir)
+            service = IngestService()
+            keep = service.publish_note(PublishNoteRequest(
+                process_slug="age/a2-gsi", title="Tema I.01 Se queda", markdown_body="Texto."))
+            gone = service.publish_note(PublishNoteRequest(
+                process_slug="age/a2-gsi", title="Tema I.02 Se borra", markdown_body="Texto."))
+            gone_file = tmp_root / gone.file_path
+            self.assertTrue(gone_file.exists())
+
+            resp = service.delete_note(gone.file_path)
+            self.assertTrue(resp.success)
+            self.assertEqual(resp.file_path, gone.file_path)
+            self.assertFalse(gone_file.exists())
+            self.assertTrue((tmp_root / keep.file_path).exists())
+            self.assertTrue(resp.index_rebuilt)
+            ids = [n["id"] for n in json.loads((tmp_root / "index.json").read_text(encoding="utf-8"))["notes"]]
+            self.assertIn(keep.note_id, ids)
+            self.assertNotIn(gone.note_id, ids)
+
+            with self.assertRaises(FileNotFoundError):
+                service.delete_note(gone.file_path)
+
+    def test_delete_note_rejects_paths_outside_knowledge(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_root = self._with_tmp_knowledge(tmpdir)
+            outside = tmp_root / "docker-compose.md"
+            outside.write_text("no tocar", encoding="utf-8")
+            (tmp_root / "knowledge").mkdir()
+            (tmp_root / "knowledge" / "data.json").write_text("{}", encoding="utf-8")
+            service = IngestService()
+            for bad in ("knowledge/../docker-compose.md", "docker-compose.md", "/etc/passwd", "knowledge/data.json"):
+                with self.assertRaises(ValueError, msg=bad):
+                    service.delete_note(bad)
+            self.assertTrue(outside.exists())
+            self.assertTrue((tmp_root / "knowledge" / "data.json").exists())
 
 
 if __name__ == "__main__":

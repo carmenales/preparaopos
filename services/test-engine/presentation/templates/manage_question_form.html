@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ "Editar pregunta" if question else "Nueva pregunta" }}{% endblock %}
+
+{% block content %}
+<section class="manage">
+  <a class="back-link" href="{{ url('/manage/questions/') }}">{{ icon('arrow-left') }} Preguntas</a>
+  <h1>{{ "Editar pregunta " ~ question.id if question else "Nueva pregunta" }}</h1>
+  {% if msg %}<p class="alert {% if 'No se puede' in msg or 'No se ha podido' in msg or 'anúlala' in msg %}alert--error{% else %}alert--ok{% endif %}" role="status">{{ msg }}</p>{% endif %}
+  {% if errors %}
+  <div class="alert alert--error" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+  {% endif %}
+  {% if question %}
+  <p class="field__hint">Origen: {{ question.source }} · {{ question.n_attempts }} respuestas en tu historial
+    {% if question.exams %} · en {% for e in question.exams %}«{{ e.name }}» (nº {{ e.position }}){% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</p>
+  {% endif %}
+
+  <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/edit') if question else url('/manage/questions/new') }}" class="manage__form card">
+    <div class="field">
+      <label for="statement">Enunciado</label>
+      <textarea id="statement" name="statement" rows="4" required>{{ v.statement }}</textarea>
+    </div>
+
+    <fieldset class="field">
+      <legend>Opciones <small>(marca la correcta; deja en blanco las que sobren)</small></legend>
+      {% for o in v.options %}
+      <div class="option-row">
+        <input type="radio" name="correct" value="{{ loop.index0 }}" id="correct_{{ loop.index0 }}" {% if v.correct == loop.index0 %}checked{% endif %} aria-label="Opción {{ 'ABCDEF'[loop.index0] }} correcta">
+        <label for="correct_{{ loop.index0 }}" class="option-row__letter">{{ "ABCDEF"[loop.index0] }}</label>
+        <input type="hidden" name="opt_id" value="{{ o.id }}">
+        <div class="option-row__fields">
+          <input type="text" name="opt_text" value="{{ o.text }}" aria-label="Texto de la opción {{ 'ABCDEF'[loop.index0] }}">
+          <input type="text" name="opt_just" value="{{ o.justification }}" placeholder="Justificación de esta opción (opcional)" aria-label="Justificación de la opción {{ 'ABCDEF'[loop.index0] }}">
+          {% if o.n_attempts %}<small class="field__hint">Elegida {{ o.n_attempts }} veces: se puede editar, no quitar.</small>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </fieldset>
+
+    <div class="field">
+      <label for="justification">Explicación de la respuesta</label>
+      <textarea id="justification" name="justification" rows="3">{{ v.justification }}</textarea>
+    </div>
+
+    <div class="field-grid">
+      <div class="field">
+        <label for="syllabus_id">Temario</label>
+        <select id="syllabus_id" name="syllabus_id" required>
+          <option value="">Elige…</option>
+          {% for s in syllabi %}<option value="{{ s.id }}" {% if s.id == v.syllabus_id %}selected{% endif %}>{{ s.organism }} · {{ s.name }}</option>{% endfor %}
+        </select>
+        {% if question and question.tags|length > 1 %}<small class="field__hint">Tiene etiquetas en {{ question.tags|length }} temarios; solo se cambia la del temario elegido.</small>{% endif %}
+      </div>
+      <div class="field"><label for="block">Bloque</label><input id="block" name="block" value="{{ v.block }}" placeholder="p. ej. I, B4"></div>
+      <div class="field"><label for="topic">Tema</label><input id="topic" name="topic" value="{{ v.topic }}" placeholder="p. ej. 9"></div>
+      <div class="field"><label for="year">Año</label><input id="year" name="year" value="{{ v.year }}" inputmode="numeric" placeholder="p. ej. 2024"></div>
+    </div>
+
+    <div class="field field--checks">
+      <label><input type="checkbox" name="is_official_exam" value="1" {% if v.is_official_exam %}checked{% endif %}> Pregunta de examen oficial</label>
+      <label><input type="checkbox" name="is_annulled" value="1" {% if v.is_annulled %}checked{% endif %}> Anulada (no sale en tests generados)</label>
+      <input type="text" name="annulment_reason" value="{{ v.annulment_reason }}" placeholder="Motivo de la anulación" aria-label="Motivo de la anulación">
+    </div>
+
+    <div class="field">
+      <label for="add_to_exam_id">Añadir a un cuestionario <small>(al final)</small></label>
+      <select id="add_to_exam_id" name="add_to_exam_id">
+        <option value="">— No —</option>
+        {% for e in exams %}<option value="{{ e.id }}" {% if e.id|string == v.add_to_exam_id|string %}selected{% endif %}>{{ e.name }}</option>{% endfor %}
+      </select>
+    </div>
+
+    <div class="generator__actions"><button type="submit" class="btn btn--primary">Guardar</button></div>
+  </form>
+
+  {% if question and lp %}
+  <section class="manage__links-panel card" id="enlaces" aria-labelledby="enlaces-titulo">
+    <h2 id="enlaces-titulo">Apuntes enlazados</h2>
+    <p class="field__hint">Son los apuntes que se ofrecen al corregir esta pregunta. Los automáticos pueden estar mal:
+      quita los que no tengan sentido y añade los que falten. Lo que quites no vuelve a aparecer aunque se recalculen los enlaces.
+      Cambiar el bloque o el tema de arriba no cambia estos enlaces.</p>
+    {% if lp.links is none %}
+    <p class="alert alert--error" role="status">linking-service no responde: ahora no se pueden ver ni editar los enlaces.</p>
+    {% else %}
+      {% if lp.links %}
+      <ul class="link-list">
+        {% for l in lp.links %}
+        <li class="link-list__item">
+          <span>
+            <a href="{{ lp.study_assistant_url }}/notes/{{ l.note_id }}" target="_blank" rel="noopener">{{ l.title or l.note_id }}</a>
+            {% if l.official_topic %}<small class="field__hint">{{ l.official_topic }}</small>{% endif %}
+            <small class="field__hint">· {{ lp.sources.get(l.source, l.source or "automático") }}{% if l.source != 'manual' and l.confidence is not none %} ({{ (l.confidence * 100)|round|int }} %){% endif %}</small>
+          </span>
+          <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/links/remove') }}">
+            <input type="hidden" name="note_id" value="{{ l.note_id }}">
+            <button type="submit" class="btn btn--secondary btn--small">Quitar</button>
+          </form>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p>No tiene apuntes enlazados.</p>
+      {% endif %}
+
+      {% if lp.groups is none %}
+      <p class="alert alert--error" role="status">study-assistant no responde: no se puede cargar la lista de apuntes para añadir uno.</p>
+      {% elif lp.groups %}
+      <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/links/add') }}" class="link-add">
+        <label for="note_id">Enlazar otro apunte</label>
+        <select id="note_id" name="note_id" required>
+          <option value="">Elige un apunte…</option>
+          {% for label, notes in lp.groups %}
+          <optgroup label="{{ label }}">
+            {% for n in notes %}<option value="{{ n.id }}">{% if n.official_topic %}{{ n.official_topic }} — {% endif %}{{ n.title }}</option>{% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+        <button type="submit" class="btn btn--primary btn--small">Enlazar</button>
+      </form>
+      {% endif %}
+    {% endif %}
+  </section>
+  {% endif %}
+
+  {% if question %}
+  <form method="post" action="{{ url('/manage/questions/' ~ question.id ~ '/delete') }}" class="manage__danger danger-zone"
+        onsubmit="return confirm('¿Borrar esta pregunta? No se puede deshacer.');">
+    <button type="submit" class="btn btn--danger btn--small" {% if question.n_attempts %}disabled title="Tiene respuestas: anúlala en vez de borrarla"{% endif %}>Borrar pregunta</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

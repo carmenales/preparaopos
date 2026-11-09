@@ -1,0 +1,65 @@
+{# Campos del generador. Cada número cuenta las preguntas con los demás filtros elegidos; las
+   opciones que se quedan en 0 se ocultan, salvo la seleccionada. Se recarga entero (htmx) al
+   cambiar cualquier campo. #}
+<div id="generator-fields">
+  <div class="field-grid field-grid--generator">
+    <div class="field">
+      <label for="scope">Bloque o tema</label>
+      <select id="scope" name="scope">
+        <option value="">Todo el temario</option>
+        {% for b in facets.blocks %}
+        {% set block_selected = v.scope == b.block %}
+        {% set topic_selected = v.scope.startswith(b.block ~ '|') %}
+        {% if b.count or block_selected or topic_selected %}
+        <option value="{{ b.block }}" {% if block_selected %}selected{% endif %}>Bloque {{ b.block }} ({{ b.count }})</option>
+        {% for t in b.topics %}
+        {% set value = b.block ~ '|' ~ t.topic %}
+        {% if t.count or v.scope == value %}
+        <option value="{{ value }}" {% if v.scope == value %}selected{% endif %}>&nbsp;&nbsp;&nbsp;Bloque {{ b.block }} · Tema {{ t.topic }} ({{ t.count }})</option>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+      </select>
+      {% if not facets.blocks %}<small class="field__hint">Este temario aún no tiene preguntas clasificadas por bloque.</small>{% endif %}
+    </div>
+
+    <div class="field">
+      <label for="year">Año de convocatoria</label>
+      <select id="year" name="year">
+        <option value="">Todos</option>
+        {% for y in facets.years %}
+        {% if y.count or v.year == y.year|string %}
+        <option value="{{ y.year }}" {% if v.year == y.year|string %}selected{% endif %}>{{ y.year }} ({{ y.count }})</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="count">Número de preguntas</label>
+      <select id="count" name="count">
+        {% for n in count_choices %}<option value="{{ n }}" {% if n == v.count %}selected{% endif %}>{{ n }}</option>{% endfor %}
+      </select>
+    </div>
+  </div>
+
+    <div class="field field--checks">
+      <label><input type="checkbox" name="official" value="1" {% if v.official %}checked{% elif not facets.official %}disabled{% endif %}>
+        Solo preguntas de examen oficial ({{ facets.official }})</label>
+      <label><input type="checkbox" name="failed" value="1" {% if v.failed %}checked{% elif not facets.failed %}disabled{% endif %}>
+        Solo las que fallé la última vez ({{ facets.failed }})</label>
+      <label><input type="checkbox" name="doubtful" value="1" {% if v.doubtful %}checked{% elif not facets.doubtful %}disabled{% endif %}>
+        Solo las que marqué como dudosas ({{ facets.doubtful }})</label>
+      <label><input type="checkbox" name="weighted" value="1" {% if v.weighted %}checked{% elif not facets.weighted %}disabled{% endif %}>
+        Ponderar por frecuencia en exámenes oficiales</label>
+      {% if facets.weighted %}
+      <small class="field__hint">Los temas que más han caído salen más: según {{ "{:,}".format(facets.weighted.questions).replace(",", ".") }} preguntas
+        oficiales de {{ facets.weighted.topics }} temas{% if facets.weighted.year_from %} ({{ facets.weighted.year_from }}–{{ facets.weighted.year_to }}){% endif %}.</small>
+      {% else %}
+      <small class="field__hint">No disponible en este temario: no tiene preguntas de examen oficial clasificadas por tema.</small>
+      {% endif %}
+    </div>
+
+    <p id="available" class="generator__available" aria-live="polite">{{ available_html | safe }}</p>
+</div>

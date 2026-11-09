@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Cuestionarios{% endblock %}
+
+{% block content %}
+<section class="manage">
+  <div class="page-head">
+    <h1>Cuestionarios</h1>
+    <div class="page-head__actions">
+      <a href="{{ url('/manage/questions/') }}" class="btn btn--secondary">Preguntas</a>
+      <a href="{{ url('/manage/exams/new') }}" class="btn btn--primary">{{ icon('plus') }} Nuevo cuestionario</a>
+    </div>
+  </div>
+  {% if msg %}<p class="alert alert--ok" role="status">{{ msg }}</p>{% endif %}
+  <div class="table-wrap">
+  <table class="data-table">
+    <thead><tr><th>Nombre</th><th>Temario</th><th>Año</th><th>Puntuación</th><th class="num">Preg.</th><th class="num">Sesiones</th><th></th></tr></thead>
+    <tbody>
+      {% for e in exams %}
+      <tr>
+        <td>{{ e.name }}</td><td>{{ e.syllabus_name or "—" }}</td><td>{{ e.year or "—" }}</td>
+        <td>{{ e.rule_name or "por defecto (A − F/3)" }}</td>
+        <td class="num">{{ e.n_questions }}</td><td class="num">{{ e.n_sessions }}</td>
+        <td class="actions"><a href="{{ url('/manage/exams/' ~ e.id ~ '/edit') }}" class="btn btn--secondary btn--small">Editar</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+{% endblock %}

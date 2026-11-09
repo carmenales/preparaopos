@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Tests realizados{% endblock %}
+
+{% block content %}
+<section class="history">
+  <div class="page-head">
+    <h1>Tests realizados</h1>
+    <div class="page-head__actions"><a href="{{ url('/stats/') }}" class="btn btn--indigo">{{ icon('chart') }} Estadísticas</a></div>
+  </div>
+  {% if deleted %}<p class="alert alert--ok" role="status">Sesión borrada.</p>{% endif %}
+
+  {% if not sessions %}
+  <div class="card empty-state">Aún no has hecho ningún test. <a href="{{ url('/') }}">Elige un examen</a> o <a href="{{ url('/generator/') }}">genera uno</a>.</div>
+  {% else %}
+  <div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Fecha</th><th>Test</th><th>Modo</th>
+        <th class="num">Preguntas</th><th class="num" title="Correctas">Bien</th><th class="num" title="Fallidas">Mal</th><th class="num" title="Sin contestar">Blanco</th>
+        <th>Nota</th><th class="actions"><span class="sr-only">Acciones</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sessions %}
+      <tr>
+        <td class="nowrap">{{ s.started_at }}</td>
+        <td>{{ s.label }}</td>
+        <td>{{ "Simulacro" if s.mode == "exam" else "Práctica" }}</td>
+        <td class="num">{{ s.total }}</td>
+        <td class="num">{{ s.correct }}</td>
+        <td class="num">{{ s.wrong }}</td>
+        <td class="num">{{ s.blank }}</td>
+        <td>{% if s.final_score is not none %}<span class="pill {{ 'pill--green' if s.final_score|float >= 5 else 'pill--red' }}">{{ "%.2f"|format(s.final_score|float) }}</span>{% else %}<span class="pill pill--blue">En curso</span>{% endif %}</td>
+        <td class="actions">
+          {% if s.is_closed %}
+          <a href="{{ url('/sessions/' ~ s.id ~ '/result') }}" class="btn btn--secondary btn--small">Ver</a>
+          {% else %}
+          <a href="{{ url('/sessions/' ~ s.id) }}" class="btn btn--purple btn--small">Continuar</a>
+          {% endif %}
+          <form method="post" action="{{ url('/history/' ~ s.id ~ '/delete') }}"
+                onsubmit="return confirm('¿Borrar esta sesión y sus respuestas? No se puede deshacer.');">
+            <button type="submit" class="tool" aria-label="Borrar sesión">{{ icon('trash') }}<span class="tip">Borrar</span></button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

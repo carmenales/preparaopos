@@ -1,0 +1,13 @@
+{
+  "examen": "AGE A2 GSI LIBRE 2024",
+  "total_preguntas_cuadernillo": 105,
+  "preguntas_ordinarias_totales": 100,
+  "preguntas_reserva_totales": 5,
+  "preguntas_anuladas": [
+    17,
+    27,
+    86,
+    90
+  ],
+  "motivo": "Anuladas por el tribunal calificador en la plantilla definitiva oficial (sin respuesta válida)"
+}

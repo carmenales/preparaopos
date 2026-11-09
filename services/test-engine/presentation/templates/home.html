@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<section class="home">
+  <div class="test-hero home-hero">
+    <h1 class="test-bar__title">PreparaOpos</h1>
+    <p class="home-hero__lead">Prepara las oposiciones TIC con tests de exámenes reales y del banco de preguntas,
+      sigue tu progreso y repasa con tus apuntes.</p>
+    <div class="test-bar__buttons">
+      <a href="{{ url('/collections/random') }}" class="btn btn--purple btn--lg">{{ icon('play') }} Hacer un test</a>
+      <a href="{{ url('/stats/') }}" class="btn btn--blue btn--lg">{{ icon('trend') }} Mi Progreso</a>
+    </div>
+  </div>
+
+  {% if unfinished %}
+  <div class="card">
+    <h2 class="card__title">Tests sin terminar</h2>
+    <ul class="link-list">
+      {% for s in unfinished %}
+      <li class="link-list__item">
+        <span><strong>{{ s.label }}</strong> <span class="hint">· {{ s.started_at }} · {{ s.answered }}/{{ s.total }} contestadas</span></span>
+        <a href="{{ url('/sessions/' ~ s.id) }}" class="btn btn--small btn--blue">Continuar</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="tiles">
+    <div class="tile"><span class="tile__icon tile__icon--teal">{{ icon('stack') }}</span>
+      <div><p class="tile__label">Preguntas</p><p class="tile__value">{{ totals.questions }}</p></div></div>
+    <div class="tile"><span class="tile__icon tile__icon--orange">{{ icon('doc') }}</span>
+      <div><p class="tile__label">Exámenes</p><p class="tile__value">{{ totals.exams }}</p></div></div>
+    <a class="tile tile--link" href="{{ url('/history/') }}"><span class="tile__icon tile__icon--blue">{{ icon('ok') }}</span>
+      <div><p class="tile__label">Tests realizados</p><p class="tile__value">{{ totals.done }}</p></div></a>
+    <a class="tile tile--link" href="{{ url('/generator/?doubtful=1') }}"><span class="tile__icon tile__icon--green">{{ icon('bookmark') }}</span>
+      <div><p class="tile__label">Dudosas para repasar</p><p class="tile__value">{{ totals.doubtful }}</p></div></a>
+  </div>
+
+  <h2 class="section-title">Cómo funciona</h2>
+  <ol class="steps">
+    <li class="card step">
+      <span class="step__num">1</span>
+      <h3>Elige un test</h3>
+      <p>En <strong>Tests</strong> el banco de preguntas está repartido en tests fijos de 100 preguntas:
+        <a href="{{ url('/collections/random') }}">aleatorios</a>, por <a href="{{ url('/collections/relevance') }}">relevancia</a>
+        (lo que más cae en los exámenes), por <a href="{{ url('/collections/blocks') }}">bloques</a>,
+        <a href="{{ url('/collections/topics') }}">temas</a> o <a href="{{ url('/collections/years') }}">años</a>.
+        También están los <a href="{{ url('/') }}">exámenes</a> reales y <a href="{{ url('/generator/') }}">Generar test</a>
+        para hacer uno a tu medida.</p>
+    </li>
+    <li class="card step">
+      <span class="step__num">2</span>
+      <h3>Hazlo a tu ritmo</h3>
+      <p>Pulsa una opción para responder y otra vez para dejarla en blanco. El cronómetro solo corre si pulsas
+        <strong>Empezar</strong> y puedes pausarlo u ocultarlo. Todo se guarda al momento: puedes dejarlo y seguir otro día.</p>
+    </li>
+    <li class="card step">
+      <span class="step__num">3</span>
+      <h3>Corrige</h3>
+      <p>Con <strong>Corregir</strong> ves la nota, las respuestas correctas y la explicación. Si la pregunta tiene apunte
+        enlazado, sale un botón para abrirlo.</p>
+    </li>
+    <li class="card step">
+      <span class="step__num">4</span>
+      <h3>Repasa</h3>
+      <p>En <strong>Mi Progreso</strong> ves tu acierto por bloque y tema. Desde ahí, o desde Generar test, puedes repetir
+        solo las que fallaste o las que marcaste como dudosas.</p>
+    </li>
+  </ol>
+
+  <h2 class="section-title">Durante el test</h2>
+  <div class="card">
+    <dl class="glossary">
+      <dt>Ocultar Tiempo</dt><dd>Esconde el cronómetro sin pararlo.</dd>
+      <dt>Filtrar</dt><dd>Deja solo las preguntas de examen (o las quita), las de ciertos años o un número de ellas. Las que quedan fuera no cuentan para la nota.</dd>
+      <dt>Modo Entrenamiento</dt><dd>Permite marcar varias opciones cuando dudas: cuenta como acierto si la correcta está entre ellas.</dd>
+      <dt>Corregir al responder</dt><dd>Ves si aciertas en cada pregunta en cuanto contestas, en vez de al final.</dd>
+      <dt>{{ icon('bookmark') }} Dudosa</dt><dd>La marca para repasarla después, en cualquier test.</dd>
+      <dt>{{ icon('eye') }} Ver respuesta</dt><dd>Muestra la correcta sin contar para la nota.</dd>
+      <dt>{{ icon('pencil') }} Editar</dt><dd>Corrige el enunciado, las opciones o los apuntes enlazados de la pregunta.</dd>
+    </dl>
+  </div>
+
+  {% if syllabi %}
+  <h2 class="section-title">Temarios</h2>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th>Organismo</th><th>Temario</th><th class="num">Preguntas</th></tr></thead>
+      <tbody>
+        {% for s in syllabi %}<tr><td>{{ s.organism }}</td><td>{{ s.name }}</td><td class="num">{{ s.count }}</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+  <h2 class="section-title">Créditos</h2>
+  <div class="card credits">
+    <p>El banco de preguntas de PreparaTIC A1, sus tests por colección y el diseño de esta pantalla vienen de
+      <strong>PreparaTIC</strong>, el grupo de preparación de las oposiciones TIC de la Administración del Estado,
+      que publica su aplicación con licencia Apache 2.0. Gracias a todas sus promociones.</p>
+    <p class="hint">Los exámenes de otros organismos son los publicados por cada convocatoria. Gráficos con Apache ECharts,
+      interacción con htmx e iconos de Heroicons. Detalle en <code>NOTICE.md</code>.</p>
+  </div>
+</section>
+{% endblock %}

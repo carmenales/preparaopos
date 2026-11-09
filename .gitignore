@@ -12,7 +12,12 @@ venv/
 *.bak
 *.backup
 *.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
 *.db
+*.db-wal
+*.db-shm
 db/local/*
 !db/local/.gitkeep
 !db/migrations/*.sql
@@ -36,6 +41,8 @@ db/local/*
 *.tmp
 *.old
 *.orig
+test_tmp.txt
+ultimos_commits.txt
 .DS_Store
 Thumbs.db
 .vscode/
@@ -48,8 +55,13 @@ tmp/
 apps/studyassistant/data/semantic_chunks.json
 apps/studyassistant/data/semantic_embeddings.npy
 imports/**/generated/
+imports/staging/
+imports/**/data/
 
 # Cache / build artifacts
 cache/
 __pycache__/
 .llm_cache/
+
+# Copias de seguridad locales de las BD
+backups/

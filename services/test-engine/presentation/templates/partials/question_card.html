@@ -1,0 +1,79 @@
+{# Tarjeta de una pregunta en la pantalla del test (como las de PreparaTIC). Contexto: session, card (ver _card en
+   routers/sessions.py), study_assistant_url. Pulsar una opción la marca; volver a pulsarla la desmarca (queda en blanco). #}
+{% set q = card.q %}
+{% set base = '/sessions/' ~ session.id %}
+<li class="tq{% if card.graded %} tq--{{ 'correct' if card.is_correct else 'wrong' }}{% elif card.marked %} tq--answered{% endif %}{% if card.doubtful %} tq--doubtful{% endif %}"
+    id="q-{{ card.n }}">
+  <div class="tq__head">
+    <p class="tq__statement"><span class="tq__num">{{ card.n }}</span> {{ q.statement if q else "(pregunta no disponible)" }}</p>
+    {% if q %}
+    <div class="tq__tools">
+      <button type="button" class="tool{% if card.doubtful %} tool--on{% endif %}" aria-pressed="{{ 'true' if card.doubtful else 'false' }}"
+              hx-post="{{ url(base ~ '/questions/' ~ q.id ~ '/doubtful') }}" hx-target="#q-{{ card.n }}" hx-swap="outerHTML"
+              aria-label="{{ 'Quitar marca de dudosa' if card.doubtful else 'Marcar como dudosa' }}">{{ icon('bookmark') }}<span class="tip">{{ "Dudosa · quitar marca" if card.doubtful else "Marcar como dudosa para repasarla" }}</span></button>
+      {% if card.marked and not card.locked %}
+      <button type="button" class="tool"
+              hx-post="{{ url(base ~ '/answer') }}" hx-vals='{"question_id": "{{ q.id }}", "selected_option_id": ""}'
+              hx-target="#q-{{ card.n }}" hx-swap="outerHTML" aria-label="Borrar respuesta">{{ icon('undo') }}<span class="tip">Borrar respuesta</span></button>
+      {% endif %}
+      {% if not card.graded and not session.closed_at %}
+      <button type="button" class="tool{% if card.reveal %} tool--active{% endif %}"
+              hx-get="{{ url(base ~ '/questions/' ~ q.id ~ '/card') }}{% if not card.reveal %}?reveal=1{% endif %}"
+              hx-target="#q-{{ card.n }}" hx-swap="outerHTML"
+              aria-label="{{ 'Ocultar respuesta' if card.reveal else 'Ver respuesta' }}">{{ icon('eye-off' if card.reveal else 'eye') }}<span class="tip">{{ "Ocultar respuesta" if card.reveal else "Ver respuesta" }}</span></button>
+      {% endif %}
+      <a class="tool" href="{{ url('/manage/questions/' ~ q.id ~ '/edit') }}" target="_blank" rel="noopener"
+         aria-label="Editar la pregunta">{{ icon('pencil') }}<span class="tip">Editar enunciado, opciones o apuntes</span></a>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if q %}
+  {% if q.is_annulled %}<p class="tq__annulled">Pregunta anulada: no cuenta para la nota.</p>{% endif %}
+  <div class="tq__options" role="group" aria-label="Opciones de la pregunta {{ card.n }}">
+    {% for opt in q.options %}
+    {% set is_selected = opt.id in card.marks %}
+    {% set is_right = card.show_correction and opt.is_correct %}
+    {% set is_bad = card.show_correction and is_selected and not opt.is_correct and (card.graded or card.reveal) %}
+    <button type="button"
+            class="opt{% if is_selected %} opt--selected{% endif %}{% if is_right %} opt--right{% endif %}{% if is_bad %} opt--bad{% endif %}"
+            aria-pressed="{{ 'true' if is_selected else 'false' }}"
+            {% if card.locked %}disabled{% else %}
+            hx-post="{{ url(base ~ '/answer') }}"
+            hx-vals='{"question_id": "{{ q.id }}", "selected_option_id": "{{ opt.id }}"}'
+            hx-target="#q-{{ card.n }}" hx-swap="outerHTML"{% endif %}>
+      <span class="opt__letter">{{ "ABCDEFGH"[loop.index0] }}</span>
+      <span class="opt__text"><span class="opt__main">{{ opt.text }}</span>
+        {% if card.show_correction and opt.justification and (opt.is_correct or is_selected) %}
+        <small class="opt__why">{{ opt.justification }}</small>
+        {% endif %}
+      </span>
+    </button>
+    {% endfor %}
+  </div>
+
+  {% if card.multi and not session.closed_at %}<p class="tq__state">Dudosa: {{ card.marks|length }} opciones marcadas</p>{% endif %}
+  {% if card.locked and not session.closed_at %}<p class="tq__state">Corregida al responder: no se puede cambiar</p>{% endif %}
+
+  {% if card.show_correction %}
+  <div class="tq__feedback">
+    {% if card.graded %}
+      <p class="tq__verdict tq__verdict--{{ 'ok' if card.is_correct else 'bad' }}">{{ icon('ok' if card.is_correct else 'x') }} {{ "Correcta" if card.is_correct else "Incorrecta" }}{% if card.multi %} · dudosa: marcaste {{ card.marks|length }} opciones{% endif %}</p>
+    {% elif session.closed_at and card.multi %}
+      <p class="tq__verdict">Sin contestar: varias opciones marcadas sin el modo entrenamiento</p>
+    {% elif card.reveal %}
+      <p class="tq__verdict tq__verdict--peek">{{ icon('eye') }} Respuesta correcta: {{ "ABCDEFGH"[q.options.index(card.correct_option)] if card.correct_option else "?" }} · no cuenta para la nota; puedes contestar igualmente.</p>
+    {% elif session.closed_at %}
+      <p class="tq__verdict">Sin contestar</p>
+    {% endif %}
+    {% if card.explanation %}<p class="tq__explanation">{{ card.explanation }}</p>{% endif %}
+    {% if card.notes %}
+    <p class="tq__notes">
+      {% for note in card.notes %}<a class="note-link" href="{{ study_assistant_url }}/notes/{{ note.note_id }}" target="_blank" rel="noopener"
+         title="Abrir el apunte en otra pestaña">{{ icon('book') }} Apunte: {{ note.official_topic or note.title }}</a>{% endfor %}
+    </p>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+</li>

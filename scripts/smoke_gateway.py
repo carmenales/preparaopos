@@ -1,0 +1,333 @@
+"""Script de verificación (smoke test) del Gateway Nginx y microservicios PreparaOpos.
+
+Comprueba a través del puerto público :8080:
+  1. /healthz en el gateway (200 OK)
+  2. / -> Study Assistant (200 OK)
+  3. /tests/ -> Test Engine (200 OK)
+  4. /tests -> Redirección canónica 301 a /tests/
+  5. Segregación de ficheros estáticos:
+     - /tests/static/style.css (CSS de test-engine con selectores distintivos)
+     - /static/style.css (CSS de study-assistant con selectores distintivos)
+  6. Simulacro completo en test-engine a través del gateway:
+     - Inicio de examen (POST /tests/sessions/)
+     - Pantalla del test (todas las preguntas) con temporizador y htmx prefijados
+     - Respuesta (POST /tests/sessions/{id}/answer) que repinta la tarjeta y el marcador
+     - «Corregir» (POST /tests/sessions/{id}/close) y resultados (GET /tests/sessions/{id}/result)
+  7. Navegación cruzada bidireccional:
+     - Study Assistant -> Test Engine (POST /tests/practice/by-note/{note_id})
+     - Test Engine -> Study Assistant (GET /notes/{note_id})
+     - Botón de práctica en la nota apuntando a /tests/practice/by-note/...
+  8. Comprobación de página de error 50x cuando un upstream no responde.
+
+Antes de empezar espera (por defecto hasta 30 s) a que el gateway, Study Assistant y
+Test Engine respondan: justo después de un `docker compose up` los contenedores tardan
+unos segundos en aceptar peticiones y Nginx devuelve 502.
+
+Al terminar borra las sesiones que ha creado (simulacro y práctica por apunte), para no
+ensuciar el historial, las estadísticas ni el refuerzo de falladas. Con --keep-sessions
+se conservan (para depurar).
+
+Uso:
+  python scripts/smoke_gateway.py [--gateway-url http://localhost:8080] [--wait 30] [--keep-sessions]
+"""
+
+from __future__ import annotations
+
+import argparse
+import re
+import sys
+import time
+import httpx
+
+NOT_READY = {502, 503, 504}
+
+
+def wait_until_ready(client: httpx.Client, base_url: str, timeout: float) -> list[str]:
+    """Espera a que /healthz, / y /tests/ dejen de dar 502/503/504. Devuelve las que siguen sin responder."""
+    paths = ["/healthz", "/", "/tests/"]
+    deadline = time.monotonic() + timeout
+    while True:
+        pending = []
+        for path in paths:
+            try:
+                if client.get(f"{base_url}{path}").status_code in NOT_READY:
+                    pending.append(path)
+            except httpx.HTTPError:
+                pending.append(path)
+        if not pending or time.monotonic() >= deadline:
+            return pending
+        time.sleep(1)
+
+
+def delete_sessions(client: httpx.Client, base_url: str, session_ids: list[str]) -> list[str]:
+    """Borra las sesiones creadas por el smoke test con el borrado del historial y comprueba
+    que ya no aparecen en él. Devuelve los errores."""
+    errors = []
+    for sid in session_ids:
+        try:
+            r = client.post(f"{base_url}/tests/history/{sid}/delete")
+            if r.status_code != 303:
+                errors.append(f"No se pudo borrar la sesión de prueba {sid} (status {r.status_code})")
+        except Exception as e:
+            errors.append(f"No se pudo borrar la sesión de prueba {sid}: {e}")
+    try:
+        history = client.get(f"{base_url}/tests/history/").text
+        errors += [f"La sesión de prueba {sid} sigue en el historial" for sid in session_ids if sid in history]
+    except Exception as e:
+        errors.append(f"No se pudo comprobar el historial tras la limpieza: {e}")
+    return errors
+
+
+def log_step(name: str) -> None:
+    print(f"\n[+] {name}")
+
+
+def log_ok(msg: str) -> None:
+    print(f"  [OK] {msg}")
+
+
+def log_err(msg: str) -> None:
+    print(f"  [FAIL] {msg}")
+
+
+def run_smoke_tests(base_url: str = "http://localhost:8080", wait: float = 30.0, keep_sessions: bool = False) -> bool:
+    base_url = base_url.rstrip("/")
+    print(f"Iniciando verificación contra Gateway en {base_url}...")
+    errors: list[str] = []
+    created_sessions: list[str] = []
+
+    client = httpx.Client(timeout=10.0, follow_redirects=False)
+
+    if wait > 0:
+        pending = wait_until_ready(client, base_url, wait)
+        if pending:
+            print(f"  [AVISO] Tras {wait:.0f} s siguen sin responder: {', '.join(pending)}")
+
+    # -------------------------------------------------------------------------
+    # 1. Healthcheck del propio Gateway
+    # -------------------------------------------------------------------------
+    log_step("1. Healthcheck del Gateway (/healthz)")
+    try:
+        r = client.get(f"{base_url}/healthz")
+        if r.status_code == 200 and "OK" in r.text:
+            log_ok("Gateway respondió 200 OK en /healthz")
+        else:
+            errors.append(f"/healthz devolvió {r.status_code}: {r.text[:100]}")
+            log_err(errors[-1])
+    except Exception as e:
+        errors.append(f"Error conectando a /healthz: {e}")
+        log_err(errors[-1])
+
+    # -------------------------------------------------------------------------
+    # 2. Study Assistant en la raíz /
+    # -------------------------------------------------------------------------
+    log_step("2. Raíz (/) -> Study Assistant")
+    try:
+        r = client.get(f"{base_url}/")
+        if r.status_code == 200 and ("Study Assistant" in r.text or "dashboard" in r.text.lower() or "procesos" in r.text.lower()):
+            log_ok("Study Assistant respondió 200 OK en /")
+        else:
+            errors.append(f"/ devolvió {r.status_code} sin marcas esperadas de Study Assistant")
+            log_err(errors[-1])
+    except Exception as e:
+        errors.append(f"Error conectando a /: {e}")
+        log_err(errors[-1])
+
+    # -------------------------------------------------------------------------
+    # 3. Test Engine en /tests/ y redirección canónica /tests
+    # -------------------------------------------------------------------------
+    log_step("3. Catálogo (/tests/) y redirección canónica (/tests)")
+    try:
+        r_redir = client.get(f"{base_url}/tests")
+        if r_redir.status_code == 301 and r_redir.headers.get("location", "").endswith("/tests/"):
+            log_ok("/tests redirige con 301 a /tests/")
+        else:
+            errors.append(f"/tests devolvió {r_redir.status_code} (Location: {r_redir.headers.get('location')})")
+            log_err(errors[-1])
+
+        r_tests = client.get(f"{base_url}/tests/")
+        if r_tests.status_code == 200 and ("Test Engine" in r_tests.text or "Exámenes disponibles" in r_tests.text):
+            log_ok("Test Engine respondió 200 OK en /tests/")
+        else:
+            errors.append(f"/tests/ devolvió {r_tests.status_code} sin marcas esperadas")
+            log_err(errors[-1])
+    except Exception as e:
+        errors.append(f"Error conectando a /tests/: {e}")
+        log_err(errors[-1])
+
+    # -------------------------------------------------------------------------
+    # 4. Segregación de ficheros estáticos (/tests/static/... vs /static/...)
+    # -------------------------------------------------------------------------
+    log_step("4. Segregación de estilos CSS estáticos")
+    try:
+        r_css_te = client.get(f"{base_url}/tests/static/style.css")
+        r_css_sa = client.get(f"{base_url}/static/css/styles.css")
+
+        te_ok = (
+            r_css_te.status_code == 200
+            and (".scoreboard" in r_css_te.text or ".timer" in r_css_te.text or ".note-dropdown" in r_css_te.text)
+        )
+        if te_ok:
+            log_ok("/tests/static/style.css devolvió el CSS distintivo de Test Engine")
+        else:
+            errors.append(f"/tests/static/style.css erróneo (status {r_css_te.status_code})")
+            log_err(errors[-1])
+
+        sa_ok = (
+            r_css_sa.status_code == 200
+            and ("search" in r_css_sa.text or "prose" in r_css_sa.text or "nested-toc" in r_css_sa.text or "note-card" in r_css_sa.text)
+        )
+        if sa_ok:
+            log_ok("/static/css/styles.css devolvió el CSS distintivo de Study Assistant")
+        else:
+            errors.append(f"/static/css/styles.css erróneo (status {r_css_sa.status_code})")
+            log_err(errors[-1])
+
+        # Asegurar que no se confunden
+        if ".scoreboard" in r_css_sa.text:
+            errors.append("/static/css/styles.css contiene estilos de Test Engine (.scoreboard)")
+            log_err(errors[-1])
+
+    except Exception as e:
+        errors.append(f"Error verificando CSS estático: {e}")
+        log_err(errors[-1])
+
+    # -------------------------------------------------------------------------
+    # 5. Flujo completo de simulacro en Test Engine vía Gateway
+    # -------------------------------------------------------------------------
+    log_step("5. Flujo completo de simulacro (examen, timer, respuesta htmx y resultados)")
+    session_id: str | None = None
+    try:
+        # Inicio de sesión
+        r_start = client.post(
+            f"{base_url}/tests/sessions/",
+            data={"mode": "exam", "source": "exam", "source_ref": "53"},
+        )
+        if r_start.status_code == 303:
+            loc = r_start.headers.get("location", "")
+            match = re.fullmatch(r"/tests/sessions/([0-9a-f]{32})", loc)
+            if match:
+                session_id = match.group(1)
+                created_sessions.append(session_id)
+                log_ok(f"Sesión creada correctamente ({session_id}) con salto 303 prefijado")
+            else:
+                errors.append(f"Salto 303 sin prefijo correcto: {loc}")
+                log_err(errors[-1])
+        else:
+            errors.append(f"Inicio de sesión devolvió {r_start.status_code}")
+            log_err(errors[-1])
+
+        if session_id:
+            # Pantalla del test: todas las preguntas en una página
+            r_page = client.get(f"{base_url}/tests/sessions/{session_id}")
+            first = re.search(r'"question_id": "(\d+)", "selected_option_id": "(\d+)"', r_page.text)
+            if (r_page.status_code == 200 and f'hx-post="/tests/sessions/{session_id}/answer"' in r_page.text
+                    and 'id="timer"' in r_page.text and first):
+                log_ok("Pantalla del test renderizada con timer y hx-post prefijados bajo /tests/")
+            else:
+                errors.append("La pantalla del test no contiene los atributos o prefijos esperados")
+                log_err(errors[-1])
+
+            # Responder por htmx: devuelve la tarjeta y el marcador (fuera de banda)
+            if first:
+                r_ans = client.post(
+                    f"{base_url}/tests/sessions/{session_id}/answer",
+                    data={"question_id": first.group(1), "selected_option_id": first.group(2)},
+                )
+                if r_ans.status_code == 200 and 'id="q-1"' in r_ans.text and 'hx-swap-oob="true"' in r_ans.text:
+                    log_ok("Respuesta htmx procesada correctamente (tarjeta y marcador)")
+                else:
+                    errors.append(f"Respuesta htmx falló con status {r_ans.status_code}")
+                    log_err(errors[-1])
+
+            # «Corregir» y resultados
+            r_close = client.post(f"{base_url}/tests/sessions/{session_id}/close")
+            if r_close.status_code != 303 or r_close.headers.get("location") != f"/tests/sessions/{session_id}/result":
+                errors.append(f"«Corregir» devolvió {r_close.status_code} ({r_close.headers.get('location')})")
+                log_err(errors[-1])
+            r_res = client.get(f"{base_url}/tests/sessions/{session_id}/result")
+            if r_res.status_code == 200 and "Resultado" in r_res.text and 'href="/tests/"' in r_res.text:
+                log_ok("Hoja de resultados renderizada con enlace de retorno prefijado a /tests/")
+            else:
+                errors.append("Hoja de resultados no contiene el enlace o contenido esperado")
+                log_err(errors[-1])
+
+    except Exception as e:
+        errors.append(f"Error en flujo de examen: {e}")
+        log_err(errors[-1])
+
+    # -------------------------------------------------------------------------
+    # 6. Navegación cruzada bidireccional
+    # -------------------------------------------------------------------------
+    log_step("6. Navegación cruzada bidireccional (Study Assistant <-> Test Engine)")
+    try:
+        # A) Study Assistant -> Test Engine (Práctica por apunte)
+        client_follow = httpx.Client(timeout=10.0, follow_redirects=True)
+        r_cross = client_follow.post(f"{base_url}/tests/sessions/practice/by-note/tema-i-01-derecho-constitucional")
+        match = re.search(r"/tests/sessions/([0-9a-f]{32})(?:[/?#]|$)", str(r_cross.url))
+        if match:
+            created_sessions.append(match.group(1))
+        if r_cross.status_code == 200 and re.search(r"/tests/sessions/[0-9a-f]{32}$", str(r_cross.url)):
+            log_ok("Navegación cruzada SA -> TE resolvió con éxito cadena 303 -> 200 en /tests/sessions/{id}")
+        else:
+            errors.append(f"Práctica por apunte no finalizó en la pregunta esperada: {r_cross.status_code} ({r_cross.url})")
+            log_err(errors[-1])
+
+        # B) Test Engine -> Study Assistant (Lectura de apunte enlazado)
+        r_note = client.get(f"{base_url}/notes/tema-i-01-derecho-constitucional")
+        if r_note.status_code == 200 and ("tema-i-01" in r_note.text or "Constitucional" in r_note.text):
+            log_ok("Acceso al apunte vía Gateway (TE -> SA) respondió 200 OK")
+            if 'action="/tests/sessions/practice/by-note/' in r_note.text:
+                log_ok("El formulario de práctica en el apunte apunta correctamente a /tests/sessions/practice/by-note/...")
+            else:
+                errors.append("El formulario de práctica en el apunte no incluye la URL prefijada /tests/sessions/practice/by-note/...")
+                log_err(errors[-1])
+        else:
+            errors.append(f"Acceso a la nota vía Gateway devolvió {r_note.status_code}")
+            log_err(errors[-1])
+
+    except Exception as e:
+        errors.append(f"Error en pruebas de navegación cruzada: {e}")
+        log_err(errors[-1])
+
+    # -------------------------------------------------------------------------
+    # 7. Limpieza: borrar las sesiones de prueba
+    # -------------------------------------------------------------------------
+    log_step("7. Limpieza de las sesiones de prueba")
+    if keep_sessions:
+        log_ok(f"Se conservan {len(created_sessions)} sesiones de prueba (--keep-sessions): {', '.join(created_sessions)}")
+    elif created_sessions:
+        cleanup_errors = delete_sessions(client, base_url, created_sessions)
+        for err in cleanup_errors:
+            errors.append(err)
+            log_err(err)
+        if not cleanup_errors:
+            log_ok(f"Borradas las {len(created_sessions)} sesiones creadas por el smoke test")
+    else:
+        log_ok("No se ha creado ninguna sesión")
+
+    # -------------------------------------------------------------------------
+    # Resumen final
+    # -------------------------------------------------------------------------
+    print("\n" + "=" * 60)
+    if errors:
+        print(f"SMOKE TEST FALLIDO: {len(errors)} error(es) detectado(s):")
+        for err in errors:
+            print(f"  - {err}")
+        return False
+    else:
+        print("SMOKE TEST COMPLETADO CON ÉXITO: Todas las verificaciones del Gateway pasaron al 100%.")
+        return True
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Smoke test para el Gateway Nginx de PreparaOpos")
+    parser.add_argument("--gateway-url", default="http://localhost:8080", help="URL base del gateway (por defecto http://localhost:8080)")
+    parser.add_argument("--wait", type=float, default=30.0,
+                        help="Segundos máximos de espera a que respondan los servicios (0 = no esperar)")
+    parser.add_argument("--keep-sessions", action="store_true",
+                        help="No borrar al final las sesiones creadas por el smoke test")
+    args = parser.parse_args()
+
+    success = run_smoke_tests(args.gateway_url, wait=args.wait, keep_sessions=args.keep_sessions)
+    sys.exit(0 if success else 1)

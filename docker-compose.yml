@@ -5,7 +5,7 @@ services:
       dockerfile: infra/docker/php/Dockerfile
     container_name: preparaopos-preparadortai-web
     ports:
-      - "8080:80"
+      - "8082:80"
     environment:
       DB_SERVER: db
       DB_USERNAME: preparaopos
@@ -99,6 +99,81 @@ services:
       - "8081:80"
     depends_on:
       - db
+
+  gateway:
+    image: nginx:stable-alpine
+    container_name: preparaopos-gateway
+    ports:
+      - "8080:80"
+    volumes:
+      - ./infra/gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/gateway/50x.html:/usr/share/nginx/html/50x.html:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  study-assistant:
+    build:
+      context: ./services/study-assistant
+    container_name: preparaopos-study-assistant
+    environment:
+      - SA_HOST=0.0.0.0
+      - SA_PORT=8095
+      - LINKING_SERVICE_INTERNAL_URL=http://linking-service:8097
+      - TEST_ENGINE_INTERNAL_URL=http://test-engine:8096
+      - TEST_ENGINE_PUBLIC_URL=/tests
+      - KNOWLEDGE_SERVICE_INTERNAL_URL=http://knowledge-service:8000
+      - KNOWLEDGE_BASE_PATH=/workspace/knowledge
+      - KNOWLEDGE_INDEX_PATH=/workspace/apps/studyassistant/data/knowledge_index.json
+    volumes:
+      - ./knowledge:/workspace/knowledge:ro
+      - ./apps/studyassistant/data:/workspace/apps/studyassistant/data:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8095/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  test-engine:
+    build:
+      context: ./services/test-engine
+    container_name: preparaopos-test-engine
+    environment:
+      - TE_HOST=0.0.0.0
+      - TE_PORT=8096
+      - ROOT_PATH=/tests
+      - LINKING_SERVICE_INTERNAL_URL=http://linking-service:8097
+      - STUDY_ASSISTANT_INTERNAL_URL=http://study-assistant:8095
+      - STUDY_ASSISTANT_PUBLIC_URL=
+      - TEST_ENGINE_SQLITE_PATH=/app/data/test_engine.sqlite
+      - SQLITE_JOURNAL_MODE=DELETE
+    volumes:
+      - ./services/test-engine/data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8096/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  linking-service:
+    build:
+      context: ./services/linking-service
+    container_name: preparaopos-linking-service
+    environment:
+      - LS_HOST=0.0.0.0
+      - LS_PORT=8097
+      - APUNTES_SERVICE_INTERNAL_URL=http://study-assistant:8095
+      - TEST_ENGINE_INTERNAL_URL=http://test-engine:8096
+      - LINKING_SQLITE_PATH=/app/data/linking.sqlite
+    volumes:
+      - ./services/linking-service/data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8097/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
 
 volumes:
   preparaopos_preparadortai_db_data:
