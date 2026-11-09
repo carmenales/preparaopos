@@ -1,18 +1,16 @@
 # Estado del proyecto
 
-_Última revisión: 2026-11-07 · `develop` tras `feature/stats-parity`. **Migración: funcionalidad terminada, en validación** (criterios en `docs/MIGRACION.md` §4)._
+_Última revisión: 2026-11-09 · versión **1.0.0**. **Migración: funcionalidad terminada y publicada**; falta retirar las apps PHP (1.1.0, ver `docs/MIGRACION.md` §4)._
 
 ## Situación actual
 - Gateway Nginx en :8080: study-assistant en `/` (apuntes), test-engine en `/tests/`, más linking-service, knowledge-service y embeddings. Las apps PHP (preparadortai y studyassistant), MariaDB y phpMyAdmin siguen en `docker-compose.yml` hasta terminar la validación (decisión de Carmen).
 - test-engine: 18.820 preguntas y 65 exámenes (PreparaTIC A1 16.680, TAI 1.331, Ayto. Madrid 294, UC3M 270, Comunidad de Madrid 100, AGE GSI 2024 101, Majadahonda 44).
 - `develop` aún no está en GitHub (`origin/develop` se quedó en `6f754468`): el CI no se ha ejecutado nunca con la migración.
 
-## Próximos pasos: versión 1.0.0 (GitFlow)
-1. Subir `develop` a GitHub y corregir lo que falle en el CI (ramas `feature/*`).
-2. Crear `release/1.0.0` desde `develop`: versión 1.0.0 en los servicios y fecha en `CHANGELOG.md`. El CI se ejecuta también en `release/*`.
-3. Validar sobre `release/1.0.0` (simulacro completo por :8080 y una semana de uso real sin las apps PHP). Los arreglos van a esa rama y se llevan después a `develop`.
-4. Retirar las apps PHP, MariaDB y phpMyAdmin (con volcado final en `backups/`) en la misma `release/1.0.0`.
-5. Merge de `release/1.0.0` a `main` (`--no-ff`), etiqueta `v1.0.0`, merge de vuelta a `develop` y push de ramas y etiqueta.
+## Próximos pasos
+1. ✅ 1.0.0 publicada el 2026-11-09 desde `release/1.0.0` (Carmen da por buena la versión sin la semana de validación previa).
+2. Usar el sistema nuevo. Si algo falla: `hotfix/1.0.x` desde `main`, como dice GitFlow.
+3. **1.1.0**: retirar preparadortai, studyassistant (PHP), MariaDB y phpMyAdmin de `docker-compose.yml` y el job `php-syntax` del CI, con un volcado final de MariaDB en `backups/`. Decidir entonces si `apps/` se borra o se queda como referencia.
 
 ## Pendiente menor
 - `docker-compose.dev.yml` está vacío (0 bytes): lo borra Carmen (`git rm`) en `feature/cleanup`.
